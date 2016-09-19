@@ -1,3 +1,18 @@
+// This SuperCollider code by Iain Mott, 2016, is licensed under a 
+// Creative Commons Attribution-NonCommercial 4.0 International License
+// http://creativecommons.org/licenses/by-nc/4.0/
+// The program makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
+// and the Automation quark (https://github.com/supercollider-quarks/Automation).
+// It also uses impulse responses from the OpenAir project (see links below).
+
+// Required Quarks : Automation, Ctk, XML, MathLib
+// Required classes: 
+// SC Plugins: https://github.com/supercollider/sc3-plugins
+// IRs (first 100ms removed):
+// http://www.openairlib.net/auralizationdb/content/central-hall-university-york
+// http://www.openairlib.net/auralizationdb/content/koli-national-park-summer
+
+
 Chowning {
 	//	classvar fftsize = 2048;
 	var <>myTestVar;
