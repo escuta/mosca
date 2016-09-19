@@ -6,4 +6,7 @@
     \url:     "http://github.com/escuta/mosca",
     \helpdoc: "Help/MoscaHelp.scd",
     \since:   "2016"
+    \version:		0.0001, // must be a float
+    // or (3) arrays with info in this order: [name, version, repositoryBaseUrl]
+	\dependencies:	[["Atk"], ["MathLib"], ["Automation"], ["XML"]]
 )
