@@ -7,7 +7,7 @@
 // Required Quarks : Automation, Ctk, XML, MathLib
 // Required classes: 
 // SC Plugins: https://github.com/supercollider/sc3-plugins
-// IRs (first 100ms silenced):
+// RIRs (first 100ms silenced) used in help files:
 // http://www.openairlib.net/auralizationdb/content/central-hall-university-york
 // http://www.openairlib.net/auralizationdb/content/koli-national-park-summer
 
