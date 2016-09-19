@@ -12,7 +12,7 @@
 // http://www.openairlib.net/auralizationdb/content/koli-national-park-summer
 
 
-Chowning {
+Mosca {
 	//	classvar fftsize = 2048;
 	var <>myTestVar;
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ, <>rirL, <>rirR,
@@ -32,7 +32,7 @@ Chowning {
 		(
 		s.waitForBoot {
 		
-		~testChowning = Chowning.new("/home/iain/projects/ambisonics/chowning/ir/QL14_tail48kHz.amb", 
+		~testMosca = Mosca.new("/home/iain/projects/ambisonics/chowning/ir/QL14_tail48kHz.amb", 
 		"/home/iain/projects/ambisonics/chowning/ir/sbs_binaural_tail.wav", 21, Server.default);
 		
 		};
