@@ -1,0 +1,9 @@
+(
+    \name:    "Mosca",
+    \path:    "mosca",
+    \summary: "GUI-assisted production of ambisonic and binaural sound fields with simulated moving or stationary sound sources",
+    \author:  "mott@escuta.org",
+    \url:     "http://github.com/escuta/mosca",
+    \helpdoc: "Help/MoscaHelp.scd",
+    \since:   "2016"
+)
