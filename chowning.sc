@@ -14,6 +14,7 @@ Chowning {
 	classvar fftsize = 2048;
 
 	/*
+		// Use something like this to run
 		(
 		s.waitForBoot {
 		
