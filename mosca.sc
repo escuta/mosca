@@ -19,8 +19,9 @@ Mosca {
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ, <>rirL, <>rirR,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	<>rirLspectrum, <>rirRspectrum,
+
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
-	<>controle, <>revGlobal, <>revGlobalBF;
+	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf;
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
@@ -1583,17 +1584,18 @@ Mosca {
 
 	});
 
-		/*
+		
 
 
-	bcarregar = Button(~win, Rect(760, 40, 90, 20))
+	bcarregar = Button(win, Rect(760, 40, 90, 20))
 	.states_([
 		["load auto", Color.black, Color.white],
 	])
-	.action_({ arg but;
-		var arquivo = File("auto/arquivos.txt".standardizePath,"r");
-		var dop = File("auto/doppler.txt".standardizePath,"r");
-		var looped = File("auto/loop.txt".standardizePath,"r");
+		.action_({ arg but;
+			var f;
+			var arquivo = File("auto/arquivos.txt".standardizePath,"r");
+			var dop = File("auto/doppler.txt".standardizePath,"r");
+			var looped = File("auto/loop.txt".standardizePath,"r");
 
 		var streamed = FileReader("auto/stream.txt".standardizePath, delimiter: Char.tab); 
 
@@ -1628,30 +1630,32 @@ Mosca {
 		looped.close;
 		f.close;
 		streamed.close;
-		~controle.load(~controle.presetDir);
+		controle.load(controle.presetDir);
 	});
+
+		
 	
 	
 	
 
-		~win.view.background = Color(0.7,0.8,0.8);
+		win.view.background = Color(0.7,0.8,0.8);
 
 	
-	~win.drawFunc = {
+	win.drawFunc = {
 		//paint origin
 		Pen.fillColor = Color.white(0, 0.5);
 		Pen.addArc(450@450, 20, 0, 2pi);
 		Pen.fill;
 		//	Pen.width = 10;
 	};
-	
+		
 	// seleção de fontes
 	itensdemenu = Array.newClear(nfontes);
 	nfontes.do { arg i;
 		itensdemenu[i] = "Source " ++ (i + 1).asString;
 	};
 	
-	m = PopUpMenu(~win,Rect(10,10,80,20));
+	m = PopUpMenu(win,Rect(10,10,80,20));
 	m.items = itensdemenu; 
 	m.action = { arg menu;
 		fatual = menu.value;
@@ -1696,8 +1700,10 @@ Mosca {
 					btestar.value = 0;
 				};
 	};
+
+		
 	
-		~offset = 60;
+		offset = 60;
 
 	
 	dopcheque = CheckBox( ~win, Rect(94, 10, 80, 20), "Doppler").action_({ arg butt;
@@ -1720,10 +1726,12 @@ Mosca {
 	dopcheque.value = false;
 
 
-
-	~ncantexto = StaticText(~win, Rect(55, -10 + ~offset, 200, 20));
-	~ncantexto.string = "No. of channels (1, 2 or 4, Live)";
-	ncannumbox = NumberBox(~win, Rect(10, -10 + ~offset, 40, 20));
+		
+		//	~ncantexto = StaticText(~win, Rect(55, -10 + ~offset, 200, 20));
+		//	~ncantexto.string = "No. of channels (1, 2 or 4, Live)";
+	textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
+	textbuf.string = "No. of channels (1, 2 or 4, Live)";
+	ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
 	ncannumbox.value = 0;
 	ncannumbox.clipHi = 4;
 	ncannumbox.clipLo = 0;
@@ -1738,11 +1746,11 @@ Mosca {
 	
 	};
 
+		
 
-
-		~businitexto = StaticText(~win, Rect(55, 10 + ~offset, 240, 20));
-	~businitexto.string = "Start Bus (0-31, Live)";
-	busininumbox = NumberBox(~win, Rect(10, 10 + ~offset, 40, 20));
+		textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
+	textbuf.string = "Start Bus (0-31, Live)";
+	busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
 	busininumbox.value = 0;
 	busininumbox.clipHi = 31;
 	busininumbox.clipLo = 0;
@@ -1753,14 +1761,13 @@ Mosca {
 		businibox[fatual].valueAction = num.value;
 		busini[fatual] = num.value;
 	};
+		
 
 
-
-	//dopcheque.string = "Doppler";
 	
-	~angtexto = StaticText(~win, Rect(163, 110 + ~offset, 90, 20));
-	~angtexto.string = "Angle (Stereo)";
-	angnumbox = NumberBox(~win, Rect(10, 110 + ~offset, 40, 20));
+	textbuf = StaticText(win, Rect(163, 110 + offset, 90, 20));
+	textbuf.string = "Angle (Stereo)";
+	angnumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
 	angnumbox.value = 0;
 	angnumbox.clipHi = pi;
 	angnumbox.clipLo = 0;
@@ -1777,7 +1784,7 @@ Mosca {
 		{angnumbox.value = 0;};
 	};
 	
-	angslider = Slider.new(~win, Rect(50, 110 + ~offset, 110, 20));
+	angslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
 	//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 	
 	angslider.action = {arg num;
@@ -1791,13 +1798,14 @@ Mosca {
 		}{angnumbox.value = num.value * pi;};
 	};
 
+		
 
 	/////////////////////////////////////////////////////////
 
 
-		~eltexto = StaticText(~win, Rect(810, 440, 90, 20));
-	~eltexto.string = "Z-Axis";
-	znumbox = NumberBox(~win, Rect(835, 705, 60, 20));
+		textbuf = StaticText(win, Rect(810, 440, 90, 20));
+	textbuf.string = "Z-Axis";
+	znumbox = NumberBox(win, Rect(835, 705, 60, 20));
 	znumbox.value = 0;
 	znumbox.clipHi = 450;
 	znumbox.clipLo = -450;
@@ -1829,7 +1837,7 @@ Mosca {
 	};
 	*/
 	
-	zslider = Slider.new(~win, Rect(855, 200, 20, 500));
+	zslider = Slider.new(win, Rect(855, 200, 20, 500));
 	zslider.value = 0.5;
 	zslider.action = {arg num;
 		znumbox.value = (450 - (num.value * 900)) * -1;
@@ -1844,10 +1852,10 @@ Mosca {
 
 	////////////////////////////////////////////////////////////
 
-	
-	~voltexto = StaticText(~win, Rect(163, 30 + ~offset, 50, 20));
-	~voltexto.string = "Volume";
-	volnumbox = NumberBox(~win, Rect(10, 30 + ~offset, 40, 20));
+			
+	textbuf = StaticText(win, Rect(163, 30 + offset, 50, 20));
+	textbuf.string = "Volume";
+	volnumbox = NumberBox(win, Rect(10, 30 + offset, 40, 20));
 	volnumbox.value = 0;
 	volnumbox.clipHi = pi;
 	volnumbox.clipLo = 0;
@@ -1862,7 +1870,7 @@ Mosca {
 		//		("volume = " ++ num.value).postln; 
 	};
 	// stepsize?
-	volslider = Slider.new(~win, Rect(50, 30 + ~offset, 110, 20));
+	volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
 	volslider.value = 0;
 	volslider.action = {arg num;
 		vbox[fatual].valueAction = num.value;
@@ -1874,12 +1882,12 @@ Mosca {
 
 
 	///////////////////////////////////////////////////////////////
+		
 
-
-~doptexto = StaticText(~win, Rect(163, 50 + ~offset, 120, 20));
-	~doptexto.string = "Doppler amount";
+		textbuf= StaticText(win, Rect(163, 50 + offset, 120, 20));
+	textbuf.string = "Doppler amount";
 	// was called contraction, hence "connumbox".
-	dopnumbox = NumberBox(~win, Rect(10, 50 + ~offset, 40, 20));
+	dopnumbox = NumberBox(win, Rect(10, 50 + offset, 40, 20));
 	dopnumbox.value = 0;
 	dopnumbox.clipHi = pi;
 	dopnumbox.clipLo = -pi;
@@ -1894,7 +1902,7 @@ Mosca {
 		//		("volume = " ++ num.value).postln; 
 	};
 	// stepsize?
-	dpslider = Slider.new(~win, Rect(50, 50 + ~offset, 110, 20));
+	dpslider = Slider.new(win, Rect(50, 50 + offset, 110, 20));
 	dpslider.value = 0;
 	dpslider.action = {arg num;
 		dpbox[fatual].valueAction = num.value;
@@ -1908,11 +1916,11 @@ Mosca {
 
 	/////////////////////////////////////////////////////////////////////////
 
+			
 	
-	
-	~gtexto = StaticText(~win, Rect(163, 70 + ~offset, 150, 20));
-	~gtexto.string = "Global Reverberation";
-	gnumbox = NumberBox(~win, Rect(10, 70 + ~offset, 40, 20));
+	textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
+	textbuf.string = "Global Reverberation";
+	gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
 	gnumbox.value = 1;
 	gnumbox.clipHi = pi;
 	gnumbox.clipLo = 0;
@@ -1927,7 +1935,7 @@ Mosca {
 		//		("volume = " ++ num.value).postln; 
 	};
 	// stepsize?
-	gslider = Slider.new(~win, Rect(50, 70 + ~offset, 110, 20));
+	gslider = Slider.new(win, Rect(50, 70 + offset, 110, 20));
 	gslider.value = 0;
 	gslider.action = {arg num;
 		gbox[fatual].valueAction = num.value;
@@ -1936,11 +1944,12 @@ Mosca {
 		//		synt[fatual].set(\volume, num.value);
 		//		volume[fatual] = num.value;
 	};
+
+		
 	
-	
-	~ltexto = StaticText(~win, Rect(163, 90 + ~offset, 150, 20));
-	~ltexto.string = "Local Reverberation";
-	lnumbox = NumberBox(~win, Rect(10, 90 + ~offset, 40, 20));
+	textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
+	textbuf.string = "Local Reverberation";
+	lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
 	lnumbox.value = 1;
 	lnumbox.clipHi = pi;
 	lnumbox.clipLo = 0;
@@ -1952,17 +1961,17 @@ Mosca {
 		
 	};
 	// stepsize?
-	lslider = Slider.new(~win, Rect(50, 90 + ~offset, 110, 20));
+	lslider = Slider.new(win, Rect(50, 90 + offset, 110, 20));
 	lslider.value = 0;
 	lslider.action = {arg num;
 		lbox[fatual].valueAction = num.value;
 	};
 	
+		
 
-
-	~rtexto = StaticText(~win, Rect(163, 130 + ~offset, 150, 20));
-	~rtexto.string = "Rotation (B-Format)";
-	rnumbox = NumberBox(~win, Rect(10, 130 + ~offset, 40, 20));
+	textbuf = StaticText(win, Rect(163, 130 + offset, 150, 20));
+	textbuf.string = "Rotation (B-Format)";
+	rnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
 	rnumbox.value = 0;
 	rnumbox.clipHi = pi;
 	rnumbox.clipLo = -pi;
@@ -1977,19 +1986,19 @@ Mosca {
 		//		("volume = " ++ num.value).postln; 
 	};
 	// stepsize?
-	rslider = Slider.new(~win, Rect(50, 130 + ~offset, 110, 20));
+	rslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
 	rslider.value = 0.5;
 	rslider.action = {arg num;
 		rbox[fatual].valueAction = num.value * 6.28 - pi;
 		rnumbox.value = num.value * 2pi - pi;
 		
 	};
-	
+		
  
 
-	~dtexto = StaticText(~win, Rect(163, 150 + ~offset, 150, 20));
-	~dtexto.string = "Directivity (B-Format)";
-	dirnumbox = NumberBox(~win, Rect(10, 150 + ~offset, 40, 20));
+	textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
+	textbuf.string = "Directivity (B-Format)";
+	dirnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
 	dirnumbox.value = 0;
 	dirnumbox.clipHi = pi;
 	dirnumbox.clipLo = -pi;
@@ -2000,18 +2009,18 @@ Mosca {
 		dbox[fatual].valueAction = num.value;
 	};
 	// stepsize?
-	dirslider = Slider.new(~win, Rect(50, 150 + ~offset, 110, 20));
+	dirslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
 	dirslider.value = 0;
 	dirslider.action = {arg num;
 		dbox[fatual].valueAction = num.value * pi/2;
 		dirnumbox.value = num.value * pi/2;
 	};
 
+		
 
-
-	~ctexto = StaticText(~win, Rect(163, 170 + ~offset, 150, 20));
-	~ctexto.string = "Contraction (B-Format)";
-	connumbox = NumberBox(~win, Rect(10, 170 + ~offset, 40, 20));
+	textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
+	textbuf.string = "Contraction (B-Format)";
+	connumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
 	connumbox.value = 0;
 	connumbox.clipHi = pi;
 	connumbox.clipLo = -pi;
@@ -2026,18 +2035,18 @@ Mosca {
 		//		("volume = " ++ num.value).postln; 
 	};
 	// stepsize?
-	cslider = Slider.new(~win, Rect(50, 170 + ~offset, 110, 20));
+	cslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
 	cslider.value = 0;
 	cslider.action = {arg num;
 		cbox[fatual].valueAction = num.value;
 		connumbox.value = num.value;
 	};
 	
- 
+		
 
 	
 	
-	bload = Button(~win, Rect(220, 30, 60, 20))
+	bload = Button(win, Rect(220, 30, 60, 20))
 	.states_([
 		["load", Color.black, Color.white],
 	])
@@ -2072,28 +2081,29 @@ Mosca {
 		
 		
 	});
-	
-	~dtxt = StaticText(~wdados, Rect(10, 20, 50, 20));
-	~dtxt.string = "Dp";
-	~ltxt = StaticText(~wdados, Rect(35, 20, 50, 20));
-	~ltxt.string = "Lp";
-	~ltxt = StaticText(~wdados, Rect(55, 20, 50, 20));
-	~ltxt.string = "Str";
 
-	~ncantxt = StaticText(~wdados, Rect(80, 20, 50, 20));
-	~ncantxt.string = "NCan";
-	~businitxt = StaticText(~wdados, Rect(120, 20, 50, 20));
-	~businitxt.string = "SBus";
+		
+	textbuf = StaticText(wdados, Rect(10, 20, 50, 20));
+	textbuf.string = "Dp";
+	textbuf = StaticText(wdados, Rect(35, 20, 50, 20));
+	textbuf.string = "Lp";
+	textbuf = StaticText(wdados, Rect(55, 20, 50, 20));
+	textbuf.string = "Str";
 
-	~xtxt = StaticText(~wdados, Rect(160, 20, 50, 20));
-	~xtxt.string = "X";
-	~ytxt = StaticText(~wdados, Rect(200, 20, 50, 20));
-	~ytxt.string = "Y";
+	textbuf = StaticText(wdados, Rect(80, 20, 50, 20));
+	textbuf.string = "NCan";
+	textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
+	textbuf.string = "SBus";
 
-		~ftxt = StaticText(~wdados, Rect(240, 20, 50, 20));
-	~ftxt.string = "Z";
+	textbuf = StaticText(wdados, Rect(160, 20, 50, 20));
+	textbuf.string = "X";
+	textbuf = StaticText(wdados, Rect(200, 20, 50, 20));
+	textbuf.string = "Y";
 
+		textbuf = StaticText(wdados, Rect(240, 20, 50, 20));
+	textbuf.string = "Z";
 
+		/*
 	~atxt = StaticText(~wdados, Rect(280, 20, 50, 20));
 	~atxt.string = "Ang";
 	~vtxt = StaticText(~wdados, Rect(320, 20, 50, 20));
