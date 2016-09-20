@@ -11,6 +11,7 @@
 // http://www.openairlib.net/auralizationdb/content/central-hall-university-york
 // http://www.openairlib.net/auralizationdb/content/koli-national-park-summer
 
+// Quarks.install("~/projects/ambisonics/mosca");
 
 Mosca {
 	//	classvar fftsize = 2048;
@@ -18,7 +19,7 @@ Mosca {
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ, <>rirL, <>rirR,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	<>rirLspectrum, <>rirRspectrum,
-	<>irbuffer, <>bufsize, <>bufsizeBinaural;
+	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>sprite, <>nfontes;
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
@@ -41,6 +42,8 @@ Mosca {
 
 	*new { arg rirWXYZ, rirBinaural, numCIPIC, server;
 		server = server ? Server.default;
+		//		nfontes = numFontes;
+		//		sprite = Array2D.new(nfontes, 2);
 		rirW = Buffer.readChannel(server, rirWXYZ, channels: [0]);
 		rirX = Buffer.readChannel(server, rirWXYZ, channels: [1]);
 		rirY = Buffer.readChannel(server, rirWXYZ, channels: [2]);
@@ -957,9 +960,27 @@ Mosca {
 
 		}).add;
 		
-
-		
+	} // end new
+	novoplot {
+		arg mx, my, i, nfnts; 
+		var btest;
+		{
+			win.drawFunc = {
+				
+				nfnts.do { arg ind;
+					Pen.fillColor = Color(0.8,0.2,0.9);
+					Pen.addArc(sprite[ind, 0]@sprite[ind, 1], 20, 0, 2pi);
+					Pen.fill;
+					(ind + 1).asString.drawCenteredIn(Rect(sprite[ind, 0] - 10, sprite[ind, 1] - 10, 20, 20), 
+						Font.default, Color.white);
+				};
+				Pen.fillColor = Color.gray(0, 0.5);
+				Pen.addArc(450@450, 20, 0, 2pi);
+				Pen.fill;
+			}
+		}.defer;
+		{ win.refresh; }.defer;
 		
 	}
-
+	
 }
