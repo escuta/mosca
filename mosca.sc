@@ -11,7 +11,7 @@
 // http://www.openairlib.net/auralizationdb/content/central-hall-university-york
 // http://www.openairlib.net/auralizationdb/content/koli-national-park-summer
 
-// Quarks.install("~/projects/ambisonics/mosca");
+
 
 Mosca {
 	//	classvar fftsize = 2048;
@@ -31,25 +31,6 @@ Mosca {
 	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
 
-	/*
-		// Use something like this to run
-		(
-		s.waitForBoot {
-		
-		~testMosca = Mosca.new("/home/iain/projects/ambisonics/chowning/ir/QL14_tail48kHz.amb", 
-		"/home/iain/projects/ambisonics/chowning/ir/sbs_binaural_tail.wav", 21, Server.default);
-		
-		};
-		)
-
-		(
-		s.waitForBoot {
-		~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
-		"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
-		};
-		)
-		~testMosca.openGui(4, 120);
-	*/
 
 	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr;
 		server = srvr ? Server.default;
