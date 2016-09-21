@@ -8,7 +8,7 @@ Mosca is a SuperCollider class for the creation of sound fields and the simulati
 
 The program makes use of the Ambisonic Toolkit (ATK) for SuperCollider by Joseph Anderson and the Automation quark. It also uses B-format impulse responses (IRs) from the OpenAir project binaural IRs from the Salford-BBC Spatially-sampled Binaural Room Impulse Responses. The IRs have been modified here, having had the early reflections removed, to serve as "tail" IRs for use in reverberation.
 
-USING MOSCA
+USING MOSCA::
 
 To use mosca, create a specific project directory. Within this include two further directories named "rir" and "auto". The rir directory must contain at least one b-format rir and one binaural rir. The auto directory is empty until you begin to save automation data from the Mosca GUI. For convenience, please download the "moscaproject.zip" file on the following page which contains the file structure, example RIRs and B-format recordings as well as other information and demos: http://escuta.org/mosca
 
@@ -55,7 +55,9 @@ EXAMPLES::
 
 code::
 
+
 (
+// Please also read "USING MOSCA" above	
 	s.waitForBoot {
 		~testMosca = Mosca.new("/path/to/your/moscaproject",
 			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
