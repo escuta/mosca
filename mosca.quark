@@ -4,8 +4,9 @@
     	\summary: "GUI-assisted production of ambisonic and binaural sound fields",
     	\author:  "mott@escuta.org",
     	\url:     "http://github.com/escuta/mosca",
-//    	\helpdoc: "moscaHelp.scd",
-    	\helpdoc: "HelpSource/Classes/Mosca.schelp",
+    	\helpdoc: "moscaHelp.scd",
+//    	\helpdoc: "HelpSource/Classes/Mosca.schelp",
+//	\helpdoc: "/http://escuta.org/en/projects/research/cerrado/ambisonic-resources/item/221-chowning.html",
     	\since:   "2016",
     	\version:	"0.0001", // must be a float,
     	// or (3) arrays with info in this order: [name, version, repositoryBaseUrl]
