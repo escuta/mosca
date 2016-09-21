@@ -43,7 +43,7 @@ Mosca {
 		)
 	*/
 
-	*new { arg rirWXYZ, rirBinaural, numCIPIC, srvr;
+	*new { arg rirWXYZ, rirBinaural, subjectID, srvr;
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
@@ -86,7 +86,7 @@ Mosca {
 		rirR.free;
 		server.sync;
 		
-		binDecoder = FoaDecoderKernel.newCIPIC(numCIPIC); // KEMAR head, use IDs 21 or 165
+		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
 		
 		//		server.sync;
 
@@ -963,119 +963,119 @@ Mosca {
 
 		}).add;
 
-				^super.newCopyArgs(rirWXYZ, rirBinaural, numCIPIC, server);
+				^super.newCopyArgs(rirWXYZ, rirBinaural, subjectID, server);
 
 	} // end new
 	
 	openGui {
 
 		arg nfontes = 1, dur = 60;
-	var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
-	itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, sombuf, funcs, 
-	dopcheque,
-	loopcheck, lpcheck, lp,
-	streamcheck, strmcheck, strm,
-	dopcheque2, doppler, angulo, volume, glev, 
-	llev, angnumbox, volnumbox,
-	ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
-	// busini = initial bus number in range starting with "0"
+		var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
+		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, sombuf, funcs, 
+		dopcheque,
+		loopcheck, lpcheck, lp,
+		streamcheck, strmcheck, strm,
+		dopcheque2, doppler, angulo, volume, glev, 
+		llev, angnumbox, volnumbox,
+		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
+		// busini = initial bus number in range starting with "0"
 		ncanbox, businibox, ncan, busini,
 		novoplot,
-	
-	dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
-	angslider, bsalvar, bcarregar, bdados, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
-	gslider, gnumbox, lslider, lnumbox, tfield, dopflag = 0, btestar, tocar, isPlay, isRec,
-	atualizarvariaveis,
-	testado,
-	rnumbox, rslider, rbox, 
-	znumbox, zslider, zbox, zlev, // z-axis
-	rlev, dlev, clev, cslider, dplev, dpslider, cnumbox,
-	bAmbBinaural, render = "binaural";
-	espacializador = Array.newClear(nfontes);
-	//	espacializador2 = Array.newClear(nfontes); // used when b-format file is rendered as binaural
-	doppler = Array.newClear(nfontes); 
-	lp = Array.newClear(nfontes); 
-	strm = Array.newClear(nfontes); 
-	mbus = Array.newClear(nfontes); 
-	sbus = Array.newClear(nfontes); 
-	//	bfbus = Array.newClear(nfontes); 
-	ncanais = Array.newClear(nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
-	ncan = Array.newClear(nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
-	// note that ncan refers to # of channels in streamed sources.
-	// ncanais is related to sources read from file
-	busini = Array.newClear(nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
-	sombuf = Array.newClear(nfontes); 
-	synt = Array.newClear(nfontes);
-	sprite = Array2D.new(nfontes, 2);
-	funcs = Array.newClear(nfontes);
-	angulo = Array.newClear(nfontes); // ângulo dos canais estereofônicos
-	zlev = Array.newClear(nfontes); 
-	volume = Array.newClear(nfontes); 
-	//	doplev = Array.newClear(nfontes); 
-	glev = Array.newClear(nfontes); 
-	llev = Array.newClear(nfontes); 
-	rlev = Array.newClear(nfontes); 
-	dlev = Array.newClear(nfontes); 
-	dplev = Array.newClear(nfontes); 
-	clev = Array.newClear(nfontes); 
-
-	ncanbox = Array.newClear(nfontes); 
-	businibox = Array.newClear(nfontes); 
 		
+		dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
+		angslider, bsalvar, bcarregar, bdados, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
+		gslider, gnumbox, lslider, lnumbox, tfield, dopflag = 0, btestar, tocar, isPlay, isRec,
+		atualizarvariaveis,
+		testado,
+		rnumbox, rslider, rbox, 
+		znumbox, zslider, zbox, zlev, // z-axis
+		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox,
+		bAmbBinaural, render = "binaural";
+		espacializador = Array.newClear(nfontes);
+		//	espacializador2 = Array.newClear(nfontes); // used when b-format file is rendered as binaural
+		doppler = Array.newClear(nfontes); 
+		lp = Array.newClear(nfontes); 
+		strm = Array.newClear(nfontes); 
+		mbus = Array.newClear(nfontes); 
+		sbus = Array.newClear(nfontes); 
+		//	bfbus = Array.newClear(nfontes); 
+		ncanais = Array.newClear(nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
+		ncan = Array.newClear(nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
+		// note that ncan refers to # of channels in streamed sources.
+		// ncanais is related to sources read from file
+		busini = Array.newClear(nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
+		sombuf = Array.newClear(nfontes); 
+		synt = Array.newClear(nfontes);
+		sprite = Array2D.new(nfontes, 2);
+		funcs = Array.newClear(nfontes);
+		angulo = Array.newClear(nfontes); // ângulo dos canais estereofônicos
+		zlev = Array.newClear(nfontes); 
+		volume = Array.newClear(nfontes); 
+		//	doplev = Array.newClear(nfontes); 
+		glev = Array.newClear(nfontes); 
+		llev = Array.newClear(nfontes); 
+		rlev = Array.newClear(nfontes); 
+		dlev = Array.newClear(nfontes); 
+		dplev = Array.newClear(nfontes); 
+		clev = Array.newClear(nfontes); 
 
-	xbox = Array.newClear(nfontes); 
-	zbox = Array.newClear(nfontes); 
-	ybox = Array.newClear(nfontes); 
-	abox = Array.newClear(nfontes); // ângulo
-	vbox = Array.newClear(nfontes);  // volume
-	dcheck = Array.newClear(nfontes);  // Doppler check
-	gbox = Array.newClear(nfontes); // reverberação global
-	lbox = Array.newClear(nfontes); // reverberação local
-	rbox = Array.newClear(nfontes); // rotação de b-format
-	dbox = Array.newClear(nfontes); // diretividade de b-format
-	cbox = Array.newClear(nfontes); // contrair b-format
-	dpbox = Array.newClear(nfontes); // dop amount
-	lpcheck = Array.newClear(nfontes); // loop
-	strmcheck = Array.newClear(nfontes); // stream check
-	tfield = Array.newClear(nfontes);
-
-	testado = Array.newClear(nfontes);
-	
-	//GUI.swing; 
-	
-	//	~testek = Array.newClear(nfontes); 
-	//	nfontes.do { arg i;
-	//		funcs[i] = List[];
-	//		kespac[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
-	//		~testek[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
-	//		funcs[i].add({ |ev|  espacializador[i].set(\mx, ev.x, \my, ev.y) });
-	//		funcs[i].add({ |ev|  ~plotter.value(ev.x, ev.y, i, nfontes) });
+		ncanbox = Array.newClear(nfontes); 
+		businibox = Array.newClear(nfontes); 
+		
+		
+		xbox = Array.newClear(nfontes); 
+		zbox = Array.newClear(nfontes); 
+		ybox = Array.newClear(nfontes); 
+		abox = Array.newClear(nfontes); // ângulo
+		vbox = Array.newClear(nfontes);  // volume
+		dcheck = Array.newClear(nfontes);  // Doppler check
+		gbox = Array.newClear(nfontes); // reverberação global
+		lbox = Array.newClear(nfontes); // reverberação local
+		rbox = Array.newClear(nfontes); // rotação de b-format
+		dbox = Array.newClear(nfontes); // diretividade de b-format
+		cbox = Array.newClear(nfontes); // contrair b-format
+		dpbox = Array.newClear(nfontes); // dop amount
+		lpcheck = Array.newClear(nfontes); // loop
+		strmcheck = Array.newClear(nfontes); // stream check
+		tfield = Array.newClear(nfontes);
+		
+		testado = Array.newClear(nfontes);
+		
+		//GUI.swing; 
+		
+		//	~testek = Array.newClear(nfontes); 
+		//	nfontes.do { arg i;
+		//		funcs[i] = List[];
+		//		kespac[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
+		//		~testek[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
+		//		funcs[i].add({ |ev|  espacializador[i].set(\mx, ev.x, \my, ev.y) });
+		//		funcs[i].add({ |ev|  ~plotter.value(ev.x, ev.y, i, nfontes) });
 		//	};
-
 		
-	nfontes.do { arg i;
+		
+		nfontes.do { arg i;
 		doppler[i] = 0;
-		angulo[i] = 0;
-		volume[i] = 0;
-		glev[i] = 0;
-		llev[i] = 0;
-		lp[i] = 0;
-		strm[i] = 0;
-		rlev[i] = 0;
-		dlev[i] = 0;
-		clev[i] = 0;
-		zlev[i] = 0;
-		dplev[i] = 0;
-
-		ncan[i] = 0;
-		busini[i] = 0;
-		sprite[i, 0] = -20;
-		sprite[i, 1] = -20;
-		testado[i] = false;
-	};
-
-
-
+			angulo[i] = 0;
+			volume[i] = 0;
+			glev[i] = 0;
+			llev[i] = 0;
+			lp[i] = 0;
+			strm[i] = 0;
+			rlev[i] = 0;
+			dlev[i] = 0;
+			clev[i] = 0;
+			zlev[i] = 0;
+			dplev[i] = 0;
+			
+			ncan[i] = 0;
+			busini[i] = 0;
+			sprite[i, 0] = -20;
+			sprite[i, 1] = -20;
+			testado[i] = false;
+		};
+		
+		
+		
 		novoplot = {
 			arg mx, my, i, nfnts; 
 			var btest;
@@ -1097,7 +1097,7 @@ Mosca {
 			{ win.refresh; }.defer;
 			
 		};
-
+		
 		
 		gbus = Bus.audio(server, 1); // global reverb bus
 		gbfbus = Bus.audio(server, 4); // global b-format bus
@@ -1106,223 +1106,355 @@ Mosca {
 		win = Window.new("Mosca", Rect(0, 900, 900, 900)).front;
 		wdados = Window.new("Data", Rect(900, 900, 960, (nfontes*20)+60 ));
 		wdados.userCanClose = false;
-
-	
-	bdados = Button(win, Rect(280, 30, 90, 20))
-	.states_([
-		["open data", Color.black, Color.white],
-		["close data", Color.white, Color.blue]
-	])
-	.action_({ arg but;
-		//	but.value.postln;
-		if(but.value == 1)
-		{wdados.front;}
-		{wdados.visible = false;};
-	});
 		
-
-	bAmbBinaural = Button(win, Rect(370, 50, 90, 20))
-	.states_([
-		["binaural", Color.black, Color.white], ["ambisonic", Color.black, Color.white]
-	])
-	.action_({ arg but;
-		//	but.value.postln;
-		if(but.value == 1)
-		{
-			controle.stop;
-			revGlobal.free;
-			render = "ambisonic";
-		}
-		{
-			controle.stop;
-			revGlobal.free;
-			render = "binaural";
-		};
-	});
 		
-	atualizarvariaveis = {
-		"atualizando!".postln;
-
-		nfontes.do { arg i;
-
-			if(espacializador[i] != nil) {
-				("atualizando espacializador # " ++ i).postln;
-				espacializador[i].set(
-					//	\mx, num.value  ???
-					\dopon, doppler[i], // not needed...
-					\angulo, angulo[i],
-					\volume, volume[i], // ? or in player?
-					\dopamnt, dplev[i],
-					\glev, glev[i],
-					\llev, llev[i],
-					\mx, xbox[i].value,
-					\my, ybox[i].value,
-					\mz, zbox[i].value
-				);
+		bdados = Button(win, Rect(280, 30, 90, 20))
+		.states_([
+			["open data", Color.black, Color.white],
+			["close data", Color.white, Color.blue]
+		])
+		.action_({ arg but;
+			//	but.value.postln;
+			if(but.value == 1)
+			{wdados.front;}
+			{wdados.visible = false;};
+		});
+		
+		
+		bAmbBinaural = Button(win, Rect(370, 50, 90, 20))
+		.states_([
+			["binaural", Color.black, Color.white], ["ambisonic", Color.black, Color.white]
+		])
+		.action_({ arg but;
+			//	but.value.postln;
+			if(but.value == 1)
+			{
+				controle.stop;
+				revGlobal.free;
+				render = "ambisonic";
+			}
+			{
+				controle.stop;
+				revGlobal.free;
+				render = "binaural";
 			};
-
-			if(synt[i] != nil){
-				synt[i].set(
-					\volume, volume[i],
-					\rotAngle, rlev[i],
-					\directang, dlev[i],
-					\contr, clev[i],
-					\dopamnt, dplev[i],
-					\glev, glev[i],
-					\llev, llev[i],
-					\mx, xbox[i].value,
-					\my, ybox[i].value,
-					\mz, zbox[i].value
-
-				);
-				("x value = " ++ xbox[i].value).postln;
-
+		});
+		
+		atualizarvariaveis = {
+			"atualizando!".postln;
+			
+			nfontes.do { arg i;
+				
+				if(espacializador[i] != nil) {
+					("atualizando espacializador # " ++ i).postln;
+					espacializador[i].set(
+						//	\mx, num.value  ???
+						\dopon, doppler[i], // not needed...
+						\angulo, angulo[i],
+						\volume, volume[i], // ? or in player?
+						\dopamnt, dplev[i],
+						\glev, glev[i],
+						\llev, llev[i],
+						\mx, xbox[i].value,
+						\my, ybox[i].value,
+						\mz, zbox[i].value
+					);
+				};
+				
+				if(synt[i] != nil){
+					synt[i].set(
+						\volume, volume[i],
+						\rotAngle, rlev[i],
+						\directang, dlev[i],
+						\contr, clev[i],
+						\dopamnt, dplev[i],
+						\glev, glev[i],
+						\llev, llev[i],
+						\mx, xbox[i].value,
+						\my, ybox[i].value,
+						\mz, zbox[i].value
+						
+					);
+					("x value = " ++ xbox[i].value).postln;
+					
+				};
+				
+				
 			};
 			
-
+			
+			
 		};
-
-
-
-	};
-
 		
-
-	tocar = {
-		arg i, tpos;
-		var path = tfield[i].value;
-
-		// Note: ncanais refers to number of channels in the context of
-		// files on disk
-		// ncan is number of channels for streamed input!
-		// busini is the initial bus used for a particular stream
-		// If we have ncan = 4 and busini = 7, the stream will enter
-		// in buses 7, 8, 9 and 10.
-
-		("tpos = " ++ tpos).postln;
-		if ((path != "") && (strmcheck[i].value == false)) {
+		
+		
+		tocar = {
+			arg i, tpos;
+			var path = tfield[i].value;
+			
+			// Note: ncanais refers to number of channels in the context of
+			// files on disk
+			// ncan is number of channels for streamed input!
+			// busini is the initial bus used for a particular stream
+			// If we have ncan = 4 and busini = 7, the stream will enter
+			// in buses 7, 8, 9 and 10.
+			
+			("tpos = " ++ tpos).postln;
+			if ((path != "") && (strmcheck[i].value == false)) {
 				{	
-				
-				if (sombuf[i].numChannels == 1)  // arquivo mono
-				{ncanais[i] = 1;
-					angulo[i] = 0;
-					{angnumbox.value = 0;}.defer;
-					{angslider.value = 0;}.defer;
-
-					if(render == "ambisonic") {
-						if(revGlobal == nil) {
-						revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) { // if source is testing don't relaunch synths
-							synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
-								\gbus, gbus, \dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
-						atualizarvariaveis.value;
-						
-					} {
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-						};
-
-						if (testado[i] == false) { // if source is testing don't relaunch synths
-							"Here I am!".postln;
-						synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
-						\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-						revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-							espacializador[i] = nil; synt[i] = nil});
-
-						espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
-							\gbus, gbus, \dopon, doppler[i]], 
-							synt[i], addAction: \addAfter);
-						};
-
-						atualizarvariaveis.value;
-					};
-				}
-				{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
-					angulo[i] = pi/2;
-					{angnumbox.value = pi/2;}.defer;
-					{angslider.value = 0.5;}.defer;
 					
-					if(render == "ambisonic") {
-
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-									//	addAction: \addToHead).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-							espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
-								\dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
-						
-						atualizarvariaveis.value;
-
-						//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-					} {
-						if(revGlobal == nil){
-						revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-						espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
-							\dopon, doppler[i]], 
-							synt[i], addAction: \addAfter);
-						};
-						atualizarvariaveis.value;
-					};
-				} {
-					if (sombuf[i].numChannels == 4) {
-						"B-format".postln;
-						ncanais[i] = 4;
+					if (sombuf[i].numChannels == 1)  // arquivo mono
+					{ncanais[i] = 1;
 						angulo[i] = 0;
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
-
-						// B-format file with ambisonic render
+						
 						if(render == "ambisonic") {
-
-							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-							// reverb for non-contracted (full b-format) component
-							if(revGlobalBF == nil){
-							revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
-							};
-														// reverb for contracted (mono) component
-							if(revGlobal == nil){
+							if(revGlobal == nil) {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
-									\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos, \lp,
-									lp[i], \volume, volume[i], \dopon, doppler[i]], 
-									//					~revGlobal, addAction: \addBefore);
-									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;});
-								//	xbox[i].valueAction = 1; // é preciso para aplicar rev global sem mexer com mouse
+							if (testado[i] == false) { // if source is testing don't relaunch synths
+								synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
+									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
 								
-								espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
-									\dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
+								espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
+									\gbus, gbus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
 							};
 							atualizarvariaveis.value;
 							
 						} {
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
+							};
+							
+							if (testado[i] == false) { // if source is testing don't relaunch synths
+								"Here I am!".postln;
+								synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
+									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
+									\gbus, gbus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							
+							atualizarvariaveis.value;
+						};
+					}
+					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
+						angulo[i] = pi/2;
+						{angnumbox.value = pi/2;}.defer;
+						{angslider.value = 0.5;}.defer;
 						
+						if(render == "ambisonic") {
+							
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+							};
+							if (testado[i] == false) {
+								synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
+									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+										//	addAction: \addToHead).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
+									\dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							
+							atualizarvariaveis.value;
+							
+							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+						} {
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
+							};
+							if (testado[i] == false) {
+								synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
+									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
+									\dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							atualizarvariaveis.value;
+						};
+					} {
+						if (sombuf[i].numChannels == 4) {
+							"B-format".postln;
+							ncanais[i] = 4;
+							angulo[i] = 0;
+							{angnumbox.value = 0;}.defer;
+							{angslider.value = 0;}.defer;
+							
+							// B-format file with ambisonic render
+							if(render == "ambisonic") {
+								
+								//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+								// reverb for non-contracted (full b-format) component
+								if(revGlobalBF == nil){
+									revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
+								};
+								// reverb for contracted (mono) component
+								if(revGlobal == nil){
+									revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+								};
+								if (testado[i] == false) {
+									synt[i] = Synth.new(\tocarBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
+										\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos, \lp,
+										lp[i], \volume, volume[i], \dopon, doppler[i]], 
+										//					~revGlobal, addAction: \addBefore);
+										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;});
+									//	xbox[i].valueAction = 1; // é preciso para aplicar rev global sem mexer com mouse
+									
+									espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
+										\dopon, doppler[i]], 
+										synt[i], addAction: \addAfter);
+								};
+								atualizarvariaveis.value;
+								
+							} {
+								
+								// B-format file with binaural render
+								// reverb for contracted (mono) component
+								if(revGlobal == nil){
+									revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
+								};
+								// reverb for non-contracted (full b-format) component
+								if(revGlobalBF == nil){
+									revGlobalBF = Synth.new(\revGlobalBFormatBin, [\gbfbus, gbfbus], addAction:\addToTail);
+								};
+								if (testado[i] == false) {
+									synt[i] = Synth.new(\tocarBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
+										\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos,
+										\lp, lp[i], \volume, volume[i], \dopon, doppler[i]], 
+										revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;});
+									
+									// is this still being used?
+									
+									espacializador[i] = Synth.new(\espacAmbParaBin, [\inbus, mbus[i], \gbus, gbus, 
+										\dopon, doppler[i]], 
+										synt[i], addAction: \addAfter);
+								};
+								atualizarvariaveis.value;
+								
+								
+							};
+							
+						}
+						{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
+						};
+					};  }; 
+					if(controle.doRecord == false){
+						{	xbox[i].valueAction = xbox[i].value;
+							ybox[i].valueAction = ybox[i].value;
+						}.defer;
+					};
+					
+					
+					//	}); 
+				}.defer;	
+			} {
+				if (strmcheck[i].value) {
+					var x;
+					("Streaming! ncan = " ++ ncan[i]
+						++ " & busini = " ++ busini[i]).postln;
+					x = case
+					{ ncan[i] == 1 } {
+						"Mono!".postln;
+						if (render == "binaural")
+						{
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
+							};
+							if (testado[i] == false) {
+								synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
+									\volume, volume[i]], revGlobal,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								
+								espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
+									\gbus, gbus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							atualizarvariaveis.value;
+							
+						}{
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+							};
+							if (testado[i] == false) {
+								synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
+									\volume, volume[i]], revGlobal,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								
+								espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
+									\gbus, gbus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							atualizarvariaveis.value;
+							
+						};
+					}
+					{ ncan[i] == 2 } {
+						"Estéreo!".postln;
+						ncanais[i] = 0; // just in case!
+						angulo[i] = pi/2;
+						{angnumbox.value = pi/2;}.defer;
+						{angslider.value = 0.5;}.defer;
+						
+						if (render == "binaural")
+						{
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
+							};
+							if (testado[i] == false) {
+								synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
+									\volume, volume[i]], revGlobal,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
+									\dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							atualizarvariaveis.value;
+							
+						}{
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+							};
+							if (testado[i] == false) {
+								synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
+									\volume, volume[i]], revGlobal,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
+									\dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							atualizarvariaveis.value;
+							
+						};
+					}
+					{ ncan[i] == 4 } {
+						//"B-format!".postln;
+						if (render == "binaural")
+						{
+							"B-format binaural!!!".postln;
 							// B-format file with binaural render
 							// reverb for contracted (mono) component
 							if(revGlobal == nil){
@@ -1333,500 +1465,368 @@ Mosca {
 								revGlobalBF = Synth.new(\revGlobalBFormatBin, [\gbfbus, gbfbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
-									\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos,
-									\lp, lp[i], \volume, volume[i], \dopon, doppler[i]], 
+								synt[i] = Synth.new(\tocarStreamBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
+									\contr, clev[i], \volume, volume[i], \dopon, doppler[i], \busini, busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
-								
-								// is this still being used?
-								
 								espacializador[i] = Synth.new(\espacAmbParaBin, [\inbus, mbus[i], \gbus, gbus, 
+									\dopon, doppler[i]], synt[i], addAction: \addAfter);
+							};
+							atualizarvariaveis.value;
+							
+						}{
+							"B-format ambisonic!!!".postln;
+							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+							// reverb for non-contracted (full b-format) component
+							if(revGlobalBF == nil){
+								revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
+							};
+							// reverb for contracted (mono) component
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+							};
+							
+							if (testado[i] == false) {
+								synt[i] = Synth.new(\tocarStreamBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
+									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
+									\busini, busini[i]], 
+									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil;});
+								
+								espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
 									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 							atualizarvariaveis.value;
-
-
+							
 						};
-						
-					}
-					{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
 					};
-				};  }; 
-				if(controle.doRecord == false){
-				{	xbox[i].valueAction = xbox[i].value;
-					ybox[i].valueAction = ybox[i].value;
-				}.defer;
+					
+					
 				};
 				
-
-					//	}); 
-				}.defer;	
-		} {
-			if (strmcheck[i].value) {
-				var x;
-				("Streaming! ncan = " ++ ncan[i]
-					++ " & busini = " ++ busini[i]).postln;
-				x = case
-				{ ncan[i] == 1 } {
-					"Mono!".postln;
-					if (render == "binaural")
-					{
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
-								\volume, volume[i]], revGlobal,
-								addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-							
-							espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
-								\gbus, gbus, \dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
-							atualizarvariaveis.value;
-
-					}{
-						if(revGlobal == nil){
-						revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
-								\volume, volume[i]], revGlobal,
-								addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-							
-							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
-							\gbus, gbus, \dopon, doppler[i]], 
-							synt[i], addAction: \addAfter);
-						};
-						atualizarvariaveis.value;
-
-					};
-				}
-				{ ncan[i] == 2 } {
-					"Estéreo!".postln;
-					ncanais[i] = 0; // just in case!
-					angulo[i] = pi/2;
-					{angnumbox.value = pi/2;}.defer;
-					{angslider.value = 0.5;}.defer;
-
-					if (render == "binaural")
-					{
-										if(revGlobal == nil){
-						revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
-								\volume, volume[i]], revGlobal,
-								addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-							espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
-								\dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
-						atualizarvariaveis.value;
-
-					}{
-												if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-												};
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
-								\volume, volume[i]], revGlobal,
-								addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-							espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
-								\dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
-						atualizarvariaveis.value;
-
-					};
-				}
-				{ ncan[i] == 4 } {
-					//"B-format!".postln;
-					if (render == "binaural")
-					{
-						"B-format binaural!!!".postln;
-						// B-format file with binaural render
-						// reverb for contracted (mono) component
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-						};
-						// reverb for non-contracted (full b-format) component
-						if(revGlobalBF == nil){
-							revGlobalBF = Synth.new(\revGlobalBFormatBin, [\gbfbus, gbfbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\tocarStreamBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
-								\contr, clev[i], \volume, volume[i], \dopon, doppler[i], \busini, busini[i]], 
-								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil;});
-							espacializador[i] = Synth.new(\espacAmbParaBin, [\inbus, mbus[i], \gbus, gbus, 
-								\dopon, doppler[i]], synt[i], addAction: \addAfter);
-						};
-						atualizarvariaveis.value;
-							
-					}{
-						"B-format ambisonic!!!".postln;
-						//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						// reverb for non-contracted (full b-format) component
-						if(revGlobalBF == nil){
-							revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
-						};
-						// reverb for contracted (mono) component
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
-
-						if (testado[i] == false) {
-							synt[i] = Synth.new(\tocarStreamBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
-								\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
-								\busini, busini[i]], 
-								revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil;});
-							
-							espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
-								\dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
-							atualizarvariaveis.value;
-						
-					};
-				};
 				
-			
+				
 			};
 			
-			
-			
 		};
 		
-	};
 		
-
-
-	btestar = Button(win, Rect(280, 50, 90, 20))
-	.states_([
-		["test", Color.black, Color.white],
-		["stop", Color.white, Color.red]
+		
+		btestar = Button(win, Rect(280, 50, 90, 20))
+		.states_([
+			["test", Color.black, Color.white],
+			["stop", Color.white, Color.red]
 	])
-	.action_({ arg but;
-		//	var testado = fatual;
-		//	but.value.postln;
-		if(but.value == 1)
-		{
-			tocar.value(fatual, 0);
-			//		~testado = fatual;
-			testado[fatual] = true;
-
-		}
-		{
-			//	("rrrrrrr: " ++ synt[~testado]).postln;
-
-			//		synt[~testado].free;
-			synt[fatual].free;
-			synt[fatual] = nil;
-			testado[fatual] = false;
-			
-
-
-			// STOP TEST
-
-			//		~revGlobal.free;
-			//		~revGlobalBF.free;
-			//		~revGlobal = nil;
-			//		~revGlobalBF = nil;
-
-			//now done elsewhere
-			//espacializador[~testado].free;
-		};
-	});
-
-		
-	
-	
-	bsalvar = Button(win, Rect(670, 40, 90, 20))
-	.states_([
-		["save auto", Color.black, Color.white],
-		
-	])
-	.action_({ arg but;
-		var arquivo = File("auto/arquivos.txt".standardizePath,"w");
-		var dop = File("auto/doppler.txt".standardizePath,"w");
-		var looped = File("auto/loop.txt".standardizePath,"w");
-		var streamed = File("auto/stream.txt".standardizePath,"w");
-		var string;
-		("Arg is " ++ but.value.asString).postln;
-		string = nil;
-		nfontes.do { arg i;
-			("textfield = " ++ tfield[i].value).postln;
-			
-			if(tfield[i].value != "") {arquivo.write(tfield[i].value ++ "\n")} {arquivo.write("NULL\n")};
-
-			dop.write(doppler[i].value.asString ++ "\n");
-			looped.write(lp[i].value.asString ++ "\n");
-			if(strm[i].value > 0)
+		.action_({ arg but;
+			//	var testado = fatual;
+			//	but.value.postln;
+			if(but.value == 1)
 			{
+				tocar.value(fatual, 0);
+				//		~testado = fatual;
+				testado[fatual] = true;
 				
-				streamed.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
 			}
-			{streamed.write("NULL\n")};
-		};
-		arquivo.close;
-		dop.close;
-		looped.close;
-		streamed.close;
-		//	~string.writeArchive((Document.dir +/+ "auto/arquivos.txt").standardizePath); 
-		controle.save(controle.presetDir);
-
-	});
-
+			{
+				//	("rrrrrrr: " ++ synt[~testado]).postln;
+				
+				//		synt[~testado].free;
+				synt[fatual].free;
+				synt[fatual] = nil;
+				testado[fatual] = false;
+				
+				
+				
+				// STOP TEST
+				
+				//		~revGlobal.free;
+				//		~revGlobalBF.free;
+				//		~revGlobal = nil;
+				//		~revGlobalBF = nil;
+				
+				//now done elsewhere
+				//espacializador[~testado].free;
+			};
+		});
 		
-
-
-	bcarregar = Button(win, Rect(760, 40, 90, 20))
-	.states_([
-		["load auto", Color.black, Color.white],
-	])
+		
+		
+		
+		bsalvar = Button(win, Rect(670, 40, 90, 20))
+		.states_([
+			["save auto", Color.black, Color.white],
+			
+		])
+		.action_({ arg but;
+			var arquivo = File("auto/arquivos.txt".standardizePath,"w");
+			var dop = File("auto/doppler.txt".standardizePath,"w");
+			var looped = File("auto/loop.txt".standardizePath,"w");
+			var streamed = File("auto/stream.txt".standardizePath,"w");
+			var string;
+			("Arg is " ++ but.value.asString).postln;
+			string = nil;
+			nfontes.do { arg i;
+				("textfield = " ++ tfield[i].value).postln;
+				
+				if(tfield[i].value != "") {arquivo.write(tfield[i].value ++ "\n")} {arquivo.write("NULL\n")};
+				
+				dop.write(doppler[i].value.asString ++ "\n");
+				looped.write(lp[i].value.asString ++ "\n");
+				if(strm[i].value > 0)
+				{
+					
+					streamed.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
+				}
+				{streamed.write("NULL\n")};
+			};
+			arquivo.close;
+			dop.close;
+			looped.close;
+			streamed.close;
+			//	~string.writeArchive((Document.dir +/+ "auto/arquivos.txt").standardizePath); 
+			controle.save(controle.presetDir);
+			
+		});
+		
+		
+		
+		
+		bcarregar = Button(win, Rect(760, 40, 90, 20))
+		.states_([
+			["load auto", Color.black, Color.white],
+		])
 		.action_({ arg but;
 			var f;
 			var arquivo = File("auto/arquivos.txt".standardizePath,"r");
 			var dop = File("auto/doppler.txt".standardizePath,"r");
 			var looped = File("auto/loop.txt".standardizePath,"r");
-
-		var streamed = FileReader("auto/stream.txt".standardizePath, delimiter: Char.tab); 
-
-		
-		but.value.postln;
-		nfontes.do { arg i;
-			var line = arquivo.getLine(1024);
-			if(line!="NULL"){tfield[i].valueAction = line};
-
-			line = dop.getLine(1024);
-			//		doppler[i] = line;
-			dcheck[i].valueAction = line;
-
-			line = looped.getLine(1024);
-			//			lp[i] = line;
-			lpcheck[i].valueAction = line;
-
-			f = File("auto/stream.txt", "r"); f.isOpen;
-
-			// streamed stuff
-			line = streamed.next;
-			if(line[0] != "NULL"){
-				strmcheck[i].valueAction = true;
-				// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
-				ncanbox[i].valueAction = line[0].asFloat;
-				businibox[i].valueAction = line[1].asFloat;
-	};
 			
-		};
-		arquivo.close;		
-		dop.close;
-		looped.close;
-		f.close;
-		streamed.close;
-		controle.load(controle.presetDir);
-	});
-
-		
-	
-	
-	
-
-		win.view.background = Color(0.7,0.8,0.8);
-
-	
-	win.drawFunc = {
-		//paint origin
-		Pen.fillColor = Color.white(0, 0.5);
-		Pen.addArc(450@450, 20, 0, 2pi);
-		Pen.fill;
-		//	Pen.width = 10;
-	};
-		
-	// seleção de fontes
-	itensdemenu = Array.newClear(nfontes);
-	nfontes.do { arg i;
-		itensdemenu[i] = "Source " ++ (i + 1).asString;
-	};
-	
-	m = PopUpMenu(win,Rect(10,10,80,20));
-	m.items = itensdemenu; 
-	m.action = { arg menu;
-		fatual = menu.value;
-		
-		if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
-		if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
-
-		if(strm[fatual] == 1){streamcheck.value = true}{streamcheck.value = false};
-		
-		angnumbox.value = angulo[fatual];
-		angslider.value = angulo[fatual] / pi;
-		volnumbox.value = volume[fatual];
-		dopnumbox.value = dplev[fatual];
-		volslider.value = volume[fatual];
-		gnumbox.value = glev[fatual];
-		gslider.value = glev[fatual];
-		lnumbox.value = llev[fatual];
-		lslider.value = llev[fatual];
-		rslider.value = (rlev[fatual] + pi) / 2pi;
-		rnumbox.value = rlev[fatual];
-		rlev[fatual].postln;
-		dirslider.value = dlev[fatual] / (pi/2);
-		dirnumbox.value = dlev[fatual];
-		cslider.value = clev[fatual];
-		zslider.value = (zlev[fatual] + 450) / 900;
-		("Z-lev = " ++  zlev[fatual]).postln;
-		
-		dpslider.value = dplev[fatual];
-		connumbox.value = clev[fatual];
-
-		ncannumbox.value = ncan[fatual];
-		busininumbox.value = busini[fatual];
-
-			if(testado[fatual]) {  // don't change button if we are playing via automation
-			             // only if it is being played/streamed manually
-			if (synt[fatual] == nil){
-				btestar.value = 0;
-			} {
-				btestar.value = 1;
-			};
-				} {
-					btestar.value = 0;
+			var streamed = FileReader("auto/stream.txt".standardizePath, delimiter: Char.tab); 
+			
+			
+			but.value.postln;
+			nfontes.do { arg i;
+				var line = arquivo.getLine(1024);
+				if(line!="NULL"){tfield[i].valueAction = line};
+				
+				line = dop.getLine(1024);
+				//		doppler[i] = line;
+				dcheck[i].valueAction = line;
+				
+				line = looped.getLine(1024);
+				//			lp[i] = line;
+				lpcheck[i].valueAction = line;
+				
+				f = File("auto/stream.txt", "r"); f.isOpen;
+				
+				// streamed stuff
+				line = streamed.next;
+				if(line[0] != "NULL"){
+					strmcheck[i].valueAction = true;
+					// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
+					ncanbox[i].valueAction = line[0].asFloat;
+					businibox[i].valueAction = line[1].asFloat;
 				};
-	};
-
+				
+			};
+			arquivo.close;		
+			dop.close;
+			looped.close;
+			f.close;
+			streamed.close;
+			controle.load(controle.presetDir);
+		});
 		
-	
+		
+		
+		
+		
+		
+		win.view.background = Color(0.7,0.8,0.8);
+		
+		
+		win.drawFunc = {
+			//paint origin
+			Pen.fillColor = Color.white(0, 0.5);
+			Pen.addArc(450@450, 20, 0, 2pi);
+			Pen.fill;
+			//	Pen.width = 10;
+		};
+		
+		// seleção de fontes
+		itensdemenu = Array.newClear(nfontes);
+		nfontes.do { arg i;
+			itensdemenu[i] = "Source " ++ (i + 1).asString;
+		};
+		
+		m = PopUpMenu(win,Rect(10,10,80,20));
+		m.items = itensdemenu; 
+		m.action = { arg menu;
+			fatual = menu.value;
+			
+			if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
+			if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
+			
+			if(strm[fatual] == 1){streamcheck.value = true}{streamcheck.value = false};
+			
+			angnumbox.value = angulo[fatual];
+			angslider.value = angulo[fatual] / pi;
+			volnumbox.value = volume[fatual];
+			dopnumbox.value = dplev[fatual];
+			volslider.value = volume[fatual];
+			gnumbox.value = glev[fatual];
+			gslider.value = glev[fatual];
+			lnumbox.value = llev[fatual];
+			lslider.value = llev[fatual];
+			rslider.value = (rlev[fatual] + pi) / 2pi;
+			rnumbox.value = rlev[fatual];
+			rlev[fatual].postln;
+			dirslider.value = dlev[fatual] / (pi/2);
+			dirnumbox.value = dlev[fatual];
+			cslider.value = clev[fatual];
+			zslider.value = (zlev[fatual] + 450) / 900;
+			("Z-lev = " ++  zlev[fatual]).postln;
+			
+			dpslider.value = dplev[fatual];
+			connumbox.value = clev[fatual];
+			
+			ncannumbox.value = ncan[fatual];
+			busininumbox.value = busini[fatual];
+			
+			if(testado[fatual]) {  // don't change button if we are playing via automation
+				// only if it is being played/streamed manually
+				if (synt[fatual] == nil){
+					btestar.value = 0;
+				} {
+					btestar.value = 1;
+				};
+			} {
+				btestar.value = 0;
+			};
+		};
+		
+		
+		
 		offset = 60;
-
-	
-	dopcheque = CheckBox( win, Rect(94, 10, 80, 20), "Doppler").action_({ arg butt;
-		("Doppler is " ++ butt.value).postln;
-		dcheck[fatual].valueAction = butt.value;
-	});
-	dopcheque.value = false;
-
-	loopcheck = CheckBox( win, Rect(164, 10, 80, 20), "Loop").action_({ arg butt;
-		("Loop is " ++ butt.value).postln;
-		lpcheck[fatual].valueAction = butt.value;
-	});
-	dopcheque.value = false;
-
-
+		
+		
+		dopcheque = CheckBox( win, Rect(94, 10, 80, 20), "Doppler").action_({ arg butt;
+			("Doppler is " ++ butt.value).postln;
+			dcheck[fatual].valueAction = butt.value;
+		});
+		dopcheque.value = false;
+		
+		loopcheck = CheckBox( win, Rect(164, 10, 80, 20), "Loop").action_({ arg butt;
+			("Loop is " ++ butt.value).postln;
+			lpcheck[fatual].valueAction = butt.value;
+		});
+		dopcheque.value = false;
+		
+		
 		streamcheck = CheckBox( win, Rect(10, 30, 100, 20), "Live Input").action_({ arg butt;
-		("Streaming is " ++ butt.value).postln;
-		strmcheck[fatual].valueAction = butt.value;
-	});
-	dopcheque.value = false;
-
-
+			("Streaming is " ++ butt.value).postln;
+			strmcheck[fatual].valueAction = butt.value;
+		});
+		dopcheque.value = false;
+		
+		
 		
 		//	~ncantexto = StaticText(~win, Rect(55, -10 + ~offset, 200, 20));
 		//	~ncantexto.string = "No. of channels (1, 2 or 4, Live)";
-	textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
-	textbuf.string = "No. of channels (1, 2 or 4, Live)";
-	ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
-	ncannumbox.value = 0;
-	ncannumbox.clipHi = 4;
-	ncannumbox.clipLo = 0;
-	//angnumbox.step_(0.1); 
-	//angnumbox.scroll_step=0.1;
-	ncannumbox.align = \center;
-	ncannumbox.action = {arg num;
-		
+		textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
+		textbuf.string = "No. of channels (1, 2 or 4, Live)";
+		ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
+		ncannumbox.value = 0;
+		ncannumbox.clipHi = 4;
+		ncannumbox.clipLo = 0;
+		//angnumbox.step_(0.1); 
+		//angnumbox.scroll_step=0.1;
+		ncannumbox.align = \center;
+		ncannumbox.action = {arg num;
 			
-		ncanbox[fatual].valueAction = num.value;
+			
+			ncanbox[fatual].valueAction = num.value;
 			ncan[fatual] = num.value;
-	
-	};
-
+			
+		};
 		
-
+		
+		
 		textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
-	textbuf.string = "Start Bus (0-31, Live)";
-	busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
-	busininumbox.value = 0;
-	busininumbox.clipHi = 31;
-	busininumbox.clipLo = 0;
-	//angnumbox.step_(0.1); 
-	//angnumbox.scroll_step=0.1;
-	busininumbox.align = \center;
-	busininumbox.action = {arg num; 
-		businibox[fatual].valueAction = num.value;
-		busini[fatual] = num.value;
-	};
+		textbuf.string = "Start Bus (0-31, Live)";
+		busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
+		busininumbox.value = 0;
+		busininumbox.clipHi = 31;
+		busininumbox.clipLo = 0;
+		//angnumbox.step_(0.1); 
+		//angnumbox.scroll_step=0.1;
+		busininumbox.align = \center;
+		busininumbox.action = {arg num; 
+			businibox[fatual].valueAction = num.value;
+			busini[fatual] = num.value;
+		};
 		
-
-
-	
-	textbuf = StaticText(win, Rect(163, 110 + offset, 90, 20));
-	textbuf.string = "Angle (Stereo)";
-	angnumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
-	angnumbox.value = 0;
-	angnumbox.clipHi = pi;
-	angnumbox.clipLo = 0;
-	angnumbox.step_(0.1); 
-	angnumbox.scroll_step=0.1;
-	angnumbox.align = \center;
-	angnumbox.action = {arg num; 
-		abox[fatual].valueAction = num.value;
-		if((ncanais[fatual]==2) || (ncan[fatual]==2)){
-			espacializador[fatual].set(\angulo, num.value);
-			angulo[fatual] = num.value;
-			("ângulo = " ++ num.value).postln; 
-		}
-		{angnumbox.value = 0;};
-	};
-	
-	angslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
-	//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
-	
-	angslider.action = {arg num;
-		abox[fatual].valueAction = num.value * pi;
-		if((ncanais[fatual]==2) || (ncan[fatual]==2)) {
-			angnumbox.value = num.value * pi;
-			//			espacializador[fatual].set(\angulo, b.map(num.value));
-			espacializador[fatual].set(\angulo, num.value * pi);
-			//			angulo[fatual] = b.map(num.value);
-			angulo[fatual] = num.value * pi;
-		}{angnumbox.value = num.value * pi;};
-	};
-
 		
-
-	/////////////////////////////////////////////////////////
-
-
+		
+		
+		textbuf = StaticText(win, Rect(163, 110 + offset, 90, 20));
+		textbuf.string = "Angle (Stereo)";
+		angnumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
+		angnumbox.value = 0;
+		angnumbox.clipHi = pi;
+		angnumbox.clipLo = 0;
+		angnumbox.step_(0.1); 
+		angnumbox.scroll_step=0.1;
+		angnumbox.align = \center;
+		angnumbox.action = {arg num; 
+			abox[fatual].valueAction = num.value;
+			if((ncanais[fatual]==2) || (ncan[fatual]==2)){
+				espacializador[fatual].set(\angulo, num.value);
+				angulo[fatual] = num.value;
+				("ângulo = " ++ num.value).postln; 
+			}
+			{angnumbox.value = 0;};
+		};
+		
+		angslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
+		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
+		
+		angslider.action = {arg num;
+			abox[fatual].valueAction = num.value * pi;
+			if((ncanais[fatual]==2) || (ncan[fatual]==2)) {
+				angnumbox.value = num.value * pi;
+				//			espacializador[fatual].set(\angulo, b.map(num.value));
+				espacializador[fatual].set(\angulo, num.value * pi);
+				//			angulo[fatual] = b.map(num.value);
+				angulo[fatual] = num.value * pi;
+			}{angnumbox.value = num.value * pi;};
+		};
+		
+		
+		
+		/////////////////////////////////////////////////////////
+		
+		
 		textbuf = StaticText(win, Rect(810, 440, 90, 20));
-	textbuf.string = "Z-Axis";
-	znumbox = NumberBox(win, Rect(835, 705, 60, 20));
-	znumbox.value = 0;
-	znumbox.clipHi = 450;
-	znumbox.clipLo = -450;
-	znumbox.step_(0.1); 
-	znumbox.scroll_step=0.1;
-	znumbox.align = \center;
-	znumbox.action = {arg num; 
-		zbox[fatual].valueAction = num.value;
-		if(ncanais[fatual]==2){
-			espacializador[fatual].set(\elev, num.value);
-			zlev[fatual] = num.value;
-			("Z-Axis = " ++ num.value).postln; 
-		}
-		{znumbox.value = 0;};
-	};
-
+		textbuf.string = "Z-Axis";
+		znumbox = NumberBox(win, Rect(835, 705, 60, 20));
+		znumbox.value = 0;
+		znumbox.clipHi = 450;
+		znumbox.clipLo = -450;
+		znumbox.step_(0.1); 
+		znumbox.scroll_step=0.1;
+		znumbox.align = \center;
+		znumbox.action = {arg num; 
+			zbox[fatual].valueAction = num.value;
+			if(ncanais[fatual]==2){
+				espacializador[fatual].set(\elev, num.value);
+				zlev[fatual] = num.value;
+				("Z-Axis = " ++ num.value).postln; 
+			}
+			{znumbox.value = 0;};
+		};
+		
 	//	elslider = Slider.new(~win, Rect(865, 200, 20, 500));
 	//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 	
