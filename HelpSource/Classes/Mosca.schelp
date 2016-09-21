@@ -1,10 +1,12 @@
 TITLE:: Mosca
-summary:: (put new short description here)
+summary:: GUI-assisted production of ambisonic and binaural sound fields with simulated moving or stationary sound sources
 categories:: Undocumented classes
-related:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff, etc.
+related:: Classes/SomeRelatedClass, http://www.ambisonictoolkit.net
 
 DESCRIPTION::
-(put long description here)
+Mosca is a SuperCollider class for the creation of sound fields and the simulation of moving sound sources using either ambisonic or binaural spatialisation. It uses John Chowning's technique of applying "local" and "global" reverberation to sources in order to simulate distance cues,1 as well as simulating other phenomena such as the Doppler effect and high frequency attenuation with distance. The program has a GUI and sound sources are read from file, from hardware inputs or from other applications via Jack. It also supports basic synchronisation with audio edited in a DAW. Sound sources to be spatialised by ambisonic or binaural means may be mono, stereo or four-channel B-format in origin. The interface facilitates the 3D spatialisation of multiple sources and their positions and movements may be recorded for synchronised playback. While the audio output of the binaural mode requires no further processing, ambisonic signals must be decoded with an appropriate ambisonic decoder such as Ambdec via Jack on Linux platforms.
+
+The program makes use of the Ambisonic Toolkit (ATK) for SuperCollider by Joseph Anderson and the Automation quark. It also uses B-format impulse responses (IRs) from the OpenAir project binaural IRs from the Salford-BBC Spatially-sampled Binaural Room Impulse Responses. The IRs have been modified here, having had the early reflections removed, to serve as "tail" IRs for use in reverberation.
 
 
 CLASSMETHODS::
@@ -13,181 +15,45 @@ METHOD:: new
 (describe method here)
 
 ARGUMENT:: rirWXYZ
-(describe argument here)
+B-Format ambisonic room impulse response. Ensure that it has the same sample rate as your system.
 
 ARGUMENT:: rirBinaural
-(describe argument here)
+Binaural room impulse response. Ensure that it has the same sample rate as your system.
 
-ARGUMENT:: numCIPIC
-(describe argument here)
+ARGUMENT:: subjectID
+Subject ID for the Binaural decoder, which uses th CIPIC Databse. Information from the ATK: http://doc.sccode.org/Classes/FoaDecoderKernel.html :
+"3 to 165 (45 in total) ... WARNING: subjectIDs are not entirely contiguous ... The CIPIC HRTF database provides two KEMAR dummy measurements. subjectID = 21 is the large pinnae dummy and subjectID = 165 is the small pinnae dummy." Note. The ATK plugins for the DAW "Reaper", show actual photographas of the subjects, see: http://www.ambisonictoolkit.net
 
 ARGUMENT:: srvr
-(describe argument here)
+Server used. eg. Server.default
 
 returns:: (describe returnvalue here)
 
 
 INSTANCEMETHODS::
 
-METHOD:: rirY
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: revGlobal
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: bufsizeBinaural
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: nfontes
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirWspectrum
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirW
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: win
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: sysex
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: kernelSize
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirZspectrum
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: controle
-(describe method here)
-
-returns:: (describe returnvalue here)
-
 METHOD:: openGui
-(describe method here)
+Creates GUI window
 
 ARGUMENT:: nfontes
-(describe argument here)
+The number of sound sources to be spatialised. Sound sources may be mono, stereo or B-format.
 
 ARGUMENT:: dur
-(describe argument here)
+Duration in seconds of the "Automation" transport.
 
 returns:: (describe returnvalue here)
 
-METHOD:: rirYspectrum
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: textbuf
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirL
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: myTestVar
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirX
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: bufsize
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirZ
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirXspectrum
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirLspectrum
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirR
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: scale
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: offset
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: irbuffer
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: m
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: sprite
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: rirRspectrum
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: revGlobalBF
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: wdados
-(describe method here)
-
-returns:: (describe returnvalue here)
 
 
 EXAMPLES::
 
 code::
-(some example code)
+(
+	s.waitForBoot {
+		~testMosca = Mosca.new("/home/iain/projects/ambisonics/chowning/ir/QL14_tail48kHz.amb", 
+		"/home/iain/projects/ambisonics/chowning/ir/sbs_binaural_tail.wav", 21, Server.default);
+	};
+)
+
+~testMosca.openGui(12, 120);
 ::
