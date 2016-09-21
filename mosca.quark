@@ -1,5 +1,5 @@
 (
-	\name:    "mosca",
+	\name:    "Mosca",
     	\path:    "mosca",
     	\summary: "GUI-assisted production of ambisonic and binaural sound fields",
     	\author:  "mott@escuta.org",
