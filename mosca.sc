@@ -2103,27 +2103,29 @@ Mosca {
 		textbuf = StaticText(wdados, Rect(240, 20, 50, 20));
 	textbuf.string = "Z";
 
+		
+	textbuf = StaticText(wdados, Rect(280, 20, 50, 20));
+	textbuf.string = "Ang";
+	textbuf = StaticText(wdados, Rect(320, 20, 50, 20));
+	textbuf.string = "Vol";
+	textbuf = StaticText(wdados, Rect(360, 20, 50, 20));
+	textbuf.string = "Glob";
+	textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
+	textbuf.string = "Loc";
+	textbuf = StaticText(wdados, Rect(440, 20, 50, 20));
+	textbuf.string = "Rot";
+	textbuf = StaticText(wdados, Rect(480, 20, 50, 20));
+	textbuf.string = "Dir";
+	textbuf = StaticText(wdados, Rect(520, 20, 50, 20));
+	textbuf.string = "Cntr";
+	textbuf = StaticText(wdados, Rect(560, 20, 50, 20));
+	textbuf.string = "DAmt";
+	textbuf = StaticText(wdados, Rect(600, 20, 50, 20));
+	textbuf.string = "File";
+
 		/*
-	~atxt = StaticText(~wdados, Rect(280, 20, 50, 20));
-	~atxt.string = "Ang";
-	~vtxt = StaticText(~wdados, Rect(320, 20, 50, 20));
-	~vtxt.string = "Vol";
-	~gtxt = StaticText(~wdados, Rect(360, 20, 50, 20));
-	~gtxt.string = "Glob";
-	~loctxt = StaticText(~wdados, Rect(400, 20, 50, 20));
-	~loctxt.string = "Loc";
-	~rtxt = StaticText(~wdados, Rect(440, 20, 50, 20));
-	~rtxt.string = "Rot";
-	~dtxt = StaticText(~wdados, Rect(480, 20, 50, 20));
-	~dtxt.string = "Dir";
-	~ctxt = StaticText(~wdados, Rect(520, 20, 50, 20));
-	~ctxt.string = "Cntr";
-	~ftxt = StaticText(~wdados, Rect(560, 20, 50, 20));
-	~ftxt.string = "DAmt";
-	~ftxt = StaticText(~wdados, Rect(600, 20, 50, 20));
-	~ftxt.string = "File";
-	nfontes.do { arg i;	
-		dcheck[i] = CheckBox.new( ~wdados, Rect(10, 40 + (i*20), 40, 20))
+		nfontes.do { arg i;	
+		dcheck[i] = CheckBox.new( wdados, Rect(10, 40 + (i*20), 40, 20))
 		.action_({ arg but;
 			if(i==fatual){dopcheque.value = but.value;};
 			if (but.value == true) {
@@ -2136,7 +2138,7 @@ Mosca {
 			};
 		});
 
-		lpcheck[i] = CheckBox.new( ~wdados, Rect(35, 40 + (i*20), 40, 20))
+		lpcheck[i] = CheckBox.new( wdados, Rect(35, 40 + (i*20), 40, 20))
 		.action_({ arg but;
 			if(i==fatual){loopcheck.value = but.value;};
 			if (but.value == true) {
@@ -2149,7 +2151,7 @@ Mosca {
 			};
 		});
 
-				strmcheck[i] = CheckBox.new( ~wdados, Rect(55, 40 + (i*20), 40, 20))
+				strmcheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
 		.action_({ arg but;
 			if(i==fatual){streamcheck.value = but.value;};
 			if (but.value == true) {
@@ -2161,7 +2163,7 @@ Mosca {
 			};
 		});
 
-
+		
 		ncanbox[i] = NumberBox(~wdados, Rect(80, 40 + (i*20), 40, 20));
 		businibox[i] = NumberBox(~wdados, Rect(120, 40 + (i*20), 40, 20));
 
@@ -2403,6 +2405,13 @@ Mosca {
 
 		
 	};
+
+
+
+
+
+
+		
 	~controle = Automation(~dur).front(~win, Rect(450, 10, 400, 25));
 	//	~controle.presetDir = Document.dir +/+ "auto";
 	~controle.presetDir = "auto";
