@@ -1,7 +1,1 @@
-  (
-	s.waitForBoot {
-		~testMosca = Mosca.new("/home/iain/projects/ambisonics/chowning/ir/QL14_tail48kHz.amb", 
-		"/home/iain/projects/ambisonics/chowning/ir/sbs_binaural_tail.wav", 21, Server.default);
-		
-	};
-) 
+// Please type "Mosca" in the Quick lookup field of Help Browser for information on Mosca class
