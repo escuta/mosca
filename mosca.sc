@@ -21,14 +21,15 @@ Mosca {
 	<>rirLspectrum, <>rirRspectrum,
 
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
-	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf;
+	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
+	<>sysex;
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
 	rirLspectrum, rirRspectrum,
 	binDecoder;
-	classvar fftsize = 2048;
+	classvar fftsize = 2048, server;
 
 	/*
 		// Use something like this to run
@@ -42,8 +43,8 @@ Mosca {
 		)
 	*/
 
-	*new { arg rirWXYZ, rirBinaural, numCIPIC, server;
-		server = server ? Server.default;
+	*new { arg rirWXYZ, rirBinaural, numCIPIC, srvr;
+		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
 		rirW = Buffer.readChannel(server, rirWXYZ, channels: [0]);
@@ -965,31 +966,10 @@ Mosca {
 				^super.newCopyArgs(rirWXYZ, rirBinaural, numCIPIC, server);
 
 	} // end new
-	novoplot {
-		arg mx, my, i, nfnts; 
-		var btest;
-		{
-			win.drawFunc = {
-				
-				nfnts.do { arg ind;
-					Pen.fillColor = Color(0.8,0.2,0.9);
-					Pen.addArc(sprite[ind, 0]@sprite[ind, 1], 20, 0, 2pi);
-					Pen.fill;
-					(ind + 1).asString.drawCenteredIn(Rect(sprite[ind, 0] - 10, sprite[ind, 1] - 10, 20, 20), 
-						Font.default, Color.white);
-				};
-				Pen.fillColor = Color.gray(0, 0.5);
-				Pen.addArc(450@450, 20, 0, 2pi);
-				Pen.fill;
-			}
-		}.defer;
-		{ win.refresh; }.defer;
-
-	}
-
+	
 	openGui {
 
-		arg nfontes = 1;
+		arg nfontes = 1, dur = 60;
 	var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
 	itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, sombuf, funcs, 
 	dopcheque,
@@ -999,7 +979,8 @@ Mosca {
 	llev, angnumbox, volnumbox,
 	ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 	// busini = initial bus number in range starting with "0"
-	ncanbox, businibox, ncan, busini,
+		ncanbox, businibox, ncan, busini,
+		novoplot,
 	
 	dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
 	angslider, bsalvar, bcarregar, bdados, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
@@ -1092,6 +1073,30 @@ Mosca {
 		sprite[i, 1] = -20;
 		testado[i] = false;
 	};
+
+
+
+		novoplot = {
+			arg mx, my, i, nfnts; 
+			var btest;
+			{
+				win.drawFunc = {
+					
+					nfnts.do { arg ind;
+						Pen.fillColor = Color(0.8,0.2,0.9);
+						Pen.addArc(sprite[ind, 0]@sprite[ind, 1], 20, 0, 2pi);
+						Pen.fill;
+						(ind + 1).asString.drawCenteredIn(Rect(sprite[ind, 0] - 10, sprite[ind, 1] - 10, 20, 20), 
+							Font.default, Color.white);
+					};
+					Pen.fillColor = Color.gray(0, 0.5);
+					Pen.addArc(450@450, 20, 0, 2pi);
+					Pen.fill;
+				}
+			}.defer;
+			{ win.refresh; }.defer;
+			
+		};
 
 		
 		gbus = Bus.audio(server, 1); // global reverb bus
@@ -1211,7 +1216,7 @@ Mosca {
 						if (testado[i] == false) { // if source is testing don't relaunch synths
 							synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-								~revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 									espacializador[i] = nil; synt[i] = nil});
 							
 							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
@@ -1706,20 +1711,20 @@ Mosca {
 		offset = 60;
 
 	
-	dopcheque = CheckBox( ~win, Rect(94, 10, 80, 20), "Doppler").action_({ arg butt;
+	dopcheque = CheckBox( win, Rect(94, 10, 80, 20), "Doppler").action_({ arg butt;
 		("Doppler is " ++ butt.value).postln;
 		dcheck[fatual].valueAction = butt.value;
 	});
 	dopcheque.value = false;
 
-	loopcheck = CheckBox( ~win, Rect(164, 10, 80, 20), "Loop").action_({ arg butt;
+	loopcheck = CheckBox( win, Rect(164, 10, 80, 20), "Loop").action_({ arg butt;
 		("Loop is " ++ butt.value).postln;
 		lpcheck[fatual].valueAction = butt.value;
 	});
 	dopcheque.value = false;
 
 
-		streamcheck = CheckBox( ~win, Rect(10, 30, 100, 20), "Live Input").action_({ arg butt;
+		streamcheck = CheckBox( win, Rect(10, 30, 100, 20), "Live Input").action_({ arg butt;
 		("Streaming is " ++ butt.value).postln;
 		strmcheck[fatual].valueAction = butt.value;
 	});
@@ -2123,7 +2128,7 @@ Mosca {
 	textbuf = StaticText(wdados, Rect(600, 20, 50, 20));
 	textbuf.string = "File";
 
-		/*
+		
 		nfontes.do { arg i;	
 		dcheck[i] = CheckBox.new( wdados, Rect(10, 40 + (i*20), 40, 20))
 		.action_({ arg but;
@@ -2164,30 +2169,30 @@ Mosca {
 		});
 
 		
-		ncanbox[i] = NumberBox(~wdados, Rect(80, 40 + (i*20), 40, 20));
-		businibox[i] = NumberBox(~wdados, Rect(120, 40 + (i*20), 40, 20));
+		ncanbox[i] = NumberBox(wdados, Rect(80, 40 + (i*20), 40, 20));
+		businibox[i] = NumberBox(wdados, Rect(120, 40 + (i*20), 40, 20));
 
-		xbox[i] = NumberBox(~wdados, Rect(160, 40 + (i*20), 40, 20));
-		ybox[i] = NumberBox(~wdados, Rect(200, 40+ (i*20), 40, 20));
-		zbox[i] = NumberBox(~wdados, Rect(240, 40+ (i*20), 40, 20));
+		xbox[i] = NumberBox(wdados, Rect(160, 40 + (i*20), 40, 20));
+		ybox[i] = NumberBox(wdados, Rect(200, 40+ (i*20), 40, 20));
+		zbox[i] = NumberBox(wdados, Rect(240, 40+ (i*20), 40, 20));
 
 
-		abox[i] = NumberBox(~wdados, Rect(280, 40 + (i*20), 40, 20));
-		vbox[i] = NumberBox(~wdados, Rect(320, 40+ (i*20), 40, 20));
-		gbox[i] = NumberBox(~wdados, Rect(360, 40+ (i*20), 40, 20));
-		lbox[i] = NumberBox(~wdados, Rect(400, 40+ (i*20), 40, 20));
-		rbox[i] = NumberBox(~wdados, Rect(440, 40+ (i*20), 40, 20));
+		abox[i] = NumberBox(wdados, Rect(280, 40 + (i*20), 40, 20));
+		vbox[i] = NumberBox(wdados, Rect(320, 40+ (i*20), 40, 20));
+		gbox[i] = NumberBox(wdados, Rect(360, 40+ (i*20), 40, 20));
+		lbox[i] = NumberBox(wdados, Rect(400, 40+ (i*20), 40, 20));
+		rbox[i] = NumberBox(wdados, Rect(440, 40+ (i*20), 40, 20));
 
-		dbox[i] = NumberBox(~wdados, Rect(480, 40+ (i*20), 40, 20));
-		cbox[i] = NumberBox(~wdados, Rect(520, 40+ (i*20), 40, 20));
-		dpbox[i] = NumberBox(~wdados, Rect(560, 40+ (i*20), 40, 20));
+		dbox[i] = NumberBox(wdados, Rect(480, 40+ (i*20), 40, 20));
+		cbox[i] = NumberBox(wdados, Rect(520, 40+ (i*20), 40, 20));
+		dpbox[i] = NumberBox(wdados, Rect(560, 40+ (i*20), 40, 20));
 		
-		tfield[i] = TextField(~wdados, Rect(600, 40+ (i*20), 350, 20));
+		tfield[i] = TextField(wdados, Rect(600, 40+ (i*20), 350, 20));
 		
 		tfield[i].action = {arg path;
 			if (path != "") {
 					
-			sombuf[i] = Buffer.read(s, path.value, action: {arg buf; 
+			sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
 				//{(tfield[i].value.asString ++ " tem duração de " ++ (buf.numFrames / buf.sampleRate).asString).postln;}.defer;
 				//				((buf.numFrames / buf.numChannels ) / s.actualSampleRate).postln;
 				((buf.numFrames ) / buf.sampleRate).postln;
@@ -2205,9 +2210,12 @@ Mosca {
 			var dist;
 			//		num.value.postln;
 
-			~sprite[i, 1] = 450 + (num.value * -1);
-			~novoplot.value(num.value, ybox[i], i, nfontes);
-			~testeme = espacializador;
+			sprite[i, 1] = 450 + (num.value * -1);
+
+			novoplot.value(num.value, ybox[i], i, nfontes);
+
+			//novoplot(num.value, ybox[i], i, nfontes);
+			//~testeme = espacializador;
 			//	("X Value =  " ++ (espacializador[i]).asString).postln;
 			
 			//			espacializador[i] = nil;
@@ -2222,7 +2230,7 @@ Mosca {
 		};
 		ybox[i].action = {arg num; 
 			//	num.value.postln;
-			~sprite[i, 0] = (num.value * -1 + 450);
+			sprite[i, 0] = (num.value * -1 + 450);
 
 			//			espacializador[i] = nil;
 			//			synt[i] = nil;
@@ -2380,7 +2388,7 @@ Mosca {
 			espacializador[i].set(\mz, num.value);
 			synt[i].set(\mz, num.value);
 			ncan[i] = num.value;
-			if(i == fatual) 
+			if(i == fatual )
 			{
 				//var val = (450 - (num.value * 900)) * -1;
 				//	ncanslider.value = num.value;
@@ -2406,20 +2414,18 @@ Mosca {
 		
 	};
 
-
+		
 
 
 
 
 		
-	~controle = Automation(~dur).front(~win, Rect(450, 10, 400, 25));
-	//	~controle.presetDir = Document.dir +/+ "auto";
-	~controle.presetDir = "auto";
-	//	~controle.seekLatency = 1.0;
-	~controle.onEnd = {
-        ~controle.stop;
-        "~controle is stopped".postln;
-        ~controle.seek;
+	controle = Automation(dur).front(win, Rect(450, 10, 400, 25));
+	controle.presetDir = "auto";
+	controle.onEnd = {
+        controle.stop;
+        "controle is stopped".postln;
+        controle.seek;
 		nfontes.do { arg i;	
 			synt[i].free; // error check
 			//	espacializador[i].free;
@@ -2427,18 +2433,14 @@ Mosca {
 		};
     };
 	
-	~controle.onPlay = {
-		//		nfontes.do { arg i;	
-		//				synt[i].free; // error check
-		//				espacializador[i].free;
-		//		};
+	controle.onPlay = {
 		var startTime;
-		if(~controle.now < 0)
+		if(controle.now < 0)
 		{
 			startTime = 0
 		}
 		{ 
-			startTime = ~controle.now
+			startTime = controle.now
 		};
 		nfontes.do { arg i;	
 			var loaded, dur, looped;
@@ -2456,8 +2458,10 @@ Mosca {
 		
 		isPlay = true;
 	};
+
+		
 	
-	~controle.onSeek = {
+	controle.onSeek = {
 		//	("onSeek = " ++ ~controle.now).postln;
 		if(isPlay == true) {
 			nfontes.do { arg i;	
@@ -2470,8 +2474,8 @@ Mosca {
 		};
     };
 
-	~controle.onStop = {
-		("Acabou! = " ++ ~controle.now).postln;
+	controle.onStop = {
+		("Acabou! = " ++ controle.now).postln;
 		nfontes.do { arg i;
 			// if sound is currently being "tested", don't switch off on stop
 			// leave that for user
@@ -2481,35 +2485,36 @@ Mosca {
 			//	espacializador[i].free;
 			isPlay = false;
 		};
-		~revGlobal.free;
-		~revGlobalBF.free;
-		~revGlobal = nil;
-		~revGlobalBF = nil;
+		revGlobal.free;
+		revGlobalBF.free;
+		revGlobal = nil;
+		revGlobalBF = nil;
 
     };
-	
-	//	~controle.dock(volslider, "vslide");
+
+		
 	
 	nfontes.do { arg i;
 		// save the bus/streamed audio settings outside of automation on a once-off basis
 		//		~controle.dock(ncanbox[i], "ncanais_" ++ i);
 		//		~controle.dock(businibox[i], "businicial_" ++ i);
-		~controle.dock(xbox[i], "x_axis_" ++ i);
-		~controle.dock(ybox[i], "y_axis_" ++ i);
-		~controle.dock(zbox[i], "z_axis_" ++ i);
-		~controle.dock(vbox[i], "volume_" ++ i);
-		~controle.dock(dpbox[i], "dopamt_" ++ i);
-		~controle.dock(abox[i], "ângulo_" ++ i);
-		~controle.dock(gbox[i], "revglobal_" ++ i);
-		~controle.dock(lbox[i], "revlocal_" ++ i);
-		~controle.dock(rbox[i], "rotação_" ++ i);
-		~controle.dock(dbox[i], "diretividade_" ++ i);
-		~controle.dock(cbox[i], "contração_" ++ i);
+		controle.dock(xbox[i], "x_axis_" ++ i);
+		controle.dock(ybox[i], "y_axis_" ++ i);
+		controle.dock(zbox[i], "z_axis_" ++ i);
+		controle.dock(vbox[i], "volume_" ++ i);
+		controle.dock(dpbox[i], "dopamt_" ++ i);
+		controle.dock(abox[i], "ângulo_" ++ i);
+		controle.dock(gbox[i], "revglobal_" ++ i);
+		controle.dock(lbox[i], "revlocal_" ++ i);
+		controle.dock(rbox[i], "rotação_" ++ i);
+		controle.dock(dbox[i], "diretividade_" ++ i);
+		controle.dock(cbox[i], "contração_" ++ i);
 		//			~controle.dock(tfield[i], "arquivo_" ++ i);
 	};
-	
+
+		
 			
-		~win.view.mouseMoveAction = {|view, x, y, modifiers | [x, y];
+		win.view.mouseMoveAction = {|view, x, y, modifiers | [x, y];
 		//	x = DelayL.kr(x, 1.0, 1.0, 1, 0);
 		//	y = DelayL.kr(y, 1.0, 1.0, 1, 0);
 		//		xbox[fatual].valueAction = x;
@@ -2518,12 +2523,12 @@ Mosca {
 
 		xbox[fatual].valueAction = 450 - y;
 		ybox[fatual].valueAction = (x - 450) * -1;
-		~win.drawFunc = {
+		win.drawFunc = {
 			nfontes.do { arg i;	
 				Pen.fillColor = Color(0.8,0.2,0.9);
-				Pen.addArc(~sprite[i, 0]@~sprite[i, 1], 20, 0, 2pi);
+				Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
 				Pen.fill;
-				(i + 1).asString.drawCenteredIn(Rect(~sprite[i, 0] - 10, ~sprite[i, 1] - 10, 20, 20), 
+				(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20), 
 					Font.default, Color.white);
 			};
 			// círculo central
@@ -2533,14 +2538,14 @@ Mosca {
 			
 		};
 		
-		~win.refresh;
+		win.refresh;
 		
 	};
 	
-
+		
 	nfontes.do { arg x;
-		mbus[x] = Bus.audio(s, 1); // passar som da fonte ao espacializador
-		sbus[x] = Bus.audio(s, 2); // passar som da fonte ao espacializador
+		mbus[x] = Bus.audio(server, 1); // passar som da fonte ao espacializador
+		sbus[x] = Bus.audio(server, 2); // passar som da fonte ao espacializador
 		//	bfbus[x] = Bus.audio(s, 4); // passar som da fonte ao espacializador
 		if (dopflag == 0, {
 			
@@ -2549,10 +2554,10 @@ Mosca {
 		});
 		//	synt[x] = Synth.new(\arquivoLoop, [\outbus, bus[x]]);
 	};
-
+		
 	
-	~win.onClose_({ 
-		~controle.quit;
+	win.onClose_({ 
+		controle.quit;
 		nfontes.do { arg x;
 			espacializador[x].free;
 			mbus[x].free;
@@ -2560,18 +2565,19 @@ Mosca {
 			//	bfbus.[x].free;
 			sombuf[x].free;
 			synt[x].free;
-			MIDIIn.removeFuncFrom(\sysex, ~sysex);
+			MIDIIn.removeFuncFrom(\sysex, sysex);
 			//		kespac[x].stop;
 		};
-		~revGlobal.free;
-		~revGlobalBF.free;
+		revGlobal.free;
+		revGlobalBF.free;
 		
-		~wdados.close;
+		wdados.close;
 		gbus.free;
 		gbfbus.free;
+		// The following should be removed, but...
 		// and if all that doesn't do it!:
-		s.freeAll;
-	}); */
+		server.freeAll;
+	}); 
 }
 	
 }
