@@ -28,7 +28,7 @@ Mosca {
 	bufsize, bufsizeBinaural, irbuffer,
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
 	rirLspectrum, rirRspectrum,
-	binDecoder;
+	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
 
 	/*
@@ -41,18 +41,27 @@ Mosca {
 		
 		};
 		)
+
+		(
+		s.waitForBoot {
+		~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
+		"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
+		};
+		)
+		~testMosca.openGui(4, 120);
 	*/
 
-	*new { arg rirWXYZ, rirBinaural, subjectID, srvr;
+	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr;
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
-		rirW = Buffer.readChannel(server, rirWXYZ, channels: [0]);
-		rirX = Buffer.readChannel(server, rirWXYZ, channels: [1]);
-		rirY = Buffer.readChannel(server, rirWXYZ, channels: [2]);
-		rirZ = Buffer.readChannel(server, rirWXYZ, channels: [3]);
-		rirL = Buffer.readChannel(server, rirBinaural, channels: [0]);
-		rirR = Buffer.readChannel(server, rirBinaural, channels: [1]);
+		prjDr = projDir;
+		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
+		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
+		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
+		rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3]);
+		rirL = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirBinaural, channels: [0]);
+		rirR = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirBinaural, channels: [1]);
 
 		
 		server.sync;
@@ -1559,10 +1568,10 @@ Mosca {
 			
 		])
 		.action_({ arg but;
-			var arquivo = File("auto/arquivos.txt".standardizePath,"w");
-			var dop = File("auto/doppler.txt".standardizePath,"w");
-			var looped = File("auto/loop.txt".standardizePath,"w");
-			var streamed = File("auto/stream.txt".standardizePath,"w");
+			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"w");
+			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
+			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"w");
+			var streamed = File((prjDr ++ "/auto/stream.txt").standardizePath,"w");
 			var string;
 			("Arg is " ++ but.value.asString).postln;
 			string = nil;
@@ -1584,7 +1593,6 @@ Mosca {
 			dop.close;
 			looped.close;
 			streamed.close;
-			//	~string.writeArchive((Document.dir +/+ "auto/arquivos.txt").standardizePath); 
 			controle.save(controle.presetDir);
 			
 		});
@@ -1598,11 +1606,10 @@ Mosca {
 		])
 		.action_({ arg but;
 			var f;
-			var arquivo = File("auto/arquivos.txt".standardizePath,"r");
-			var dop = File("auto/doppler.txt".standardizePath,"r");
-			var looped = File("auto/loop.txt".standardizePath,"r");
-			
-			var streamed = FileReader("auto/stream.txt".standardizePath, delimiter: Char.tab); 
+			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"r");
+			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"r");
+			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"r");
+			var streamed = FileReader((prjDr ++ "/auto/stream.txt").standardizePath, delimiter: Char.tab); 
 			
 			
 			but.value.postln;
@@ -1618,7 +1625,7 @@ Mosca {
 				//			lp[i] = line;
 				lpcheck[i].valueAction = line;
 				
-				f = File("auto/stream.txt", "r"); f.isOpen;
+				f = File(prjDr ++ "/auto/stream.txt", "r"); f.isOpen;
 				
 				// streamed stuff
 				line = streamed.next;
@@ -2421,7 +2428,7 @@ Mosca {
 
 		
 	controle = Automation(dur).front(win, Rect(450, 10, 400, 25));
-	controle.presetDir = "auto";
+	controle.presetDir = prjDr ++ "/auto";
 	controle.onEnd = {
         controle.stop;
         "controle is stopped".postln;
