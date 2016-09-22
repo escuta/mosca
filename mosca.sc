@@ -33,8 +33,11 @@ Mosca {
 	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
 
-
 	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr;
+			^super.new.init(projDir, rirWXYZ, rirBinaural, subjectID, srvr);
+	}
+
+	init { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr;
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
@@ -955,7 +958,9 @@ Mosca {
 
 		}).add;
 
-				^super.newCopyArgs(rirWXYZ, rirBinaural, subjectID, server);
+		//////// END SYNTHDEFS ///////////////
+		
+		//			^super.newCopyArgs(rirWXYZ, rirBinaural, subjectID, server);
 
 	} // end new
 	
