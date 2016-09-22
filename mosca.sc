@@ -22,7 +22,7 @@ Mosca {
 
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
-	<>sysex;
+	<>sysex, <>mmcslave;
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
@@ -2565,7 +2565,63 @@ Mosca {
 		// The following should be removed, but...
 		// and if all that doesn't do it!:
 		server.freeAll;
-	}); 
-}
+	});
+
+				mmcslave = CheckBox( win, Rect(670, 65, 140, 20), "Slave to MMC").action_({ arg butt;
+			//("Doppler is " ++ butt.value).postln;
+			if(butt.value) {
+				"Slaving transport to MMC".postln;
+				MIDIIn.addFuncTo(\sysex, sysex);
+			} {
+				"MIDI input closed".postln;
+				MIDIIn.removeFuncFrom(\sysex, sysex);
+			};
+			
+			//	dcheck[fatual].valueAction = butt.value;
+		});
+
+
+		sysex  = { arg src, sysex;
+			//	("Sysex is: " ++ sysex ++ " e src = " ++ src).postln;
+			//~lastsysex = sysex;
+			// This should be more elaborate - other things might trigger it...fix this!
+			if(sysex[3] == 6){ var x;
+				("We have : " ++ sysex[4] ++ " type action").postln;
+				
+				x = case
+				{ sysex[4] == 1 } {
+					
+					"Stop".postln;
+					controle.stop;
+				}
+				{ sysex[4] == 2 } {
+					"Play".postln;
+					controle.play;
+					
+				}
+				{ sysex[4] == 3 } {
+					"Deffered Play".postln;
+					controle.play;
+				
+				}
+				{ sysex[4] == 68 } { var goto; 
+					("Go to event: " ++ sysex[7] ++ "hr " ++ sysex[8] ++ "min "
+						++ sysex[9] ++ "sec and " ++ sysex[10] ++ "frames").postln;
+					goto =  (sysex[7] * 3600) + (sysex[8] * 60) + sysex[9] + (sysex[10] / 30);
+					controle.seek(goto);
+					
+				};
+			};
+		}
+
+
+
+
+
+
+			
+
+
+	}
 	
 }
