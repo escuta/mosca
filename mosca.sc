@@ -22,7 +22,9 @@ Mosca {
 
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
-	<>sysex, <>mmcslave;
+	<>sysex, <>mmcslave,
+	<>intAmbDecFlag = true, intAmbDec = "uhjStereo";
+	
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
@@ -957,6 +959,15 @@ Mosca {
 
 	} // end new
 	
+	setIntAmbDecFlag {
+		arg flag = true;
+		intAmbDecFlag = flag;
+	}
+	setIntAmbDec {
+		arg type = "uhjStereo";
+		intAmbDec = type;
+	}
+
 	openGui {
 
 		arg nfontes = 1, dur = 60;
