@@ -23,21 +23,28 @@ Mosca {
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
-	<>intAmbDecFlag = true, intAmbDec = "uhjStereo";
-	
+	<>intAmbDecFlag, <>intAmbDec;
+
+	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
+	//	<>rirLspectrum, <>rirRspectrum;
+
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
+
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
 	rirLspectrum, rirRspectrum,
+
 	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
 
-	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr;
-			^super.new.init(projDir, rirWXYZ, rirBinaural, subjectID, srvr);
+	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr,
+		intAmbDecFlag = true, intAmbDec = "uhjStereo";
+		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, subjectID,
+			srvr, intAmbDecFlag, intAmbDec);
 	}
 
-	init { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr;
+	initMosca { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr, intAmbDecFlag, intAmbDec;
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
@@ -83,9 +90,9 @@ Mosca {
 		
 		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
 		
-		//		server.sync;
 
-		/// SYNTH DEFS ///////
+
+			/// SYNTH DEFS ///////
 
 		SynthDef.new("revGlobalAmb",  { arg gbus;
 			var sig;
@@ -959,10 +966,8 @@ Mosca {
 		}).add;
 
 		//////// END SYNTHDEFS ///////////////
-		
-		//			^super.newCopyArgs(rirWXYZ, rirBinaural, subjectID, server);
 
-	} // end new
+	} // end initMosca
 	
 	setIntAmbDecFlag {
 		arg flag = true;
@@ -973,6 +978,10 @@ Mosca {
 		intAmbDec = type;
 	}
 
+	initSynthDefs {
+
+	}
+	
 	openGui {
 
 		arg nfontes = 1, dur = 60;
