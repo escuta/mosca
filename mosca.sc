@@ -123,7 +123,7 @@ Mosca {
 				//	SendTrig.kr(Impulse.kr(1), 0, sig[2]); // debugging
 				
 				Out.ar(2, [PartConv.ar(sig[0], fftsize, rirWspectrum.bufnum), 
-				PartConv.ar(sig[1], fftsize, rirXspectrum.bufnum), 
+					PartConv.ar(sig[1], fftsize, rirXspectrum.bufnum), 
 					PartConv.ar(sig[2], fftsize, rirYspectrum.bufnum),
 					PartConv.ar(sig[3], fftsize, rirZspectrum.bufnum)
 				]);
@@ -969,25 +969,14 @@ Mosca {
 
 		};
 
+		
 		makeSynthDefs.("SSSSSSSSSSSSSSS");
 		
 		//////// END SYNTHDEFS ///////////////
 
 	} // end initMosca
 	
-	setIntAmbDecFlag {
-		arg flag = true;
-		intAmbDecFlag = flag;
-	}
-	setIntAmbDec {
-		arg type = "uhjStereo";
-		intAmbDec = type;
-	}
 
-	//	initSynthDefs {
-	//
-	//	}
-	
 	openGui {
 
 		arg nfontes = 1, dur = 60;
