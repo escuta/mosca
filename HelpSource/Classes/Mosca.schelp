@@ -111,7 +111,8 @@ code::
 		~testMosca = Mosca.new("/path/to/your/moscaproject",
 			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
 	};
-	MIDIIn.connect;		
+	MIDIIn.connect;	// needed to synchronise Automation transport
+			//  with a DAW using MMC
 )
 
 ~testMosca.openGui(5, 120);
