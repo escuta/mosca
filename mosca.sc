@@ -45,12 +45,16 @@ Mosca {
 	}
 
 	initMosca { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr, ambDecoder;
-		var makeSynthDefs, revGlobTxt;
+		var makeSynthDefs, revGlobTxt,
+
+		testit; // remove at some point with other debugging stuff
+
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
 		prjDr = projDir;
 		ambDec = ambDecoder;
+		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
 		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
 		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
@@ -211,12 +215,12 @@ Mosca {
 				ambsinal = [w, x, y, z, r, s, t, u, v]; 
 				
 				ambsinal1O = [w, x, y, z];
-				
+				//SendTrig.kr(Impulse.kr(1),0, ambDec); // debugging
 				//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
 				//	Out.ar( 0, ambsinal);
-								Out.ar( 2, ambsinal);
+				//Out.ar( 2, ambsinal);
 				//TEST
-				//Out.ar( 2, MoscaFoaDecode(ambsinal, ambDec));
+					Out.ar( 2, MoscaFoaDecode.ar(ambsinal1O, ambDec));
 				
 				
 			}).add;
@@ -2661,10 +2665,30 @@ Mosca {
 }
 
 
+MoscaFoaDecode : FoaUGen {
+	*ar { arg in, decoder, mul = 1, add = 0;
+		in = this.checkChans(in);
+
+		case
+			{ decoder.isKindOf(FoaDecoderMatrix) } {
+
+				if ( decoder.shelfFreq.isNumber, { // shelf filter?
+					in = FoaPsychoShelf.ar(in,
+						decoder.shelfFreq, decoder.shelfK.at(0), decoder.shelfK.at(1))
+				});
+
+				^AtkMatrixMix.ar(in, decoder.matrix, mul, add)
+			}
+			{ decoder.isKindOf(FoaDecoderKernel) } {
+				^AtkKernelConv.ar(in, decoder.kernel, mul, add)
+			};
+	}
+}
+/*
 MoscaFoaDecode : FoaUGen { // redefinition of ATK's FoaDecode
 	*ar { arg in, decoder, mul = 1, add = 0;
 
-		if (decoder != nil ) {
+		//		if (decoder != nil ) {
 
 			in = this.checkChans(in);
 
@@ -2681,11 +2705,12 @@ MoscaFoaDecode : FoaUGen { // redefinition of ATK's FoaDecode
 			{ decoder.isKindOf(FoaDecoderKernel) } {
 				^AtkKernelConv.ar(in, decoder.kernel, mul, add)
 			};
-		} {
-			^in ////// return value to go here
-		};
+			//		} {
+			//			^in ////// return value to go here
+			//		};
 
 		
 	}
 }
 
+*/
