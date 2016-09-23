@@ -220,7 +220,13 @@ Mosca {
 				//	Out.ar( 0, ambsinal);
 				//Out.ar( 2, ambsinal);
 				//TEST
-					Out.ar( 2, MoscaFoaDecode.ar(ambsinal1O, ambDec));
+
+				// MoscaFoaDecode is the same as FoaDecode except that
+				// it returns the raw signal (which can be HOA) if ambDec is nil
+				// If that's the case one must use an external decoder
+				// such as AmbDec by Fons Adriaensen
+
+				Out.ar( 2, MoscaFoaDecode.ar(ambsinal, ambDec));
 				
 				
 			}).add;
@@ -2667,23 +2673,27 @@ Mosca {
 
 MoscaFoaDecode : FoaUGen {
 	*ar { arg in, decoder, mul = 1, add = 0;
-		in = this.checkChans(in);
-
-		case
+		if (decoder != nil ) {
+			in = this.checkChans(in);
+			
+			case
 			{ decoder.isKindOf(FoaDecoderMatrix) } {
-
+				
 				if ( decoder.shelfFreq.isNumber, { // shelf filter?
 					in = FoaPsychoShelf.ar(in,
 						decoder.shelfFreq, decoder.shelfK.at(0), decoder.shelfK.at(1))
 				});
-
+				
 				^AtkMatrixMix.ar(in, decoder.matrix, mul, add)
 			}
 			{ decoder.isKindOf(FoaDecoderKernel) } {
 				^AtkKernelConv.ar(in, decoder.kernel, mul, add)
 			};
+
+		}
 	}
 }
+
 /*
 MoscaFoaDecode : FoaUGen { // redefinition of ATK's FoaDecode
 	*ar { arg in, decoder, mul = 1, add = 0;
