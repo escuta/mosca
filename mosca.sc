@@ -23,7 +23,7 @@ Mosca {
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
-	<>intAmbDecFlag, <>intAmbDec;
+	<>ambDec;
 
 	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	//	<>rirLspectrum, <>rirRspectrum;
@@ -39,17 +39,22 @@ Mosca {
 	classvar fftsize = 2048, server;
 
 	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr,
-		intAmbDecFlag = true, intAmbDec = "uhjStereo";
+		ambDecoder = nil;
 		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, subjectID,
-			srvr, intAmbDecFlag, intAmbDec);
+			srvr, ambDecoder);
 	}
 
-	initMosca { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr, intAmbDecFlag, intAmbDec;
-		var makeSynthDefs;
+	initMosca { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr, ambDecoder;
+		var makeSynthDefs, revGlobTxt,
+
+		testit; // remove at some point with other debugging stuff
+
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
 		prjDr = projDir;
+		ambDec = ambDecoder;
+		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
 		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
 		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
@@ -91,11 +96,20 @@ Mosca {
 		
 		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
 		
+		/*		if(intAmbDecFlag == false) { // lets use an external decoder like AmbDec
+			revGlobTxt = "Out.ar(2, [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
+					PartConv.ar(sig, fftsize, rirXspectrum.bufnum), 
+					PartConv.ar(sig, fftsize, rirYspectrum.bufnum),
+					PartConv.ar(sig, fftsize, rirZspectrum.bufnum)
+				]);";
 
+		} {
 
-			/// SYNTH DEFS ///////
-		makeSynthDefs = { arg textString;
+			}; */
 
+			/// START SYNTH DEFS ///////
+		//	makeSynthDefs = { arg revGlobTxt;
+			//	~frogget = "YES NO YES NO!";
 			SynthDef.new("revGlobalAmb",  { arg gbus;
 				var sig;
 				sig = In.ar(gbus, 1) * 5; // precisa de ganho....
@@ -105,6 +119,8 @@ Mosca {
 					PartConv.ar(sig, fftsize, rirYspectrum.bufnum),
 					PartConv.ar(sig, fftsize, rirZspectrum.bufnum)
 				]);
+				
+				//	revGlobTxt.interpret;
 				
 			}).add;
 			
@@ -199,10 +215,18 @@ Mosca {
 				ambsinal = [w, x, y, z, r, s, t, u, v]; 
 				
 				ambsinal1O = [w, x, y, z];
-				
+				//SendTrig.kr(Impulse.kr(1),0, ambDec); // debugging
 				//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
 				//	Out.ar( 0, ambsinal);
-				Out.ar( 2, ambsinal);
+				//Out.ar( 2, ambsinal);
+				//TEST
+
+				// MoscaFoaDecode is the same as FoaDecode except that
+				// it returns the raw signal (which can be HOA) if ambDec is nil
+				// If that's the case one must use an external decoder
+				// such as AmbDec by Fons Adriaensen
+
+				Out.ar( 2, MoscaFoaDecode.ar(ambsinal, ambDec));
 				
 				
 			}).add;
@@ -967,10 +991,10 @@ Mosca {
 
 			}).add;
 
-		};
+		
 
 		
-		makeSynthDefs.("SSSSSSSSSSSSSSS");
+		makeSynthDefs.(revGlobTxt);
 		
 		//////// END SYNTHDEFS ///////////////
 
@@ -2645,3 +2669,58 @@ Mosca {
 	}
 	
 }
+
+
+MoscaFoaDecode : FoaUGen {
+	*ar { arg in, decoder, mul = 1, add = 0;
+		if (decoder != nil ) {
+			in = this.checkChans(in);
+			
+			case
+			{ decoder.isKindOf(FoaDecoderMatrix) } {
+				
+				if ( decoder.shelfFreq.isNumber, { // shelf filter?
+					in = FoaPsychoShelf.ar(in,
+						decoder.shelfFreq, decoder.shelfK.at(0), decoder.shelfK.at(1))
+				});
+				
+				^AtkMatrixMix.ar(in, decoder.matrix, mul, add)
+			}
+			{ decoder.isKindOf(FoaDecoderKernel) } {
+				^AtkKernelConv.ar(in, decoder.kernel, mul, add)
+			};
+
+		}
+	}
+}
+
+/*
+MoscaFoaDecode : FoaUGen { // redefinition of ATK's FoaDecode
+	*ar { arg in, decoder, mul = 1, add = 0;
+
+		//		if (decoder != nil ) {
+
+			in = this.checkChans(in);
+
+			case
+			{ decoder.isKindOf(FoaDecoderMatrix) } {
+
+				if ( decoder.shelfFreq.isNumber, { // shelf filter?
+					in = FoaPsychoShelf.ar(in,
+						decoder.shelfFreq, decoder.shelfK.at(0), decoder.shelfK.at(1))
+				});
+
+				^AtkMatrixMix.ar(in, decoder.matrix, mul, add)
+			}
+			{ decoder.isKindOf(FoaDecoderKernel) } {
+				^AtkKernelConv.ar(in, decoder.kernel, mul, add)
+			};
+			//		} {
+			//			^in ////// return value to go here
+			//		};
+
+		
+	}
+}
+
+*/
