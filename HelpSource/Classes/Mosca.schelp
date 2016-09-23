@@ -105,15 +105,34 @@ EXAMPLES::
 code::
 
 
+
+// Please also read "USING MOSCA" above
+
 (
-// Please also read "USING MOSCA" above	
-	s.waitForBoot {
-		~testMosca = Mosca.new("/path/to/your/moscaproject",
-			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
-	};
-	MIDIIn.connect;	// needed to synchronise Automation transport
-			//  with a DAW using MMC
+s.waitForBoot {
+	s = Server.local;
+	// Add a SC internal decoder (1º only)
+	// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
+	~decoder = FoaDecoderKernel.newUHJ;
+	s.sync;
+	MIDIIn.connect;
+	s.sync;
+	//create a project directory and in it create to more directories "rir" and "auto".
+	//place your binaural and ambisonic rirs in the rir folder. For some demo rirs
+	//and ambisonic recordings see the zip archive
+	//here: http://escuta.org/mosca 
+
+	// Mosca.new(<project directory path><b-format rir><binaural rir><server><decoder>)
+	//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
+	// outputs for decoding with an external decoder
+	
+	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
+			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, s, ~decoder);
+	//	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
+	//		"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
+	~testMosca.openGui(4, 120);
+};
+
 )
 
-~testMosca.openGui(5, 120);
 ::
