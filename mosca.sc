@@ -21,7 +21,7 @@ Mosca {
 	<>rirLspectrum, <>rirRspectrum,
 
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
-	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
+	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
 	<>dec;
 
@@ -48,6 +48,7 @@ Mosca {
 		tocarBFormatAmbOutFunc,
 		testit; // remove at some point with other debugging stuff
 
+		///////////// Functions to substitute blocs of code in SynthDefs //////////////
 		if (decoder.isNil) {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
 				Out.ar( 2, ambsinal); };
@@ -68,6 +69,8 @@ Mosca {
 			tocarBFormatAmbOutFunc = { |player, dec|
 				Out.ar( 0, FoaDecode.ar(player, dec)); };
 		};
+
+		////////////////// END Functions to substitute blocs of code /////////////
 		
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
@@ -150,18 +153,6 @@ Mosca {
 			}).add;
 			
 		
-		// should remove this. It's wrong!	
-			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-				var sig = In.ar(gbfbus, 4);
-				
-				//	SendTrig.kr(Impulse.kr(1), 0, sig[2]); // debugging
-				
-				Out.ar(2, [PartConv.ar(sig[0], fftsize, rirWspectrum.bufnum), 
-					PartConv.ar(sig[1], fftsize, rirXspectrum.bufnum), 
-					PartConv.ar(sig[2], fftsize, rirYspectrum.bufnum),
-					PartConv.ar(sig[3], fftsize, rirZspectrum.bufnum)
-				]);
-			}).add;
 
 			
 
@@ -469,7 +460,7 @@ Mosca {
 			
 			SynthDef.new(\tocarBFormatAmb, { arg outbus, bufnum = 0, rate = 1, 
 				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt;
+				mx = 0, my = 0, mz = 0, gbus, glev, llev, directang = 0, contr, dopon, dopamnt;
 				var scaledRate, player, wsinal, spos, pushang = 0,
 				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
 				gsig, lsig, rd, dopplershift;
@@ -516,15 +507,15 @@ Mosca {
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
 				globallev = globallev * (glev* 6) * grevganho;
 				
-				gsig = player * globallev;
+				gsig = player[0] * globallev;
 				
 				locallev = 1 - dis; 
 				
 				locallev = locallev  * (llev*18) * grevganho;
-				lsig = player * locallev;
+				lsig = player[0] * locallev;
 				
 				
-				Out.ar(gbfbus, gsig + lsig); //send part of direct signal global reverb synth
+				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
 				
 				
 			}).add;
@@ -915,19 +906,17 @@ Mosca {
 
 							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 								// reverb for non-contracted (full b-format) component
-								if(revGlobalBF == nil){
-									revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
-								};
-								// reverb for contracted (mono) component
+
+							// reverb for contracted (mono) component - and for rest too
 								if(revGlobal == nil){
 									revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 								};
 								if (testado[i] == false) {
-									synt[i] = Synth.new(\tocarBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
+									synt[i] = Synth.new(\tocarBFormatAmb, [\gbus, gbus, \outbus, mbus[i],
 										\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos, \lp,
 										lp[i], \volume, volume[i], \dopon, doppler[i]], 
 										//					~revGlobal, addAction: \addBefore);
-										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+										revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil;});
 									//	xbox[i].valueAction = 1; // é preciso para aplicar rev global sem mexer com mouse
 									
@@ -1024,10 +1013,8 @@ Mosca {
 							"B-format ambisonic!!!".postln;
 							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							// reverb for non-contracted (full b-format) component
-							if(revGlobalBF == nil){
-								revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
-							};
-							// reverb for contracted (mono) component
+
+						// reverb for contracted (mono) component - no, now it's for both
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
@@ -1036,7 +1023,7 @@ Mosca {
 								synt[i] = Synth.new(\tocarStreamBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
 									\busini, busini[i]], 
-									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 								
 								espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
@@ -2035,9 +2022,7 @@ Mosca {
 			isPlay = false;
 		};
 		revGlobal.free;
-		revGlobalBF.free;
 		revGlobal = nil;
-		revGlobalBF = nil;
 
     };
 
@@ -2118,7 +2103,7 @@ Mosca {
 			//		kespac[x].stop;
 		};
 		revGlobal.free;
-		revGlobalBF.free;
+		//		revGlobalBF.free;
 		
 		wdados.close;
 		gbus.free;
