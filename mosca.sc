@@ -23,7 +23,7 @@ Mosca {
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
-	<>ambDec;
+	<>dec;
 
 	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	//	<>rirLspectrum, <>rirRspectrum;
@@ -38,22 +38,42 @@ Mosca {
 	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
 
-	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr,
-		ambDecoder = nil;
-		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, subjectID,
-			srvr, ambDecoder);
+	*new { arg projDir, rirWXYZ, rirBinaural, srvr, decoder = nil;
+		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, srvr, decoder);
 	}
 
-	initMosca { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr, ambDecoder;
+	initMosca { arg projDir, rirWXYZ, rirBinaural, srvr, decoder;
 		var makeSynthDefs, revGlobTxt,
-
+		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
+		tocarBFormatAmbOutFunc,
 		testit; // remove at some point with other debugging stuff
 
+		if (decoder.isNil) {
+			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+				Out.ar( 2, ambsinal); };
+			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+				Out.ar( 2, ambsinal1plus2); };
+			revGlobalAmbFunc = { |ambsinal, dec|
+				Out.ar( 2, ambsinal); };
+			tocarBFormatAmbOutFunc = { |player, dec|
+				Out.ar( 2, player); };
+			
+		} {
+			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+				Out.ar( 0, FoaDecode.ar(ambsinal1O, dec)); };
+			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+				Out.ar( 0, FoaDecode.ar(ambsinal1plus2_1O, dec)); };
+			revGlobalAmbFunc = { |ambsinal, dec|
+				Out.ar( 0, FoaDecode.ar(ambsinal, dec)); };
+			tocarBFormatAmbOutFunc = { |player, dec|
+				Out.ar( 0, FoaDecode.ar(player, dec)); };
+		};
+		
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
 		prjDr = projDir;
-		ambDec = ambDecoder;
+		dec = decoder;
 		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
 		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
@@ -94,7 +114,7 @@ Mosca {
 		rirR.free;
 		server.sync;
 		
-		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
+		//		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
 		
 		/*		if(intAmbDecFlag == false) { // lets use an external decoder like AmbDec
 			revGlobTxt = "Out.ar(2, [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
@@ -108,17 +128,22 @@ Mosca {
 			}; */
 
 			/// START SYNTH DEFS ///////
-		//	makeSynthDefs = { arg revGlobTxt;
+
+		makeSynthDefs = { arg revGlobTxt;
 			//	~frogget = "YES NO YES NO!";
+
+
 			SynthDef.new("revGlobalAmb",  { arg gbus;
-				var sig;
+				var sig, ambsinal;
 				sig = In.ar(gbus, 1) * 5; // precisa de ganho....
-				
-				Out.ar(2, [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
+
+				ambsinal = [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
 					PartConv.ar(sig, fftsize, rirXspectrum.bufnum), 
 					PartConv.ar(sig, fftsize, rirYspectrum.bufnum),
-					PartConv.ar(sig, fftsize, rirZspectrum.bufnum)
-				]);
+					PartConv.ar(sig, fftsize, rirZspectrum.bufnum)];
+				
+				//Out.ar(2, ambsinal);
+				revGlobalAmbFunc.value(ambsinal, dec);
 				
 				//	revGlobTxt.interpret;
 				
@@ -202,19 +227,22 @@ Mosca {
 				ambsinal = [w, x, y, z, r, s, t, u, v]; 
 				
 				ambsinal1O = [w, x, y, z];
-				//SendTrig.kr(Impulse.kr(1),0, ambDec); // debugging
+				//SendTrig.kr(Impulse.kr(1),0, dec); // debugging
 				//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
 				//	Out.ar( 0, ambsinal);
 				//Out.ar( 2, ambsinal);
 				//TEST
 
 				// MoscaFoaDecode is the same as FoaDecode except that
-				// it returns the raw signal (which can be HOA) if ambDec is nil
+				// it returns the raw signal (which can be HOA) if decoder is nil
 				// If that's the case one must use an external decoder
 				// such as AmbDec by Fons Adriaensen
 
-				Out.ar( 2, MoscaFoaDecode.ar(ambsinal, ambDec));
+				//		Out.ar( 2, MoscaFoaDecode.ar(ambsinal, dec));
+
+				// select correct output depending on whether or not decoder.isNil
 				
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 				
 			}).add;
 
@@ -306,8 +334,8 @@ Mosca {
 				
 				//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
 				//	Out.ar( 0, ambsinal);
-				Out.ar( 2, ambsinal);
-				
+				//Out.ar( 2, ambsinal);
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 				
 			}).add;
 
@@ -324,7 +352,7 @@ Mosca {
 				glev = 0, llev = 0;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
 				junto, rd, dopplershift, azim, dis, 
 				junto1, azim1, 
 				junto2, azim2, 
@@ -389,9 +417,13 @@ Mosca {
 				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, dis);
 				
 				ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-				ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2]; 
-				Out.ar( 2, ambsinal1 + ambsinal2);
+				ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
 				
+				ambsinal1plus2 = ambsinal1 + ambsinal2;
+				ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
+				
+				//	Out.ar( 2, ambsinal1plus2);
+				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
 				
 			}).add;
 			
@@ -473,7 +505,9 @@ Mosca {
 				
 				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
 				player = FoaTransform.ar(player, 'push', pushang, azim);
-				Out.ar(2, player);
+
+				//	Out.ar(2, player);
+				tocarBFormatAmbOutFunc.value(player, dec);
 				
 				// Reverberação global
 				globallev = 1 / (1 - dis).sqrt;
@@ -568,7 +602,7 @@ Mosca {
 			}).add;
 
 
-		
+		};
 		makeSynthDefs.(revGlobTxt);
 		
 		//////// END SYNTHDEFS ///////////////
