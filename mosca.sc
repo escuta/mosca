@@ -1243,7 +1243,7 @@ Mosca {
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
 						
-						if(render == "ambisonic") {
+						
 							if(revGlobal == nil) {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
@@ -1259,33 +1259,19 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						} {
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							
-							if (testado[i] == false) { // if source is testing don't relaunch synths
-								"Here I am!".postln;
-								synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
-									\gbus, gbus, \dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							
-							atualizarvariaveis.value;
-						};
+						
+
+
+
+
+						
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
 						angulo[i] = pi/2;
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
 						
-						if(render == "ambisonic") {
-							
+						
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
@@ -1304,22 +1290,10 @@ Mosca {
 							atualizarvariaveis.value;
 							
 							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						} {
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
-									\dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-						};
+
+
+
+						
 					} {
 						if (sombuf[i].numChannels == 4) {
 							"B-format".postln;
@@ -1329,9 +1303,8 @@ Mosca {
 							{angslider.value = 0;}.defer;
 							
 							// B-format file with ambisonic render
-							if(render == "ambisonic") {
-								
-								//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+
+							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 								// reverb for non-contracted (full b-format) component
 								if(revGlobalBF == nil){
 									revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
@@ -1355,34 +1328,8 @@ Mosca {
 								};
 								atualizarvariaveis.value;
 								
-							} {
-								
-								// B-format file with binaural render
-								// reverb for contracted (mono) component
-								if(revGlobal == nil){
-									revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-								};
-								// reverb for non-contracted (full b-format) component
-								if(revGlobalBF == nil){
-									revGlobalBF = Synth.new(\revGlobalBFormatBin, [\gbfbus, gbfbus], addAction:\addToTail);
-								};
-								if (testado[i] == false) {
-									synt[i] = Synth.new(\tocarBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
-										\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos,
-										\lp, lp[i], \volume, volume[i], \dopon, doppler[i]], 
-										revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;});
-									
-									// is this still being used?
-									
-									espacializador[i] = Synth.new(\espacAmbParaBin, [\inbus, mbus[i], \gbus, gbus, 
-										\dopon, doppler[i]], 
-										synt[i], addAction: \addAfter);
-								};
-								atualizarvariaveis.value;
-								
-								
-							};
+
+							
 							
 						}
 						{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
@@ -1405,25 +1352,9 @@ Mosca {
 					x = case
 					{ ncan[i] == 1 } {
 						"Mono!".postln;
-						if (render == "binaural")
-						{
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
-									\volume, volume[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								
-								espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
-									\gbus, gbus, \dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-							
-						}{
+				
+
+						
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
@@ -1440,7 +1371,11 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						};
+						
+
+
+
+						
 					}
 					{ ncan[i] == 2 } {
 						"Estéreo!".postln;
@@ -1449,24 +1384,10 @@ Mosca {
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
 						
-						if (render == "binaural")
-						{
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
-									\volume, volume[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
-									\dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-							
-						}{
+		
+
+
+					
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
@@ -1482,33 +1403,15 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						};
+						
+
+
+
+						
 					}
 					{ ncan[i] == 4 } {
 						//"B-format!".postln;
-						if (render == "binaural")
-						{
-							"B-format binaural!!!".postln;
-							// B-format file with binaural render
-							// reverb for contracted (mono) component
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							// reverb for non-contracted (full b-format) component
-							if(revGlobalBF == nil){
-								revGlobalBF = Synth.new(\revGlobalBFormatBin, [\gbfbus, gbfbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
-									\contr, clev[i], \volume, volume[i], \dopon, doppler[i], \busini, busini[i]], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;});
-								espacializador[i] = Synth.new(\espacAmbParaBin, [\inbus, mbus[i], \gbus, gbus, 
-									\dopon, doppler[i]], synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-							
-						}{
+						
 							"B-format ambisonic!!!".postln;
 							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							// reverb for non-contracted (full b-format) component
@@ -1533,7 +1436,12 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						};
+						
+
+
+
+
+						
 					};
 					
 					
@@ -2692,7 +2600,7 @@ MoscaFoaDecode : FoaUGen {     // rewrite of ATK's FoaDecode. Returns raw signal
 			};
 
 		} {
-			^in
+			^in // return raw input if no decoder specified
 		}
 	}
 }
