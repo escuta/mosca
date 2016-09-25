@@ -32,9 +32,9 @@ Mosca {
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
 
-	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
+	/*	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
 	rirLspectrum, rirRspectrum,
-
+	*/
 	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
 
@@ -48,7 +48,7 @@ Mosca {
 		tocarBFormatAmbOutFunc,
 		testit; // remove at some point with other debugging stuff
 
-		///////////// Functions to substitute blocs of code in SynthDefs //////////////
+		///////////// Functions to substitute blocks of code in SynthDefs //////////////
 		if (decoder.isNil) {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
 				Out.ar( 2, ambsinal); };
@@ -175,7 +175,7 @@ Mosca {
 				//	fonte.set((mx - 450) * -1, 450 - my);
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - scale)) / scale;
-				//	azim = fonte.rotate(-1.57).theta;
+				//	azim = fonte.rotate(-1.05).theta;
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -224,11 +224,7 @@ Mosca {
 				//Out.ar( 2, ambsinal);
 				//TEST
 
-				// MoscaFoaDecode is the same as FoaDecode except that
-				// it returns the raw signal (which can be HOA) if decoder is nil
-				// If that's the case one must use an external decoder
-				// such as AmbDec by Fons Adriaensen
-
+				
 				//		Out.ar( 2, MoscaFoaDecode.ar(ambsinal, dec));
 
 				// select correct output depending on whether or not decoder.isNil
@@ -275,7 +271,7 @@ Mosca {
 				//	fonte.set((mx - 450) * -1, 450 - my);
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - scale)) / scale;
-				//	azim = fonte.rotate(-1.57).theta;
+				//	azim = fonte.rotate(-1.05).theta;
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -338,7 +334,7 @@ Mosca {
 
 
 			SynthDef.new("espacAmbEstereo",  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, angulo = 1.57,
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, angulo = 1.05,
 				dopon = 0, dopamnt = 0, 
 				glev = 0, llev = 0;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
@@ -754,7 +750,7 @@ Mosca {
 			{wdados.visible = false;};
 		});
 		
-		
+		/*		
 		bAmbBinaural = Button(win, Rect(370, 50, 90, 20))
 		.states_([
 			["binaural", Color.black, Color.white], ["ambisonic", Color.black, Color.white]
@@ -773,7 +769,7 @@ Mosca {
 				render = "binaural";
 			};
 		});
-		
+		*/
 		atualizarvariaveis = {
 			"atualizando!".postln;
 			
@@ -868,8 +864,10 @@ Mosca {
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
 						angulo[i] = pi/2;
-						{angnumbox.value = pi/2;}.defer;
-						{angslider.value = 0.5;}.defer;
+						//						{angnumbox.value = pi/2;}.defer; 
+						{angnumbox.value = 1.05;}.defer; // 60 degrees
+						//						{angslider.value = 0.5;}.defer;
+						{angslider.value = 0.33;}.defer;
 						
 						
 							if(revGlobal == nil){
