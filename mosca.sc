@@ -31,6 +31,7 @@ Mosca {
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
+	o, //debugging
 
 	/*	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
 	rirLspectrum, rirRspectrum,
@@ -43,11 +44,13 @@ Mosca {
 	}
 
 	initMosca { arg projDir, rirWXYZ, rirBinaural, srvr, decoder;
-		var makeSynthDefs, revGlobTxt,
+		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
-		tocarBFormatAmbOutFunc,
+		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatFunc, 
 		testit; // remove at some point with other debugging stuff
 
+		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
 		if (decoder.isNil) {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
@@ -56,7 +59,7 @@ Mosca {
 				Out.ar( 2, ambsinal1plus2); };
 			revGlobalAmbFunc = { |ambsinal, dec|
 				Out.ar( 2, ambsinal); };
-			tocarBFormatAmbOutFunc = { |player, dec|
+			playBFormatOutFunc = { |player, dec|
 				Out.ar( 2, player); };
 			
 		} {
@@ -66,7 +69,7 @@ Mosca {
 				Out.ar( 0, FoaDecode.ar(ambsinal1plus2_1O, dec)); };
 			revGlobalAmbFunc = { |ambsinal, dec|
 				Out.ar( 0, FoaDecode.ar(ambsinal, dec)); };
-			tocarBFormatAmbOutFunc = { |player, dec|
+			playBFormatOutFunc = { |player, dec|
 				Out.ar( 0, FoaDecode.ar(player, dec)); };
 		};
 
@@ -132,7 +135,7 @@ Mosca {
 
 			/// START SYNTH DEFS ///////
 
-		makeSynthDefs = { arg revGlobTxt;
+		
 			//	~frogget = "YES NO YES NO!";
 
 
@@ -415,21 +418,6 @@ Mosca {
 			}).add;
 			
 
-
-
-			SynthDef.new(\arquivoLoop, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0;
-				var sig;
-				var scaledRate, player, spos;
-				// 	spos = tpos * SampleRate.ir *  BufSampleRate.kr(bufnum) / SampleRate.ir;
-				spos = tpos * BufSampleRate.kr(bufnum);
-				//	SendTrig.kr(Impulse.kr(1),0,  spos); // debugging
-				scaledRate = rate * BufRateScale.kr(bufnum);
-				player = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				Out.ar(outbus, player * volume)
-			}).add;
-			
-			
 			SynthDef.new(\tocarStreamMono, { arg outbus, busini = 0, volume = 0;
 				var player;
 				player =  SoundIn.ar(busini, 1);
@@ -442,82 +430,6 @@ Mosca {
 				player =  [SoundIn.ar(busini), SoundIn.ar(busini + 1)];
 				Out.ar(outbus, player * volume);
 			}).add;
-			
-			
-			SynthDef.new(\arquivoLoopEst, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0;
-				var scaledRate, player, spos;
-				spos = tpos * BufSampleRate.kr(bufnum);
-				scaledRate = rate * BufRateScale.kr(bufnum); 
-				player = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				Out.ar(outbus, player * volume);
-			}).add;
-			
-			
-			SynthDef.new(\tocarBFormatAmb, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbus, glev, llev, directang = 0, contr, dopon, dopamnt;
-				var scaledRate, player, wsinal, spos, pushang = 0,
-				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
-				gsig, lsig, rd, dopplershift;
-				var grevganho = 0.20;
-				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
-				
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - scale)) / scale;
-				pushang = (1 - dis) * pi / 2; // grau de deslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
-				azim = fonte.theta; // ângulo (azimuth) de deslocamento
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				// 	spos = tpos * SampleRate.ir;
-				spos = tpos * BufSampleRate.kr(bufnum);
-				scaledRate = rate * BufRateScale.kr(bufnum); 
-				player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				
-				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
-				player = dopplershift;
-				
-				wsinal = player[0] * contr * volume * dis * 2.0;
-				
-				Out.ar(outbus, wsinal);
-				//	~teste = contr * volume * dis;
-				
-				//	SendTrig.kr(Impulse.kr(1),0, ~teste); // debugging
-				
-				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
-				
-				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
-				player = FoaTransform.ar(player, 'push', pushang, azim);
-
-				//	Out.ar(2, player);
-				tocarBFormatAmbOutFunc.value(player, dec);
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				globallev = globallev * (glev* 6) * grevganho;
-				
-				gsig = player[0] * globallev;
-				
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*18) * grevganho;
-				lsig = player[0] * locallev;
-				
-				
-				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
-				
-				
-			}).add;
-
-			
-
 			
 			SynthDef.new(\tocarStreamBFormatAmb, {
 				// another near copy!
@@ -589,8 +501,129 @@ Mosca {
 			}).add;
 
 
+			
+		makeSynthDefPlayers = { arg type;    // 3 types : File, HWBus and SWBus
+
+
+
+
+			SynthDef.new("playMono"++type, { arg outbus, bufnum = 0, rate = 1, 
+				volume = 0, tpos = 0, lp = 0;
+				//		var sig;
+				var scaledRate, player = 0, spos, playerRef;
+				playerRef = Ref(0);
+				playMonoInFunc.value(bufnum, scaledRate, playerRef, tpos, spos, lp, rate, volume, outbus);
+				Out.ar(outbus, playerRef.value * volume);
+			}).add;
+
+			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
+				volume = 0, tpos = 0, lp = 0;
+				//		var sig;
+				var scaledRate, player = 0, spos, playerRef;
+				playerRef = Ref(0);
+				playStereoInFunc.value(bufnum, scaledRate, playerRef, tpos, spos, lp, rate, volume, outbus);
+				Out.ar(outbus, playerRef.value * volume);
+			}).add;
+
+			
+			
+			/*			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
+				volume = 0, tpos = 0, lp = 0;
+				var scaledRate, player, spos;
+
+				spos = tpos * BufSampleRate.kr(bufnum);
+				scaledRate = rate * BufRateScale.kr(bufnum); 
+				player = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+
+				Out.ar(outbus, player * volume);
+			}).add;
+			*/
+			
+			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1, 
+				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+				mx = 0, my = 0, mz = 0, gbus, glev, llev, directang = 0, contr, dopon, dopamnt;
+				var scaledRate, player, wsinal, spos, pushang = 0,
+				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
+				gsig, lsig, rd, dopplershift;
+				var grevganho = 0.20;
+				
+				mx = Lag.kr(mx, 2.0 * dopon);
+				my = Lag.kr(my, 2.0 * dopon);
+				mz = Lag.kr(mz, 2.0 * dopon);
+				
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = (1 - (fonte.rho - scale)) / scale;
+				pushang = (1 - dis) * pi / 2; // grau de deslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
+				azim = fonte.theta; // ângulo (azimuth) de deslocamento
+				dis = Select.kr(dis < 0, [dis, 0]); 
+				// 	spos = tpos * SampleRate.ir;
+				spos = tpos * BufSampleRate.kr(bufnum);
+				scaledRate = rate * BufRateScale.kr(bufnum); 
+				player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+				
+				rd = (1 - dis) * 340; 
+				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
+				player = dopplershift;
+				
+				wsinal = player[0] * contr * volume * dis * 2.0;
+				
+				Out.ar(outbus, wsinal);
+				//	~teste = contr * volume * dis;
+				
+				//	SendTrig.kr(Impulse.kr(1),0, ~teste); // debugging
+				
+				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
+				
+				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
+				player = FoaTransform.ar(player, 'push', pushang, azim);
+
+				//	Out.ar(2, player);
+				playBFormatOutFunc.value(player, dec);
+				
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
+				globallev = Select.kr(globallev < 0, [globallev, 0]); 
+				globallev = globallev * (glev* 6) * grevganho;
+				
+				gsig = player[0] * globallev;
+				
+				locallev = 1 - dis; 
+				
+				locallev = locallev  * (llev*18) * grevganho;
+				lsig = player[0] * locallev;
+				
+				
+				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
+				
+				
+			}).add;
+
+		}; //end makeSynthDefPlayers
+
+		playMonoInFunc = {
+			arg bufnum, scaledRate, playerRef, tpos, spos, lp = 0, rate, volume, outbus;
+			spos = tpos * BufSampleRate.kr(bufnum);
+			scaledRate = rate * BufRateScale.kr(bufnum);
+			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
 		};
-		makeSynthDefs.(revGlobTxt);
+		playStereoInFunc = {
+			arg bufnum, scaledRate, playerRef, tpos, spos, lp = 0, rate, volume, outbus;
+			spos = tpos * BufSampleRate.kr(bufnum);
+			scaledRate = rate * BufRateScale.kr(bufnum);
+			playerRef.value = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
+		};
+		
+		//playMonoInFunc.value(bufnum, scaledRate, player, tpos, spos, lp, rate, volume, outbus);
+		makeSynthDefPlayers.("File");
+
+		makeSynthDefPlayers.("HWBus");
+		makeSynthDefPlayers.("SWBus");
+
+		
+			//makeSynthDefPlayers.(revGlobTxt);
 		
 		//////// END SYNTHDEFS ///////////////
 
@@ -750,26 +783,6 @@ Mosca {
 			{wdados.visible = false;};
 		});
 		
-		/*		
-		bAmbBinaural = Button(win, Rect(370, 50, 90, 20))
-		.states_([
-			["binaural", Color.black, Color.white], ["ambisonic", Color.black, Color.white]
-		])
-		.action_({ arg but;
-			//	but.value.postln;
-			if(but.value == 1)
-			{
-				controle.stop;
-				revGlobal.free;
-				render = "ambisonic";
-			}
-			{
-				controle.stop;
-				revGlobal.free;
-				render = "binaural";
-			};
-		});
-		*/
 		atualizarvariaveis = {
 			"atualizando!".postln;
 			
@@ -844,7 +857,7 @@ Mosca {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) { // if source is testing don't relaunch synths
-								synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
+								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
@@ -874,7 +887,7 @@ Mosca {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
+								synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										//	addAction: \addToHead).onFree({espacializador[i].free;
@@ -910,7 +923,7 @@ Mosca {
 									revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 								};
 								if (testado[i] == false) {
-									synt[i] = Synth.new(\tocarBFormatAmb, [\gbus, gbus, \outbus, mbus[i],
+									synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \outbus, mbus[i],
 										\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos, \lp,
 										lp[i], \volume, volume[i], \dopon, doppler[i]], 
 										//					~revGlobal, addAction: \addBefore);
@@ -955,7 +968,7 @@ Mosca {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
+								synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, busini[i],
 									\volume, volume[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
@@ -988,7 +1001,7 @@ Mosca {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
+								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, busini[i],
 									\volume, volume[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
@@ -1018,7 +1031,7 @@ Mosca {
 							};
 							
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
+								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
 									\busini, busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
