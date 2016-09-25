@@ -46,9 +46,15 @@ Mosca {
 	initMosca { arg projDir, rirWXYZ, rirBinaural, srvr, decoder;
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
-		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatFunc, 
+		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
+		parser,
 		testit; // remove at some point with other debugging stuff
 
+		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
+		playStereoInFunc = Array.newClear(3);
+		playBFormatInFunc = Array.newClear(3);
+
+		
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
@@ -72,6 +78,35 @@ Mosca {
 			playBFormatOutFunc = { |player, dec|
 				Out.ar( 0, FoaDecode.ar(player, dec)); };
 		};
+
+		/*		parser = { |s, envir|   // some code by Daniel Mayer. will be used to modify
+			// the names of functions in synthdef and will be applied in a synthdef
+			// building function
+			var varPos = s.findAll("~"), collector, result = s.copy;
+			envir = envir ? currentEnvironment;
+			varPos.do { |i|
+				var j = i, doSearch = true, variable = "~", n;
+				while
+				{ (j <= (s.size-1)) && doSearch }
+				{
+					n = s[j+1].ascii;
+					((n >= 65) && (n <= 65) || (n >= 97) && (n <= 115)).if {
+						variable = variable ++ s[j+1];
+						j = j + 1;
+					}{
+						doSearch = false
+					}
+				};
+				(j > i).if { collector = collector.add(variable) };
+			};
+			collector.do { |item|
+				var repl = envir[item.drop(1).asSymbol].();
+				repl.isKindOf(String).not.if { repl = repl.asCompileString };
+				result = result.replace(item, repl);
+			};
+			result
+		};
+		*/
 
 		////////////////// END Functions to substitute blocs of code /////////////
 		
@@ -502,47 +537,33 @@ Mosca {
 
 
 			
-		makeSynthDefPlayers = { arg type;    // 3 types : File, HWBus and SWBus
-
-
-
+		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
 
 			SynthDef.new("playMono"++type, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0;
-				//		var sig;
-				var scaledRate, player = 0, spos, playerRef;
+				volume = 0, tpos = 0, lp = 0, busini;
+				var scaledRate, spos, playerRef;
 				playerRef = Ref(0);
-				playMonoInFunc.value(bufnum, scaledRate, playerRef, tpos, spos, lp, rate, volume, outbus);
+				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+				//SendTrig.kr(Impulse.kr(1),0,  funcString); // debugging
 				Out.ar(outbus, playerRef.value * volume);
 			}).add;
 
 			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0;
+				volume = 0, tpos = 0, lp = 0, busini;
 				//		var sig;
-				var scaledRate, player = 0, spos, playerRef;
+				var scaledRate, spos, playerRef;
 				playerRef = Ref(0);
-				playStereoInFunc.value(bufnum, scaledRate, playerRef, tpos, spos, lp, rate, volume, outbus);
+				playStereoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				Out.ar(outbus, playerRef.value * volume);
 			}).add;
 
 			
 			
-			/*			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0;
-				var scaledRate, player, spos;
-
-				spos = tpos * BufSampleRate.kr(bufnum);
-				scaledRate = rate * BufRateScale.kr(bufnum); 
-				player = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-
-				Out.ar(outbus, player * volume);
-			}).add;
-			*/
-			
 			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1, 
 				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbus, glev, llev, directang = 0, contr, dopon, dopamnt;
-				var scaledRate, player, wsinal, spos, pushang = 0,
+				mx = 0, my = 0, mz = 0, gbus, glev, llev, directang = 0, contr, dopon, dopamnt,
+				busini;
+				var scaledRate, playerRef, wsinal, spos, pushang = 0,
 				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
 				gsig, lsig, rd, dopplershift;
 				var grevganho = 0.20;
@@ -558,28 +579,34 @@ Mosca {
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				// 	spos = tpos * SampleRate.ir;
+
+				/*
 				spos = tpos * BufSampleRate.kr(bufnum);
 				scaledRate = rate * BufRateScale.kr(bufnum); 
 				player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+				*/
+				
+				playerRef = Ref(0);
+				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				
 				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
-				player = dopplershift;
+				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
+				playerRef.value = dopplershift;
 				
-				wsinal = player[0] * contr * volume * dis * 2.0;
+				wsinal = playerRef.value[0] * contr * volume * dis * 2.0;
 				
 				Out.ar(outbus, wsinal);
 				//	~teste = contr * volume * dis;
 				
 				//	SendTrig.kr(Impulse.kr(1),0, ~teste); // debugging
 				
-				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
+				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
 				
-				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
-				player = FoaTransform.ar(player, 'push', pushang, azim);
+				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle, volume * dis * (1 - contr));
+				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
 
 				//	Out.ar(2, player);
-				playBFormatOutFunc.value(player, dec);
+				playBFormatOutFunc.value(playerRef.value, dec);
 				
 				// Reverberação global
 				globallev = 1 / (1 - dis).sqrt;
@@ -588,12 +615,12 @@ Mosca {
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
 				globallev = globallev * (glev* 6) * grevganho;
 				
-				gsig = player[0] * globallev;
+				gsig = playerRef.value[0] * globallev;
 				
 				locallev = 1 - dis; 
 				
 				locallev = locallev  * (llev*18) * grevganho;
-				lsig = player[0] * locallev;
+				lsig = playerRef.value[0] * locallev;
 				
 				
 				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
@@ -603,24 +630,61 @@ Mosca {
 
 		}; //end makeSynthDefPlayers
 
-		playMonoInFunc = {
-			arg bufnum, scaledRate, playerRef, tpos, spos, lp = 0, rate, volume, outbus;
+		// Make File-In SynthDefs
+		
+		playMonoInFunc[0] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate; // Note it needs all the variables
 			spos = tpos * BufSampleRate.kr(bufnum);
 			scaledRate = rate * BufRateScale.kr(bufnum);
 			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
 		};
-		playStereoInFunc = {
-			arg bufnum, scaledRate, playerRef, tpos, spos, lp = 0, rate, volume, outbus;
+		
+				playStereoInFunc[0] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			spos = tpos * BufSampleRate.kr(bufnum);
 			scaledRate = rate * BufRateScale.kr(bufnum);
 			playerRef.value = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
 		};
-		
-		//playMonoInFunc.value(bufnum, scaledRate, player, tpos, spos, lp, rate, volume, outbus);
-		makeSynthDefPlayers.("File");
 
-		makeSynthDefPlayers.("HWBus");
-		makeSynthDefPlayers.("SWBus");
+		playBFormatInFunc[0] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			spos = tpos * BufSampleRate.kr(bufnum);
+			scaledRate = rate * BufRateScale.kr(bufnum); 
+			playerRef.value = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+		};
+		
+		makeSynthDefPlayers.("File", 0);
+
+		// Make HWBus-In SynthDefs
+
+		//	playMonoInFunc[1] = playMonoInFunc[0];
+		//playStereoInFunc[1] = playStereoInFunc[0];
+		//playBFormatInFunc[1] = playBFormatInFunc[0];
+		
+		playMonoInFunc[1] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  SoundIn.ar(busini, 1);
+		};
+		
+		playStereoInFunc[1] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [SoundIn.ar(busini), SoundIn.ar(busini + 1)];
+		};
+		
+
+		playBFormatInFunc[1] = {
+			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [SoundIn.ar(busini), SoundIn.ar(busini + 1),
+				SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
+
+		};
+		
+		
+		makeSynthDefPlayers.("HWBus", 1);
+
+				// Make SWBus In SynthDefs
+
+		//	makeSynthDefPlayers.("SWBus", 2);
 
 		
 			//makeSynthDefPlayers.(revGlobTxt);
