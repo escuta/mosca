@@ -453,88 +453,6 @@ Mosca {
 			}).add;
 			
 
-			SynthDef.new(\tocarStreamMono, { arg outbus, busini = 0, volume = 0;
-				var player;
-				player =  SoundIn.ar(busini, 1);
-				//SendTrig.kr(Impulse.kr(1),0,  player); // debugging
-				Out.ar(outbus, player * volume);
-			}).add;
-			
-			SynthDef.new(\tocarStreamEstereo, { arg outbus, busini, volume = 0;
-				var player;
-				player =  [SoundIn.ar(busini), SoundIn.ar(busini + 1)];
-				Out.ar(outbus, player * volume);
-			}).add;
-			
-			SynthDef.new(\tocarStreamBFormatAmb, {
-				// another near copy!
-				arg outbus, volume = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt, busini = 0;
-				var scaledRate, player, wsinal, spos, pushang = 0,
-				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
-				gsig, lsig, rd, dopplershift;
-				var grevganho = 0.20;
-				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
-				
-				// 	fonte = Point.new;
-				//	fonte.set(mx, my);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - scale)) / scale;
-				pushang = (1 - dis) * pi / 2; // grau de eslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
-				azim = fonte.theta; // ângulo (azimuth) de deslocamento
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				// 	spos = tpos * SampleRate.ir;
-				
-				//spos = tpos * BufSampleRate.kr(bufnum);
-				//scaledRate = rate * BufRateScale.kr(bufnum); 
-				
-				
-				//	player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				player =  [SoundIn.ar(busini), SoundIn.ar(busini + 1), SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
-				
-				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
-				player = dopplershift;
-				
-				wsinal = player[0] * contr * volume * dis * 2.0;
-				
-				Out.ar(outbus, wsinal);
-				//~teste = contr * volume * dis;
-				
-				//	SendTrig.kr(Impulse.kr(1),0, ~teste); // debugging
-				
-				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
-				
-				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
-				player = FoaTransform.ar(player, 'push', pushang, azim);
-				Out.ar(2, player);
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				globallev = globallev * (glev* 6) * grevganho;
-				
-				gsig = player * globallev;
-				
-				
-				
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*18) * grevganho;
-				lsig = player * locallev;
-				
-				
-				Out.ar(gbfbus, gsig + lsig); //send part of direct signal global reverb synth
-				
-				
-			}).add;
-
 
 			
 		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
@@ -630,7 +548,7 @@ Mosca {
 
 		}; //end makeSynthDefPlayers
 
-		// Make File-In SynthDefs
+		// Make File-in SynthDefs
 		
 		playMonoInFunc[0] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate; // Note it needs all the variables
@@ -655,11 +573,8 @@ Mosca {
 		
 		makeSynthDefPlayers.("File", 0);
 
-		// Make HWBus-In SynthDefs
+		// Make HWBus-in SynthDefs
 
-		//	playMonoInFunc[1] = playMonoInFunc[0];
-		//playStereoInFunc[1] = playStereoInFunc[0];
-		//playBFormatInFunc[1] = playBFormatInFunc[0];
 		
 		playMonoInFunc[1] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
@@ -2234,18 +2149,5 @@ Mosca {
 				};
 			};
 		}
-
-
-
-
-
-
-			
-
-
 	}
-	
 }
-
-
-
