@@ -1008,10 +1008,18 @@ Mosca {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
+
+								if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, busini[i],
 									\volume, volume[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
+								} {
+								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i], \busini, busini[i],
+									\volume, volume[i]], revGlobal,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								};
 								
 								espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
 									\dopon, doppler[i]], 
@@ -1038,11 +1046,19 @@ Mosca {
 							};
 							
 							if (testado[i] == false) {
+								if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
 									\busini, busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
+								} {
+								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
+									\busini, busini[i]], 
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil;});
+								};
 								
 								espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
 									\dopon, doppler[i]], 
@@ -2097,8 +2113,8 @@ Mosca {
 			//	espacializador[i].free;
 			isPlay = false;
 		};
-		revGlobal.free;
-		revGlobal = nil;
+		//		revGlobal.free;
+		//		revGlobal = nil;
 
     };
 
