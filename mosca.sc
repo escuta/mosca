@@ -283,7 +283,7 @@ Mosca {
 
 			
 			
-			SynthDef.new("espacAmb2",  {
+			SynthDef.new("espacAmb2",  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
 				glev = 0, llev = 0.2;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
