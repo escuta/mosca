@@ -281,7 +281,6 @@ Mosca {
 			// in these is performed in the player itself
 
 
-		// meaningless comment
 			
 			SynthDef.new("espacAmb2",  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
