@@ -38,14 +38,11 @@ Mosca {
 	*/
 	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
-	*fetchGuiArgs { // selection of Mosca arguments for use in synths
-		|arg1, ag2|
-		^arg1;
-	}
 
 	*new { arg projDir, rirWXYZ, rirBinaural, srvr, decoder = nil;
 		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, srvr, decoder);
 	}
+
 
 	initMosca { arg projDir, rirWXYZ, rirBinaural, srvr, decoder;
 		var makeSynthDefPlayers, revGlobTxt,
@@ -281,7 +278,6 @@ Mosca {
 			// in these is performed in the player itself
 
 
-			
 			
 			SynthDef.new("espacAmb2",  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
@@ -629,6 +625,11 @@ Mosca {
 
 	} // end initMosca
 	
+
+	registerSynth { // selection of Mosca arguments for use in synths
+		|synth|
+		^synth;
+	}
 
 	openGui {
 
