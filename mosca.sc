@@ -21,9 +21,9 @@ Mosca {
 	<>rirLspectrum, <>rirRspectrum,
 
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
-	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
+	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
-	<>ambDec;
+	<>dec;
 
 	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	//	<>rirLspectrum, <>rirRspectrum;
@@ -31,29 +31,94 @@ Mosca {
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
+	o, //debugging
 
-	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
+	/*	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
 	rirLspectrum, rirRspectrum,
-
+	*/
 	binDecoder, prjDr;
 	classvar fftsize = 2048, server;
-
-	*new { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr,
-		ambDecoder = nil;
-		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, subjectID,
-			srvr, ambDecoder);
+	*fetchGuiArgs { // selection of Mosca arguments for use in synths
+		|arg1, ag2|
+		^arg1;
 	}
 
-	initMosca { arg projDir, rirWXYZ, rirBinaural, subjectID, srvr, ambDecoder;
-		var makeSynthDefs, revGlobTxt,
+	*new { arg projDir, rirWXYZ, rirBinaural, srvr, decoder = nil;
+		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, srvr, decoder);
+	}
 
+	initMosca { arg projDir, rirWXYZ, rirBinaural, srvr, decoder;
+		var makeSynthDefPlayers, revGlobTxt,
+		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
+		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
+		parser,
 		testit; // remove at some point with other debugging stuff
 
+		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
+		playStereoInFunc = Array.newClear(3);
+		playBFormatInFunc = Array.newClear(3);
+
+		
+		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+		
+		///////////// Functions to substitute blocks of code in SynthDefs //////////////
+		if (decoder.isNil) {
+			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+				Out.ar( 2, ambsinal); };
+			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+				Out.ar( 2, ambsinal1plus2); };
+			revGlobalAmbFunc = { |ambsinal, dec|
+				Out.ar( 2, ambsinal); };
+			playBFormatOutFunc = { |player, dec|
+				Out.ar( 2, player); };
+			
+		} {
+			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+				Out.ar( 0, FoaDecode.ar(ambsinal1O, dec)); };
+			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+				Out.ar( 0, FoaDecode.ar(ambsinal1plus2_1O, dec)); };
+			revGlobalAmbFunc = { |ambsinal, dec|
+				Out.ar( 0, FoaDecode.ar(ambsinal, dec)); };
+			playBFormatOutFunc = { |player, dec|
+				Out.ar( 0, FoaDecode.ar(player, dec)); };
+		};
+
+		/*		parser = { |s, envir|   // some code by Daniel Mayer. will be used to modify
+			// the names of functions in synthdef and will be applied in a synthdef
+			// building function
+			var varPos = s.findAll("~"), collector, result = s.copy;
+			envir = envir ? currentEnvironment;
+			varPos.do { |i|
+				var j = i, doSearch = true, variable = "~", n;
+				while
+				{ (j <= (s.size-1)) && doSearch }
+				{
+					n = s[j+1].ascii;
+					((n >= 65) && (n <= 65) || (n >= 97) && (n <= 115)).if {
+						variable = variable ++ s[j+1];
+						j = j + 1;
+					}{
+						doSearch = false
+					}
+				};
+				(j > i).if { collector = collector.add(variable) };
+			};
+			collector.do { |item|
+				var repl = envir[item.drop(1).asSymbol].();
+				repl.isKindOf(String).not.if { repl = repl.asCompileString };
+				result = result.replace(item, repl);
+			};
+			result
+		};
+		*/
+
+		////////////////// END Functions to substitute blocs of code /////////////
+		
 		server = srvr ? Server.default;
 		//		nfontes = numFontes;
 		//		sprite = Array2D.new(nfontes, 2);
 		prjDr = projDir;
-		ambDec = ambDecoder;
+		dec = decoder;
 		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
 		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
@@ -94,7 +159,7 @@ Mosca {
 		rirR.free;
 		server.sync;
 		
-		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
+		//		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
 		
 		/*		if(intAmbDecFlag == false) { // lets use an external decoder like AmbDec
 			revGlobTxt = "Out.ar(2, [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
@@ -108,50 +173,28 @@ Mosca {
 			}; */
 
 			/// START SYNTH DEFS ///////
-		//	makeSynthDefs = { arg revGlobTxt;
-			//	~frogget = "YES NO YES NO!";
+
+
+
 			SynthDef.new("revGlobalAmb",  { arg gbus;
-				var sig;
+				var sig, ambsinal;
 				sig = In.ar(gbus, 1) * 5; // precisa de ganho....
-				
-				Out.ar(2, [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
+
+				ambsinal = [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
 					PartConv.ar(sig, fftsize, rirXspectrum.bufnum), 
 					PartConv.ar(sig, fftsize, rirYspectrum.bufnum),
-					PartConv.ar(sig, fftsize, rirZspectrum.bufnum)
-				]);
+					PartConv.ar(sig, fftsize, rirZspectrum.bufnum)];
+				
+				//Out.ar(2, ambsinal);
+				revGlobalAmbFunc.value(ambsinal, dec);
 				
 				//	revGlobTxt.interpret;
 				
 			}).add;
 			
-			SynthDef.new("revGlobalBinaural",  { arg gbus;
-				var sig;
-				sig = In.ar(gbus, 1) * 5;
-				//	SendTrig.kr(Impulse.kr(1), 0, sig); // debugging
-				Out.ar(0, [PartConv.ar(sig, fftsize, rirLspectrum.bufnum), 
-					PartConv.ar(sig, fftsize, rirRspectrum.bufnum)
-				]);
-			}).add;
-			
-			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-				var sig = In.ar(gbfbus, 4);
-				
-				//	SendTrig.kr(Impulse.kr(1), 0, sig[2]); // debugging
-				
-				Out.ar(2, [PartConv.ar(sig[0], fftsize, rirWspectrum.bufnum), 
-					PartConv.ar(sig[1], fftsize, rirXspectrum.bufnum), 
-					PartConv.ar(sig[2], fftsize, rirYspectrum.bufnum),
-					PartConv.ar(sig[3], fftsize, rirZspectrum.bufnum)
-				]);
-			}).add;
+		
 
-			SynthDef.new("revGlobalBFormatBin",  { arg gbfbus;
-				var sig = In.ar(gbfbus, 4);
-				Out.ar(0, [PartConv.ar(sig, fftsize, rirLspectrum.bufnum), 
-					PartConv.ar(sig, fftsize, rirRspectrum.bufnum)
-				]);
-				
-			}).add;
+			
 
 			SynthDef.new("espacAmb",  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
@@ -172,7 +215,7 @@ Mosca {
 				//	fonte.set((mx - 450) * -1, 450 - my);
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - scale)) / scale;
-				//	azim = fonte.rotate(-1.57).theta;
+				//	azim = fonte.rotate(-1.05).theta;
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -215,122 +258,34 @@ Mosca {
 				ambsinal = [w, x, y, z, r, s, t, u, v]; 
 				
 				ambsinal1O = [w, x, y, z];
-				//SendTrig.kr(Impulse.kr(1),0, ambDec); // debugging
+				//SendTrig.kr(Impulse.kr(1),0, dec); // debugging
 				//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
 				//	Out.ar( 0, ambsinal);
 				//Out.ar( 2, ambsinal);
 				//TEST
 
-				// MoscaFoaDecode is the same as FoaDecode except that
-				// it returns the raw signal (which can be HOA) if ambDec is nil
-				// If that's the case one must use an external decoder
-				// such as AmbDec by Fons Adriaensen
-
-				Out.ar( 2, MoscaFoaDecode.ar(ambsinal, ambDec));
 				
+				//		Out.ar( 2, MoscaFoaDecode.ar(ambsinal, dec));
+
+				// select correct output depending on whether or not decoder.isNil
+				
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 				
 			}).add;
 
 
-			SynthDef.new(\tocarBFormatBin, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbfbus, gbusout, glev, llev, directang = 0, contr,
-				dopon, dopamnt = 0;
-				
-				var scaledRate, player, wsinal, spos, pushang = 0,
-				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
-				gsig, lsig, el,
-				rd, dopplershift;
-				var grevganho = 0.20;
-				// 	fonte = Point.new;
-				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
-				
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - scale)) / scale;
-				pushang = (1 - dis) * pi / 2; // grau de deslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
-				azim = fonte.theta; // ângulo (azimuth) de deslocamento
-				
-				el = fonte.phi;
-				
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				// 	spos = tpos * SampleRate.ir;
-				spos = tpos * BufSampleRate.kr(bufnum);
-				scaledRate = rate * BufRateScale.kr(bufnum); 
-				player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				
-				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
-				player = dopplershift;
-				
-				
-				//wsinal = player[0] * contr * volume * dis * 2.0; // why is contr (contração?) being used here?
-				// it's being used because this wsinal is being incorrectly used for global reverb too. This should
-				// only be used for contraction
-				
-				//		 wsinal = player[0] * volume * dis * 2.0;
-				wsinal = player[0] * volume * contr * dis * 2.0;
-				// SendTrig.kr(Impulse.kr(1),0, wsinal); // debugging
-				//	Out.ar(gbusout wsinal);
-				
-				// this is the "contracted" component of the global reverb
-				// and has a mono source derived from W. The full B-format or non-contracted
-				// component is sent to the global b-format binaral reverberator. See "gsig" below.
-				
-				Out.ar(outbus, wsinal);
-				//		Out.ar(outbus, wsinal * contr);
-				//	~teste = contr * volume * dis;
-				
-				// 		SendTrig.kr(Impulse.kr(1),0, contr); // debugging
-				
-				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
-				
-				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
-				player = FoaTransform.ar(player, 'push', pushang, azim, el);
-				
-				
-				//		 Decode direct signal
-				
-				server.sync;
-				Out.ar( 0, FoaDecode.ar(player, binDecoder));
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				globallev = globallev * (glev*4) * grevganho;
-				
-				gsig = player * globallev;
-				
-				
-				
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*12) * grevganho;
-				lsig = player * locallev;
-				
-				// SendTrig.kr(Impulse.kr(1),0, gsig); // debugging
-				
-				Out.ar(gbfbus, gsig + lsig); //send part of direct signal global reverb synth
-				
-				
-			}).add;
-
+			
 
 
 			// This second version of espacAmb is necessary with B-format sources, because the doppler
 			// in these is performed in the player itself
 
 
+		// meaningless comment
 			
-			
-			SynthDef.new("espacAmb2",  {
+			SynthDef.new("espacAmb2",  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-				glev = 0, llev = 0;
+				glev = 0, llev = 0.2;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
 				//		globallev = 0.0001, locallev, gsig, fonte;
@@ -356,7 +311,7 @@ Mosca {
 				//	fonte.set((mx - 450) * -1, 450 - my);
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - scale)) / scale;
-				//	azim = fonte.rotate(-1.57).theta;
+				//	azim = fonte.rotate(-1.05).theta;
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -388,13 +343,14 @@ Mosca {
 				
 				// Reverberação local
 				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*8);
+				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
+				locallev = locallev * (llev*25);
 				
 				//locallev = Select.kr(locallev > 1, [locallev, 1]); 
-				//SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
+				//
 				
-				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, 0.2 * locallev);
+				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
+				//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
 				junto = p + lrev;
 				
 				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
@@ -406,8 +362,8 @@ Mosca {
 				
 				//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
 				//	Out.ar( 0, ambsinal);
-				Out.ar( 2, ambsinal);
-				
+				//Out.ar( 2, ambsinal);
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 				
 			}).add;
 
@@ -416,166 +372,15 @@ Mosca {
 			// note this is sending things 
 
 			
-			SynthDef.new("espacAmbParaBin",  {
-				
-
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-				glev = 0, llev = 0;
-				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,  
-				globallev = 0.0004, locallev, gsig, fonte, fontenova;
-				var lrev, scale = 565;
-				var grevganho = 0.20;
-				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
-				
-				//		fonte = Point.new;
-				fontenova = Cartesian.new;
-				
-				fontenova.set(mx, my, mz);
-				dis = (1 - (fontenova.rho - scale)) / scale;
-				azim = fontenova.theta;
-				el = fontenova.phi;
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				
-				// atenuação de frequências agudas
-				p = In.ar(inbus, 1);
-				
-				// undo
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-
-				
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				
-				globallev = globallev * (glev*4);
-				
-				
-				gsig = p * grevganho * globallev;
-
-				
-				
-				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-				
-				// Reverberação local
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*4);
-				
-				
-				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, 0.7 * locallev);
-				
-				junto = p + lrev;
-				
-				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
-				
-				//	ambsinal = [w, x, y, u, v]; 
-				ambsinal = [w, x, y, z, r, s, t, u, v]; 
-				
-				ambsinal1O = [w, x, y, z];
-				server.sync;		
-				Out.ar( 0, FoaDecode.ar(ambsinal1O, binDecoder));
-				
-			}).add;
-
-
-			
-
-			
-			SynthDef.new("espacBin",  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, dopon = 0,
-				glev = 0, llev = 0, dopamnt = 0, mz = 0;
-				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
-				junto, rd, dopplershift, azim, dis, 
-				globallev = 0.0001, locallev, gsig, fonte, fontenova;
-				//	bufL, bufR;
-				var lrev, scale = 565;
-				var grevganho = 0.04;  // needs less gain
-				//	bufL = Bus.audio(s, 1);
-				//	bufR = Bus.audio(s, 1);
-				
-				//	fonte = Point.new;
-				fontenova = Cartesian.new;
-				//	fonte.set((mx - 450) * -1, 450 - my);
-				fonte.set(mx, my);
-				fontenova.set(mx, my, mz);
-				//SendTrig.kr(Impulse.kr(1),0,  mz); // debugging
-
-				//		dis = (1 - (fonte.rho - scale)) / scale;
-				dis = (1 - (fontenova.rho - scale)) / scale;
-
-
-				//		azim = fonte.theta;
-				azim = fontenova.theta;
-
-				// new!
-
-				el = fontenova.phi;
-				//	SendTrig.kr(Impulse.kr(1),0,  el); // debugging
-
-				
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
-				
-				// atenuação de frequências agudas
-				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				
-				// Doppler
-				rd = (1 - dis) * 340; 
-				rd = Lag.kr(rd, 1.0);
-
-				//		SendTrig.kr(Impulse.kr(1),0,  dopamnt); // debugging
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-				p = dopplershift;
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				
-				globallev = globallev * (glev*4);
-				
-				
-				gsig = p * grevganho * globallev;
-				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-				
-				// Reverberação local
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*4);
-				
-				
-				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, 0.2 * locallev);
-				junto = p + lrev;
-				
-				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
-				
-				//	ambsinal = [w, x, y, u, v]; 
-				ambsinal = [w, x, y, z, r, s, t, u, v]; 
-				
-				ambsinal1O = [w, x, y, z];
-				server.sync;		
-				
-				Out.ar( 0, FoaDecode.ar(ambsinal1O, binDecoder));
-			}).add;
 
 
 			SynthDef.new("espacAmbEstereo",  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, angulo = 1.57,
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, angulo = 1.05,
 				dopon = 0, dopamnt = 0, 
 				glev = 0, llev = 0;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
 				junto, rd, dopplershift, azim, dis, 
 				junto1, azim1, 
 				junto2, azim2, 
@@ -640,139 +445,46 @@ Mosca {
 				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, dis);
 				
 				ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-				ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2]; 
-				Out.ar( 2, ambsinal1 + ambsinal2);
+				ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
 				
+				ambsinal1plus2 = ambsinal1 + ambsinal2;
+				ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
+				
+				//	Out.ar( 2, ambsinal1plus2);
+				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
 				
 			}).add;
 			
 
-			SynthDef.new("espacBinEstereo",  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, angulo = 1.57, dopon = 0,
-				glev = 0, llev = 0, dopamnt = 0, mz = 0;
-				var w, x, y, z, r, s, t, u, v, p, ambsinal,
-				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2,
-				junto, rd, dopplershift, azim, dis, 
-				junto1, azim1, 
-				junto2, azim2, binsinal1, binsinal2,
-				globallev = 0.0001, locallev, gsig, fonte, fontenova, angtmp, foo;
-				var lrev, scale = 565;
-				var grevganho = 0.20;
-				
-				fonte = Point.new;
-				fontenova = Cartesian.new;
-				//	foo = Cartesian.new;
-				
-				fonte.set(mx, my);
-				//	fontenova.set(mx, my, mz);
-				// because of an apparent bug in Cartesian and its rotate method, let's set the z coord later
-				fontenova.set(mx, my);
-				azim1 = fontenova.rotate(angulo / -2).theta;
-				azim2 = fontenova.rotate(angulo / 2).theta;
-				
-				
-				// OK, now we're done with rotate, reset z
-				fontenova.set(mx, my, mz);
-				
-				dis = (1 - (fontenova.rho - scale)) / scale;
-				
-				dis = Select.kr(dis < 0, [dis, 0]);
-				
-				el = fontenova.phi; // elevation
-				
-				// atenuação de frequências agudas
-				p = In.ar(inbus, 2);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				
-				// Doppler
-				rd = (1 - dis) * 340; 
-				rd = Lag.kr(rd, 1.0);
-				//		SendTrig.kr(Impulse.kr(1),0,  dopamnt); // debugging
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-				p = dopplershift;
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				
-				globallev = globallev * (glev*4);
-				
-				gsig = Mix.new(p) / 2 * grevganho * globallev;
-				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-				
-				
-				
-				p1 = p[0];
-				p2 = p[1];
-				// Reverberação local
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*4);
-				
-				
-				junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-				junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-				
-				#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, dis);
-				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, dis);
-				
-				ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-				ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2]; 
-				binsinal1 = [w1, x1, y1, z1];
-				binsinal2 = [w2, x2, y2, z2];
 
-				server.sync;		
+			
+		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
 
-				Out.ar( 0, FoaDecode.ar(binsinal1, binDecoder) + FoaDecode.ar(binsinal2, binDecoder));
-				
-				
+			SynthDef.new("playMono"++type, { arg outbus, bufnum = 0, rate = 1, 
+				volume = 0, tpos = 0, lp = 0, busini;
+				var scaledRate, spos, playerRef;
+				playerRef = Ref(0);
+				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+				//SendTrig.kr(Impulse.kr(1),0,  funcString); // debugging
+				Out.ar(outbus, playerRef.value * volume);
 			}).add;
 
+			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
+				volume = 0, tpos = 0, lp = 0, busini;
+				//		var sig;
+				var scaledRate, spos, playerRef;
+				playerRef = Ref(0);
+				playStereoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+				Out.ar(outbus, playerRef.value * volume);
+			}).add;
 
-			SynthDef.new(\arquivoLoop, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0;
-				var sig;
-				var scaledRate, player, spos;
-				// 	spos = tpos * SampleRate.ir *  BufSampleRate.kr(bufnum) / SampleRate.ir;
-				spos = tpos * BufSampleRate.kr(bufnum);
-				//	SendTrig.kr(Impulse.kr(1),0,  spos); // debugging
-				scaledRate = rate * BufRateScale.kr(bufnum);
-				player = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				Out.ar(outbus, player * volume)
-			}).add;
 			
 			
-			SynthDef.new(\tocarStreamMono, { arg outbus, busini = 0, volume = 0;
-				var player;
-				player =  SoundIn.ar(busini, 1);
-				//SendTrig.kr(Impulse.kr(1),0,  player); // debugging
-				Out.ar(outbus, player * volume);
-			}).add;
-			
-			SynthDef.new(\tocarStreamEstereo, { arg outbus, busini, volume = 0;
-				var player;
-				player =  [SoundIn.ar(busini), SoundIn.ar(busini + 1)];
-				Out.ar(outbus, player * volume);
-			}).add;
-			
-			
-			SynthDef.new(\arquivoLoopEst, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0;
-				var scaledRate, player, spos;
-				spos = tpos * BufSampleRate.kr(bufnum);
-				scaledRate = rate * BufRateScale.kr(bufnum); 
-				player = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				Out.ar(outbus, player * volume);
-			}).add;
-			
-			
-			SynthDef.new(\tocarBFormatAmb, { arg outbus, bufnum = 0, rate = 1, 
+			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1, 
 				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt;
-				var scaledRate, player, wsinal, spos, pushang = 0,
+				mx = 0, my = 0, mz = 0, gbus, glev, llev, directang = 0, contr, dopon, dopamnt,
+				busini;
+				var scaledRate, playerRef, wsinal, spos, pushang = 0,
 				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
 				gsig, lsig, rd, dopplershift;
 				var grevganho = 0.20;
@@ -788,26 +500,34 @@ Mosca {
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				// 	spos = tpos * SampleRate.ir;
+
+				/*
 				spos = tpos * BufSampleRate.kr(bufnum);
 				scaledRate = rate * BufRateScale.kr(bufnum); 
 				player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+				*/
+				
+				playerRef = Ref(0);
+				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				
 				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
-				player = dopplershift;
+				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
+				playerRef.value = dopplershift;
 				
-				wsinal = player[0] * contr * volume * dis * 2.0;
+				wsinal = playerRef.value[0] * contr * volume * dis * 2.0;
 				
 				Out.ar(outbus, wsinal);
 				//	~teste = contr * volume * dis;
 				
 				//	SendTrig.kr(Impulse.kr(1),0, ~teste); // debugging
 				
-				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
+				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
 				
-				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
-				player = FoaTransform.ar(player, 'push', pushang, azim);
-				Out.ar(2, player);
+				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle, volume * dis * (1 - contr));
+				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
+
+				//	Out.ar(2, player);
+				playBFormatOutFunc.value(playerRef.value, dec);
 				
 				// Reverberação global
 				globallev = 1 / (1 - dis).sqrt;
@@ -816,185 +536,94 @@ Mosca {
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
 				globallev = globallev * (glev* 6) * grevganho;
 				
-				gsig = player * globallev;
+				gsig = playerRef.value[0] * globallev;
 				
 				locallev = 1 - dis; 
 				
-				locallev = locallev  * (llev*18) * grevganho;
-				lsig = player * locallev;
+				//				locallev = locallev  * (llev*10) * grevganho;
+				locallev = locallev  * (llev*5);
+				lsig = playerRef.value[0] * locallev;
 				
 				
-				Out.ar(gbfbus, gsig + lsig); //send part of direct signal global reverb synth
+				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
 				
 				
 			}).add;
 
-			
+		}; //end makeSynthDefPlayers
 
-			
-			SynthDef.new(\tocarStreamBFormatAmb, {
-				// another near copy!
-				arg outbus, volume = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt, busini = 0;
-				var scaledRate, player, wsinal, spos, pushang = 0,
-				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
-				gsig, lsig, rd, dopplershift;
-				var grevganho = 0.20;
-				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
-				
-				// 	fonte = Point.new;
-				//	fonte.set(mx, my);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - scale)) / scale;
-				pushang = (1 - dis) * pi / 2; // grau de eslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
-				azim = fonte.theta; // ângulo (azimuth) de deslocamento
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				// 	spos = tpos * SampleRate.ir;
-				
-				//spos = tpos * BufSampleRate.kr(bufnum);
-				//scaledRate = rate * BufRateScale.kr(bufnum); 
-				
-				
-				//	player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				player =  [SoundIn.ar(busini), SoundIn.ar(busini + 1), SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
-				
-				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
-				player = dopplershift;
-				
-				wsinal = player[0] * contr * volume * dis * 2.0;
-				
-				Out.ar(outbus, wsinal);
-				//~teste = contr * volume * dis;
-				
-				//	SendTrig.kr(Impulse.kr(1),0, ~teste); // debugging
-				
-				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
-				
-				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
-				player = FoaTransform.ar(player, 'push', pushang, azim);
-				Out.ar(2, player);
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				globallev = globallev * (glev* 6) * grevganho;
-				
-				gsig = player * globallev;
-				
-				
-				
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*18) * grevganho;
-				lsig = player * locallev;
-				
-				
-				Out.ar(gbfbus, gsig + lsig); //send part of direct signal global reverb synth
-				
-				
-			}).add;
+		// Make File-in SynthDefs
+		
+		playMonoInFunc[0] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate; // Note it needs all the variables
+			spos = tpos * BufSampleRate.kr(bufnum);
+			scaledRate = rate * BufRateScale.kr(bufnum);
+			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
+		};
+		
+				playStereoInFunc[0] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			spos = tpos * BufSampleRate.kr(bufnum);
+			scaledRate = rate * BufRateScale.kr(bufnum);
+			playerRef.value = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
+		};
 
-			SynthDef.new(\tocarStreamBFormatBin, { arg outbus, 
-				volume = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbfbus, gbusout, glev, llev, directang = 0, contr,
-				dopon, dopamnt = 0, busini = 0;
-				
-				var player, wsinal, pushang = 0,
-				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
-				gsig, lsig, el,
-				rd, dopplershift;
-				var grevganho = 0.20;
-				// 	fonte = Point.new;
-				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
-				
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - scale)) / scale;
-				pushang = (1 - dis) * pi / 2; // grau de deslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
-				azim = fonte.theta; // ângulo (azimuth) de deslocamento
-				
-				el = fonte.phi;
-				
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				//	spos = tpos * BufSampleRate.kr(bufnum);
-				//	scaledRate = rate * BufRateScale.kr(bufnum);
-				
-				player =  [SoundIn.ar(busini), SoundIn.ar(busini + 1), SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
-				//player = [WhiteNoise.ar(0.1), WhiteNoise.ar(0.1), WhiteNoise.ar(0.1), WhiteNoise.ar(0.1)];
-				//player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				
-				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(player, 0.2, rd/1640.0 * dopon * dopamnt);
-				player = dopplershift;
-				
-				
-				//wsinal = player[0] * contr * volume * dis * 2.0; // why is contr (contração?) being used here?
-				// it's being used because this wsinal is being incorrectly used for global reverb too. This should
-				// only be used for contraction
-				
-				//		 wsinal = player[0] * volume * dis * 2.0;
-				wsinal = player[0] * volume * contr * dis * 2.0;
-				// SendTrig.kr(Impulse.kr(1),0, wsinal); // debugging
-				//	Out.ar(gbusout wsinal);
-				
-				// this is the "contracted" component of the global reverb
-				// and has a mono source derived from W. The full B-format or non-contracted
-				// component is sent to the global b-format binaral reverberator. See "gsig" below.
-				
-				Out.ar(outbus, wsinal);
-				//		Out.ar(outbus, wsinal * contr);
-				//	~teste = contr * volume * dis;
-				
-				// 		SendTrig.kr(Impulse.kr(1),0, contr); // debugging
-				
-				player = FoaDirectO.ar(player, directang); // diretividade ("tamanho")
+		playBFormatInFunc[0] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			spos = tpos * BufSampleRate.kr(bufnum);
+			scaledRate = rate * BufRateScale.kr(bufnum); 
+			playerRef.value = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+		};
+		
+		makeSynthDefPlayers.("File", 0);
 
-				player = FoaTransform.ar(player, 'rotate', rotAngle, volume * dis * (1 - contr));
-				player = FoaTransform.ar(player, 'push', pushang, azim, el);
-				
-				
-				//		 Decode direct signal
-
-				server.sync;
-				Out.ar( 0, FoaDecode.ar(player, binDecoder));
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				globallev = globallev * (glev*4) * grevganho;
-				
-				gsig = player * globallev;
-				
-				
-				
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * (llev*12) * grevganho;
-				lsig = player * locallev;
-				
-				// SendTrig.kr(Impulse.kr(1),0, gsig); // debugging
-				
-				Out.ar(gbfbus, gsig + lsig); //send part of direct signal global reverb synth
-				
-
-			}).add;
+		// Make HWBus-in SynthDefs
 
 		
-
+		playMonoInFunc[1] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  SoundIn.ar(busini, 1);
+		};
 		
-		makeSynthDefs.(revGlobTxt);
+		playStereoInFunc[1] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [SoundIn.ar(busini), SoundIn.ar(busini + 1)];
+		};
+		
+
+		playBFormatInFunc[1] = {
+			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [SoundIn.ar(busini), SoundIn.ar(busini + 1),
+				SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
+
+		};
+		
+		
+		makeSynthDefPlayers.("HWBus", 1);
+
+		// Make SWBus In SynthDefs
+
+				playMonoInFunc[2] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  In.ar(busini, 1);
+		};
+		
+		playStereoInFunc[2] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [In.ar(busini), SoundIn.ar(busini + 1)];
+		};
+		
+
+		playBFormatInFunc[2] = {
+			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [In.ar(busini), SoundIn.ar(busini + 1),
+				SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
+
+		};
+
+
+		makeSynthDefPlayers.("SWBus", 2);
+
 		
 		//////// END SYNTHDEFS ///////////////
 
@@ -1005,10 +634,10 @@ Mosca {
 
 		arg nfontes = 1, dur = 60;
 		var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
-		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, sombuf, funcs, 
+		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
-		streamcheck, strmcheck, strm,
+		hwInCheck, hwncheck, hwn, swInCheck, swncheck, swn,
 		dopcheque2, doppler, angulo, volume, glev, 
 		llev, angnumbox, volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
@@ -1029,7 +658,8 @@ Mosca {
 		//	espacializador2 = Array.newClear(nfontes); // used when b-format file is rendered as binaural
 		doppler = Array.newClear(nfontes); 
 		lp = Array.newClear(nfontes); 
-		strm = Array.newClear(nfontes); 
+		hwn = Array.newClear(nfontes); 
+		swn = Array.newClear(nfontes); 
 		mbus = Array.newClear(nfontes); 
 		sbus = Array.newClear(nfontes); 
 		//	bfbus = Array.newClear(nfontes); 
@@ -1070,7 +700,8 @@ Mosca {
 		cbox = Array.newClear(nfontes); // contrair b-format
 		dpbox = Array.newClear(nfontes); // dop amount
 		lpcheck = Array.newClear(nfontes); // loop
-		strmcheck = Array.newClear(nfontes); // stream check
+		hwncheck = Array.newClear(nfontes); // stream check
+		swncheck = Array.newClear(nfontes); // stream check
 		tfield = Array.newClear(nfontes);
 		
 		testado = Array.newClear(nfontes);
@@ -1094,7 +725,8 @@ Mosca {
 			glev[i] = 0;
 			llev[i] = 0;
 			lp[i] = 0;
-			strm[i] = 0;
+			hwn[i] = 0;
+			swn[i] = 0;
 			rlev[i] = 0;
 			dlev[i] = 0;
 			clev[i] = 0;
@@ -1138,40 +770,20 @@ Mosca {
 		
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, 900, 900, 900)).front;
-		wdados = Window.new("Data", Rect(900, 900, 960, (nfontes*20)+60 ));
+		wdados = Window.new("Data", Rect(900, 900, 990, (nfontes*20)+60 ));
 		wdados.userCanClose = false;
 		
 		
 		bdados = Button(win, Rect(280, 30, 90, 20))
 		.states_([
-			["open data", Color.black, Color.white],
-			["close data", Color.white, Color.blue]
+			["show data", Color.black, Color.white],
+			["hide data", Color.white, Color.blue]
 		])
 		.action_({ arg but;
 			//	but.value.postln;
 			if(but.value == 1)
 			{wdados.front;}
 			{wdados.visible = false;};
-		});
-		
-		
-		bAmbBinaural = Button(win, Rect(370, 50, 90, 20))
-		.states_([
-			["binaural", Color.black, Color.white], ["ambisonic", Color.black, Color.white]
-		])
-		.action_({ arg but;
-			//	but.value.postln;
-			if(but.value == 1)
-			{
-				controle.stop;
-				revGlobal.free;
-				render = "ambisonic";
-			}
-			{
-				controle.stop;
-				revGlobal.free;
-				render = "binaural";
-			};
 		});
 		
 		atualizarvariaveis = {
@@ -1234,7 +846,7 @@ Mosca {
 			// in buses 7, 8, 9 and 10.
 			
 			("tpos = " ++ tpos).postln;
-			if ((path != "") && (strmcheck[i].value == false)) {
+			if ((path != "") && (hwncheck[i].value == false)) {
 				{	
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
@@ -1243,12 +855,12 @@ Mosca {
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
 						
-						if(render == "ambisonic") {
+						
 							if(revGlobal == nil) {
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) { // if source is testing don't relaunch synths
-								synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
+								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
@@ -1259,38 +871,26 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						} {
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							
-							if (testado[i] == false) { // if source is testing don't relaunch synths
-								"Here I am!".postln;
-								synt[i] = Synth.new(\arquivoLoop, [\outbus, mbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
-									\gbus, gbus, \dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							
-							atualizarvariaveis.value;
-						};
+						
+
+
+
+
+						
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
 						angulo[i] = pi/2;
-						{angnumbox.value = pi/2;}.defer;
-						{angslider.value = 0.5;}.defer;
+						//						{angnumbox.value = pi/2;}.defer; 
+						{angnumbox.value = 1.05;}.defer; // 60 degrees
+						//						{angslider.value = 0.5;}.defer;
+						{angslider.value = 0.33;}.defer;
 						
-						if(render == "ambisonic") {
-							
+						
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
+								synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										//	addAction: \addToHead).onFree({espacializador[i].free;
@@ -1304,22 +904,10 @@ Mosca {
 							atualizarvariaveis.value;
 							
 							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						} {
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\arquivoLoopEst, [\outbus, sbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
-									\dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-						};
+
+
+
+						
 					} {
 						if (sombuf[i].numChannels == 4) {
 							"B-format".postln;
@@ -1329,23 +917,20 @@ Mosca {
 							{angslider.value = 0;}.defer;
 							
 							// B-format file with ambisonic render
-							if(render == "ambisonic") {
-								
-								//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+
+							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 								// reverb for non-contracted (full b-format) component
-								if(revGlobalBF == nil){
-									revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
-								};
-								// reverb for contracted (mono) component
+
+							// reverb for contracted (mono) component - and for rest too
 								if(revGlobal == nil){
 									revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 								};
 								if (testado[i] == false) {
-									synt[i] = Synth.new(\tocarBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
+									synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \outbus, mbus[i],
 										\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos, \lp,
 										lp[i], \volume, volume[i], \dopon, doppler[i]], 
 										//					~revGlobal, addAction: \addBefore);
-										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+										revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil;});
 									//	xbox[i].valueAction = 1; // é preciso para aplicar rev global sem mexer com mouse
 									
@@ -1355,34 +940,8 @@ Mosca {
 								};
 								atualizarvariaveis.value;
 								
-							} {
-								
-								// B-format file with binaural render
-								// reverb for contracted (mono) component
-								if(revGlobal == nil){
-									revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-								};
-								// reverb for non-contracted (full b-format) component
-								if(revGlobalBF == nil){
-									revGlobalBF = Synth.new(\revGlobalBFormatBin, [\gbfbus, gbfbus], addAction:\addToTail);
-								};
-								if (testado[i] == false) {
-									synt[i] = Synth.new(\tocarBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
-										\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos,
-										\lp, lp[i], \volume, volume[i], \dopon, doppler[i]], 
-										revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;});
-									
-									// is this still being used?
-									
-									espacializador[i] = Synth.new(\espacAmbParaBin, [\inbus, mbus[i], \gbus, gbus, 
-										\dopon, doppler[i]], 
-										synt[i], addAction: \addAfter);
-								};
-								atualizarvariaveis.value;
-								
-								
-							};
+
+							
 							
 						}
 						{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
@@ -1398,40 +957,34 @@ Mosca {
 					//	}); 
 				}.defer;	
 			} {
-				if (strmcheck[i].value) {
+				("HELLO swncheck[i].value = " ++ i ++ " " ++ swncheck[i].value).postln;
+				if ((swncheck[i].value) || (hwncheck[i].value)) {
 					var x;
-					("Streaming! ncan = " ++ ncan[i]
-						++ " & busini = " ++ busini[i]).postln;
+					("Streaming! ncan = " ++ ncan[i].value
+						++ " & busini = " ++ busini[i].value).postln;
 					x = case
 					{ ncan[i] == 1 } {
 						"Mono!".postln;
-						if (render == "binaural")
-						{
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
-									\volume, volume[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								
-								espacializador[i] = Synth.new(\espacBin, [\inbus, mbus[i], 
-									\gbus, gbus, \dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-							
-						}{
+				
+					("HELLO MONO swncheck[i].value = " ++ i ++ " " ++ swncheck[i].value).postln;
+
+						
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamMono, [\outbus, mbus[i], \busini, busini[i],
-									\volume, volume[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+
+								if (hwncheck[i].value) {
+									synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, busini[i],
+										\volume, volume[i]], revGlobal,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								} {
+									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i], \busini, busini[i],
+										\volume, volume[i]], revGlobal,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								};
 								
 								
 								espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
@@ -1440,7 +993,11 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						};
+						
+
+
+
+						
 					}
 					{ ncan[i] == 2 } {
 						"Estéreo!".postln;
@@ -1449,32 +1006,26 @@ Mosca {
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
 						
-						if (render == "binaural")
-						{
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
-									\volume, volume[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
-								espacializador[i] = Synth.new(\espacBinEstereo, [\inbus, sbus[i], \gbus, gbus,
-									\dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-							
-						}{
+		
+
+
+					
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamEstereo, [\outbus, sbus[i], \busini, busini[i],
+
+								if (hwncheck[i].value) {
+								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, busini[i],
 									\volume, volume[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
+								} {
+								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i], \busini, busini[i],
+									\volume, volume[i]], revGlobal,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								};
 								
 								espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
 									\dopon, doppler[i]], 
@@ -1482,50 +1033,38 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						};
+						
+
+
+
+						
 					}
 					{ ncan[i] == 4 } {
 						//"B-format!".postln;
-						if (render == "binaural")
-						{
-							"B-format binaural!!!".postln;
-							// B-format file with binaural render
-							// reverb for contracted (mono) component
-							if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalBinaural, [\gbus, gbus], addAction:\addToTail);
-							};
-							// reverb for non-contracted (full b-format) component
-							if(revGlobalBF == nil){
-								revGlobalBF = Synth.new(\revGlobalBFormatBin, [\gbfbus, gbfbus], addAction:\addToTail);
-							};
-							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamBFormatBin, [\gbfbus, gbfbus, \outbus, mbus[i],
-									\contr, clev[i], \volume, volume[i], \dopon, doppler[i], \busini, busini[i]], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;});
-								espacializador[i] = Synth.new(\espacAmbParaBin, [\inbus, mbus[i], \gbus, gbus, 
-									\dopon, doppler[i]], synt[i], addAction: \addAfter);
-							};
-							atualizarvariaveis.value;
-							
-						}{
+						
 							"B-format ambisonic!!!".postln;
 							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							// reverb for non-contracted (full b-format) component
-							if(revGlobalBF == nil){
-								revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
-							};
-							// reverb for contracted (mono) component
+
+						// reverb for contracted (mono) component - no, now it's for both
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\tocarStreamBFormatAmb, [\gbfbus, gbfbus, \outbus, mbus[i],
+								if (hwncheck[i].value) {
+								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
 									\busini, busini[i]], 
-									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
+								} {
+								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
+									\busini, busini[i]], 
+									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil;});
+								};
 								
 								espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
 									\dopon, doppler[i]], 
@@ -1533,7 +1072,12 @@ Mosca {
 							};
 							atualizarvariaveis.value;
 							
-						};
+						
+
+
+
+
+						
 					};
 					
 					
@@ -1596,7 +1140,8 @@ Mosca {
 			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"w");
 			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
 			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"w");
-			var streamed = File((prjDr ++ "/auto/stream.txt").standardizePath,"w");
+			var hwbus = File((prjDr ++ "/auto/hwbus.txt").standardizePath,"w");
+			var swbus = File((prjDr ++ "/auto/swbus.txt").standardizePath,"w");
 			var string;
 			("Arg is " ++ but.value.asString).postln;
 			string = nil;
@@ -1607,17 +1152,26 @@ Mosca {
 				
 				dop.write(doppler[i].value.asString ++ "\n");
 				looped.write(lp[i].value.asString ++ "\n");
-				if(strm[i].value > 0)
+				if(hwn[i].value > 0)
 				{
 					
-					streamed.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
+					hwbus.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
 				}
-				{streamed.write("NULL\n")};
-			};
+				{hwbus.write("NULL\n")};
+
+				if(swn[i].value > 0)
+				{
+					
+					swbus.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
+				}
+				{swbus.write("NULL\n")};
+				
+};
 			arquivo.close;
 			dop.close;
 			looped.close;
-			streamed.close;
+			hwbus.close;
+			swbus.close;
 			controle.save(controle.presetDir);
 			
 		});
@@ -1630,11 +1184,12 @@ Mosca {
 			["load auto", Color.black, Color.white],
 		])
 		.action_({ arg but;
-			var f;
+			var f, f2;
 			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"r");
 			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"r");
 			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"r");
-			var streamed = FileReader((prjDr ++ "/auto/stream.txt").standardizePath, delimiter: Char.tab); 
+			var hwbus = FileReader((prjDr ++ "/auto/hwbus.txt").standardizePath, delimiter: Char.tab); 
+			var swbus = FileReader((prjDr ++ "/auto/swbus.txt").standardizePath, delimiter: Char.tab); 
 			
 			
 			but.value.postln;
@@ -1650,23 +1205,35 @@ Mosca {
 				//			lp[i] = line;
 				lpcheck[i].valueAction = line;
 				
-				f = File(prjDr ++ "/auto/stream.txt", "r"); f.isOpen;
+				f = File(prjDr ++ "/auto/hwbus.txt", "r"); f.isOpen;
 				
-				// streamed stuff
-				line = streamed.next;
+				// hwbus stuff
+				line = hwbus.next;
 				if(line[0] != "NULL"){
-					strmcheck[i].valueAction = true;
+					hwncheck[i].valueAction = true;
 					// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
 					ncanbox[i].valueAction = line[0].asFloat;
 					businibox[i].valueAction = line[1].asFloat;
 				};
-				
+
+				f2 = File(prjDr ++ "/auto/swbus.txt", "r"); f2.isOpen;
+				// swbus stuff
+				line = swbus.next;
+				if(line[0] != "NULL"){
+					swncheck[i].valueAction = true;
+					// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
+					ncanbox[i].valueAction = line[0].asFloat;
+					businibox[i].valueAction = line[1].asFloat;
+				};
+
 			};
 			arquivo.close;		
 			dop.close;
 			looped.close;
 			f.close;
-			streamed.close;
+			f2.close;
+			hwbus.close;
+			swbus.close;
 			controle.load(controle.presetDir);
 		});
 		
@@ -1692,7 +1259,7 @@ Mosca {
 			itensdemenu[i] = "Source " ++ (i + 1).asString;
 		};
 		
-		m = PopUpMenu(win,Rect(10,10,80,20));
+		m = PopUpMenu(win,Rect(10,10,90,20));
 		m.items = itensdemenu; 
 		m.action = { arg menu;
 			fatual = menu.value;
@@ -1700,7 +1267,8 @@ Mosca {
 			if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
 			if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
 			
-			if(strm[fatual] == 1){streamcheck.value = true}{streamcheck.value = false};
+			if(hwn[fatual] == 1){hwInCheck.value = true}{hwInCheck.value = false};
+			if(swn[fatual] == 1){swInCheck.value = true}{swInCheck.value = false};
 			
 			angnumbox.value = angulo[fatual];
 			angslider.value = angulo[fatual] / pi;
@@ -1743,31 +1311,44 @@ Mosca {
 		offset = 60;
 		
 		
-		dopcheque = CheckBox( win, Rect(94, 10, 80, 20), "Doppler").action_({ arg butt;
+		dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
 			("Doppler is " ++ butt.value).postln;
 			dcheck[fatual].valueAction = butt.value;
 		});
 		dopcheque.value = false;
 		
-		loopcheck = CheckBox( win, Rect(164, 10, 80, 20), "Loop").action_({ arg butt;
+		loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
 			("Loop is " ++ butt.value).postln;
 			lpcheck[fatual].valueAction = butt.value;
 		});
 		dopcheque.value = false;
 		
 		
-		streamcheck = CheckBox( win, Rect(10, 30, 100, 20), "Live Input").action_({ arg butt;
-			("Streaming is " ++ butt.value).postln;
-			strmcheck[fatual].valueAction = butt.value;
+		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW Bus").action_({ arg butt;
+			hwncheck[fatual].valueAction = butt.value;
+			if (hwInCheck.value && swInCheck.value) {
+				//swInCheck.value = false;
+			};
 		});
+
+		swInCheck = CheckBox( win, Rect(104, 30, 100, 20), "SW Bus").action_({ arg butt;
+			swncheck[fatual].valueAction = butt.value;
+			if (swInCheck.value && hwInCheck.value) {
+				//hwInCheck.value = false;
+			};
+		});
+
+
+
+		
 		dopcheque.value = false;
 		
 		
 		
 		//	~ncantexto = StaticText(~win, Rect(55, -10 + ~offset, 200, 20));
-		//	~ncantexto.string = "No. of channels (1, 2 or 4, Live)";
+		//	~ncantexto.string = "No. of channels (1, 2 or 4)";
 		textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
-		textbuf.string = "No. of channels (1, 2 or 4, Live)";
+		textbuf.string = "No. of channels (1, 2 or 4)";
 		ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
 		ncannumbox.value = 0;
 		ncannumbox.clipHi = 4;
@@ -1786,10 +1367,10 @@ Mosca {
 		
 		
 		textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
-		textbuf.string = "Start Bus (0-31, Live)";
+		textbuf.string = "Start Bus";
 		busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
 		busininumbox.value = 0;
-		busininumbox.clipHi = 31;
+		//		busininumbox.clipHi = 31;
 		busininumbox.clipLo = 0;
 		//angnumbox.step_(0.1); 
 		//angnumbox.scroll_step=0.1;
@@ -2109,60 +1690,63 @@ Mosca {
 				{tfield[fatual].value = "";}.defer;
 			
 			}
-		);
+		);	
+	});
 
-		//		});
-		
-		
-		
-		
-		
+	bnodes = Button(win, Rect(220, 50, 60, 20))
+	.states_([
+		["nodes", Color.black, Color.white],
+	])
+		.action_({
+			server.plotTree;
 	});
 
 		
-	textbuf = StaticText(wdados, Rect(10, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(15, 20, 50, 20));
 	textbuf.string = "Dp";
 	textbuf = StaticText(wdados, Rect(35, 20, 50, 20));
 	textbuf.string = "Lp";
 	textbuf = StaticText(wdados, Rect(55, 20, 50, 20));
-	textbuf.string = "Str";
+	textbuf.string = "Hw";
+	textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
+	textbuf.string = "Sw";
 
-	textbuf = StaticText(wdados, Rect(80, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(100, 20, 50, 20));
 	textbuf.string = "NCan";
-	textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(140, 20, 50, 20));
 	textbuf.string = "SBus";
 
-	textbuf = StaticText(wdados, Rect(160, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(180, 20, 50, 20));
 	textbuf.string = "X";
-	textbuf = StaticText(wdados, Rect(200, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(220, 20, 50, 20));
 	textbuf.string = "Y";
 
-		textbuf = StaticText(wdados, Rect(240, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(260, 20, 50, 20));
 	textbuf.string = "Z";
 
 		
-	textbuf = StaticText(wdados, Rect(280, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(300, 20, 50, 20));
 	textbuf.string = "Ang";
-	textbuf = StaticText(wdados, Rect(320, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(340, 20, 50, 20));
 	textbuf.string = "Vol";
-	textbuf = StaticText(wdados, Rect(360, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(380, 20, 50, 20));
 	textbuf.string = "Glob";
-	textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(420, 20, 50, 20));
 	textbuf.string = "Loc";
-	textbuf = StaticText(wdados, Rect(440, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(460, 20, 50, 20));
 	textbuf.string = "Rot";
-	textbuf = StaticText(wdados, Rect(480, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(500, 20, 50, 20));
 	textbuf.string = "Dir";
-	textbuf = StaticText(wdados, Rect(520, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(540, 20, 50, 20));
 	textbuf.string = "Cntr";
-	textbuf = StaticText(wdados, Rect(560, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(580, 20, 50, 20));
 	textbuf.string = "DAmt";
-	textbuf = StaticText(wdados, Rect(600, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(620, 20, 50, 20));
 	textbuf.string = "File";
 
 		
 		nfontes.do { arg i;	
-		dcheck[i] = CheckBox.new( wdados, Rect(10, 40 + (i*20), 40, 20))
+		dcheck[i] = CheckBox.new( wdados, Rect(15, 40 + (i*20), 40, 20))
 		.action_({ arg but;
 			if(i==fatual){dopcheque.value = but.value;};
 			if (but.value == true) {
@@ -2187,39 +1771,57 @@ Mosca {
 				synt[i].set(\lp, 0);
 			};
 		});
-
-				strmcheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
-		.action_({ arg but;
-			if(i==fatual){streamcheck.value = but.value;};
-			if (but.value == true) {
-				strm[i] = 1;
-				synt[i].set(\strm, 1);
-			}{
-				strm[i] = 0;
-				synt[i].set(\strm, 0);
-			};
-		});
-
+			// testing
+			hwncheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){hwInCheck.value = but.value;};
+				if (but.value == true) {
+					swncheck[i].value = false;
+					if(i==fatual){swInCheck.value = false;};
+					hwn[i] = 1;
+					swn[i] = 0;
+					synt[i].set(\hwn, 1);
+				}{
+					hwn[i] = 0;
+					synt[i].set(\hwn, 0);
+				};
+			});
+			
+			swncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){swInCheck.value = but.value;};
+				if (but.value == true) {
+					hwncheck[i].value = false;
+					if(i==fatual){hwInCheck.value = false;};
+					swn[i] = 1;
+					hwn[i] = 0;
+					synt[i].set(\swn, 1);
+				}{
+					swn[i] = 0;
+					synt[i].set(\swn, 0);
+				};
+			});
+			
 		
-		ncanbox[i] = NumberBox(wdados, Rect(80, 40 + (i*20), 40, 20));
-		businibox[i] = NumberBox(wdados, Rect(120, 40 + (i*20), 40, 20));
+		ncanbox[i] = NumberBox(wdados, Rect(100, 40 + (i*20), 40, 20));
+		businibox[i] = NumberBox(wdados, Rect(140, 40 + (i*20), 40, 20));
 
-		xbox[i] = NumberBox(wdados, Rect(160, 40 + (i*20), 40, 20));
-		ybox[i] = NumberBox(wdados, Rect(200, 40+ (i*20), 40, 20));
-		zbox[i] = NumberBox(wdados, Rect(240, 40+ (i*20), 40, 20));
+		xbox[i] = NumberBox(wdados, Rect(180, 40 + (i*20), 40, 20));
+		ybox[i] = NumberBox(wdados, Rect(220, 40+ (i*20), 40, 20));
+		zbox[i] = NumberBox(wdados, Rect(260, 40+ (i*20), 40, 20));
 
 
-		abox[i] = NumberBox(wdados, Rect(280, 40 + (i*20), 40, 20));
-		vbox[i] = NumberBox(wdados, Rect(320, 40+ (i*20), 40, 20));
-		gbox[i] = NumberBox(wdados, Rect(360, 40+ (i*20), 40, 20));
-		lbox[i] = NumberBox(wdados, Rect(400, 40+ (i*20), 40, 20));
-		rbox[i] = NumberBox(wdados, Rect(440, 40+ (i*20), 40, 20));
+		abox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 40, 20));
+		vbox[i] = NumberBox(wdados, Rect(340, 40+ (i*20), 40, 20));
+		gbox[i] = NumberBox(wdados, Rect(380, 40+ (i*20), 40, 20));
+		lbox[i] = NumberBox(wdados, Rect(420, 40+ (i*20), 40, 20));
+		rbox[i] = NumberBox(wdados, Rect(460, 40+ (i*20), 40, 20));
 
-		dbox[i] = NumberBox(wdados, Rect(480, 40+ (i*20), 40, 20));
-		cbox[i] = NumberBox(wdados, Rect(520, 40+ (i*20), 40, 20));
-		dpbox[i] = NumberBox(wdados, Rect(560, 40+ (i*20), 40, 20));
+		dbox[i] = NumberBox(wdados, Rect(500, 40+ (i*20), 40, 20));
+		cbox[i] = NumberBox(wdados, Rect(540, 40+ (i*20), 40, 20));
+		dpbox[i] = NumberBox(wdados, Rect(580, 40+ (i*20), 40, 20));
 		
-		tfield[i] = TextField(wdados, Rect(600, 40+ (i*20), 350, 20));
+		tfield[i] = TextField(wdados, Rect(620, 40+ (i*20), 350, 20));
 		
 		tfield[i].action = {arg path;
 			if (path != "") {
@@ -2517,10 +2119,8 @@ Mosca {
 			//	espacializador[i].free;
 			isPlay = false;
 		};
-		revGlobal.free;
-		revGlobalBF.free;
-		revGlobal = nil;
-		revGlobalBF = nil;
+		//		revGlobal.free;
+		//		revGlobal = nil;
 
     };
 
@@ -2601,7 +2201,7 @@ Mosca {
 			//		kespac[x].stop;
 		};
 		revGlobal.free;
-		revGlobalBF.free;
+		//		revGlobalBF.free;
 		
 		wdados.close;
 		gbus.free;
@@ -2657,43 +2257,5 @@ Mosca {
 				};
 			};
 		}
-
-
-
-
-
-
-			
-
-
-	}
-	
-}
-
-
-MoscaFoaDecode : FoaUGen {     // rewrite of ATK's FoaDecode. Returns raw signal (even HOA)
-	                           // if decoder is not specified for external processing
-	*ar { arg in, decoder, mul = 1, add = 0;
-		if (decoder != nil ) {
-			in = this.checkChans(in);
-			
-			case
-			{ decoder.isKindOf(FoaDecoderMatrix) } {
-				
-				if ( decoder.shelfFreq.isNumber, { // shelf filter?
-					in = FoaPsychoShelf.ar(in,
-						decoder.shelfFreq, decoder.shelfK.at(0), decoder.shelfK.at(1))
-				});
-				
-				^AtkMatrixMix.ar(in, decoder.matrix, mul, add)
-			}
-			{ decoder.isKindOf(FoaDecoderKernel) } {
-				^AtkKernelConv.ar(in, decoder.kernel, mul, add)
-			};
-
-		} {
-			^in
-		}
 	}
 }
-
