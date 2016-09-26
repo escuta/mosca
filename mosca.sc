@@ -170,8 +170,6 @@ Mosca {
 
 			/// START SYNTH DEFS ///////
 
-		
-			//	~frogget = "YES NO YES NO!";
 
 
 			SynthDef.new("revGlobalAmb",  { arg gbus;
@@ -597,12 +595,29 @@ Mosca {
 		
 		makeSynthDefPlayers.("HWBus", 1);
 
-				// Make SWBus In SynthDefs
+		// Make SWBus In SynthDefs
 
-		//	makeSynthDefPlayers.("SWBus", 2);
-
+				playMonoInFunc[2] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  In.ar(busini, 1);
+		};
 		
-			//makeSynthDefPlayers.(revGlobTxt);
+		playStereoInFunc[2] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [In.ar(busini), SoundIn.ar(busini + 1)];
+		};
+		
+
+		playBFormatInFunc[2] = {
+			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			playerRef.value =  [In.ar(busini), SoundIn.ar(busini + 1),
+				SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
+
+		};
+
+
+		makeSynthDefPlayers.("SWBus", 2);
+
 		
 		//////// END SYNTHDEFS ///////////////
 
@@ -616,7 +631,7 @@ Mosca {
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
-		streamcheck, strmcheck, strm,
+		hwInCheck, hwncheck, hwn, swInCheck, swncheck, swn,
 		dopcheque2, doppler, angulo, volume, glev, 
 		llev, angnumbox, volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
@@ -637,7 +652,8 @@ Mosca {
 		//	espacializador2 = Array.newClear(nfontes); // used when b-format file is rendered as binaural
 		doppler = Array.newClear(nfontes); 
 		lp = Array.newClear(nfontes); 
-		strm = Array.newClear(nfontes); 
+		hwn = Array.newClear(nfontes); 
+		swn = Array.newClear(nfontes); 
 		mbus = Array.newClear(nfontes); 
 		sbus = Array.newClear(nfontes); 
 		//	bfbus = Array.newClear(nfontes); 
@@ -678,7 +694,8 @@ Mosca {
 		cbox = Array.newClear(nfontes); // contrair b-format
 		dpbox = Array.newClear(nfontes); // dop amount
 		lpcheck = Array.newClear(nfontes); // loop
-		strmcheck = Array.newClear(nfontes); // stream check
+		hwncheck = Array.newClear(nfontes); // stream check
+		swncheck = Array.newClear(nfontes); // stream check
 		tfield = Array.newClear(nfontes);
 		
 		testado = Array.newClear(nfontes);
@@ -702,7 +719,8 @@ Mosca {
 			glev[i] = 0;
 			llev[i] = 0;
 			lp[i] = 0;
-			strm[i] = 0;
+			hwn[i] = 0;
+			swn[i] = 0;
 			rlev[i] = 0;
 			dlev[i] = 0;
 			clev[i] = 0;
@@ -746,7 +764,7 @@ Mosca {
 		
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, 900, 900, 900)).front;
-		wdados = Window.new("Data", Rect(900, 900, 960, (nfontes*20)+60 ));
+		wdados = Window.new("Data", Rect(900, 900, 990, (nfontes*20)+60 ));
 		wdados.userCanClose = false;
 		
 		
@@ -822,7 +840,7 @@ Mosca {
 			// in buses 7, 8, 9 and 10.
 			
 			("tpos = " ++ tpos).postln;
-			if ((path != "") && (strmcheck[i].value == false)) {
+			if ((path != "") && (hwncheck[i].value == false)) {
 				{	
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
@@ -933,7 +951,7 @@ Mosca {
 					//	}); 
 				}.defer;	
 			} {
-				if (strmcheck[i].value) {
+				if (hwncheck[i].value) {
 					var x;
 					("Streaming! ncan = " ++ ncan[i]
 						++ " & busini = " ++ busini[i]).postln;
@@ -1090,7 +1108,8 @@ Mosca {
 			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"w");
 			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
 			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"w");
-			var streamed = File((prjDr ++ "/auto/stream.txt").standardizePath,"w");
+			var hwbus = File((prjDr ++ "/auto/hwbus.txt").standardizePath,"w");
+			var swbus = File((prjDr ++ "/auto/swbus.txt").standardizePath,"w");
 			var string;
 			("Arg is " ++ but.value.asString).postln;
 			string = nil;
@@ -1101,17 +1120,26 @@ Mosca {
 				
 				dop.write(doppler[i].value.asString ++ "\n");
 				looped.write(lp[i].value.asString ++ "\n");
-				if(strm[i].value > 0)
+				if(hwn[i].value > 0)
 				{
 					
-					streamed.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
+					hwbus.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
 				}
-				{streamed.write("NULL\n")};
-			};
+				{hwbus.write("NULL\n")};
+
+				if(swn[i].value > 0)
+				{
+					
+					swbus.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
+				}
+				{swbus.write("NULL\n")};
+				
+};
 			arquivo.close;
 			dop.close;
 			looped.close;
-			streamed.close;
+			hwbus.close;
+			swbus.close;
 			controle.save(controle.presetDir);
 			
 		});
@@ -1124,11 +1152,12 @@ Mosca {
 			["load auto", Color.black, Color.white],
 		])
 		.action_({ arg but;
-			var f;
+			var f, f2;
 			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"r");
 			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"r");
 			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"r");
-			var streamed = FileReader((prjDr ++ "/auto/stream.txt").standardizePath, delimiter: Char.tab); 
+			var hwbus = FileReader((prjDr ++ "/auto/hwbus.txt").standardizePath, delimiter: Char.tab); 
+			var swbus = FileReader((prjDr ++ "/auto/swbus.txt").standardizePath, delimiter: Char.tab); 
 			
 			
 			but.value.postln;
@@ -1144,23 +1173,35 @@ Mosca {
 				//			lp[i] = line;
 				lpcheck[i].valueAction = line;
 				
-				f = File(prjDr ++ "/auto/stream.txt", "r"); f.isOpen;
+				f = File(prjDr ++ "/auto/hwbus.txt", "r"); f.isOpen;
 				
-				// streamed stuff
-				line = streamed.next;
+				// hwbus stuff
+				line = hwbus.next;
 				if(line[0] != "NULL"){
-					strmcheck[i].valueAction = true;
+					hwncheck[i].valueAction = true;
 					// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
 					ncanbox[i].valueAction = line[0].asFloat;
 					businibox[i].valueAction = line[1].asFloat;
 				};
-				
+
+				f2 = File(prjDr ++ "/auto/swbus.txt", "r"); f2.isOpen;
+				// swbus stuff
+				line = swbus.next;
+				if(line[0] != "NULL"){
+					swncheck[i].valueAction = true;
+					// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
+					ncanbox[i].valueAction = line[0].asFloat;
+					businibox[i].valueAction = line[1].asFloat;
+				};
+
 			};
 			arquivo.close;		
 			dop.close;
 			looped.close;
 			f.close;
-			streamed.close;
+			f2.close;
+			hwbus.close;
+			swbus.close;
 			controle.load(controle.presetDir);
 		});
 		
@@ -1186,7 +1227,7 @@ Mosca {
 			itensdemenu[i] = "Source " ++ (i + 1).asString;
 		};
 		
-		m = PopUpMenu(win,Rect(10,10,80,20));
+		m = PopUpMenu(win,Rect(10,10,90,20));
 		m.items = itensdemenu; 
 		m.action = { arg menu;
 			fatual = menu.value;
@@ -1194,7 +1235,8 @@ Mosca {
 			if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
 			if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
 			
-			if(strm[fatual] == 1){streamcheck.value = true}{streamcheck.value = false};
+			if(hwn[fatual] == 1){hwInCheck.value = true}{hwInCheck.value = false};
+			if(swn[fatual] == 1){swInCheck.value = true}{swInCheck.value = false};
 			
 			angnumbox.value = angulo[fatual];
 			angslider.value = angulo[fatual] / pi;
@@ -1237,31 +1279,44 @@ Mosca {
 		offset = 60;
 		
 		
-		dopcheque = CheckBox( win, Rect(94, 10, 80, 20), "Doppler").action_({ arg butt;
+		dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
 			("Doppler is " ++ butt.value).postln;
 			dcheck[fatual].valueAction = butt.value;
 		});
 		dopcheque.value = false;
 		
-		loopcheck = CheckBox( win, Rect(164, 10, 80, 20), "Loop").action_({ arg butt;
+		loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
 			("Loop is " ++ butt.value).postln;
 			lpcheck[fatual].valueAction = butt.value;
 		});
 		dopcheque.value = false;
 		
 		
-		streamcheck = CheckBox( win, Rect(10, 30, 100, 20), "Live Input").action_({ arg butt;
-			("Streaming is " ++ butt.value).postln;
-			strmcheck[fatual].valueAction = butt.value;
+		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW Bus").action_({ arg butt;
+			hwncheck[fatual].valueAction = butt.value;
+			if (hwInCheck.value && swInCheck.value) {
+				//swInCheck.value = false;
+			};
 		});
+
+		swInCheck = CheckBox( win, Rect(104, 30, 100, 20), "SW Bus").action_({ arg butt;
+			swncheck[fatual].valueAction = butt.value;
+			if (swInCheck.value && hwInCheck.value) {
+				//hwInCheck.value = false;
+			};
+		});
+
+
+
+		
 		dopcheque.value = false;
 		
 		
 		
 		//	~ncantexto = StaticText(~win, Rect(55, -10 + ~offset, 200, 20));
-		//	~ncantexto.string = "No. of channels (1, 2 or 4, Live)";
+		//	~ncantexto.string = "No. of channels (1, 2 or 4)";
 		textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
-		textbuf.string = "No. of channels (1, 2 or 4, Live)";
+		textbuf.string = "No. of channels (1, 2 or 4)";
 		ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
 		ncannumbox.value = 0;
 		ncannumbox.clipHi = 4;
@@ -1280,10 +1335,10 @@ Mosca {
 		
 		
 		textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
-		textbuf.string = "Start Bus (0-31, Live)";
+		textbuf.string = "Start Bus";
 		busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
 		busininumbox.value = 0;
-		busininumbox.clipHi = 31;
+		//		busininumbox.clipHi = 31;
 		busininumbox.clipLo = 0;
 		//angnumbox.step_(0.1); 
 		//angnumbox.scroll_step=0.1;
@@ -1614,49 +1669,51 @@ Mosca {
 	});
 
 		
-	textbuf = StaticText(wdados, Rect(10, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(15, 20, 50, 20));
 	textbuf.string = "Dp";
 	textbuf = StaticText(wdados, Rect(35, 20, 50, 20));
 	textbuf.string = "Lp";
 	textbuf = StaticText(wdados, Rect(55, 20, 50, 20));
-	textbuf.string = "Str";
+	textbuf.string = "Hw";
+	textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
+	textbuf.string = "Sw";
 
-	textbuf = StaticText(wdados, Rect(80, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(100, 20, 50, 20));
 	textbuf.string = "NCan";
-	textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(140, 20, 50, 20));
 	textbuf.string = "SBus";
 
-	textbuf = StaticText(wdados, Rect(160, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(180, 20, 50, 20));
 	textbuf.string = "X";
-	textbuf = StaticText(wdados, Rect(200, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(220, 20, 50, 20));
 	textbuf.string = "Y";
 
-		textbuf = StaticText(wdados, Rect(240, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(260, 20, 50, 20));
 	textbuf.string = "Z";
 
 		
-	textbuf = StaticText(wdados, Rect(280, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(300, 20, 50, 20));
 	textbuf.string = "Ang";
-	textbuf = StaticText(wdados, Rect(320, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(340, 20, 50, 20));
 	textbuf.string = "Vol";
-	textbuf = StaticText(wdados, Rect(360, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(380, 20, 50, 20));
 	textbuf.string = "Glob";
-	textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(420, 20, 50, 20));
 	textbuf.string = "Loc";
-	textbuf = StaticText(wdados, Rect(440, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(460, 20, 50, 20));
 	textbuf.string = "Rot";
-	textbuf = StaticText(wdados, Rect(480, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(500, 20, 50, 20));
 	textbuf.string = "Dir";
-	textbuf = StaticText(wdados, Rect(520, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(540, 20, 50, 20));
 	textbuf.string = "Cntr";
-	textbuf = StaticText(wdados, Rect(560, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(580, 20, 50, 20));
 	textbuf.string = "DAmt";
-	textbuf = StaticText(wdados, Rect(600, 20, 50, 20));
+	textbuf = StaticText(wdados, Rect(620, 20, 50, 20));
 	textbuf.string = "File";
 
 		
 		nfontes.do { arg i;	
-		dcheck[i] = CheckBox.new( wdados, Rect(10, 40 + (i*20), 40, 20))
+		dcheck[i] = CheckBox.new( wdados, Rect(15, 40 + (i*20), 40, 20))
 		.action_({ arg but;
 			if(i==fatual){dopcheque.value = but.value;};
 			if (but.value == true) {
@@ -1681,39 +1738,57 @@ Mosca {
 				synt[i].set(\lp, 0);
 			};
 		});
-
-				strmcheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
-		.action_({ arg but;
-			if(i==fatual){streamcheck.value = but.value;};
-			if (but.value == true) {
-				strm[i] = 1;
-				synt[i].set(\strm, 1);
-			}{
-				strm[i] = 0;
-				synt[i].set(\strm, 0);
-			};
-		});
-
+			// testing
+			hwncheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){hwInCheck.value = but.value;};
+				if (but.value == true) {
+					swncheck[i].value = false;
+					if(i==fatual){swInCheck.value = false;};
+					hwn[i] = 1;
+					swn[i] = 0;
+					synt[i].set(\hwn, 1);
+				}{
+					hwn[i] = 0;
+					synt[i].set(\hwn, 0);
+				};
+			});
+			
+			swncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){swInCheck.value = but.value;};
+				if (but.value == true) {
+					hwncheck[i].value = false;
+					if(i==fatual){hwInCheck.value = false;};
+					swn[i] = 1;
+					hwn[i] = 0;
+					synt[i].set(\swn, 1);
+				}{
+					swn[i] = 0;
+					synt[i].set(\swn, 0);
+				};
+			});
+			
 		
-		ncanbox[i] = NumberBox(wdados, Rect(80, 40 + (i*20), 40, 20));
-		businibox[i] = NumberBox(wdados, Rect(120, 40 + (i*20), 40, 20));
+		ncanbox[i] = NumberBox(wdados, Rect(100, 40 + (i*20), 40, 20));
+		businibox[i] = NumberBox(wdados, Rect(140, 40 + (i*20), 40, 20));
 
-		xbox[i] = NumberBox(wdados, Rect(160, 40 + (i*20), 40, 20));
-		ybox[i] = NumberBox(wdados, Rect(200, 40+ (i*20), 40, 20));
-		zbox[i] = NumberBox(wdados, Rect(240, 40+ (i*20), 40, 20));
+		xbox[i] = NumberBox(wdados, Rect(180, 40 + (i*20), 40, 20));
+		ybox[i] = NumberBox(wdados, Rect(220, 40+ (i*20), 40, 20));
+		zbox[i] = NumberBox(wdados, Rect(260, 40+ (i*20), 40, 20));
 
 
-		abox[i] = NumberBox(wdados, Rect(280, 40 + (i*20), 40, 20));
-		vbox[i] = NumberBox(wdados, Rect(320, 40+ (i*20), 40, 20));
-		gbox[i] = NumberBox(wdados, Rect(360, 40+ (i*20), 40, 20));
-		lbox[i] = NumberBox(wdados, Rect(400, 40+ (i*20), 40, 20));
-		rbox[i] = NumberBox(wdados, Rect(440, 40+ (i*20), 40, 20));
+		abox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 40, 20));
+		vbox[i] = NumberBox(wdados, Rect(340, 40+ (i*20), 40, 20));
+		gbox[i] = NumberBox(wdados, Rect(380, 40+ (i*20), 40, 20));
+		lbox[i] = NumberBox(wdados, Rect(420, 40+ (i*20), 40, 20));
+		rbox[i] = NumberBox(wdados, Rect(460, 40+ (i*20), 40, 20));
 
-		dbox[i] = NumberBox(wdados, Rect(480, 40+ (i*20), 40, 20));
-		cbox[i] = NumberBox(wdados, Rect(520, 40+ (i*20), 40, 20));
-		dpbox[i] = NumberBox(wdados, Rect(560, 40+ (i*20), 40, 20));
+		dbox[i] = NumberBox(wdados, Rect(500, 40+ (i*20), 40, 20));
+		cbox[i] = NumberBox(wdados, Rect(540, 40+ (i*20), 40, 20));
+		dpbox[i] = NumberBox(wdados, Rect(580, 40+ (i*20), 40, 20));
 		
-		tfield[i] = TextField(wdados, Rect(600, 40+ (i*20), 350, 20));
+		tfield[i] = TextField(wdados, Rect(620, 40+ (i*20), 350, 20));
 		
 		tfield[i].action = {arg path;
 			if (path != "") {
