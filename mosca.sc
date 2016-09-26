@@ -628,7 +628,7 @@ Mosca {
 
 		arg nfontes = 1, dur = 60;
 		var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
-		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, sombuf, funcs, 
+		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
 		hwInCheck, hwncheck, hwn, swInCheck, swncheck, swn,
@@ -770,8 +770,8 @@ Mosca {
 		
 		bdados = Button(win, Rect(280, 30, 90, 20))
 		.states_([
-			["open data", Color.black, Color.white],
-			["close data", Color.white, Color.blue]
+			["show data", Color.black, Color.white],
+			["hide data", Color.white, Color.blue]
 		])
 		.action_({ arg but;
 			//	but.value.postln;
@@ -951,24 +951,34 @@ Mosca {
 					//	}); 
 				}.defer;	
 			} {
-				if (hwncheck[i].value) {
+				("HELLO swncheck[i].value = " ++ i ++ " " ++ swncheck[i].value).postln;
+				if ((swncheck[i].value) || (hwncheck[i].value)) {
 					var x;
-					("Streaming! ncan = " ++ ncan[i]
-						++ " & busini = " ++ busini[i]).postln;
+					("Streaming! ncan = " ++ ncan[i].value
+						++ " & busini = " ++ busini[i].value).postln;
 					x = case
 					{ ncan[i] == 1 } {
 						"Mono!".postln;
 				
+					("HELLO MONO swncheck[i].value = " ++ i ++ " " ++ swncheck[i].value).postln;
 
 						
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, busini[i],
-									\volume, volume[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+
+								if (hwncheck[i].value) {
+									synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, busini[i],
+										\volume, volume[i]], revGlobal,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								} {
+									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i], \busini, busini[i],
+										\volume, volume[i]], revGlobal,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								};
 								
 								
 								espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
@@ -1658,14 +1668,15 @@ Mosca {
 				{tfield[fatual].value = "";}.defer;
 			
 			}
-		);
+		);	
+	});
 
-		//		});
-		
-		
-		
-		
-		
+	bnodes = Button(win, Rect(220, 50, 60, 20))
+	.states_([
+		["nodes", Color.black, Color.white],
+	])
+		.action_({
+			server.plotTree;
 	});
 
 		
