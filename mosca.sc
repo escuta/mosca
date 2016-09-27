@@ -23,7 +23,7 @@ Mosca {
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
-	<>synthRegistry, 
+	<>synthRegistry, <>busini,
 	<>dec;
 
 	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
@@ -33,11 +33,7 @@ Mosca {
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
 	bufsize, bufsizeBinaural, irbuffer,
 	o, //debugging
-
-	/*	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum,
-	rirLspectrum, rirRspectrum,
-	*/
-	binDecoder, prjDr;
+	prjDr;
 	classvar fftsize = 2048, server;
 
 	*new { arg projDir, rirWXYZ, rirBinaural, srvr, decoder = nil;
@@ -640,8 +636,16 @@ Mosca {
 		};
 	}
 
+	// for testing
+
 	getSynthRegistry { // selection of Mosca arguments for use in synths
 		^this.synthRegistry;
+	}
+
+	synthOutFunction {
+		|source, signal|
+		^this.busini[source]
+
 	}
 
 	openGui {
@@ -656,7 +660,8 @@ Mosca {
 		llev, angnumbox, volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
-		ncanbox, businibox, ncan, busini,
+		ncanbox, businibox, ncan,
+		//busini,
 		novoplot,
 		
 		dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
@@ -681,7 +686,7 @@ Mosca {
 		ncan = Array.newClear(nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		// note that ncan refers to # of channels in streamed sources.
 		// ncanais is related to sources read from file
-		busini = Array.newClear(nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
+		this.busini = Array.newClear(nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
 		sombuf = Array.newClear(nfontes); 
 		synt = Array.newClear(nfontes);
 		sprite = Array2D.new(nfontes, 2);
@@ -748,7 +753,7 @@ Mosca {
 			dplev[i] = 0;
 			
 			ncan[i] = 0;
-			busini[i] = 0;
+			this.busini[i] = 0;
 			sprite[i, 0] = -20;
 			sprite[i, 1] = -20;
 			testado[i] = false;
@@ -975,7 +980,7 @@ Mosca {
 				if ((swncheck[i].value) || (hwncheck[i].value)) {
 					var x;
 					("Streaming! ncan = " ++ ncan[i].value
-						++ " & busini = " ++ busini[i].value).postln;
+						++ " & this.busini = " ++ this.busini[i].value).postln;
 					x = case
 					{ ncan[i] == 1 } {
 						"Mono!".postln;
@@ -989,12 +994,12 @@ Mosca {
 							if (testado[i] == false) {
 
 								if (hwncheck[i].value) {
-									synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, busini[i],
+									synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
 										\volume, volume[i]], revGlobal,
 										addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil});
 								} {
-									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i], \busini, busini[i],
+									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i], \busini, this.busini[i],
 										\volume, volume[i]], revGlobal,
 										addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil});
@@ -1030,12 +1035,12 @@ Mosca {
 							if (testado[i] == false) {
 
 								if (hwncheck[i].value) {
-								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, busini[i],
+								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
 									\volume, volume[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 								} {
-								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i], \busini, busini[i],
+								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i], \busini, this.busini[i],
 									\volume, volume[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
@@ -1069,13 +1074,13 @@ Mosca {
 								if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
-									\busini, busini[i]], 
+									\busini, this.busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 								} {
 								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
-									\busini, busini[i]], 
+									\busini, this.busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 								};
@@ -1169,14 +1174,14 @@ Mosca {
 				if(hwn[i].value > 0)
 				{
 					
-					hwbus.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
+					hwbus.write(ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
 				}
 				{hwbus.write("NULL\n")};
 
 				if(swn[i].value > 0)
 				{
 					
-					swbus.write(ncan[i].asString ++ Char.tab ++  busini[i].asString ++ "\n");
+					swbus.write(ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
 				}
 				{swbus.write("NULL\n")};
 				
@@ -1306,7 +1311,7 @@ Mosca {
 			connumbox.value = clev[fatual];
 			
 			ncannumbox.value = ncan[fatual];
-			busininumbox.value = busini[fatual];
+			busininumbox.value = this.busini[fatual];
 			
 			if(testado[fatual]) {  // don't change button if we are playing via automation
 				// only if it is being played/streamed manually
@@ -1391,7 +1396,7 @@ Mosca {
 		busininumbox.align = \center;
 		busininumbox.action = {arg num; 
 			businibox[fatual].valueAction = num.value;
-			busini[fatual] = num.value;
+			this.busini[fatual] = num.value;
 		};
 		
 		
@@ -2046,7 +2051,7 @@ Mosca {
 		businibox[i].action = {arg num;
 			espacializador[i].set(\mz, num.value);
 			synt[i].set(\mz, num.value);
-			busini[i] = num.value;
+			this.busini[i] = num.value;
 			if(i == fatual) 
 			{
 				//var val = (450 - (num.value * 900)) * -1;
