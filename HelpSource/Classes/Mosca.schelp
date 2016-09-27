@@ -127,7 +127,7 @@ s.waitForBoot {
 	// outputs for decoding with an external decoder
 	
 	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
-			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, s, ~decoder);
+			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", s, ~decoder);
 	//	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
 	//		"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
 	~testMosca.openGui(4, 120);
@@ -135,4 +135,45 @@ s.waitForBoot {
 
 )
 
+(
+MIDIIn.disconnect; 
+~decoder.free;
+)
+
+
+
+(
+SynthDef.new(\testMonoSound, { arg mx, my, mz;
+	var env, env_gen, sin;
+	env = Env.triangle(5, 0.2);
+	env_gen = EnvGen.kr(env, doneAction: 2);
+	sin = SinOsc.ar(500, mul: env_gen);
+  Out.ar(0, [sin, sin]);
+	//	mx.postln;
+}).add;
+
+)
+
+~mySynth = Synth.new(\testMonoSound).onFree({"done".postln; ~testMosca.deregisterSynth(~mySynth)});
+
+~testMosca.registerSynth(~mySynth);
+
+~testMosca.getSynthRegistry;
+
+List[1, 2, 3, 4].count({ arg item, i; item.odd });
+~fish = List[1, 2, 3, 4];
+~fish.count({ arg item, i; item.odd });
+
+~myOtherSynth = Synth.new(\testMonoSound, []);
+~testMosca.postln;
+~mySynth.postln;
+
+~testMosca.registerSynth(~mySynth);
+~testMosca.registerSynth(~myOtherSynth);
+~testMosca.deregisterSynth(~myOtherSynth);
+~testMosca.deregisterSynth(~mySynth);
+
+
+~testMosca.getSynthRegistry.notNil;
+~testMosca.getSynthRegistry;
 ::
