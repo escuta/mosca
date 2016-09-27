@@ -23,6 +23,7 @@ Mosca {
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
+	<>synthRegistry, 
 	<>dec;
 
 	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
@@ -48,14 +49,15 @@ Mosca {
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
-		parser,
+		//synthRegistry = List[],
+		
 		testit; // remove at some point with other debugging stuff
 
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
 		playStereoInFunc = Array.newClear(3);
 		playBFormatInFunc = Array.newClear(3);
 
-		
+		synthRegistry = List[];
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
@@ -627,8 +629,19 @@ Mosca {
 	
 
 	registerSynth { // selection of Mosca arguments for use in synths
-		|synth|
-		^synth;
+		| synth |
+		this.synthRegistry.add(synth);
+	}
+	deregisterSynth { // selection of Mosca arguments for use in synths
+		| synth |
+		if(this.synthRegistry.notNil){
+			this.synthRegistry.remove(synth);
+			
+		};
+	}
+
+	getSynthRegistry { // selection of Mosca arguments for use in synths
+		^this.synthRegistry;
 	}
 
 	openGui {
