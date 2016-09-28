@@ -126,13 +126,51 @@ s.waitForBoot {
 	//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
 	// outputs for decoding with an external decoder
 	
-	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
-			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, s, ~decoder);
+	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 7,
+			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", s, ~decoder);
 	//	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
 	//		"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
-	~testMosca.openGui(4, 120);
+	~testMosca.openGui(120);
 };
 
 )
 
+// Tidy up
+
+(
+MIDIIn.disconnect; 
+~decoder.free;
+)
+
+// THIS PART IS IN DEVELOPMENT
+
+// write a synth def
+
+(
+SynthDef("test-out", { arg outbus=0, freq=440;
+	var source;
+	source = SinOsc.ar(freq, 0, 0.1);
+
+	// write to the bus, adding to previous contents
+	Out.ar(outbus, source);
+
+}).send(s);
+)
+
+//  use the method to fetch the true bus associated with the chosen source (from 1 on). Note
+// this depends on the setting in the GUI. Use the value for the outbus of your synth instance.
+
+~testMosca.getSWBus(2) // eg. get bus for source 2
+
+(
+~mySynth = Synth.new("test-out", [\freq, 500, \outbus, ~testMosca.getSWBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(~mySynth)});
+
+~testMosca.registerSynth(~mySynth);
+)
+
+(
+~myOtherSynth = Synth.new("test-out", [\freq, 800, \outbus, ~testMosca.getSWBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(~myOtherSynth)});
+
+~testMosca.registerSynth(~myOtherSynth);
+)
 ::
