@@ -646,12 +646,12 @@ Mosca {
 
 	registerSynth { // selection of Mosca arguments for use in synths
 		| synth, source |
-		this.synthRegistry[source].add(synth);
+		this.synthRegistry[source-1].add(synth);
 	}
 	deregisterSynth { // selection of Mosca arguments for use in synths
 		| synth , source |
-		if(this.synthRegistry[source].notNil){
-			this.synthRegistry[source].remove(synth);
+		if(this.synthRegistry[source-1].notNil){
+			this.synthRegistry[source-1].remove(synth);
 			
 		};
 	}
@@ -660,7 +660,7 @@ Mosca {
 
 	getSynthRegistry { // selection of Mosca arguments for use in synths
 		| source |
-		^this.synthRegistry[source];
+		^this.synthRegistry[source-1];
 	}
 	/*
 	synthOutFunction {
