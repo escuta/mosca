@@ -54,13 +54,20 @@ Mosca {
 		playStereoInFunc = Array.newClear(3);
 		playBFormatInFunc = Array.newClear(3);
 
-		synthRegistry = List[];
+		synthRegistry = Array.newClear(this.nfontes);
+		this.nfontes.do { arg x;
+			synthRegistry[x] = List[];
+		};
+		
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
 		(this.nfontes * 4).do { arg x;
 			this.swinbus[x] = Bus.audio(server, 1); 
 		};
+
+
+
 
 		/*	this.synthOutFunc = Array.newClear(this.nfontes * 4);
 		(this.nfontes * 4).do { arg x;
@@ -213,9 +220,9 @@ Mosca {
 				var lrev, scale = 565;
 				var grevganho = 0.04; // needs less gain
 				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
+				//			mx = Lag.kr(mx, 2.0 * dopon);
+				//				my = Lag.kr(my, 2.0 * dopon);
+				//				mz = Lag.kr(mz, 2.0 * dopon);
 				
 				//		fonte = Point.new;
 				fonte = Cartesian.new;
@@ -307,9 +314,9 @@ Mosca {
 				
 				
 				// i think this is needed here too?, but not the doppler
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
+				//			mx = Lag.kr(mx, 2.0 * dopon);
+				//		my = Lag.kr(my, 2.0 * dopon);
+				//			mz = Lag.kr(mz, 2.0 * dopon);
 				
 				
 				//		fonte = Point.new;
@@ -495,9 +502,9 @@ Mosca {
 				gsig, lsig, rd, dopplershift;
 				var grevganho = 0.20;
 				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
+				//		mx = Lag.kr(mx, 2.0 * dopon);
+				//		my = Lag.kr(my, 2.0 * dopon);
+				//		mz = Lag.kr(mz, 2.0 * dopon);
 				
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
@@ -516,7 +523,8 @@ Mosca {
 				playerRef = Ref(0);
 				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				
-				rd = (1 - dis) * 340; 
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
 				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
 				playerRef.value = dopplershift;
 				
@@ -638,13 +646,13 @@ Mosca {
 	
 
 	registerSynth { // selection of Mosca arguments for use in synths
-		| synth |
-		this.synthRegistry.add(synth);
+		| synth, source |
+		this.synthRegistry[source-1].add(synth);
 	}
 	deregisterSynth { // selection of Mosca arguments for use in synths
-		| synth |
-		if(this.synthRegistry.notNil){
-			this.synthRegistry.remove(synth);
+		| synth , source |
+		if(this.synthRegistry[source-1].notNil){
+			this.synthRegistry[source-1].remove(synth);
 			
 		};
 	}
@@ -652,7 +660,8 @@ Mosca {
 	// for testing
 
 	getSynthRegistry { // selection of Mosca arguments for use in synths
-		^this.synthRegistry;
+		| source |
+		^this.synthRegistry[source-1];
 	}
 	/*
 	synthOutFunction {
@@ -671,7 +680,16 @@ Mosca {
 			^bus
 		}
 	}
-	
+
+	// espacializador[fatual].set(\angulo, num.value);
+
+	setSynths {
+		|source, param, value|
+		this.synthRegistry[source].do({
+			arg item, i;
+			item.set(param, value);
+		});
+	}
 
 	openGui {
 
@@ -871,8 +889,22 @@ Mosca {
 					("x value = " ++ xbox[i].value).postln;
 					
 				};
+
+				// needs a check mechanism?
 				
-				
+				this.setSynths(i, \dopon, doppler[i]);
+				this.setSynths(i, \angulo, angulo[i]);
+				this.setSynths(i, \volume, volume[i]);
+				this.setSynths(i, \dopamnt, dplev[i]);
+				this.setSynths(i, \glev, glev[i]);
+				this.setSynths(i, \llev, llev[i]);
+				this.setSynths(i, \mx, xbox[i].value);
+				this.setSynths(i, \my, ybox[i].value);
+				this.setSynths(i, \mz, zbox[i].value);
+				this.setSynths(i, \rotAngle, rlev[i]);
+				this.setSynths(i, \directang, dlev[i]);
+				this.setSynths(i, \contr, clev[i]);
+	
 			};
 			
 			
@@ -1445,6 +1477,7 @@ Mosca {
 			abox[fatual].valueAction = num.value;
 			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)){
 				espacializador[fatual].set(\angulo, num.value);
+				this.setSynths(fatual, \angulo, num.value);
 				angulo[fatual] = num.value;
 				("ângulo = " ++ num.value).postln; 
 			}
@@ -1460,6 +1493,7 @@ Mosca {
 				angnumbox.value = num.value * pi;
 				//			espacializador[fatual].set(\angulo, b.map(num.value));
 				espacializador[fatual].set(\angulo, num.value * pi);
+				this.setSynths(fatual, \angulo, num.value * pi);
 				//			angulo[fatual] = b.map(num.value);
 				angulo[fatual] = num.value * pi;
 			}{angnumbox.value = num.value * pi;};
@@ -1483,6 +1517,7 @@ Mosca {
 			zbox[fatual].valueAction = num.value;
 			if(ncanais[fatual]==2){
 				espacializador[fatual].set(\elev, num.value);
+				this.setSynths(fatual, \elev, num.value);
 				zlev[fatual] = num.value;
 				("Z-Axis = " ++ num.value).postln; 
 			}
@@ -1802,9 +1837,11 @@ Mosca {
 				//	"Aqui!!!".postln;
 				doppler[i] = 1;
 				espacializador[i].set(\dopon, 1);
+				this.setSynths(i, \dopon, 1);
 			}{
 				doppler[i] = 0;
 				espacializador[i].set(\dopon, 0);
+				this.setSynths(i, \dopon, 0);
 			};
 		});
 
@@ -1815,9 +1852,11 @@ Mosca {
 				//	"Aqui!!!".postln;
 				lp[i] = 1;
 				synt[i].set(\lp, 1);
+				this.setSynths(i, \lp, 1);
 			}{
 				lp[i] = 0;
 				synt[i].set(\lp, 0);
+				this.setSynths(i, \lp, 0);
 			};
 		});
 			// testing
@@ -1905,7 +1944,9 @@ Mosca {
 			//			synt[i] = nil;
 
 			if(espacializador[i] != nil){
-					espacializador[i].set(\mx, num.value);			
+				espacializador[i].set(\mx, num.value);
+				this.setSynths(i, \mx, num.value);
+
 				synt[i].set(\mx, num.value);
 			};
 			
@@ -1919,7 +1960,8 @@ Mosca {
 			//			synt[i] = nil;
 
 			if(espacializador[i] != nil){
-					espacializador[i].set(\my, num.value);
+				espacializador[i].set(\my, num.value);
+				this.setSynths(i, \mx, num.value);
 					synt[i].set(\my, num.value);
 			};		
 			
@@ -1952,6 +1994,7 @@ Mosca {
 			angulo[i] = num.value;
 			if((ncanais[i]==2) || (this.ncan[i]==2)){
 				espacializador[i].set(\angulo, num.value);
+				this.setSynths(i, \angulo, num.value);
 				angulo[i] = num.value;
 			};
 			if(i == fatual) 
@@ -1963,6 +2006,7 @@ Mosca {
 		}; 
 		vbox[i].action = {arg num;
 			synt[i].set(\volume, num.value);
+				this.setSynths(i, \volume, num.value);
 			volume[i] = num.value;
 			//	("volume = " ++ num.value).postln; 
 			if(i == fatual) 
@@ -1981,6 +2025,8 @@ Mosca {
 		
 		gbox[i].action = {arg num;
 			espacializador[i].set(\glev, num.value);
+			this.setSynths(i, \glev, num.value);
+
 			synt[i].set(\glev, num.value);
 			glev[i] = num.value;
 			if(i == fatual) 
@@ -1993,6 +2039,7 @@ Mosca {
 		
 		lbox[i].action = {arg num;
 			espacializador[i].set(\llev, num.value);
+			this.setSynths(i, \llev, num.value);
 			synt[i].set(\llev, num.value);
 			llev[i] = num.value;
 			if(i == fatual) 
@@ -2006,6 +2053,7 @@ Mosca {
 		rbox[i].action = {arg num; 
 				
 			synt[i].set(\rotAngle, num.value);
+			this.setSynths(i, \rotAngle, num.value);
 			rlev[i] = num.value;
 			if(i == fatual) 
 			{
@@ -2019,6 +2067,7 @@ Mosca {
 			//	num.value.postln;
 			"dirBox!".postln;
 			synt[i].set(\directang, num.value);
+			this.setSynths(i, \directang, num.value);
 			dlev[i] = num.value;
 			if(i == fatual) 
 			{
@@ -2032,6 +2081,7 @@ Mosca {
 			//	num.value.postln;
 			//	"cbox!".postln;
 			synt[i].set(\contr, num.value);
+			this.setSynths(i, \contr, num.value);
 			clev[i] = num.value;
 			if(i == fatual) 
 			{
@@ -2042,7 +2092,8 @@ Mosca {
 		
 		dpbox[i].action = {arg num;
 			// used for b-format amb/bin only
-				synt[i].set(\dopamnt, num.value);
+			synt[i].set(\dopamnt, num.value);
+			this.setSynths(i, \dopamnt, num.value);
 			// used for the others
 			espacializador[i].set(\dopamnt, num.value);
 				dplev[i] = num.value;
@@ -2056,6 +2107,7 @@ Mosca {
 
 				zbox[i].action = {arg num;
 					espacializador[i].set(\mz, num.value);
+					this.setSynths(i, \mz, num.value);
 					//"fooooob".postln;
 					synt[i].set(\mz, num.value);
 					//synt[i].set(\elev, num.value);
@@ -2066,9 +2118,12 @@ Mosca {
 				zslider.value = (num.value + 450) / 900;
 				znumbox.value = num.value;
 			};
-		}; 
+				};
+
+			// CHECK THESE NEXT 2
 		ncanbox[i].action = {arg num;
 			espacializador[i].set(\mz, num.value);
+			this.setSynths(i, \mz, num.value);
 			synt[i].set(\mz, num.value);
 			this.ncan[i] = num.value;
 			if(i == fatual )
@@ -2080,6 +2135,7 @@ Mosca {
 		}; 
 		businibox[i].action = {arg num;
 			espacializador[i].set(\mz, num.value);
+			this.setSynths(i, \mz, num.value);
 			synt[i].set(\mz, num.value);
 			this.busini[i] = num.value;
 			if(i == fatual) 
