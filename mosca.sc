@@ -58,10 +58,15 @@ Mosca {
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
-		(nsources * 4).do { arg x;
+		(this.nfontes * 4).do { arg x;
 			this.swinbus[x] = Bus.audio(server, 1); 
 		};
 
+		/*	this.synthOutFunc = Array.newClear(this.nfontes * 4);
+		(this.nfontes * 4).do { arg x;
+			this.synthOutFunc[x] = { |sig| Out(this.swinbus[x], sig)};
+		};
+		*/
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
 		if (decoder.isNil) {
@@ -649,19 +654,22 @@ Mosca {
 	getSynthRegistry { // selection of Mosca arguments for use in synths
 		^this.synthRegistry;
 	}
-
+	/*
 	synthOutFunction {
 		|source = 1, signal = 0|
-		var bus = this.swinbus[this.busini[source]];
-		source = source - 1;
-		^Out.ar(bus, signal);
+	this.synthOutFunc[(source*4)-4].value(signal);
+		}
+	*/	
 
-	}
+	
 
-	// not yet used
+	
 	getSWBus {
-		|busini|
-		^this.swinbus[busini]
+		|source |
+		if (source > 0) {
+			var bus = this.swinbus[this.busini[source - 1]];
+			^bus
+		}
 	}
 	
 
