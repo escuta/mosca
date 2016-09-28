@@ -612,14 +612,14 @@ Mosca {
 		
 			playStereoInFunc[2] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [In.ar(busini, 1), SoundIn.ar(busini + 1, 1)];
+			playerRef.value =  [In.ar(busini, 1), In.ar(busini + 1, 1)];
 		};
 		
 
 		playBFormatInFunc[2] = {
 			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [In.ar(busini, 1), SoundIn.ar(busini + 1, 1),
-				SoundIn.ar(busini + 2, 1), SoundIn.ar(busini + 3, 1)];
+			playerRef.value =  [In.ar(busini, 1), In.ar(busini + 1, 1),
+				In.ar(busini + 2, 1), In.ar(busini + 3, 1)];
 
 		};
 		
@@ -651,18 +651,19 @@ Mosca {
 	}
 
 	synthOutFunction {
-		|source, signal = 0|
-		var x;
+		|source = 1, signal = 0|
+		var bus = this.swinbus[this.busini[source]];
 		source = source - 1;
-		^Out.ar(this.swinbus[this.busini[source]], signal);
+		^Out.ar(bus, signal);
 
 	}
 
-	/*	getSwBusIndex {
+	// not yet used
+	getSWBus {
 		|busini|
 		^this.swinbus[busini]
 	}
-	*/
+	
 
 	openGui {
 
@@ -2300,3 +2301,28 @@ Mosca {
 		}
 	}
 }
+
+/*
+
+MoscaSynth : Synth {
+	
+	*new { arg defName, source, args, target, addAction=\addToHead;
+		var synth, server, addNum, inTarget;
+		inTarget = target.asTarget;
+		server = inTarget.server;
+		addNum = addActions[addAction];
+		synth = this.basicNew(defName, server);
+
+		if((addNum < 2), { synth.group = inTarget; }, { synth.group = inTarget.group; });
+		server.sendMsg(9, //"s_new"
+			defName, synth.nodeID, addNum, inTarget.nodeID,
+			*(args.asOSCArgArray)
+		);
+		^synth
+	}
+	
+
+
+}
+
+*/
