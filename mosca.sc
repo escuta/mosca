@@ -502,9 +502,9 @@ Mosca {
 				gsig, lsig, rd, dopplershift;
 				var grevganho = 0.20;
 				
-						mx = Lag.kr(mx, 2.0 * dopon);
-						my = Lag.kr(my, 2.0 * dopon);
-						mz = Lag.kr(mz, 2.0 * dopon);
+				//		mx = Lag.kr(mx, 2.0 * dopon);
+				//		my = Lag.kr(my, 2.0 * dopon);
+				//		mz = Lag.kr(mz, 2.0 * dopon);
 				
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
@@ -523,7 +523,8 @@ Mosca {
 				playerRef = Ref(0);
 				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				
-				rd = (1 - dis) * 340; 
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
 				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
 				playerRef.value = dopplershift;
 				
