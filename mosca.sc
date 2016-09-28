@@ -54,13 +54,20 @@ Mosca {
 		playStereoInFunc = Array.newClear(3);
 		playBFormatInFunc = Array.newClear(3);
 
-		synthRegistry = List[];
+		synthRegistry = Array.newClear(this.nfontes);
+		this.nfontes.do { arg x;
+			synthRegistry[x] = List[];
+		};
+		
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
 		(this.nfontes * 4).do { arg x;
 			this.swinbus[x] = Bus.audio(server, 1); 
 		};
+
+
+
 
 		/*	this.synthOutFunc = Array.newClear(this.nfontes * 4);
 		(this.nfontes * 4).do { arg x;
@@ -638,13 +645,13 @@ Mosca {
 	
 
 	registerSynth { // selection of Mosca arguments for use in synths
-		| synth |
-		this.synthRegistry.add(synth);
+		| synth, source |
+		this.synthRegistry[source].add(synth);
 	}
 	deregisterSynth { // selection of Mosca arguments for use in synths
-		| synth |
-		if(this.synthRegistry.notNil){
-			this.synthRegistry.remove(synth);
+		| synth , source |
+		if(this.synthRegistry[source].notNil){
+			this.synthRegistry[source].remove(synth);
 			
 		};
 	}
@@ -652,7 +659,8 @@ Mosca {
 	// for testing
 
 	getSynthRegistry { // selection of Mosca arguments for use in synths
-		^this.synthRegistry;
+		| source |
+		^this.synthRegistry[source];
 	}
 	/*
 	synthOutFunction {
@@ -671,7 +679,16 @@ Mosca {
 			^bus
 		}
 	}
-	
+
+	// espacializador[fatual].set(\angulo, num.value);
+
+	setSynths {
+		|source, param, value|
+		this.synthRegistry[source].do({
+			arg item, i;
+			item.set(param, value);
+		});
+	}
 
 	openGui {
 
