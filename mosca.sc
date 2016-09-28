@@ -220,9 +220,9 @@ Mosca {
 				var lrev, scale = 565;
 				var grevganho = 0.04; // needs less gain
 				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
+				//			mx = Lag.kr(mx, 2.0 * dopon);
+				//				my = Lag.kr(my, 2.0 * dopon);
+				//				mz = Lag.kr(mz, 2.0 * dopon);
 				
 				//		fonte = Point.new;
 				fonte = Cartesian.new;
@@ -314,9 +314,9 @@ Mosca {
 				
 				
 				// i think this is needed here too?, but not the doppler
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
+				//			mx = Lag.kr(mx, 2.0 * dopon);
+				//		my = Lag.kr(my, 2.0 * dopon);
+				//			mz = Lag.kr(mz, 2.0 * dopon);
 				
 				
 				//		fonte = Point.new;
@@ -502,9 +502,9 @@ Mosca {
 				gsig, lsig, rd, dopplershift;
 				var grevganho = 0.20;
 				
-				mx = Lag.kr(mx, 2.0 * dopon);
-				my = Lag.kr(my, 2.0 * dopon);
-				mz = Lag.kr(mz, 2.0 * dopon);
+						mx = Lag.kr(mx, 2.0 * dopon);
+						my = Lag.kr(my, 2.0 * dopon);
+						mz = Lag.kr(mz, 2.0 * dopon);
 				
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
