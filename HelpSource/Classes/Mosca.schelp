@@ -147,47 +147,30 @@ MIDIIn.disconnect;
 // write a synth def
 
 (
-SynthDef.new(\testMonoSound, { arg mx, my, mz;
-	var env, env_gen, sin;
-	env = Env.triangle(5, 0.2);
-	env_gen = EnvGen.kr(env, doneAction: 2);
-	sin = SinOsc.ar(500, mul: env_gen);
-//  Out.ar(0, [sin, sin]);
-~testMosca.synthOutFunction(1, sin);
-	//	mx.postln;
-}).add;
+SynthDef("test-out", { arg outbus=0, freq=440;
+	var source;
+	source = SinOsc.ar(freq, 0, 0.1);
 
+	// write to the bus, adding to previous contents
+	Out.ar(outbus, source);
+
+}).send(s);
 )
 
+//  use the method to fetch the true bus associated with the chosen source (from 1 on). Note
+// this depends on the setting in the GUI. Use the value for the outbus of your synth instance.
+
+~testMosca.getSWBus(2) // eg. get bus for source 2
 
 (
-~mySynth = Synth.new(\testMonoSound).onFree({"done".postln; ~testMosca.deregisterSynth(~mySynth)});
+~mySynth = Synth.new("test-out", [\freq, 500, \outbus, ~testMosca.getSWBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(~mySynth)});
 
 ~testMosca.registerSynth(~mySynth);
 )
 
-~testMosca.getSynthRegistry;
+(
+~myOtherSynth = Synth.new("test-out", [\freq, 800, \outbus, ~testMosca.getSWBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(~myOtherSynth)});
 
-~testMosca.synthOutFunction(4, 3);
-
-
-
-
-
-List[1, 2, 3, 4].count({ arg item, i; item.odd });
-~fish = List[1, 2, 3, 4];
-~fish.count({ arg item, i; item.odd });
-
-~myOtherSynth = Synth.new(\testMonoSound, []);
-~testMosca.postln;
-~mySynth.postln;
-
-~testMosca.registerSynth(~mySynth);
 ~testMosca.registerSynth(~myOtherSynth);
-~testMosca.deregisterSynth(~myOtherSynth);
-~testMosca.deregisterSynth(~mySynth);
-
-
-~testMosca.getSynthRegistry.notNil;
-~testMosca.getSynthRegistry;
+)
 ::
