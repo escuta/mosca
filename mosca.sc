@@ -23,7 +23,7 @@ Mosca {
 	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
-	<>synthRegistry, <>busini,
+	<>synthRegistry, <>busini, <>ncan, <>swinbus,
 	<>dec;
 
 	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
@@ -36,12 +36,12 @@ Mosca {
 	prjDr;
 	classvar fftsize = 2048, server;
 
-	*new { arg projDir, rirWXYZ, rirBinaural, srvr, decoder = nil;
-		^super.new.initMosca(projDir, rirWXYZ, rirBinaural, srvr, decoder);
+	*new { arg projDir, nsources = 1, rirWXYZ, rirBinaural, srvr, decoder = nil;
+		^super.new.initMosca(projDir, nsources, rirWXYZ, rirBinaural, srvr, decoder);
 	}
 
 
-	initMosca { arg projDir, rirWXYZ, rirBinaural, srvr, decoder;
+	initMosca { arg projDir, nsources, rirWXYZ, rirBinaural, srvr, decoder;
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -49,12 +49,19 @@ Mosca {
 		
 		testit; // remove at some point with other debugging stuff
 
+		this.nfontes = nsources;
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
 		playStereoInFunc = Array.newClear(3);
 		playBFormatInFunc = Array.newClear(3);
 
 		synthRegistry = List[];
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+
+		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
+		(nsources * 4).do { arg x;
+			this.swinbus[x] = Bus.audio(server, 1); 
+		};
+
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
 		if (decoder.isNil) {
@@ -594,29 +601,30 @@ Mosca {
 		
 		
 		makeSynthDefPlayers.("HWBus", 1);
+		//("Bus is " ++ this.swinbus[0]).postln;
 
 		// Make SWBus In SynthDefs
 
-				playMonoInFunc[2] = {
+		playMonoInFunc[2] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  In.ar(busini, 1);
+				playerRef.value =  In.ar(busini, 1);
 		};
 		
-		playStereoInFunc[2] = {
+			playStereoInFunc[2] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [In.ar(busini), SoundIn.ar(busini + 1)];
+			playerRef.value =  [In.ar(busini, 1), SoundIn.ar(busini + 1, 1)];
 		};
 		
 
 		playBFormatInFunc[2] = {
 			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [In.ar(busini), SoundIn.ar(busini + 1),
-				SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
+			playerRef.value =  [In.ar(busini, 1), SoundIn.ar(busini + 1, 1),
+				SoundIn.ar(busini + 2, 1), SoundIn.ar(busini + 3, 1)];
 
 		};
+		
 
-
-		makeSynthDefPlayers.("SWBus", 2);
+			makeSynthDefPlayers.("SWBus", 2);
 
 		
 		//////// END SYNTHDEFS ///////////////
@@ -643,14 +651,22 @@ Mosca {
 	}
 
 	synthOutFunction {
-		|source, signal|
-		^this.busini[source]
+		|source, signal = 0|
+		var x;
+		source = source - 1;
+		^Out.ar(this.swinbus[this.busini[source]], signal);
 
 	}
 
+	/*	getSwBusIndex {
+		|busini|
+		^this.swinbus[busini]
+	}
+	*/
+
 	openGui {
 
-		arg nfontes = 1, dur = 60;
+		arg dur = 60;
 		var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
@@ -660,7 +676,8 @@ Mosca {
 		llev, angnumbox, volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
-		ncanbox, businibox, ncan,
+		ncanbox, businibox,
+		//ncan,
 		//busini,
 		novoplot,
 		
@@ -673,71 +690,73 @@ Mosca {
 		znumbox, zslider, zbox, zlev, // z-axis
 		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox,
 		bAmbBinaural, render = "binaural";
-		espacializador = Array.newClear(nfontes);
-		//	espacializador2 = Array.newClear(nfontes); // used when b-format file is rendered as binaural
-		doppler = Array.newClear(nfontes); 
-		lp = Array.newClear(nfontes); 
-		hwn = Array.newClear(nfontes); 
-		swn = Array.newClear(nfontes); 
-		mbus = Array.newClear(nfontes); 
-		sbus = Array.newClear(nfontes); 
-		//	bfbus = Array.newClear(nfontes); 
-		ncanais = Array.newClear(nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
-		ncan = Array.newClear(nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
+		espacializador = Array.newClear(this.nfontes);
+		//	espacializador2 = Array.newClear(this.nfontes); // used when b-format file is rendered as binaural
+		doppler = Array.newClear(this.nfontes); 
+		lp = Array.newClear(this.nfontes); 
+		hwn = Array.newClear(this.nfontes); 
+		swn = Array.newClear(this.nfontes); 
+		mbus = Array.newClear(this.nfontes); 
+		sbus = Array.newClear(this.nfontes); 
+		//		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
+		//	bfbus = Array.newClear(this.nfontes); 
+		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
+		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		// note that ncan refers to # of channels in streamed sources.
 		// ncanais is related to sources read from file
-		this.busini = Array.newClear(nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
-		sombuf = Array.newClear(nfontes); 
-		synt = Array.newClear(nfontes);
-		sprite = Array2D.new(nfontes, 2);
-		funcs = Array.newClear(nfontes);
-		angulo = Array.newClear(nfontes); // ângulo dos canais estereofônicos
-		zlev = Array.newClear(nfontes); 
-		volume = Array.newClear(nfontes); 
-		//	doplev = Array.newClear(nfontes); 
-		glev = Array.newClear(nfontes); 
-		llev = Array.newClear(nfontes); 
-		rlev = Array.newClear(nfontes); 
-		dlev = Array.newClear(nfontes); 
-		dplev = Array.newClear(nfontes); 
-		clev = Array.newClear(nfontes); 
+		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
+		sombuf = Array.newClear(this.nfontes); 
+		synt = Array.newClear(this.nfontes);
+		sprite = Array2D.new(this.nfontes, 2);
+		funcs = Array.newClear(this.nfontes);
+		angulo = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
+		zlev = Array.newClear(this.nfontes); 
+		volume = Array.newClear(this.nfontes); 
+		//	doplev = Array.newClear(this.nfontes); 
+		glev = Array.newClear(this.nfontes); 
+		llev = Array.newClear(this.nfontes); 
+		rlev = Array.newClear(this.nfontes); 
+		dlev = Array.newClear(this.nfontes); 
+		dplev = Array.newClear(this.nfontes); 
+		clev = Array.newClear(this.nfontes); 
 
-		ncanbox = Array.newClear(nfontes); 
-		businibox = Array.newClear(nfontes); 
+		ncanbox = Array.newClear(this.nfontes); 
+		businibox = Array.newClear(this.nfontes); 
 		
 		
-		xbox = Array.newClear(nfontes); 
-		zbox = Array.newClear(nfontes); 
-		ybox = Array.newClear(nfontes); 
-		abox = Array.newClear(nfontes); // ângulo
-		vbox = Array.newClear(nfontes);  // volume
-		dcheck = Array.newClear(nfontes);  // Doppler check
-		gbox = Array.newClear(nfontes); // reverberação global
-		lbox = Array.newClear(nfontes); // reverberação local
-		rbox = Array.newClear(nfontes); // rotação de b-format
-		dbox = Array.newClear(nfontes); // diretividade de b-format
-		cbox = Array.newClear(nfontes); // contrair b-format
-		dpbox = Array.newClear(nfontes); // dop amount
-		lpcheck = Array.newClear(nfontes); // loop
-		hwncheck = Array.newClear(nfontes); // stream check
-		swncheck = Array.newClear(nfontes); // stream check
-		tfield = Array.newClear(nfontes);
+		xbox = Array.newClear(this.nfontes); 
+		zbox = Array.newClear(this.nfontes); 
+		ybox = Array.newClear(this.nfontes); 
+		abox = Array.newClear(this.nfontes); // ângulo
+		vbox = Array.newClear(this.nfontes);  // volume
+		dcheck = Array.newClear(this.nfontes);  // Doppler check
+		gbox = Array.newClear(this.nfontes); // reverberação global
+		lbox = Array.newClear(this.nfontes); // reverberação local
+		rbox = Array.newClear(this.nfontes); // rotação de b-format
+		dbox = Array.newClear(this.nfontes); // diretividade de b-format
+		cbox = Array.newClear(this.nfontes); // contrair b-format
+		dpbox = Array.newClear(this.nfontes); // dop amount
+		lpcheck = Array.newClear(this.nfontes); // loop
+		hwncheck = Array.newClear(this.nfontes); // stream check
+		swncheck = Array.newClear(this.nfontes); // stream check
+		tfield = Array.newClear(this.nfontes);
 		
-		testado = Array.newClear(nfontes);
+		testado = Array.newClear(this.nfontes);
 		
 		//GUI.swing; 
 		
-		//	~testek = Array.newClear(nfontes); 
-		//	nfontes.do { arg i;
+		//	~testek = Array.newClear(this.nfontes); 
+		//	this.nfontes.do { arg i;
 		//		funcs[i] = List[];
 		//		kespac[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
 		//		~testek[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
 		//		funcs[i].add({ |ev|  espacializador[i].set(\mx, ev.x, \my, ev.y) });
-		//		funcs[i].add({ |ev|  ~plotter.value(ev.x, ev.y, i, nfontes) });
+		//		funcs[i].add({ |ev|  ~plotter.value(ev.x, ev.y, i, this.nfontes) });
 		//	};
+
+
 		
-		
-		nfontes.do { arg i;
+		this.nfontes.do { arg i;
 		doppler[i] = 0;
 			angulo[i] = 0;
 			volume[i] = 0;
@@ -752,7 +771,7 @@ Mosca {
 			zlev[i] = 0;
 			dplev[i] = 0;
 			
-			ncan[i] = 0;
+			this.ncan[i] = 0;
 			this.busini[i] = 0;
 			sprite[i, 0] = -20;
 			sprite[i, 1] = -20;
@@ -789,7 +808,7 @@ Mosca {
 		
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, 900, 900, 900)).front;
-		wdados = Window.new("Data", Rect(900, 900, 990, (nfontes*20)+60 ));
+		wdados = Window.new("Data", Rect(900, 900, 990, (this.nfontes*20)+60 ));
 		wdados.userCanClose = false;
 		
 		
@@ -808,7 +827,7 @@ Mosca {
 		atualizarvariaveis = {
 			"atualizando!".postln;
 			
-			nfontes.do { arg i;
+			this.nfontes.do { arg i;
 				
 				if(espacializador[i] != nil) {
 					("atualizando espacializador # " ++ i).postln;
@@ -979,10 +998,10 @@ Mosca {
 				("HELLO swncheck[i].value = " ++ i ++ " " ++ swncheck[i].value).postln;
 				if ((swncheck[i].value) || (hwncheck[i].value)) {
 					var x;
-					("Streaming! ncan = " ++ ncan[i].value
+					("Streaming! ncan = " ++ this.ncan[i].value
 						++ " & this.busini = " ++ this.busini[i].value).postln;
 					x = case
-					{ ncan[i] == 1 } {
+					{ this.ncan[i] == 1 } {
 						"Mono!".postln;
 				
 					("HELLO MONO swncheck[i].value = " ++ i ++ " " ++ swncheck[i].value).postln;
@@ -999,7 +1018,8 @@ Mosca {
 										addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil});
 								} {
-									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i], \busini, this.busini[i],
+									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
+										\busini, this.swinbus[busini[i]], // use "index" method?
 										\volume, volume[i]], revGlobal,
 										addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil});
@@ -1018,7 +1038,7 @@ Mosca {
 
 						
 					}
-					{ ncan[i] == 2 } {
+					{ this.ncan[i] == 2 } {
 						"Estéreo!".postln;
 						ncanais[i] = 0; // just in case!
 						angulo[i] = pi/2;
@@ -1040,7 +1060,8 @@ Mosca {
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 								} {
-								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i], \busini, this.busini[i],
+									synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+										\busini, this.swinbus[busini[i]],
 									\volume, volume[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
@@ -1058,7 +1079,7 @@ Mosca {
 
 						
 					}
-					{ ncan[i] == 4 } {
+					{ this.ncan[i] == 4 } {
 						//"B-format!".postln;
 						
 							"B-format ambisonic!!!".postln;
@@ -1080,7 +1101,7 @@ Mosca {
 								} {
 								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
-									\busini, this.busini[i]], 
+									\busini, this.swinbus[busini[i]] ], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 								};
@@ -1164,7 +1185,7 @@ Mosca {
 			var string;
 			("Arg is " ++ but.value.asString).postln;
 			string = nil;
-			nfontes.do { arg i;
+			this.nfontes.do { arg i;
 				("textfield = " ++ tfield[i].value).postln;
 				
 				if(tfield[i].value != "") {arquivo.write(tfield[i].value ++ "\n")} {arquivo.write("NULL\n")};
@@ -1174,14 +1195,14 @@ Mosca {
 				if(hwn[i].value > 0)
 				{
 					
-					hwbus.write(ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
+					hwbus.write(this.ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
 				}
 				{hwbus.write("NULL\n")};
 
 				if(swn[i].value > 0)
 				{
 					
-					swbus.write(ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
+					swbus.write(this.ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
 				}
 				{swbus.write("NULL\n")};
 				
@@ -1212,7 +1233,7 @@ Mosca {
 			
 			
 			but.value.postln;
-			nfontes.do { arg i;
+			this.nfontes.do { arg i;
 				var line = arquivo.getLine(1024);
 				if(line!="NULL"){tfield[i].valueAction = line};
 				
@@ -1273,8 +1294,8 @@ Mosca {
 		};
 		
 		// seleção de fontes
-		itensdemenu = Array.newClear(nfontes);
-		nfontes.do { arg i;
+		itensdemenu = Array.newClear(this.nfontes);
+		this.nfontes.do { arg i;
 			itensdemenu[i] = "Source " ++ (i + 1).asString;
 		};
 		
@@ -1310,7 +1331,7 @@ Mosca {
 			dpslider.value = dplev[fatual];
 			connumbox.value = clev[fatual];
 			
-			ncannumbox.value = ncan[fatual];
+			ncannumbox.value = this.ncan[fatual];
 			busininumbox.value = this.busini[fatual];
 			
 			if(testado[fatual]) {  // don't change button if we are playing via automation
@@ -1379,7 +1400,7 @@ Mosca {
 			
 			
 			ncanbox[fatual].valueAction = num.value;
-			ncan[fatual] = num.value;
+			this.ncan[fatual] = num.value;
 			
 		};
 		
@@ -1413,7 +1434,7 @@ Mosca {
 		angnumbox.align = \center;
 		angnumbox.action = {arg num; 
 			abox[fatual].valueAction = num.value;
-			if((ncanais[fatual]==2) || (ncan[fatual]==2)){
+			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)){
 				espacializador[fatual].set(\angulo, num.value);
 				angulo[fatual] = num.value;
 				("ângulo = " ++ num.value).postln; 
@@ -1426,7 +1447,7 @@ Mosca {
 		
 		angslider.action = {arg num;
 			abox[fatual].valueAction = num.value * pi;
-			if((ncanais[fatual]==2) || (ncan[fatual]==2)) {
+			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)) {
 				angnumbox.value = num.value * pi;
 				//			espacializador[fatual].set(\angulo, b.map(num.value));
 				espacializador[fatual].set(\angulo, num.value * pi);
@@ -1764,7 +1785,7 @@ Mosca {
 	textbuf.string = "File";
 
 		
-		nfontes.do { arg i;	
+		this.nfontes.do { arg i;	
 		dcheck[i] = CheckBox.new( wdados, Rect(15, 40 + (i*20), 40, 20))
 		.action_({ arg but;
 			if(i==fatual){dopcheque.value = but.value;};
@@ -1865,7 +1886,7 @@ Mosca {
 
 			sprite[i, 1] = 450 + (num.value * -1);
 
-			novoplot.value(num.value, ybox[i], i, nfontes);
+			novoplot.value(num.value, ybox[i], i, this.nfontes);
 
 			//novoplot(num.value, ybox[i], i, nfontes);
 			//~testeme = espacializador;
@@ -1920,7 +1941,7 @@ Mosca {
 		abox[i].action = {arg num;
 			//	("Ângulo = " ++ num.value ++ " radianos").postln;
 			angulo[i] = num.value;
-			if((ncanais[i]==2) || (ncan[i]==2)){
+			if((ncanais[i]==2) || (this.ncan[i]==2)){
 				espacializador[i].set(\angulo, num.value);
 				angulo[i] = num.value;
 			};
@@ -2040,7 +2061,7 @@ Mosca {
 		ncanbox[i].action = {arg num;
 			espacializador[i].set(\mz, num.value);
 			synt[i].set(\mz, num.value);
-			ncan[i] = num.value;
+			this.ncan[i] = num.value;
 			if(i == fatual )
 			{
 				//var val = (450 - (num.value * 900)) * -1;
@@ -2079,7 +2100,7 @@ Mosca {
         controle.stop;
         "controle is stopped".postln;
         controle.seek;
-		nfontes.do { arg i;	
+		this.nfontes.do { arg i;	
 			synt[i].free; // error check
 			//	espacializador[i].free;
 			
@@ -2095,7 +2116,7 @@ Mosca {
 		{ 
 			startTime = controle.now
 		};
-		nfontes.do { arg i;	
+		this.nfontes.do { arg i;	
 			var loaded, dur, looped;
 			{loaded = tfield[i].value;}.defer;
 			looped = lp[i];
@@ -2117,7 +2138,7 @@ Mosca {
 	controle.onSeek = {
 		//	("onSeek = " ++ ~controle.now).postln;
 		if(isPlay == true) {
-			nfontes.do { arg i;	
+			this.nfontes.do { arg i;	
 					synt[i].free; // error check
 				//	espacializador[i].free;
 			};
@@ -2129,7 +2150,7 @@ Mosca {
 
 	controle.onStop = {
 		("Acabou! = " ++ controle.now).postln;
-		nfontes.do { arg i;
+		this.nfontes.do { arg i;
 			// if sound is currently being "tested", don't switch off on stop
 			// leave that for user
 			if (testado[i] == false) {
@@ -2145,7 +2166,7 @@ Mosca {
 
 		
 	
-	nfontes.do { arg i;
+	this.nfontes.do { arg i;
 		// save the bus/streamed audio settings outside of automation on a once-off basis
 		//		~controle.dock(ncanbox[i], "ncanais_" ++ i);
 		//		~controle.dock(businibox[i], "businicial_" ++ i);
@@ -2175,7 +2196,7 @@ Mosca {
 		xbox[fatual].valueAction = 450 - y;
 		ybox[fatual].valueAction = (x - 450) * -1;
 		win.drawFunc = {
-			nfontes.do { arg i;	
+			this.nfontes.do { arg i;	
 				Pen.fillColor = Color(0.8,0.2,0.9);
 				Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
 				Pen.fill;
@@ -2194,7 +2215,7 @@ Mosca {
 	};
 	
 		
-	nfontes.do { arg x;
+	this.nfontes.do { arg x;
 		mbus[x] = Bus.audio(server, 1); // passar som da fonte ao espacializador
 		sbus[x] = Bus.audio(server, 2); // passar som da fonte ao espacializador
 		//	bfbus[x] = Bus.audio(s, 4); // passar som da fonte ao espacializador
@@ -2206,10 +2227,11 @@ Mosca {
 		//	synt[x] = Synth.new(\arquivoLoop, [\outbus, bus[x]]);
 	};
 		
+		
 	
 	win.onClose_({ 
 		controle.quit;
-		nfontes.do { arg x;
+		this.nfontes.do { arg x;
 			espacializador[x].free;
 			mbus[x].free;
 			sbus[x].free;
