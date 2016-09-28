@@ -126,21 +126,25 @@ s.waitForBoot {
 	//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
 	// outputs for decoding with an external decoder
 	
-	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
+	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 7,
 			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", s, ~decoder);
 	//	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
 	//		"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
-	~testMosca.openGui(4, 120);
+	~testMosca.openGui(120);
 };
 
 )
+
+// Tidy up
 
 (
 MIDIIn.disconnect; 
 ~decoder.free;
 )
 
+// THIS PART IS IN DEVELOPMENT
 
+// write a synth def
 
 (
 SynthDef.new(\testMonoSound, { arg mx, my, mz;
@@ -148,17 +152,27 @@ SynthDef.new(\testMonoSound, { arg mx, my, mz;
 	env = Env.triangle(5, 0.2);
 	env_gen = EnvGen.kr(env, doneAction: 2);
 	sin = SinOsc.ar(500, mul: env_gen);
-  Out.ar(0, [sin, sin]);
+//  Out.ar(0, [sin, sin]);
+~testMosca.synthOutFunction(1, sin);
 	//	mx.postln;
 }).add;
 
 )
 
+
+(
 ~mySynth = Synth.new(\testMonoSound).onFree({"done".postln; ~testMosca.deregisterSynth(~mySynth)});
 
 ~testMosca.registerSynth(~mySynth);
+)
 
 ~testMosca.getSynthRegistry;
+
+~testMosca.synthOutFunction(4, 3);
+
+
+
+
 
 List[1, 2, 3, 4].count({ arg item, i; item.odd });
 ~fish = List[1, 2, 3, 4];
