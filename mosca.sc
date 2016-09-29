@@ -664,7 +664,9 @@ Mosca {
 		|source, param, value|
 		this.synthRegistry[source].do({
 			arg item, i;
-			item.set(param, value);
+			if (item.isPlaying) {
+				item.set(param, value);
+			}
 		});
 	}
 
