@@ -20,7 +20,7 @@ Mosca {
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	<>rirLspectrum, <>rirRspectrum,
 
-	<>irbuffer, <>bufsize, <>bufsizeBinaural, <>win, <>wdados, <>sprite, <>nfontes,
+	<>irbuffer, <>bufsize, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
@@ -31,17 +31,17 @@ Mosca {
 
 	//	var <>fftsize = 2048;
 	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
-	bufsize, bufsizeBinaural, irbuffer,
+	bufsize, irbuffer,
 	o, //debugging
 	prjDr;
 	classvar fftsize = 2048, server;
 
-	*new { arg projDir, nsources = 1, rirWXYZ, rirBinaural, srvr, decoder = nil;
-		^super.new.initMosca(projDir, nsources, rirWXYZ, rirBinaural, srvr, decoder);
+	*new { arg projDir, nsources = 1, rirWXYZ, srvr, decoder = nil;
+		^super.new.initMosca(projDir, nsources, rirWXYZ, srvr, decoder);
 	}
 
 
-	initMosca { arg projDir, nsources, rirWXYZ, rirBinaural, srvr, decoder;
+	initMosca { arg projDir, nsources, rirWXYZ, srvr, decoder;
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -138,29 +138,21 @@ Mosca {
 		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
 		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
 		rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3]);
-		rirL = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirBinaural, channels: [0]);
-		rirR = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirBinaural, channels: [1]);
 
 		
 		server.sync;
 		
 		bufsize = PartConv.calcBufSize(fftsize, rirW); 
-		bufsizeBinaural = PartConv.calcBufSize(fftsize, rirL);
 
 		rirWspectrum= Buffer.alloc(server, bufsize, 1);
 		rirXspectrum= Buffer.alloc(server, bufsize, 1);
 		rirYspectrum= Buffer.alloc(server, bufsize, 1);
 		rirZspectrum= Buffer.alloc(server, bufsize, 1);
-		// binaural
-		rirLspectrum= Buffer.alloc(server, bufsizeBinaural, 1);
-		rirRspectrum= Buffer.alloc(server, bufsizeBinaural, 1);
 
 		rirWspectrum.preparePartConv(rirW, fftsize);
 		rirXspectrum.preparePartConv(rirX, fftsize);
 		rirYspectrum.preparePartConv(rirY, fftsize);
 		rirZspectrum.preparePartConv(rirZ, fftsize);
-		rirLspectrum.preparePartConv(rirL, fftsize);
-		rirRspectrum.preparePartConv(rirR, fftsize);
 
 		server.sync;
 
@@ -169,24 +161,9 @@ Mosca {
 		rirY.free;
 		rirZ.free;
 		
-		rirL.free;
-		rirR.free;
 		server.sync;
-		
-		//		binDecoder = FoaDecoderKernel.newCIPIC(subjectID); // KEMAR head, use IDs 21 or 165
-		
-		/*		if(intAmbDecFlag == false) { // lets use an external decoder like AmbDec
-			revGlobTxt = "Out.ar(2, [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
-					PartConv.ar(sig, fftsize, rirXspectrum.bufnum), 
-					PartConv.ar(sig, fftsize, rirYspectrum.bufnum),
-					PartConv.ar(sig, fftsize, rirZspectrum.bufnum)
-				]);";
 
-		} {
-
-			}; */
-
-			/// START SYNTH DEFS ///////
+		/// START SYNTH DEFS ///////
 
 
 
@@ -380,9 +357,6 @@ Mosca {
 				
 			}).add;
 
-			//new
-			// Spatialise B-format material and decode it for binaural
-			// note this is sending things 
 
 			
 
@@ -646,11 +620,11 @@ Mosca {
 	
 
 	registerSynth { // selection of Mosca arguments for use in synths
-		| synth, source |
+		| source, synth |
 		this.synthRegistry[source-1].add(synth);
 	}
 	deregisterSynth { // selection of Mosca arguments for use in synths
-		| synth , source |
+		| source, synth |
 		if(this.synthRegistry[source-1].notNil){
 			this.synthRegistry[source-1].remove(synth);
 			
@@ -715,10 +689,8 @@ Mosca {
 		testado,
 		rnumbox, rslider, rbox, 
 		znumbox, zslider, zbox, zlev, // z-axis
-		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox,
-		bAmbBinaural, render = "binaural";
+		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox;
 		espacializador = Array.newClear(this.nfontes);
-		//	espacializador2 = Array.newClear(this.nfontes); // used when b-format file is rendered as binaural
 		doppler = Array.newClear(this.nfontes); 
 		lp = Array.newClear(this.nfontes); 
 		hwn = Array.newClear(this.nfontes); 
