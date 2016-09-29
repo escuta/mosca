@@ -16,21 +16,18 @@
 Mosca {
 	//	classvar fftsize = 2048;
 	var <>myTestVar;
-	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ, <>rirL, <>rirR,
+	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
-	<>rirLspectrum, <>rirRspectrum,
+	
 
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
-	<>dec;
+	<>dec,
+	<>triggerFunc, <>stopFunc;
 
-	//		<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
-	//	<>rirLspectrum, <>rirRspectrum;
-
-	//	var <>fftsize = 2048;
-	classvar server, rirW, rirX, rirY, rirZ, rirL, rirR,
+	classvar server, rirW, rirX, rirY, rirZ, 
 	bufsize, irbuffer,
 	o, //debugging
 	prjDr;
@@ -54,11 +51,15 @@ Mosca {
 		playStereoInFunc = Array.newClear(3);
 		playBFormatInFunc = Array.newClear(3);
 
-		synthRegistry = Array.newClear(this.nfontes);
+		this.synthRegistry = Array.newClear(this.nfontes);
 		this.nfontes.do { arg x;
-			synthRegistry[x] = List[];
+			this.synthRegistry[x] = List[];
 		};
-		
+		// array of functions, 1 for each source (if defined), that will be launched on Automation's "play"
+		this.triggerFunc = Array.newClear(this.nfontes);
+		//companion to above. Launched by "Stop"
+		this.stopFunc = Array.newClear(this.nfontes);
+
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
@@ -188,7 +189,8 @@ Mosca {
 			
 
 			SynthDef.new("espacAmb",  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				dopon = 0, dopamnt = 0,
 				glev = 0, llev = 0;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
@@ -217,9 +219,10 @@ Mosca {
 				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
 				
 				// Doppler
-				rd = (1 - dis) * 340; 
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
 				//		rd = Lag.kr(rd, 2.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
 				p = dopplershift;
 				
 				// Reverberação global
@@ -663,6 +666,16 @@ Mosca {
 			arg item, i;
 			item.set(param, value);
 		});
+	}
+
+	// Set by user. Registerred functions called by Automation's play
+	setTriggerFunc {
+		|source, function|
+		this.triggerFunc[source] = function;
+	}
+	setStopFunc {
+		|source, function|
+		this.stopFunc[source] = function;
 	}
 
 	openGui {
