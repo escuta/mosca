@@ -70,14 +70,13 @@ METHOD:: new
 (describe method here)
 
 ARGUMENT:: projDir
-Path to project directory. The project directory must have 2 subdirectories named "rir" and "auto". The first contains RIRs to be used for reverberation, both B-format and binaural and the second may be initially empty.
+Path to project directory. The project directory must have 2 subdirectories named "rir" and "auto". The first contains B-format RIRs to be used for reverberation and the second may be initially empty.
 
 ARGUMENT:: nsources
-Path to project directory. The project directory must have 2 subdirectories named "rir" and "auto". The first contains RIRs to be used for reverberation, both B-format and binaural and the second may be initially empty.
 The number of sources to be spatialised.
 
 ARGUMENT:: rirWXYZ
-B-Format ambisonic room impulse response. Ensure that it has the same sample rate as your system.
+B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has the same sample rate as your system.
 
 ARGUMENT:: srvr
 Server used. eg. Server.default
@@ -111,7 +110,7 @@ Synth instance.
 returns:: (describe returnvalue here)
 
 METHOD:: deregisterSynth
-Deregisters synth instance(s) for a given source.
+Deregisters synth instance for a given source.
 
 ARGUMENT:: source
 The number of the source (starting with 1).
@@ -178,10 +177,12 @@ MIDIIn.disconnect;
 
 (
 SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
-	var source, point;
+	var source, point, adjust;
 	point = Point.new;
 	point.set(mx, my);
-	source = SinOsc.ar(freq + mx, 0, 0.1);
+	adjust = point.rho;
+	adjust = Lag.kr(adjust, 1.0);
+	source = SinOsc.ar(freq + adjust, 0, 0.1);
 
 	// write to the bus, adding to previous contents
 	Out.ar(outbus, source);
@@ -192,15 +193,20 @@ SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 //  use the method to fetch the true bus associated with the chosen source (from 1 on). Note
 // this depends on the setting in the GUI. Use the value for the outbus of your synth instance.
 
-// ~testMosca.getSWBus(2) // eg. get bus for source 2
+// ~testMosca.getSWBus(1) // eg. get bus for source 2
 
 (
+~source1PlayFunc = {
 ~mySynth = Synth.new("test-out", [\freq, 500, \outbus, ~testMosca.getSWBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1, ~mySynth)});
 
 ~testMosca.registerSynth(1, ~mySynth);
+};
+~source1StopFunc = {~mySynth.free; };
+~testMosca.setTriggerFunc(1, ~source1PlayFunc);
+~testMosca.setStopFunc(1, ~source1StopFunc);
 )
 
-~mySynth.free;
+~source1PlayFunc.value;
 
 (
 ~myOtherSynth = Synth.new("test-out", [\freq, 800, \outbus, ~testMosca.getSWBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2, ~myOtherSynth)});
