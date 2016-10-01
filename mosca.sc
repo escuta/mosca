@@ -153,8 +153,8 @@ Mosca {
 		rirBRU = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [3]);
 		*/
 		server.sync;
-
-		/*	// read buffer?
+		/*
+			// read buffer?
 		~aFormat = FoaDecode.ar([
 			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]),
 			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]),
@@ -262,37 +262,28 @@ Mosca {
 			globallev = 0.0004, locallev, gsig, fonte;
 			var lrev, scale = 565;
 			var grevganho = 0.04; // needs less gain
-			
-			//			mx = Lag.kr(mx, 2.0 * dopon);
-			//				my = Lag.kr(my, 2.0 * dopon);
-			//				mz = Lag.kr(mz, 2.0 * dopon);
-			
-			//		fonte = Point.new;
 			fonte = Cartesian.new;
-			//	fonte.set((mx - 450) * -1, 450 - my);
 			fonte.set(mx, my, mz);
 			dis = (1 - (fonte.rho - scale)) / scale;
-			//	azim = fonte.rotate(-1.05).theta;
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
 			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
 			
-			// atenuação de frequências agudas
+			// high freq attenuation
 			p = In.ar(inbus, 1);
 			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
 			
 			// Doppler
 			rd = (1 - dis) * 340;
 			rd = Lag.kr(rd, 1.0);
-			//		rd = Lag.kr(rd, 2.0);
 			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
 			p = dopplershift;
 			
-			// Reverberação global
+			// Global reverbearation
 			globallev = 1 / (1 - dis).sqrt;
 			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
+			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
 			
 			globallev = globallev * (glev*6);
@@ -301,7 +292,7 @@ Mosca {
 			gsig = p * grevganho * globallev;
 			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 			
-			// Reverberação local
+			// Local reverberation
 			locallev = 1 - dis; 
 			
 			locallev = locallev  * (llev*8);
@@ -316,16 +307,6 @@ Mosca {
 			ambsinal = [w, x, y, z, r, s, t, u, v]; 
 			
 			ambsinal1O = [w, x, y, z];
-			//SendTrig.kr(Impulse.kr(1),0, dec); // debugging
-			//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
-			//	Out.ar( 0, ambsinal);
-			//Out.ar( 2, ambsinal);
-			//TEST
-
-			
-			//		Out.ar( 2, MoscaFoaDecode.ar(ambsinal, dec));
-
-			// select correct output depending on whether or not decoder.isNil
 			
 			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 			
@@ -345,36 +326,18 @@ Mosca {
 			glev = 0, llev = 0.2;
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
-			//		globallev = 0.0001, locallev, gsig, fonte;
 			globallev = 0.0004, locallev, gsig, fonte;
-			//	bufL, bufR;
 			var lrev, scale = 565;
 			var grevganho = 0.20;
-			//	bufL = Bus.audio(s, 1);
-			//	bufR = Bus.audio(s, 1);
-			
-			//		xatras = DelayL.kr(mx, 1, 1); // atrazar mx e my para combinar com atraso do efeito Doppler
-			//		yatras = DelayL.kr(my, 1, 1);
-			
-			
-			// i think this is needed here too?, but not the doppler
-			//			mx = Lag.kr(mx, 2.0 * dopon);
-			//		my = Lag.kr(my, 2.0 * dopon);
-			//			mz = Lag.kr(mz, 2.0 * dopon);
-			
-			
-			//		fonte = Point.new;
 			fonte = Cartesian.new;
-			//	fonte.set((mx - 450) * -1, 450 - my);
 			fonte.set(mx, my, mz);
 			dis = (1 - (fonte.rho - scale)) / scale;
-			//	azim = fonte.rotate(-1.05).theta;
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
 			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
 			
-			// atenuação de frequências agudas
+			// high freq attenuation
 			p = In.ar(inbus, 1);
 			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
 			
@@ -389,7 +352,7 @@ Mosca {
 			// Reverberação global
 			globallev = 1 / (1 - dis).sqrt;
 			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
+			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
 			
 			globallev = globallev * (glev*6);
@@ -403,8 +366,6 @@ Mosca {
 			//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
 			locallev = locallev * (llev*25);
 			
-			//locallev = Select.kr(locallev > 1, [locallev, 1]); 
-			//
 			
 			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
 			//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
@@ -417,9 +378,6 @@ Mosca {
 			
 			ambsinal1O = [w, x, y, z];
 			
-			//Out.ar( 0, FoaDecode.ar(ambsinal1O, ~decoder));
-			//	Out.ar( 0, ambsinal);
-			//Out.ar( 2, ambsinal);
 			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 			
 		}).add;
@@ -442,11 +400,8 @@ Mosca {
 			var lrev, scale = 565;
 			var grevganho = 0.20;
 			
-			//	fonte = Point.new;
 			fonte = Cartesian.new;
 			fonte.set(mx, my);
-			
-			
 			
 			azim1 = fonte.rotate(angulo / -2).theta;
 			azim2 = fonte.rotate(angulo / 2).theta;
@@ -457,9 +412,7 @@ Mosca {
 			dis = (1 - (fonte.rho - scale)) / scale;
 			
 			dis = Select.kr(dis < 0, [dis, 0]); 
-			//	SendTrig.kr(Impulse.kr(1),0,  el); // debugging
-			
-			// atenuação de frequências agudas
+
 			p = In.ar(inbus, 2);
 			//p = p[0];
 			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
@@ -479,7 +432,6 @@ Mosca {
 			globallev = globallev * (glev*4);
 			
 			gsig = Mix.new(p) / 2 * grevganho * globallev;
-			//	SendTrig.kr(Impulse.kr(1),0,  gsig); // debugging
 			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 			
 			
@@ -504,7 +456,6 @@ Mosca {
 			ambsinal1plus2 = ambsinal1 + ambsinal2;
 			ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
 			
-			//	Out.ar( 2, ambsinal1plus2);
 			espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
 			
 		}).add;
@@ -541,25 +492,13 @@ Mosca {
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
 				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
 				gsig, lsig, rd, dopplershift;
-				var grevganho = 0.20;
-				
-				//		mx = Lag.kr(mx, 2.0 * dopon);
-				//		my = Lag.kr(my, 2.0 * dopon);
-				//		mz = Lag.kr(mz, 2.0 * dopon);
-				
+				var grevganho = 0.20;			
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - scale)) / scale;
 				pushang = (1 - dis) * pi / 2; // grau de deslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
-				// 	spos = tpos * SampleRate.ir;
-
-				/*
-					spos = tpos * BufSampleRate.kr(bufnum);
-					scaledRate = rate * BufRateScale.kr(bufnum); 
-					player = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-				*/
 				
 				playerRef = Ref(0);
 				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
@@ -572,9 +511,6 @@ Mosca {
 				wsinal = playerRef.value[0] * contr * volume * dis * 2.0;
 				
 				Out.ar(outbus, wsinal);
-				//	~teste = contr * volume * dis;
-				
-				//	SendTrig.kr(Impulse.kr(1),0, ~teste); // debugging
 				
 				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
 				
@@ -709,12 +645,6 @@ Mosca {
 		| source |
 		^this.synthRegistry[source-1];
 	}
-	/*
-		synthOutFunction {
-		|source = 1, signal = 0|
-		this.synthOutFunc[(source*4)-4].value(signal);
-		}
-	*/	
 
 	
 
@@ -727,7 +657,6 @@ Mosca {
 		}
 	}
 
-	// espacializador[fatual].set(\angulo, num.value);
 
 	setSynths {
 		|source, param, value|
@@ -806,8 +735,6 @@ Mosca {
 		swn = Array.newClear(this.nfontes); 
 		mbus = Array.newClear(this.nfontes); 
 		sbus = Array.newClear(this.nfontes); 
-		//		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
-		//	bfbus = Array.newClear(this.nfontes); 
 		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		// note that ncan refers to # of channels in streamed sources.
@@ -854,18 +781,6 @@ Mosca {
 		
 		testado = Array.newClear(this.nfontes);
 		
-		//GUI.swing; 
-		
-		//	~testek = Array.newClear(this.nfontes); 
-		//	this.nfontes.do { arg i;
-		//		funcs[i] = List[];
-		//		kespac[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
-		//		~testek[i] = KtlLoop(\espac++i, { |ev| funcs[i].do(_.value(ev) ) });
-		//		funcs[i].add({ |ev|  espacializador[i].set(\mx, ev.x, \my, ev.y) });
-		//		funcs[i].add({ |ev|  ~plotter.value(ev.x, ev.y, i, this.nfontes) });
-		//	};
-
-
 		
 		this.nfontes.do { arg i;
 			doppler[i] = 0;
@@ -944,9 +859,6 @@ Mosca {
 				this.setSynths(source, \dopamnt, dplev[source]);
 				this.setSynths(source, \glev, glev[source]);
 				this.setSynths(source, \llev, llev[source]);
-				//				{this.setSynths(source, \mx, xbox[source].value);}.defer;
-				//				{this.setSynths(source, \my, ybox[source].value);}.defer;
-				//				{this.setSynths(source, \mz, zbox[source].value);}.defer;
 				this.setSynths(source, \mx, xval[source]);
 				this.setSynths(source, \my, yval[source]);
 				this.setSynths(source, \mz, zval[source]);
@@ -1000,21 +912,6 @@ Mosca {
 					
 				};
 
-				/*
-								
-				this.setSynths(i, \dopon, doppler[i]);
-				this.setSynths(i, \angulo, angulo[i]);
-				this.setSynths(i, \volume, volume[i]);
-				this.setSynths(i, \dopamnt, dplev[i]);
-				this.setSynths(i, \glev, glev[i]);
-				this.setSynths(i, \llev, llev[i]);
-				this.setSynths(i, \mx, xbox[i].value);
-				this.setSynths(i, \my, ybox[i].value);
-				this.setSynths(i, \mz, zbox[i].value);
-				this.setSynths(i, \rotAngle, rlev[i]);
-				this.setSynths(i, \directang, dlev[i]);
-				this.setSynths(i, \contr, clev[i]);
-				*/
 				
 			};
 			
@@ -2274,7 +2171,7 @@ Mosca {
 		
 
 		
-		controle = Automation(dur, hideLoadSave: true).front(win, Rect(450, 10, 400, 25));
+		controle = Automation(dur, showLoadSave: false).front(win, Rect(450, 10, 400, 25));
 		controle.presetDir = prjDr ++ "/auto";
 		controle.onEnd = {
 			controle.stop;
