@@ -18,17 +18,20 @@ Mosca {
 	var <>myTestVar;
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
-	
+	//	<>rirWXYZspectrum,  rirWXYZ, // experimental!
+	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>sprite, <>nfontes,
-	<>controle, <>revGlobal, <>m, <>offset, <>textbuf, <>controle,
+	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
 	<>dec,
-	<>triggerFunc, <>stopFunc;
-
-	classvar server, rirW, rirX, rirY, rirZ, 
+	<>triggerFunc, <>stopFunc,
+	<>gbfbus;
+	classvar server, rirW, rirX, rirY, rirZ,
+	rirFLU, rirFRD, rirBLD, rirBRU,
 	bufsize, irbuffer,
+	b2a, a2b,
 	o, //debugging
 	prjDr;
 	classvar fftsize = 2048, server;
@@ -45,6 +48,9 @@ Mosca {
 		//synthRegistry = List[],
 		
 		testit; // remove at some point with other debugging stuff
+		b2a = FoaDecoderMatrix.newBtoA;
+		a2b = FoaEncoderMatrix.newAtoB;
+
 
 		this.nfontes = nsources;
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
@@ -139,8 +145,23 @@ Mosca {
 		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
 		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
 		rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3]);
+		//rirFLU, rirFRD, rirBLD, rirBRU,
+		/*
+		rirFLU = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [0]);
+		rirFRD = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [1]);
+		rirBLD = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [2]);
+		rirBRU = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [3]);
+		*/
+		server.sync;
 
-		
+		/*	// read buffer?
+		~aFormat = FoaDecode.ar([
+			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]),
+			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]),
+			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]),
+			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3])
+		], b2a);
+		*/
 		server.sync;
 		
 		bufsize = PartConv.calcBufSize(fftsize, rirW); 
@@ -150,11 +171,32 @@ Mosca {
 		rirYspectrum= Buffer.alloc(server, bufsize, 1);
 		rirZspectrum= Buffer.alloc(server, bufsize, 1);
 
+		//	rirWXYZspectrum = [rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum]; // testing!
+
 		rirWspectrum.preparePartConv(rirW, fftsize);
 		rirXspectrum.preparePartConv(rirX, fftsize);
 		rirYspectrum.preparePartConv(rirY, fftsize);
 		rirZspectrum.preparePartConv(rirZ, fftsize);
 
+		//////// TESTING
+		//	bufsize = PartConv.calcBufSize(fftsize, rirFLU); 
+
+		/*	rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
+		rirFRDspectrum= Buffer.alloc(server, bufsize, 1);
+		rirBLDspectrum= Buffer.alloc(server, bufsize, 1);
+		rirBRUspectrum= Buffer.alloc(server, bufsize, 1);
+		*/
+		//	rirWXYZspectrum = [rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum]; // testing!
+		/*
+		rirFLUspectrum.preparePartConv(rirFLU, fftsize);
+		rirFRDspectrum.preparePartConv(rirFRD, fftsize);
+		rirBLDspectrum.preparePartConv(rirBLD, fftsize);
+		rirBRUspectrum.preparePartConv(rirBRU, fftsize);
+		*/
+		//////////////// END TEST //////////////
+		
+		//rirWXYZspectrum.preparePartConv(rirWXYZ, fftsize);
+		
 		server.sync;
 
 		rirW.free; // don't need time domain data anymore, just needed spectral version
@@ -185,7 +227,29 @@ Mosca {
 		}).add;
 		
 		
+		SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
+			var sig = In.ar(gbfbus, 4);
+			var delaytime = 0.1, decaytime = 0.2;
+			sig = FoaDecode.ar(sig, b2a);
+			
+			/*		sig = [
+				PartConv.ar(sig, fftsize, rirFLUspectrum.bufnum), 
+				PartConv.ar(sig, fftsize, rirFRDspectrum.bufnum), 
+				PartConv.ar(sig, fftsize, rirBLDspectrum.bufnum),
+				PartConv.ar(sig, fftsize, rirBRUspectrum.bufnum)
+			];
+			*/
+			
 
+			sig = AllpassN.ar(sig, delaytime, Array.fill(4, {delaytime}).rand, decaytime);
+
+			
+			sig = FoaEncode.ar(sig, a2b);
+
+			//	SendTrig.kr(Impulse.kr(1), 0, sig[2]); // debugging
+			revGlobalAmbFunc.value(sig, dec);
+			
+		}).add;
 		
 
 		SynthDef.new("espacAmb",  {
@@ -472,7 +536,7 @@ Mosca {
 			
 			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1, 
 				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbus, glev, llev, directang = 0, contr, dopon, dopamnt,
+				mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt,
 				busini;
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
 				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
@@ -534,9 +598,14 @@ Mosca {
 				//				locallev = locallev  * (llev*10) * grevganho;
 				locallev = locallev  * (llev*5);
 				lsig = playerRef.value[0] * locallev;
-				
-				
+
+				//
 				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
+
+								// trying again ... testing
+				
+				gsig = playerRef.value * globallev; // b-format
+				Out.ar(gbfbus, gsig); 
 				
 				
 			}).add;
@@ -662,12 +731,15 @@ Mosca {
 
 	setSynths {
 		|source, param, value|
+		
 		this.synthRegistry[source].do({
 			arg item, i;
-			if (item.isPlaying) {
+			
+			//	if(item.isPlaying) {
 				item.set(param, value);
-			}
+			//	}
 		});
+		
 	}
 
 	// These methods relate to control of synths when SW Input delected
@@ -704,7 +776,7 @@ Mosca {
 
 		arg dur = 60;
 		var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
-		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
+		itensdemenu, gbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
 		hwInCheck, hwncheck, hwn, swInCheck, swncheck, swn,
@@ -721,10 +793,11 @@ Mosca {
 		dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
 		angslider, bsalvar, bcarregar, bdados, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
 		gslider, gnumbox, lslider, lnumbox, tfield, dopflag = 0, btestar, tocar, isPlay, isRec,
-		atualizarvariaveis,
+		atualizarvariaveis, updateSynthInArgs,
 		testado,
 		rnumbox, rslider, rbox, 
 		znumbox, zslider, zbox, zlev, // z-axis
+		xval, yval, zval,
 		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox;
 		espacializador = Array.newClear(this.nfontes);
 		doppler = Array.newClear(this.nfontes); 
@@ -741,6 +814,9 @@ Mosca {
 		// ncanais is related to sources read from file
 		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
 		sombuf = Array.newClear(this.nfontes); 
+		xval = Array.newClear(this.nfontes); 
+		yval = Array.newClear(this.nfontes); 
+		zval = Array.newClear(this.nfontes); 
 		synt = Array.newClear(this.nfontes);
 		sprite = Array2D.new(this.nfontes, 2);
 		funcs = Array.newClear(this.nfontes);
@@ -839,7 +915,7 @@ Mosca {
 		
 		
 		gbus = Bus.audio(server, 1); // global reverb bus
-		gbfbus = Bus.audio(server, 4); // global b-format bus
+		this.gbfbus = Bus.audio(server, 4); // global b-format bus
 		
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, 900, 900, 900)).front;
@@ -858,6 +934,30 @@ Mosca {
 			{wdados.front;}
 			{wdados.visible = false;};
 		});
+
+		updateSynthInArgs = { arg source;
+				{
+					server.sync;
+				this.setSynths(source, \dopon, doppler[source]);
+				this.setSynths(source, \angulo, angulo[source]);
+				this.setSynths(source, \volume, volume[source]);
+				this.setSynths(source, \dopamnt, dplev[source]);
+				this.setSynths(source, \glev, glev[source]);
+				this.setSynths(source, \llev, llev[source]);
+				//				{this.setSynths(source, \mx, xbox[source].value);}.defer;
+				//				{this.setSynths(source, \my, ybox[source].value);}.defer;
+				//				{this.setSynths(source, \mz, zbox[source].value);}.defer;
+				this.setSynths(source, \mx, xval[source]);
+				this.setSynths(source, \my, yval[source]);
+				this.setSynths(source, \mz, zval[source]);
+
+				this.setSynths(source, \rotAngle, rlev[source]);
+				this.setSynths(source, \dsourcerectang, dlev[source]);
+				this.setSynths(source, \contr, clev[source]);
+
+				("Updating source" ++ (source+1)).postln;
+				}.fork;
+		};
 		
 		atualizarvariaveis = {
 			"atualizando!".postln;
@@ -880,7 +980,8 @@ Mosca {
 					);
 				};
 				
-				if(synt[i] != nil){
+				if(synt[i] != nil) {
+					
 					synt[i].set(
 						\volume, volume[i],
 						\rotAngle, rlev[i],
@@ -894,12 +995,13 @@ Mosca {
 						\mz, zbox[i].value
 						
 					);
+					
 					("x value = " ++ xbox[i].value).postln;
 					
 				};
 
-				// needs a check mechanism?
-				
+				/*
+								
 				this.setSynths(i, \dopon, doppler[i]);
 				this.setSynths(i, \angulo, angulo[i]);
 				this.setSynths(i, \volume, volume[i]);
@@ -912,6 +1014,7 @@ Mosca {
 				this.setSynths(i, \rotAngle, rlev[i]);
 				this.setSynths(i, \directang, dlev[i]);
 				this.setSynths(i, \contr, clev[i]);
+				*/
 				
 			};
 			
@@ -925,7 +1028,8 @@ Mosca {
 		tocar = {
 			arg i, tpos;
 			var path = tfield[i].value;
-			
+
+
 			// Note: ncanais refers to number of channels in the context of
 			// files on disk
 			// ncan is number of channels for streamed input!
@@ -945,7 +1049,7 @@ Mosca {
 						
 						
 						if(revGlobal == nil) {
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+							revGlobal = Synth.new(\revGlobal, [\gbus, gbus], addAction:\addToTail);
 						};
 						if (testado[i] == false) { // if source is testing don't relaunch synths
 							synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
@@ -1003,19 +1107,20 @@ Mosca {
 							angulo[i] = 0;
 							{angnumbox.value = 0;}.defer;
 							{angslider.value = 0;}.defer;
-							
-							// B-format file with ambisonic render
-
-							//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							// reverb for non-contracted (full b-format) component
 
 							// reverb for contracted (mono) component - and for rest too
 							if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
+							if(revGlobalBF == nil){
+								revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, this.gbfbus],
+									addAction:\addToTail);
+							};
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \outbus, mbus[i],
-									\bufnum, sombuf[i].bufnum, \contr, clev[i], \rate, 1, \tpos, tpos, \lp,
+								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, this.gbfbus, \outbus,
+									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+									\rate, 1, \tpos, tpos, \lp,
 									lp[i], \volume, volume[i], \dopon, doppler[i]], 
 									//					~revGlobal, addAction: \addBefore);
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
@@ -1143,13 +1248,13 @@ Mosca {
 						
 						if (testado[i] == false) {
 							if (hwncheck[i].value) {
-								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, this.gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
 									\busini, this.busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 							} {
-								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, this.gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
 									\busini, this.swinbus[busini[i]] ], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
@@ -1189,33 +1294,28 @@ Mosca {
 		.action_({ arg but;
 			//	var testado = fatual;
 			//	but.value.postln;
+			{
 			if(but.value == 1)
 			{
+				
+				runTriggers.value;
+				//atualizarvariaveis.value;
 				tocar.value(fatual, 0);
 				//		~testado = fatual;
-				testado[fatual] = true;
+					testado[fatual] = true;
+				
 				
 			}
 			{
-				//	("rrrrrrr: " ++ synt[~testado]).postln;
 				
-				//		synt[~testado].free;
+				runStops.value;
 				synt[fatual].free;
 				synt[fatual] = nil;
-				testado[fatual] = false;
+					testado[fatual] = false;
+			
 				
-				
-				
-				// STOP TEST
-				
-				//		~revGlobal.free;
-				//		~revGlobalBF.free;
-				//		~revGlobal = nil;
-				//		~revGlobalBF = nil;
-				
-				//now done elsewhere
-				//espacializador[~testado].free;
 			};
+		}.defer;
 		});
 		
 		
@@ -1403,26 +1503,26 @@ Mosca {
 		
 		dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
 			("Doppler is " ++ butt.value).postln;
-			dcheck[fatual].valueAction = butt.value;
+			{dcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		dopcheque.value = false;
 		
 		loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
 			("Loop is " ++ butt.value).postln;
-			lpcheck[fatual].valueAction = butt.value;
+			{lpcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		dopcheque.value = false;
 		
 		
 		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW Bus").action_({ arg butt;
-			hwncheck[fatual].valueAction = butt.value;
+			{hwncheck[fatual].valueAction = butt.value;}.defer;
 			if (hwInCheck.value && swInCheck.value) {
 				//swInCheck.value = false;
 			};
 		});
 
-		swInCheck = CheckBox( win, Rect(104, 30, 100, 20), "SW Bus").action_({ arg butt;
-			swncheck[fatual].valueAction = butt.value;
+		swInCheck = CheckBox( win, Rect(104, 30, 100, 20), "SC-in").action_({ arg butt;
+			{swncheck[fatual].valueAction = butt.value;}.defer;
 			if (swInCheck.value && hwInCheck.value) {
 				//hwInCheck.value = false;
 			};
@@ -1449,7 +1549,7 @@ Mosca {
 		ncannumbox.action = {arg num;
 			
 			
-			ncanbox[fatual].valueAction = num.value;
+			{ncanbox[fatual].valueAction = num.value;}.defer;
 			this.ncan[fatual] = num.value;
 			
 		};
@@ -1466,7 +1566,7 @@ Mosca {
 		//angnumbox.scroll_step=0.1;
 		busininumbox.align = \center;
 		busininumbox.action = {arg num; 
-			businibox[fatual].valueAction = num.value;
+			{businibox[fatual].valueAction = num.value;}.defer;
 			this.busini[fatual] = num.value;
 		};
 		
@@ -1483,7 +1583,7 @@ Mosca {
 		angnumbox.scroll_step=0.1;
 		angnumbox.align = \center;
 		angnumbox.action = {arg num; 
-			abox[fatual].valueAction = num.value;
+			{abox[fatual].valueAction = num.value;}.defer;
 			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)){
 				espacializador[fatual].set(\angulo, num.value);
 				this.setSynths(fatual, \angulo, num.value);
@@ -1497,15 +1597,15 @@ Mosca {
 		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 		
 		angslider.action = {arg num;
-			abox[fatual].valueAction = num.value * pi;
+			{abox[fatual].valueAction = num.value * pi;}.defer;
 			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)) {
-				angnumbox.value = num.value * pi;
+				{angnumbox.value = num.value * pi;}.defer;
 				//			espacializador[fatual].set(\angulo, b.map(num.value));
 				espacializador[fatual].set(\angulo, num.value * pi);
 				this.setSynths(fatual, \angulo, num.value * pi);
 				//			angulo[fatual] = b.map(num.value);
 				angulo[fatual] = num.value * pi;
-			}{angnumbox.value = num.value * pi;};
+			}{{angnumbox.value = num.value * pi;}.defer;};
 		};
 		
 		
@@ -1523,14 +1623,14 @@ Mosca {
 		znumbox.scroll_step=0.1;
 		znumbox.align = \center;
 		znumbox.action = {arg num; 
-			zbox[fatual].valueAction = num.value;
+			{zbox[fatual].valueAction = num.value;}.defer;
 			if(ncanais[fatual]==2){
 				espacializador[fatual].set(\elev, num.value);
 				this.setSynths(fatual, \elev, num.value);
 				zlev[fatual] = num.value;
 				("Z-Axis = " ++ num.value).postln; 
 			}
-			{znumbox.value = 0;};
+			{{znumbox.value = 0;}.defer;};
 		};
 		
 		//	elslider = Slider.new(~win, Rect(865, 200, 20, 500));
@@ -1551,9 +1651,9 @@ Mosca {
 		zslider = Slider.new(win, Rect(855, 200, 20, 500));
 		zslider.value = 0.5;
 		zslider.action = {arg num;
-			znumbox.value = (450 - (num.value * 900)) * -1;
-			zbox[fatual].valueAction = znumbox.value;
-			zlev[fatual] = znumbox.value;
+			{znumbox.value = (450 - (num.value * 900)) * -1;}.defer;
+			{zbox[fatual].valueAction = znumbox.value;}.defer;
+			{zlev[fatual] = znumbox.value;}.defer;
 			
 			
 		};
@@ -1574,7 +1674,7 @@ Mosca {
 		volnumbox.scroll_step=0.1;
 		volnumbox.align = \center;
 		volnumbox.action = {arg num; 
-			vbox[fatual].valueAction = num.value;
+			{vbox[fatual].valueAction = num.value;}.defer;
 			
 			//		synt[fatual].set(\volume, num.value);
 			//		volume[fatual] = num.value;
@@ -1584,7 +1684,7 @@ Mosca {
 		volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
 		volslider.value = 0;
 		volslider.action = {arg num;
-			vbox[fatual].valueAction = num.value;
+			{vbox[fatual].valueAction = num.value;}.defer;
 			
 			//		volnumbox.value = num.value;
 			//		synt[fatual].set(\volume, num.value);
@@ -1606,7 +1706,7 @@ Mosca {
 		dopnumbox.scroll_step=0.1;
 		dopnumbox.align = \center;
 		dopnumbox.action = {arg num; 
-			dpbox[fatual].valueAction = num.value;
+			{dpbox[fatual].valueAction = num.value;}.defer;
 			
 			//		synt[fatual].set(\volume, num.value);
 			//		volume[fatual] = num.value;
@@ -1616,8 +1716,8 @@ Mosca {
 		dpslider = Slider.new(win, Rect(50, 50 + offset, 110, 20));
 		dpslider.value = 0;
 		dpslider.action = {arg num;
-			dpbox[fatual].valueAction = num.value;
-			dopnumbox.value = num.value;
+			{dpbox[fatual].valueAction = num.value;}.defer;
+			{dopnumbox.value = num.value;}.defer;
 			
 			
 			//		volnumbox.value = num.value;
@@ -1639,7 +1739,7 @@ Mosca {
 		gnumbox.scroll_step=0.1;
 		gnumbox.align = \center;
 		gnumbox.action = {arg num; 
-			gbox[fatual].valueAction = num.value;
+			{gbox[fatual].valueAction = num.value;}.defer;
 			
 			//		synt[fatual].set(\volume, num.value);
 			//		volume[fatual] = num.value;
@@ -1649,7 +1749,7 @@ Mosca {
 		gslider = Slider.new(win, Rect(50, 70 + offset, 110, 20));
 		gslider.value = 0;
 		gslider.action = {arg num;
-			gbox[fatual].valueAction = num.value;
+			{gbox[fatual].valueAction = num.value;}.defer;
 			
 			//		volnumbox.value = num.value;
 			//		synt[fatual].set(\volume, num.value);
@@ -1668,14 +1768,14 @@ Mosca {
 		lnumbox.scroll_step=0.1;
 		lnumbox.align = \center;
 		lnumbox.action = {arg num; 
-			lbox[fatual].valueAction = num.value;
+			{lbox[fatual].valueAction = num.value;}.defer;
 			
 		};
 		// stepsize?
 		lslider = Slider.new(win, Rect(50, 90 + offset, 110, 20));
 		lslider.value = 0;
 		lslider.action = {arg num;
-			lbox[fatual].valueAction = num.value;
+			{lbox[fatual].valueAction = num.value;}.defer;
 		};
 		
 		
@@ -1690,7 +1790,7 @@ Mosca {
 		rnumbox.scroll_step=0.1;
 		rnumbox.align = \center;
 		rnumbox.action = {arg num; 
-			rbox[fatual].valueAction = num.value;
+			{rbox[fatual].valueAction = num.value;}.defer;
 			
 			//		synt[fatual].set(\volume, num.value);
 			//		volume[fatual] = num.value;
@@ -1700,8 +1800,8 @@ Mosca {
 		rslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
 		rslider.value = 0.5;
 		rslider.action = {arg num;
-			rbox[fatual].valueAction = num.value * 6.28 - pi;
-			rnumbox.value = num.value * 2pi - pi;
+			{rbox[fatual].valueAction = num.value * 6.28 - pi;}.defer;
+			{rnumbox.value = num.value * 2pi - pi;}.defer;
 			
 		};
 		
@@ -1717,14 +1817,14 @@ Mosca {
 		dirnumbox.scroll_step=0.1;
 		dirnumbox.align = \center;
 		dirnumbox.action = {arg num; 
-			dbox[fatual].valueAction = num.value;
+			{dbox[fatual].valueAction = num.value;}.defer;
 		};
 		// stepsize?
 		dirslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
 		dirslider.value = 0;
 		dirslider.action = {arg num;
-			dbox[fatual].valueAction = num.value * pi/2;
-			dirnumbox.value = num.value * pi/2;
+			{dbox[fatual].valueAction = num.value * pi/2;}.defer;
+			{dirnumbox.value = num.value * pi/2;}.defer;
 		};
 
 		
@@ -1739,7 +1839,7 @@ Mosca {
 		connumbox.scroll_step=0.1;
 		connumbox.align = \center;
 		connumbox.action = {arg num; 
-			cbox[fatual].valueAction = num.value;
+			{cbox[fatual].valueAction = num.value;}.defer;
 			
 			//		synt[fatual].set(\volume, num.value);
 			//		volume[fatual] = num.value;
@@ -1749,8 +1849,8 @@ Mosca {
 		cslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
 		cslider.value = 0;
 		cslider.action = {arg num;
-			cbox[fatual].valueAction = num.value;
-			connumbox.value = num.value;
+			{cbox[fatual].valueAction = num.value;}.defer;
+			{connumbox.value = num.value;}.defer;
 		};
 		
 		
@@ -1937,40 +2037,24 @@ Mosca {
 				
 			};
 			
-			xbox[i].action = {arg num; 
-				var dist;
-				//		num.value.postln;
-
+			xbox[i].action = {arg num;
 				sprite[i, 1] = 450 + (num.value * -1);
-
 				novoplot.value(num.value, ybox[i], i, this.nfontes);
-
-				//novoplot(num.value, ybox[i], i, nfontes);
-				//~testeme = espacializador;
-				//	("X Value =  " ++ (espacializador[i]).asString).postln;
-				
-				//			espacializador[i] = nil;
-				//			synt[i] = nil;
-
+				xval[i] = num.value;
 				if(espacializador[i] != nil){
 					espacializador[i].set(\mx, num.value);
 					this.setSynths(i, \mx, num.value);
-
 					synt[i].set(\mx, num.value);
 				};
 				
 				
 			};
 			ybox[i].action = {arg num; 
-				//	num.value.postln;
 				sprite[i, 0] = (num.value * -1 + 450);
-
-				//			espacializador[i] = nil;
-				//			synt[i] = nil;
-
+				yval[i] = num.value;
 				if(espacializador[i] != nil){
 					espacializador[i].set(\my, num.value);
-					this.setSynths(i, \mx, num.value);
+					this.setSynths(i, \my, num.value);
 					synt[i].set(\my, num.value);
 				};		
 				
@@ -2116,6 +2200,7 @@ Mosca {
 
 			zbox[i].action = {arg num;
 				espacializador[i].set(\mz, num.value);
+				zval[i] = num.value;
 				this.setSynths(i, \mz, num.value);
 				//"fooooob".postln;
 				synt[i].set(\mz, num.value);
@@ -2170,9 +2255,14 @@ Mosca {
 				arg i;
 				if(this.triggerFunc[i].notNil) {
 					this.triggerFunc[i].value;
+					updateSynthInArgs.value(i);
 				}
 			});
+			//	updateArgs.value;
+			//server.sync;
+			//atualizarvariaveis.value;
 		};
+		
 		runStops = {
 			this.nfontes.do({
 				arg i;
@@ -2184,7 +2274,7 @@ Mosca {
 		
 
 		
-		controle = Automation(dur).front(win, Rect(450, 10, 400, 25));
+		controle = Automation(dur, hideLoadSave: true).front(win, Rect(450, 10, 400, 25));
 		controle.presetDir = prjDr ++ "/auto";
 		controle.onEnd = {
 			controle.stop;
@@ -2200,6 +2290,9 @@ Mosca {
 		controle.onPlay = {
 			var startTime;
 			runTriggers.value;
+			//	updateArgs.value;
+			//server.sync;
+			//atualizarvariaveis.value;
 			if(controle.now < 0)
 			{
 				startTime = 0
@@ -2222,6 +2315,7 @@ Mosca {
 			};
 			
 			isPlay = true;
+			
 		};
 
 		
@@ -2282,6 +2376,8 @@ Mosca {
 			//		ybox[fatual].valueAction = y;
 			//	fonte.set((mx - 450) * -1, 450 - my);
 
+			//"I'M MOVED!!".postln;
+
 			xbox[fatual].valueAction = 450 - y;
 			ybox[fatual].valueAction = (x - 450) * -1;
 			win.drawFunc = {
@@ -2335,7 +2431,9 @@ Mosca {
 			
 			wdados.close;
 			gbus.free;
-			gbfbus.free;
+			this.btoa.free;
+			this.atob.free;
+			this.gbfbus.free;
 			// The following should be removed, but...
 			// and if all that doesn't do it!:
 			server.freeAll;
