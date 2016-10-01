@@ -140,31 +140,31 @@ code::
 
 (
 s.waitForBoot {
-	s = Server.local;
-	// Add a SC internal decoder (1º only)
-	// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
-	~decoder = FoaDecoderKernel.newUHJ;
-	s.sync;
-	MIDIIn.connect;
-	s.sync;
-	//create a project directory and in it create to more directories "rir" and "auto".
-	//place your binaural and ambisonic rirs in the rir folder. For some demo rirs
-	//and ambisonic recordings see the zip archive
-	//here: http://escuta.org/mosca 
+s = Server.local;
+// Add a SC internal decoder (1º only)
+// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
+~decoder = FoaDecoderKernel.newUHJ;
+s.sync;
+MIDIIn.connect;
+s.sync;
+//create a project directory and in it create to more directories "rir" and "auto".
+//place your binaural and ambisonic rirs in the rir folder. For some demo rirs
+//and ambisonic recordings see the zip archive
+//here: http://escuta.org/mosca 
 
-	// Mosca.new(<project directory path><b-format rir><binaural rir><server><decoder>)
-	//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
-	// outputs for decoding with an external decoder
-	
-	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 7,
-	 			"QL14_tail48kHz.amb", s, ~decoder);
+// Mosca.new(<project directory path><b-format rir><binaural rir><server><decoder>)
+//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
+// outputs for decoding with an external decoder
 
-	~testMosca.openGui(120);
+~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 7,
+"QL14_tail48kHz.amb", s, ~decoder);
+
+~testMosca.openGui(120);
 };
 
 )
 
-// Tidy up
+// If you close the Mosca window, tidy up
 
 (
 MIDIIn.disconnect; 
@@ -177,12 +177,14 @@ MIDIIn.disconnect;
 
 (
 SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
-	var source, point, adjust;
+	var source, point, adjust, delEnv;
 	point = Point.new;
 	point.set(mx, my);
 	adjust = point.rho;
-	adjust = Lag.kr(adjust, 1.0);
-	source = SinOsc.ar(freq + adjust, 0, 0.1);
+	adjust = Lag.kr(adjust, 0.1);
+	delEnv = Env.dadsr(0.1, attackTime: 0.01, decayTime: 200,
+	sustainLevel: 0.1); // envelope with an onset delay equal to lag buffer
+	source = SinOsc.ar(freq + adjust, mul: EnvGen.kr(delEnv, doneAction: 2));
 
 	// write to the bus, adding to previous contents
 	Out.ar(outbus, source);
@@ -202,11 +204,12 @@ SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 ~testMosca.registerSynth(1, ~mySynth);
 };
 ~source1StopFunc = {~mySynth.free; };
-~testMosca.setTriggerFunc(1, ~source1PlayFunc);
+~testMosca.setTriggerFunc(1, ~source1PlayFunc); 
 ~testMosca.setStopFunc(1, ~source1StopFunc);
 )
 
 ~source1PlayFunc.value;
+~source1StopFunc.value;
 
 (
 ~myOtherSynth = Synth.new("test-out", [\freq, 800, \outbus, ~testMosca.getSWBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2, ~myOtherSynth)});
