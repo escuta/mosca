@@ -946,7 +946,7 @@ Mosca {
 						
 						
 						if(revGlobal == nil) {
-							revGlobal = Synth.new(\revGlobal, [\gbus, gbus], addAction:\addToTail);
+							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 						};
 						if (testado[i] == false) { // if source is testing don't relaunch synths
 							synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
@@ -1194,8 +1194,10 @@ Mosca {
 			{
 			if(but.value == 1)
 			{
-				
-				runTriggers.value;
+				// runtriggers disabled!
+				//runTriggers.value;
+
+
 				//atualizarvariaveis.value;
 				tocar.value(fatual, 0);
 				//		~testado = fatual;
@@ -1530,20 +1532,6 @@ Mosca {
 			{{znumbox.value = 0;}.defer;};
 		};
 		
-		//	elslider = Slider.new(~win, Rect(865, 200, 20, 500));
-		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
-		
-		/*	elslider.action = {arg num;
-			elbox[fatual].valueAction = num.value;
-			if(ncanais[fatual]==2) {
-			elnumbox.value = num.value * pi;
-			//			espacializador[fatual].set(\angulo, b.map(num.value));
-			espacializador[fatual].set(\elev, num.value * pi);
-			//			angulo[fatual] = b.map(num.value);
-			elev[fatual] = num.value * pi;
-			}{elnumbox.value = num.value * pi;};
-			};
-		*/
 		
 		zslider = Slider.new(win, Rect(855, 200, 20, 500));
 		zslider.value = 0.5;
@@ -1605,9 +1593,6 @@ Mosca {
 		dopnumbox.action = {arg num; 
 			{dpbox[fatual].valueAction = num.value;}.defer;
 			
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
-			//		("volume = " ++ num.value).postln; 
 		};
 		// stepsize?
 		dpslider = Slider.new(win, Rect(50, 50 + offset, 110, 20));
@@ -1615,11 +1600,6 @@ Mosca {
 		dpslider.action = {arg num;
 			{dpbox[fatual].valueAction = num.value;}.defer;
 			{dopnumbox.value = num.value;}.defer;
-			
-			
-			//		volnumbox.value = num.value;
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
 		};
 
 		/////////////////////////////////////////////////////////////////////////
@@ -1638,19 +1618,12 @@ Mosca {
 		gnumbox.action = {arg num; 
 			{gbox[fatual].valueAction = num.value;}.defer;
 			
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
-			//		("volume = " ++ num.value).postln; 
 		};
 		// stepsize?
 		gslider = Slider.new(win, Rect(50, 70 + offset, 110, 20));
 		gslider.value = 0;
 		gslider.action = {arg num;
 			{gbox[fatual].valueAction = num.value;}.defer;
-			
-			//		volnumbox.value = num.value;
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
 		};
 
 		
@@ -1689,9 +1662,6 @@ Mosca {
 		rnumbox.action = {arg num; 
 			{rbox[fatual].valueAction = num.value;}.defer;
 			
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
-			//		("volume = " ++ num.value).postln; 
 		};
 		// stepsize?
 		rslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
@@ -1738,9 +1708,6 @@ Mosca {
 		connumbox.action = {arg num; 
 			{cbox[fatual].valueAction = num.value;}.defer;
 			
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
-			//		("volume = " ++ num.value).postln; 
 		};
 		// stepsize?
 		cslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
@@ -1766,7 +1733,6 @@ Mosca {
 			dopcheque.value = false; // coloque toggle no padrão
 			
 			
-			//		sombuf[fatual] = Buffer.loadDialog(s, action: { 
 
 			Dialog.openPanel({ 
 				arg path;
@@ -1921,16 +1887,10 @@ Mosca {
 				if (path != "") {
 					
 					sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
-						//{(tfield[i].value.asString ++ " tem duração de " ++ (buf.numFrames / buf.sampleRate).asString).postln;}.defer;
-						//				((buf.numFrames / buf.numChannels ) / s.actualSampleRate).postln;
 						((buf.numFrames ) / buf.sampleRate).postln;
 						//				(buf.sampleRate).postln;
 					});
-					//	("Buffer " ++ i.asString ++ " tem " ++ (sombuf[i].duration).asString ++ "segundos").postln;
-					//("Length = " ++ ((sombuf[i].numFrames / sombuf[i].numChannels ) / 48000).asString).postln;
 				}
-				
-				// carregar buffer e gerenciar/lançar synths
 				
 			};
 			
@@ -2179,7 +2139,6 @@ Mosca {
 			controle.seek;
 			this.nfontes.do { arg i;	
 				synt[i].free; // error check
-				//	espacializador[i].free;
 				
 			};
 		};
@@ -2187,9 +2146,6 @@ Mosca {
 		controle.onPlay = {
 			var startTime;
 			runTriggers.value;
-			//	updateArgs.value;
-			//server.sync;
-			//atualizarvariaveis.value;
 			if(controle.now < 0)
 			{
 				startTime = 0
@@ -2222,11 +2178,7 @@ Mosca {
 			if(isPlay == true) {
 				this.nfontes.do { arg i;	
 					synt[i].free; // error check
-					//	espacializador[i].free;
 				};
-				// JUST COMMENTED OUT
-				//~controle.stop;
-				//		{tocar.value(fatual, ~controle.now);}.defer;
 			};
 		};
 
@@ -2247,9 +2199,6 @@ Mosca {
 		
 		
 		this.nfontes.do { arg i;
-			// save the bus/streamed audio settings outside of automation on a once-off basis
-			//		~controle.dock(ncanbox[i], "ncanais_" ++ i);
-			//		~controle.dock(businibox[i], "businicial_" ++ i);
 			controle.dock(xbox[i], "x_axis_" ++ i);
 			controle.dock(ybox[i], "y_axis_" ++ i);
 			controle.dock(zbox[i], "z_axis_" ++ i);
@@ -2261,19 +2210,11 @@ Mosca {
 			controle.dock(rbox[i], "rotação_" ++ i);
 			controle.dock(dbox[i], "diretividade_" ++ i);
 			controle.dock(cbox[i], "contração_" ++ i);
-			//			~controle.dock(tfield[i], "arquivo_" ++ i);
 		};
 
 		
 		
 		win.view.mouseMoveAction = {|view, x, y, modifiers | [x, y];
-			//	x = DelayL.kr(x, 1.0, 1.0, 1, 0);
-			//	y = DelayL.kr(y, 1.0, 1.0, 1, 0);
-			//		xbox[fatual].valueAction = x;
-			//		ybox[fatual].valueAction = y;
-			//	fonte.set((mx - 450) * -1, 450 - my);
-
-			//"I'M MOVED!!".postln;
 
 			xbox[fatual].valueAction = 450 - y;
 			ybox[fatual].valueAction = (x - 450) * -1;
@@ -2304,9 +2245,7 @@ Mosca {
 			if (dopflag == 0, {
 				
 			};, {
-				//	espacializador[x] = Synth.new(\amb2d, [\inbus, mbus[x], \gbus, gbus]);
 			});
-			//	synt[x] = Synth.new(\arquivoLoop, [\outbus, bus[x]]);
 		};
 		
 		
@@ -2328,7 +2267,8 @@ Mosca {
 			
 			wdados.close;
 			gbus.free;
-			this.btoa.free;
+			//this.b2a.free;
+			//this.a2b.free;
 			this.atob.free;
 			this.gbfbus.free;
 			// The following should be removed, but...
