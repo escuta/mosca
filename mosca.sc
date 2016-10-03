@@ -48,7 +48,7 @@ GUI Parameters usable in SynthDefs
 \\level | level | 0 - 1 |
 \\dopon | Doppler effect on/off | 0 or 1
 \\dopamnt | Doppler ammount | 0 - 1 |
-\\angulo | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
+\\angle | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
 \\glev | Global reverb level | 0 - 1 |
 \\llev | Local reverb level | 0 - 1 |
 \\mx | X coord | -450 - 450 |
@@ -387,7 +387,7 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("espacAmbEstereo",  {
-			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, angulo = 1.05,
+			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 			dopon = 0, dopamnt = 0, 
 			glev = 0, llev = 0;
 			var w, x, y, z, r, s, t, u, v, p, ambsinal,
@@ -403,8 +403,8 @@ GUI Parameters usable in SynthDefs
 			fonte = Cartesian.new;
 			fonte.set(mx, my);
 			
-			azim1 = fonte.rotate(angulo / -2).theta;
-			azim2 = fonte.rotate(angulo / 2).theta;
+			azim1 = fonte.rotate(angle / -2).theta;
+			azim2 = fonte.rotate(angle / 2).theta;
 			
 			fonte.set(mx, my, mz);
 			el = fonte.phi;
@@ -717,7 +717,7 @@ GUI Parameters usable in SynthDefs
 		dopcheque,
 		loopcheck, lpcheck, lp,
 		hwInCheck, hwncheck, hwn, scInCheck, scncheck, scn,
-		dopcheque2, doppler, angulo, level, glev, 
+		dopcheque2, doppler, angle, level, glev, 
 		llev, angnumbox, volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
@@ -755,7 +755,7 @@ GUI Parameters usable in SynthDefs
 		synt = Array.newClear(this.nfontes);
 		sprite = Array2D.new(this.nfontes, 2);
 		funcs = Array.newClear(this.nfontes);
-		angulo = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
+		angle = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
 		zlev = Array.newClear(this.nfontes); 
 		level = Array.newClear(this.nfontes); 
 		//	doplev = Array.newClear(this.nfontes); 
@@ -792,7 +792,7 @@ GUI Parameters usable in SynthDefs
 		
 		this.nfontes.do { arg i;
 			doppler[i] = 0;
-			angulo[i] = 0;
+			angle[i] = 0;
 			level[i] = 0;
 			glev[i] = 0;
 			llev[i] = 0;
@@ -862,7 +862,7 @@ GUI Parameters usable in SynthDefs
 			{
 				server.sync;
 				this.setSynths(source, \dopon, doppler[source]);
-				this.setSynths(source, \angulo, angulo[source]);
+				this.setSynths(source, \angle, angle[source]);
 				this.setSynths(source, \level, level[source]);
 				this.setSynths(source, \dopamnt, dplev[source]);
 				this.setSynths(source, \glev, glev[source]);
@@ -890,7 +890,7 @@ GUI Parameters usable in SynthDefs
 					espacializador[i].set(
 						//	\mx, num.value  ???
 						\dopon, doppler[i], // not needed...
-						\angulo, angulo[i],
+						\angle, angle[i],
 						\level, level[i], // ? or in player?
 						\dopamnt, dplev[i],
 						\glev, glev[i],
@@ -949,7 +949,7 @@ GUI Parameters usable in SynthDefs
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
 					{ncanais[i] = 1;
-						angulo[i] = 0;
+						angle[i] = 0;
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
 						
@@ -977,7 +977,7 @@ GUI Parameters usable in SynthDefs
 						
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
-						angulo[i] = pi/2;
+						angle[i] = pi/2;
 						//						{angnumbox.value = pi/2;}.defer; 
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						//						{angslider.value = 0.5;}.defer;
@@ -1010,7 +1010,7 @@ GUI Parameters usable in SynthDefs
 						if (sombuf[i].numChannels == 4) {
 							"B-format".postln;
 							ncanais[i] = 4;
-							angulo[i] = 0;
+							angle[i] = 0;
 							{angnumbox.value = 0;}.defer;
 							{angslider.value = 0;}.defer;
 							// reverb for non-contracted (full b-format) component
@@ -1102,7 +1102,7 @@ GUI Parameters usable in SynthDefs
 					{ this.ncan[i] == 2 } {
 						"Estéreo!".postln;
 						ncanais[i] = 0; // just in case!
-						angulo[i] = pi/2;
+						angle[i] = pi/2;
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
 						
@@ -1369,8 +1369,8 @@ GUI Parameters usable in SynthDefs
 			if(hwn[fatual] == 1){hwInCheck.value = true}{hwInCheck.value = false};
 			if(scn[fatual] == 1){scInCheck.value = true}{scInCheck.value = false};
 			
-			angnumbox.value = angulo[fatual];
-			angslider.value = angulo[fatual] / pi;
+			angnumbox.value = angle[fatual];
+			angslider.value = angle[fatual] / pi;
 			volnumbox.value = level[fatual];
 			dopnumbox.value = dplev[fatual];
 			volslider.value = level[fatual];
@@ -1494,9 +1494,9 @@ GUI Parameters usable in SynthDefs
 		angnumbox.action = {arg num; 
 			{abox[fatual].valueAction = num.value;}.defer;
 			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)){
-				espacializador[fatual].set(\angulo, num.value);
-				this.setSynths(fatual, \angulo, num.value);
-				angulo[fatual] = num.value;
+				espacializador[fatual].set(\angle, num.value);
+				this.setSynths(fatual, \angle, num.value);
+				angle[fatual] = num.value;
 				("ângulo = " ++ num.value).postln; 
 			}
 			{angnumbox.value = 0;};
@@ -1509,11 +1509,11 @@ GUI Parameters usable in SynthDefs
 			{abox[fatual].valueAction = num.value * pi;}.defer;
 			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)) {
 				{angnumbox.value = num.value * pi;}.defer;
-				//			espacializador[fatual].set(\angulo, b.map(num.value));
-				espacializador[fatual].set(\angulo, num.value * pi);
-				this.setSynths(fatual, \angulo, num.value * pi);
-				//			angulo[fatual] = b.map(num.value);
-				angulo[fatual] = num.value * pi;
+				//			espacializador[fatual].set(\angle, b.map(num.value));
+				espacializador[fatual].set(\angle, num.value * pi);
+				this.setSynths(fatual, \angle, num.value * pi);
+				//			angle[fatual] = b.map(num.value);
+				angle[fatual] = num.value * pi;
 			}{{angnumbox.value = num.value * pi;}.defer;};
 		};
 		
@@ -1951,11 +1951,11 @@ GUI Parameters usable in SynthDefs
 			
 			abox[i].action = {arg num;
 				//	("Ângulo = " ++ num.value ++ " radianos").postln;
-				angulo[i] = num.value;
+				angle[i] = num.value;
 				if((ncanais[i]==2) || (this.ncan[i]==2)){
-					espacializador[i].set(\angulo, num.value);
-					this.setSynths(i, \angulo, num.value);
-					angulo[i] = num.value;
+					espacializador[i].set(\angle, num.value);
+					this.setSynths(i, \angle, num.value);
+					angle[i] = num.value;
 				};
 				if(i == fatual) 
 				{
