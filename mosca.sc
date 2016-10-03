@@ -12,7 +12,6 @@
 // http://www.openairlib.net/auralizationdb/content/koli-national-park-summer
 
 
-
 Mosca {
 	//	classvar fftsize = 2048; 
    	var <>myTestVar;
@@ -111,34 +110,6 @@ Mosca {
 				Out.ar( 0, FoaDecode.ar(player, dec)); };
 		};
 
-		/*		parser = { |s, envir|   // some code by Daniel Mayer. will be used to modify
-			// the names of functions in synthdef and will be applied in a synthdef
-			// building function
-			var varPos = s.findAll("~"), collector, result = s.copy;
-			envir = envir ? currentEnvironment;
-			varPos.do { |i|
-			var j = i, doSearch = true, variable = "~", n;
-			while
-			{ (j <= (s.size-1)) && doSearch }
-			{
-			n = s[j+1].ascii;
-			((n >= 65) && (n <= 65) || (n >= 97) && (n <= 115)).if {
-			variable = variable ++ s[j+1];
-			j = j + 1;
-			}{
-			doSearch = false
-			}
-			};
-			(j > i).if { collector = collector.add(variable) };
-			};
-			collector.do { |item|
-			var repl = envir[item.drop(1).asSymbol].();
-			repl.isKindOf(String).not.if { repl = repl.asCompileString };
-			result = result.replace(item, repl);
-			};
-			result
-			};
-		*/
 
 		////////////////// END Functions to substitute blocs of code /////////////
 		
