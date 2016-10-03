@@ -2107,10 +2107,6 @@ GUI Parameters usable in SynthDefs
 				};
 			}; 
 
-
-			
-			
-
 			
 		};
 
