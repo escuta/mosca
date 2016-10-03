@@ -1235,43 +1235,12 @@ GUI Parameters usable in SynthDefs
 			["save auto", Color.black, Color.white],
 			
 		])
-		.action_({ arg but;
-			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"w");
-			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
-			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"w");
-			var hwbus = File((prjDr ++ "/auto/hwbus.txt").standardizePath,"w");
-			var swbus = File((prjDr ++ "/auto/swbus.txt").standardizePath,"w");
-			var string;
-			("Arg is " ++ but.value.asString).postln;
-			string = nil;
-			this.nfontes.do { arg i;
-				("textfield = " ++ tfield[i].value).postln;
-				
-				if(tfield[i].value != "") {arquivo.write(tfield[i].value ++ "\n")} {arquivo.write("NULL\n")};
-				
-				dop.write(doppler[i].value.asString ++ "\n");
-				looped.write(lp[i].value.asString ++ "\n");
-				if(hwn[i].value > 0)
-				{
-					
-					hwbus.write(this.ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
-				}
-				{hwbus.write("NULL\n")};
-
-				if(scn[i].value > 0)
-				{
-					
-					swbus.write(this.ncan[i].asString ++ Char.tab ++  this.busini[i].asString ++ "\n");
-				}
-				{swbus.write("NULL\n")};
-				
-			};
-			arquivo.close;
-			dop.close;
-			looped.close;
-			hwbus.close;
-			swbus.close;
+		.action_({
+			//arg but;
+			controle.seek;
+			controle.snapshot; // rewind to zero
 			controle.save(controle.presetDir);
+			
 			
 		});
 		
@@ -1282,58 +1251,10 @@ GUI Parameters usable in SynthDefs
 		.states_([
 			["load auto", Color.black, Color.white],
 		])
-		.action_({ arg but;
-			var f, f2;
-			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"r");
-			var dop = File((prjDr ++ "/auto/doppler.txt").standardizePath,"r");
-			var looped = File((prjDr ++ "/auto/loop.txt").standardizePath,"r");
-			var hwbus = FileReader((prjDr ++ "/auto/hwbus.txt").standardizePath, delimiter: Char.tab); 
-			var swbus = FileReader((prjDr ++ "/auto/swbus.txt").standardizePath, delimiter: Char.tab); 
-			
-			
-			but.value.postln;
-			this.nfontes.do { arg i;
-				var line = arquivo.getLine(1024);
-				if(line!="NULL"){tfield[i].valueAction = line};
-				
-				line = dop.getLine(1024);
-				//		doppler[i] = line;
-				dcheck[i].valueAction = line;
-				
-				line = looped.getLine(1024);
-				//			lp[i] = line;
-				lpcheck[i].valueAction = line;
-				
-				f = File(prjDr ++ "/auto/hwbus.txt", "r"); f.isOpen;
-				
-				// hwbus stuff
-				line = hwbus.next;
-				if(line[0] != "NULL"){
-					hwncheck[i].valueAction = true;
-					// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
-					ncanbox[i].valueAction = line[0].asFloat;
-					businibox[i].valueAction = line[1].asFloat;
-				};
-
-				f2 = File(prjDr ++ "/auto/swbus.txt", "r"); f2.isOpen;
-				// swbus stuff
-				line = swbus.next;
-				if(line[0] != "NULL"){
-					scncheck[i].valueAction = true;
-					// ("Linha " ++ i.asString ++ " = " ++ line[0] ++ " e " ++ line[1]).postln;
-					ncanbox[i].valueAction = line[0].asFloat;
-					businibox[i].valueAction = line[1].asFloat;
-				};
-
-			};
-			arquivo.close;		
-			dop.close;
-			looped.close;
-			f.close;
-			f2.close;
-			hwbus.close;
-			swbus.close;
+		.action_({
+			//arg but;
 			controle.load(controle.presetDir);
+			controle.seek;
 		});
 		
 		
@@ -1875,24 +1796,19 @@ GUI Parameters usable in SynthDefs
 			
 			ncanbox[i] = NumberBox(wdados, Rect(100, 40 + (i*20), 40, 20));
 			businibox[i] = NumberBox(wdados, Rect(140, 40 + (i*20), 40, 20));
-
 			xbox[i] = NumberBox(wdados, Rect(180, 40 + (i*20), 40, 20));
 			ybox[i] = NumberBox(wdados, Rect(220, 40+ (i*20), 40, 20));
 			zbox[i] = NumberBox(wdados, Rect(260, 40+ (i*20), 40, 20));
-
-
 			abox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 40, 20));
 			vbox[i] = NumberBox(wdados, Rect(340, 40+ (i*20), 40, 20));
 			gbox[i] = NumberBox(wdados, Rect(380, 40+ (i*20), 40, 20));
 			lbox[i] = NumberBox(wdados, Rect(420, 40+ (i*20), 40, 20));
 			rbox[i] = NumberBox(wdados, Rect(460, 40+ (i*20), 40, 20));
-
 			dbox[i] = NumberBox(wdados, Rect(500, 40+ (i*20), 40, 20));
 			cbox[i] = NumberBox(wdados, Rect(540, 40+ (i*20), 40, 20));
 			dpbox[i] = NumberBox(wdados, Rect(580, 40+ (i*20), 40, 20));
-			
 			tfield[i] = TextField(wdados, Rect(620, 40+ (i*20), 350, 20));
-			
+
 			tfield[i].action = {arg path;
 				if (path != "") {
 					
@@ -2151,9 +2067,10 @@ GUI Parameters usable in SynthDefs
 
 
 		
-		//		controle = Automation(dur/).front(win, Rect(450, 10, 400, 25));
-		controle = Automation(dur, showLoadSave: false).front(win, Rect(450, 10, 400, 25));
+		//controle = Automation(dur).front(win, Rect(450, 10, 400, 25));
+		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win, Rect(450, 10, 400, 25));
 		controle.presetDir = prjDr ++ "/auto";
+		//controle.setMinTimeStep(2.0);
 		controle.onEnd = {
 			controle.stop;
 			"controle is stopped".postln;
@@ -2229,12 +2146,21 @@ GUI Parameters usable in SynthDefs
 			controle.dock(zbox[i], "z_axis_" ++ i);
 			controle.dock(vbox[i], "level_" ++ i);
 			controle.dock(dpbox[i], "dopamt_" ++ i);
-			controle.dock(abox[i], "ângulo_" ++ i);
+			controle.dock(abox[i], "angle_" ++ i);
 			controle.dock(gbox[i], "revglobal_" ++ i);
 			controle.dock(lbox[i], "revlocal_" ++ i);
-			controle.dock(rbox[i], "rotação_" ++ i);
+			controle.dock(rbox[i], "rotation_" ++ i);
 			controle.dock(dbox[i], "diretividade_" ++ i);
-			controle.dock(cbox[i], "contração_" ++ i);
+			controle.dock(cbox[i], "contraction_" ++ i);
+			
+			controle.dock(tfield[i], "filename_" ++ i);
+			controle.dock(dcheck[i], "doppler_" ++ i);			
+			controle.dock(lpcheck[i], "loop_" ++ i);
+			controle.dock(hwncheck[i], "hwin_" ++ i);
+			controle.dock(ncanbox[i], "numchannels_" ++ i);
+			controle.dock(businibox[i], "busini_" ++ i);
+			controle.dock(scncheck[i], "scin_" ++ i);
+			
 		};
 
 		
