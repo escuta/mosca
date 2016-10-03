@@ -14,7 +14,7 @@
 
 
 Mosca {
-	//	classvar fftsize = 2048;
+	//	classvar fftsize = 2048; 
    	var <>myTestVar;
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
