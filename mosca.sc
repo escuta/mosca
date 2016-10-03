@@ -2114,9 +2114,7 @@ GUI Parameters usable in SynthDefs
 			
 		};
 
-		
-		
-		
+				
 		runTriggers = {
 			this.nfontes.do({
 				arg i;
