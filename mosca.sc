@@ -2180,7 +2180,7 @@ Mosca {
 		
 		controle.onPlay = {
 			var startTime;
-			runTriggers.value;
+			//	runTriggers.value;
 			if(controle.now < 0)
 			{
 				startTime = 0
@@ -2190,6 +2190,7 @@ Mosca {
 			};
 			this.nfontes.do { arg i;	
 				var loaded, dur, looped;
+				{runTrigger.value(i);}.defer;
 				{loaded = tfield[i].value;}.defer;
 				looped = lp[i];
 				if(lp[i] != 1){
@@ -2202,7 +2203,7 @@ Mosca {
 					}
 				};
 				//runTrigger.value(i);
-				updateSynthInArgs.value(i);
+				//updateSynthInArgs.value(i);
 			};
 			
 			isPlay = true;
