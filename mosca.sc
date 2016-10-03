@@ -39,6 +39,28 @@ Mosca {
 		^super.new.initMosca(projDir, nsources, rirWXYZ, srvr, decoder);
 	}
 
+	*printSynthParams {
+		var string =
+		"
+
+GUI Parameters usable in SynthDefs
+
+\\volume | level | 0 - 1 |
+\\dopon | Doppler effect on/off | 0 or 1
+\\dopamnt | Doppler ammount | 0 - 1 |
+\\angulo | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
+\\glev | Global reverb level | 0 - 1 |
+\\llev | Local reverb level | 0 - 1 |
+\\mx | X coord | -450 - 450 |
+\\my | Y coord | -450 - 450 |
+\\mz | Z coord | -450 - 450 |
+\\rotAngle | B-format rotation angle | -3.14 - 3.14 |
+\\\directang | B-format directivity | 0 - 1.57 |
+\\contr | Contraction: fade between WXYZ & W | 0 - 1 |
+";
+		^string;
+		
+	}
 
 	initMosca { arg projDir, nsources, rirWXYZ, srvr, decoder;
 		var makeSynthDefPlayers, revGlobTxt,
@@ -850,7 +872,7 @@ Mosca {
 				this.setSynths(source, \mz, zval[source]);
 				
 				this.setSynths(source, \rotAngle, rlev[source]);
-				this.setSynths(source, \dsourcerectang, dlev[source]);
+				this.setSynths(source, \directang, dlev[source]);
 				this.setSynths(source, \contr, clev[source]);
 				
 				("Updating source" ++ (source+1)).postln;
