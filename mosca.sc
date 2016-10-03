@@ -45,7 +45,7 @@ Mosca {
 
 GUI Parameters usable in SynthDefs
 
-\\volume | level | 0 - 1 |
+\\level | level | 0 - 1 |
 \\dopon | Doppler effect on/off | 0 or 1
 \\dopamnt | Doppler ammount | 0 - 1 |
 \\angulo | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
@@ -466,27 +466,27 @@ GUI Parameters usable in SynthDefs
 		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
 
 			SynthDef.new("playMono"++type, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0, busini;
+				level = 0, tpos = 0, lp = 0, busini;
 				var scaledRate, spos, playerRef;
 				playerRef = Ref(0);
 				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				//SendTrig.kr(Impulse.kr(1),0,  funcString); // debugging
-				Out.ar(outbus, playerRef.value * volume);
+				Out.ar(outbus, playerRef.value * level);
 			}).add;
 
 			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0, busini;
+				level = 0, tpos = 0, lp = 0, busini;
 				//		var sig;
 				var scaledRate, spos, playerRef;
 				playerRef = Ref(0);
 				playStereoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
-				Out.ar(outbus, playerRef.value * volume);
+				Out.ar(outbus, playerRef.value * level);
 			}).add;
 
 			
 			
 			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1, 
-				volume = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt,
 				busini;
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
@@ -508,13 +508,13 @@ GUI Parameters usable in SynthDefs
 				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
 				playerRef.value = dopplershift;
 				
-				wsinal = playerRef.value[0] * contr * volume * dis * 2.0;
+				wsinal = playerRef.value[0] * contr * level * dis * 2.0;
 				
 				Out.ar(outbus, wsinal);
 				
 				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
 				
-				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle, volume * dis * (1 - contr));
+				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle, level * dis * (1 - contr));
 				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
 
 				//	Out.ar(2, player);
@@ -717,7 +717,7 @@ GUI Parameters usable in SynthDefs
 		dopcheque,
 		loopcheck, lpcheck, lp,
 		hwInCheck, hwncheck, hwn, scInCheck, scncheck, scn,
-		dopcheque2, doppler, angulo, volume, glev, 
+		dopcheque2, doppler, angulo, level, glev, 
 		llev, angnumbox, volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
@@ -757,7 +757,7 @@ GUI Parameters usable in SynthDefs
 		funcs = Array.newClear(this.nfontes);
 		angulo = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
 		zlev = Array.newClear(this.nfontes); 
-		volume = Array.newClear(this.nfontes); 
+		level = Array.newClear(this.nfontes); 
 		//	doplev = Array.newClear(this.nfontes); 
 		glev = Array.newClear(this.nfontes); 
 		llev = Array.newClear(this.nfontes); 
@@ -774,7 +774,7 @@ GUI Parameters usable in SynthDefs
 		zbox = Array.newClear(this.nfontes); 
 		ybox = Array.newClear(this.nfontes); 
 		abox = Array.newClear(this.nfontes); // ângulo
-		vbox = Array.newClear(this.nfontes);  // volume
+		vbox = Array.newClear(this.nfontes);  // level
 		dcheck = Array.newClear(this.nfontes);  // Doppler check
 		gbox = Array.newClear(this.nfontes); // reverberação global
 		lbox = Array.newClear(this.nfontes); // reverberação local
@@ -793,7 +793,7 @@ GUI Parameters usable in SynthDefs
 		this.nfontes.do { arg i;
 			doppler[i] = 0;
 			angulo[i] = 0;
-			volume[i] = 0;
+			level[i] = 0;
 			glev[i] = 0;
 			llev[i] = 0;
 			lp[i] = 0;
@@ -863,7 +863,7 @@ GUI Parameters usable in SynthDefs
 				server.sync;
 				this.setSynths(source, \dopon, doppler[source]);
 				this.setSynths(source, \angulo, angulo[source]);
-				this.setSynths(source, \volume, volume[source]);
+				this.setSynths(source, \level, level[source]);
 				this.setSynths(source, \dopamnt, dplev[source]);
 				this.setSynths(source, \glev, glev[source]);
 				this.setSynths(source, \llev, llev[source]);
@@ -891,7 +891,7 @@ GUI Parameters usable in SynthDefs
 						//	\mx, num.value  ???
 						\dopon, doppler[i], // not needed...
 						\angulo, angulo[i],
-						\volume, volume[i], // ? or in player?
+						\level, level[i], // ? or in player?
 						\dopamnt, dplev[i],
 						\glev, glev[i],
 						\llev, llev[i],
@@ -904,7 +904,7 @@ GUI Parameters usable in SynthDefs
 				if(synt[i] != nil) {
 					
 					synt[i].set(
-						\volume, volume[i],
+						\level, level[i],
 						\rotAngle, rlev[i],
 						\directang, dlev[i],
 						\contr, clev[i],
@@ -959,7 +959,7 @@ GUI Parameters usable in SynthDefs
 						};
 						if (testado[i] == false) { // if source is testing don't relaunch synths
 							synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
+								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
 								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 									espacializador[i] = nil; synt[i] = nil});
 							
@@ -989,7 +989,7 @@ GUI Parameters usable in SynthDefs
 						};
 						if (testado[i] == false) {
 							synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \volume, volume[i]], 
+								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
 								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 									//	addAction: \addToHead).onFree({espacializador[i].free;
 									espacializador[i] = nil; synt[i] = nil});
@@ -1027,7 +1027,7 @@ GUI Parameters usable in SynthDefs
 								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, this.gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
-									lp[i], \volume, volume[i], \dopon, doppler[i]], 
+									lp[i], \level, level[i], \dopon, doppler[i]], 
 									//					~revGlobal, addAction: \addBefore);
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
@@ -1075,13 +1075,13 @@ GUI Parameters usable in SynthDefs
 
 							if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
-									\volume, volume[i]], revGlobal,
+									\level, level[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							} {
 								synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 									\busini, this.scInBus[i], // use "index" method?
-									\volume, volume[i]], revGlobal,
+									\level, level[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							};
@@ -1117,13 +1117,13 @@ GUI Parameters usable in SynthDefs
 
 							if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
-									\volume, volume[i]], revGlobal,
+									\level, level[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							} {
 								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 									\busini, this.scInBus[i],
-									\volume, volume[i]], revGlobal,
+									\level, level[i]], revGlobal,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							};
@@ -1155,13 +1155,13 @@ GUI Parameters usable in SynthDefs
 						if (testado[i] == false) {
 							if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, this.gbfbus, \outbus, mbus[i],
-									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
+									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
 									\busini, this.busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 							} {
 								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, this.gbfbus, \outbus, mbus[i],
-									\contr, clev[i], \rate, 1, \tpos, tpos, \volume, volume[i], \dopon, doppler[i],
+									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
 									\busini, this.scInBus[i] ], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
@@ -1371,9 +1371,9 @@ GUI Parameters usable in SynthDefs
 			
 			angnumbox.value = angulo[fatual];
 			angslider.value = angulo[fatual] / pi;
-			volnumbox.value = volume[fatual];
+			volnumbox.value = level[fatual];
 			dopnumbox.value = dplev[fatual];
-			volslider.value = volume[fatual];
+			volslider.value = level[fatual];
 			gnumbox.value = glev[fatual];
 			gslider.value = glev[fatual];
 			lnumbox.value = llev[fatual];
@@ -1560,7 +1560,7 @@ GUI Parameters usable in SynthDefs
 
 		
 		textbuf = StaticText(win, Rect(163, 30 + offset, 50, 20));
-		textbuf.string = "Volume";
+		textbuf.string = "Level";
 		volnumbox = NumberBox(win, Rect(10, 30 + offset, 40, 20));
 		volnumbox.value = 0;
 		volnumbox.clipHi = pi;
@@ -1571,9 +1571,9 @@ GUI Parameters usable in SynthDefs
 		volnumbox.action = {arg num; 
 			{vbox[fatual].valueAction = num.value;}.defer;
 			
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
-			//		("volume = " ++ num.value).postln; 
+			//		synt[fatual].set(\level, num.value);
+			//		level[fatual] = num.value;
+			//		("level = " ++ num.value).postln; 
 		};
 		// stepsize?
 		volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
@@ -1582,8 +1582,8 @@ GUI Parameters usable in SynthDefs
 			{vbox[fatual].valueAction = num.value;}.defer;
 			
 			//		volnumbox.value = num.value;
-			//		synt[fatual].set(\volume, num.value);
-			//		volume[fatual] = num.value;
+			//		synt[fatual].set(\level, num.value);
+			//		level[fatual] = num.value;
 		};
 
 
@@ -1965,10 +1965,10 @@ GUI Parameters usable in SynthDefs
 				
 			}; 
 			vbox[i].action = {arg num;
-				synt[i].set(\volume, num.value);
-				this.setSynths(i, \volume, num.value);
-				volume[i] = num.value;
-				//	("volume = " ++ num.value).postln; 
+				synt[i].set(\level, num.value);
+				this.setSynths(i, \level, num.value);
+				level[i] = num.value;
+				//	("level = " ++ num.value).postln; 
 				if(i == fatual) 
 				{
 					volslider.value = num.value;
@@ -2234,7 +2234,7 @@ GUI Parameters usable in SynthDefs
 			controle.dock(xbox[i], "x_axis_" ++ i);
 			controle.dock(ybox[i], "y_axis_" ++ i);
 			controle.dock(zbox[i], "z_axis_" ++ i);
-			controle.dock(vbox[i], "volume_" ++ i);
+			controle.dock(vbox[i], "level_" ++ i);
 			controle.dock(dpbox[i], "dopamt_" ++ i);
 			controle.dock(abox[i], "ângulo_" ++ i);
 			controle.dock(gbox[i], "revglobal_" ++ i);
