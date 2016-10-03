@@ -69,18 +69,21 @@ CLASSMETHODS::
 METHOD:: new
 (describe method here)
 
+ARGUMENT:: projDir
+Path to project directory. The project directory must have 2 subdirectories named "rir" and "auto". The first contains B-format RIRs to be used for reverberation and the second may be initially empty.
+
+ARGUMENT:: nsources
+The number of sources to be spatialised.
+
 ARGUMENT:: rirWXYZ
-B-Format ambisonic room impulse response. Ensure that it has the same sample rate as your system.
-
-ARGUMENT:: rirBinaural
-Binaural room impulse response. Ensure that it has the same sample rate as your system.
-
-ARGUMENT:: subjectID
-Subject ID for the Binaural decoder, which uses th CIPIC Databse. Information from the ATK: http://doc.sccode.org/Classes/FoaDecoderKernel.html :
-"3 to 165 (45 in total) ... WARNING: subjectIDs are not entirely contiguous ... The CIPIC HRTF database provides two KEMAR dummy measurements. subjectID = 21 is the large pinnae dummy and subjectID = 165 is the small pinnae dummy." Note. The ATK plugins for the DAW "Reaper", show actual photographas of the subjects, see: http://www.ambisonictoolkit.net
+B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has the same sample rate as your system.
 
 ARGUMENT:: srvr
 Server used. eg. Server.default
+
+ARGUMENT:: decoder
+Name of 1st order ambisonic decoder to be used. See the following ATK links:
+http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDecoderMatrix.html http://doc.sccode.org/Classes/FoaDecoderKernel.html Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to the outputs for external decoding with, for example, AmbDec: http://kokkinizita.linuxaudio.org/linuxaudio/
 
 returns:: (describe returnvalue here)
 
@@ -90,11 +93,38 @@ INSTANCEMETHODS::
 METHOD:: openGui
 Creates GUI window
 
-ARGUMENT:: nfontes
-The number of sound sources to be spatialised. Sound sources may be mono, stereo or B-format.
-
 ARGUMENT:: dur
 Duration in seconds of the "Automation" transport.
+
+returns:: (describe returnvalue here)
+
+METHOD:: registerSynth
+Registers synth instance for a given source so that it may be spatialised and receive control data from GUI.
+
+ARGUMENT:: source
+The number of the source (starting with 1).
+
+ARGUMENT:: synth
+Synth instance.
+
+returns:: (describe returnvalue here)
+
+METHOD:: deregisterSynth
+Deregisters synth instance for a given source.
+
+ARGUMENT:: source
+The number of the source (starting with 1).
+
+ARGUMENT:: synth
+Synth instance.
+
+returns:: (describe returnvalue here)
+
+METHOD:: getSWBus
+Return the "real" bus number associated with synth registrant.
+
+ARGUMENT:: source
+The number of the source (starting with 1). See code example below.
 
 returns:: (describe returnvalue here)
 
@@ -110,29 +140,83 @@ code::
 
 (
 s.waitForBoot {
-	s = Server.local;
-	// Add a SC internal decoder (1º only)
-	// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
-	~decoder = FoaDecoderKernel.newUHJ;
-	s.sync;
-	MIDIIn.connect;
-	s.sync;
-	//create a project directory and in it create to more directories "rir" and "auto".
-	//place your binaural and ambisonic rirs in the rir folder. For some demo rirs
-	//and ambisonic recordings see the zip archive
-	//here: http://escuta.org/mosca 
+s = Server.local;
+// Add a SC internal decoder (1º only)
+// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
+~decoder = FoaDecoderKernel.newUHJ;
+s.sync;
+MIDIIn.connect;
+s.sync;
+//create a project directory and in it create to more directories "rir" and "auto".
+//place your binaural and ambisonic rirs in the rir folder. For some demo rirs
+//and ambisonic recordings see the zip archive
+//here: http://escuta.org/mosca 
 
-	// Mosca.new(<project directory path><b-format rir><binaural rir><server><decoder>)
-	//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
-	// outputs for decoding with an external decoder
-	
-	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
-			"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, s, ~decoder);
-	//	~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject",
-	//		"QL14_tail48kHz.amb", "sbs_binaural_tail.wav", 21, Server.local);
-	~testMosca.openGui(4, 120);
+// Mosca.new(<project directory path><b-format rir><binaural rir><server><decoder>)
+//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
+// outputs for decoding with an external decoder
+
+~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 7,
+"QL14_tail48kHz.amb", s, ~decoder);
+
+~testMosca.openGui(120);
 };
 
 )
+
+// If you close the Mosca window, tidy up
+
+(
+MIDIIn.disconnect; 
+~decoder.free;
+)
+
+// "SW input". Note. Must have SW Input selected on GUI for particular source.
+
+// write a synth def
+
+(
+SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
+	var source, point, adjust, delEnv;
+	point = Point.new;
+	point.set(mx, my);
+	adjust = point.rho;
+	adjust = Lag.kr(adjust, 0.1);
+	delEnv = Env.dadsr(0.1, attackTime: 0.01, decayTime: 200,
+	sustainLevel: 0.1); // envelope with an onset delay equal to lag buffer
+	source = SinOsc.ar(freq + adjust, mul: EnvGen.kr(delEnv, doneAction: 2));
+
+	// write to the bus, adding to previous contents
+	Out.ar(outbus, source);
+
+}).send(s);
+)
+
+//  use the method to fetch the true bus associated with the chosen source (from 1 on). Note
+// this depends on the setting in the GUI. Use the value for the outbus of your synth instance.
+
+// ~testMosca.getSWBus(1) // eg. get bus for source 2
+
+(
+~source1PlayFunc = {
+~mySynth = Synth.new("test-out", [\freq, 500, \outbus, ~testMosca.getSWBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1, ~mySynth)});
+
+~testMosca.registerSynth(1, ~mySynth);
+};
+~source1StopFunc = {~mySynth.free; };
+~testMosca.setTriggerFunc(1, ~source1PlayFunc); 
+~testMosca.setStopFunc(1, ~source1StopFunc);
+)
+
+~source1PlayFunc.value;
+~source1StopFunc.value;
+
+(
+~myOtherSynth = Synth.new("test-out", [\freq, 800, \outbus, ~testMosca.getSWBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2, ~myOtherSynth)});
+
+~testMosca.registerSynth(2, ~myOtherSynth);
+)
+
+~myOtherSynth.free;
 
 ::
