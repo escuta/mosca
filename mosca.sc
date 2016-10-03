@@ -2064,7 +2064,6 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-
 			zbox[i].action = {arg num;
 				espacializador[i].set(\mz, num.value);
 				zval[i] = num.value;
