@@ -66,6 +66,7 @@ GUI Parameters usable in SynthDefs
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
+		bufAformat, bufWXYZ,
 		//synthRegistry = List[],
 		
 		testit; // remove at some point with other debugging stuff
@@ -145,24 +146,30 @@ GUI Parameters usable in SynthDefs
 		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
 		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
 		rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3]);
-		//rirFLU, rirFRD, rirBLD, rirBRU,
-		/*
-		rirFLU = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [0]);
-		rirFRD = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [1]);
-		rirBLD = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [2]);
-		rirBRU = Buffer.readChannel(server, FoaDecode.ar(prjDr ++ "/rir/" ++ rirWXYZ, b2a), channels: [3]);
-		*/
+
+		bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rirWXYZ);
 		server.sync;
-		/*
-			// read buffer?
-		~aFormat = FoaDecode.ar([
-			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]),
-			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]),
-			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]),
-			Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3])
-		], b2a);
-		*/
+		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
 		server.sync;
+	
+				
+		{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
+			bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+			Out.ar(0, Silent.ar);
+		}.play;
+		
+		(bufAformat.numFrames / server.sampleRate).wait;
+		
+		
+		bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
+		server.sync;
+		rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
+		rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
+		rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
+		rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
+		
+		server.sync;
+		
 		
 		bufsize = PartConv.calcBufSize(fftsize, rirW); 
 
@@ -170,85 +177,71 @@ GUI Parameters usable in SynthDefs
 		rirXspectrum= Buffer.alloc(server, bufsize, 1);
 		rirYspectrum= Buffer.alloc(server, bufsize, 1);
 		rirZspectrum= Buffer.alloc(server, bufsize, 1);
-
-		//	rirWXYZspectrum = [rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum]; // testing!
-
+		server.sync;
 		rirWspectrum.preparePartConv(rirW, fftsize);
+		server.sync;
 		rirXspectrum.preparePartConv(rirX, fftsize);
+		server.sync;
 		rirYspectrum.preparePartConv(rirY, fftsize);
+		server.sync;
 		rirZspectrum.preparePartConv(rirZ, fftsize);
 
-		//////// TESTING
-		//	bufsize = PartConv.calcBufSize(fftsize, rirFLU); 
-
-		/*	rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
+		
+		server.sync;
+		
+		rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
 		rirFRDspectrum= Buffer.alloc(server, bufsize, 1);
 		rirBLDspectrum= Buffer.alloc(server, bufsize, 1);
 		rirBRUspectrum= Buffer.alloc(server, bufsize, 1);
-		*/
-		//	rirWXYZspectrum = [rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum]; // testing!
-		/*
-		rirFLUspectrum.preparePartConv(rirFLU, fftsize);
-		rirFRDspectrum.preparePartConv(rirFRD, fftsize);
-		rirBLDspectrum.preparePartConv(rirBLD, fftsize);
-		rirBRUspectrum.preparePartConv(rirBRU, fftsize);
-		*/
-		//////////////// END TEST //////////////
-		
-		//rirWXYZspectrum.preparePartConv(rirWXYZ, fftsize);
-		
 		server.sync;
-
+		rirFLUspectrum.preparePartConv(rirFLU, fftsize);
+		server.sync;
+		rirFRDspectrum.preparePartConv(rirFRD, fftsize);
+		server.sync;
+		rirBLDspectrum.preparePartConv(rirBLD, fftsize);
+		server.sync;
+		rirBRUspectrum.preparePartConv(rirBRU, fftsize);
+		server.sync;
+		
 		rirW.free; // don't need time domain data anymore, just needed spectral version
 		rirX.free;
 		rirY.free;
 		rirZ.free;
+		rirFLU.free; 
+		rirFRD.free;
+		rirBLD.free;
+		rirBRU.free;
+		//bufAformat.free;
+		//bufWXYZ.free;
 		
 		server.sync;
 
 		/// START SYNTH DEFS ///////
 
-
-
 		SynthDef.new("revGlobalAmb",  { arg gbus;
 			var sig, ambsinal;
-			sig = In.ar(gbus, 1) * 5; // precisa de ganho....
-
-			ambsinal = [PartConv.ar(sig, fftsize, rirWspectrum.bufnum), 
-				PartConv.ar(sig, fftsize, rirXspectrum.bufnum), 
-				PartConv.ar(sig, fftsize, rirYspectrum.bufnum),
-				PartConv.ar(sig, fftsize, rirZspectrum.bufnum)];
-			
-			//Out.ar(2, ambsinal);
+			sig = In.ar(gbus, 1) * 5;
+			ambsinal = [
+				PartConv.ar(sig, fftsize, rirWspectrum), 
+				PartConv.ar(sig, fftsize, rirXspectrum), 
+				PartConv.ar(sig, fftsize, rirYspectrum),
+				PartConv.ar(sig, fftsize, rirZspectrum)
+			];
 			revGlobalAmbFunc.value(ambsinal, dec);
-			
-			//	revGlobTxt.interpret;
-			
 		}).add;
 		
 		
 		SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
 			var sig = In.ar(gbfbus, 4);
-			var delaytime = 0.1, decaytime = 0.2;
 			sig = FoaDecode.ar(sig, b2a);
-			
-			/*		sig = [
-				PartConv.ar(sig, fftsize, rirFLUspectrum.bufnum), 
-				PartConv.ar(sig, fftsize, rirFRDspectrum.bufnum), 
-				PartConv.ar(sig, fftsize, rirBLDspectrum.bufnum),
-				PartConv.ar(sig, fftsize, rirBRUspectrum.bufnum)
+			sig = [
+				PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
+				PartConv.ar(sig[1], fftsize, rirFRDspectrum), 
+				PartConv.ar(sig[2], fftsize, rirBLDspectrum),
+				PartConv.ar(sig[3], fftsize, rirBRUspectrum)
 			];
-			*/
-			
-
-			sig = AllpassN.ar(sig, delaytime, Array.fill(4, {delaytime}).rand, decaytime);
-
-			
 			sig = FoaEncode.ar(sig, a2b);
-
-			//	SendTrig.kr(Impulse.kr(1), 0, sig[2]); // debugging
 			revGlobalAmbFunc.value(sig, dec);
-			
 		}).add;
 		
 

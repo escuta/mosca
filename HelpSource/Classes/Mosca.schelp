@@ -162,11 +162,13 @@ s.sync;
 ~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 32,
 "QL14_tail48kHz.amb", s, ~decoder);
 
+s.sync;
 ~testMosca.openGui(120);
+
+
 };
 
 )
-
 // If you close the Mosca window, tidy up
 
 (
