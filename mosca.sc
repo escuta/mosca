@@ -211,8 +211,8 @@ GUI Parameters usable in SynthDefs
 		rirFRD.free;
 		rirBLD.free;
 		rirBRU.free;
-		//bufAformat.free;
-		//bufWXYZ.free;
+		bufAformat.free;
+		bufWXYZ.free;
 		
 		server.sync;
 
