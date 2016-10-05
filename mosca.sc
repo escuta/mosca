@@ -31,6 +31,10 @@ Mosca {
 	rirFLU, rirFRD, rirBLD, rirBRU,
 	bufsize, irbuffer,
 	b2a, a2b,
+
+	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
+	cart, spher, foa_a12_decoder_matrix,
+
 	o, //debugging
 	prjDr;
 	classvar fftsize = 2048, server;
@@ -209,6 +213,98 @@ GUI Parameters usable in SynthDefs
 		
 		server.sync;
 
+		/////////// START code for 2nd order matrices /////////////////////
+		/*
+			2nd-order FuMa-MaxN A-format decoder & encoder
+			Use in conjunction with AtkMatrixMix*ar
+			Author: Joseph Anderson 
+			http://www.ambisonictoolkit.net
+			Taken from: https://gist.github.com/joslloand/c70745ef0106afded73e1ea07ff69afc
+		*/
+
+		// a-12 decoder matrix
+		soa_a12_decoder_matrix = Matrix.with([
+			[ 0.11785113, 0.212662702, 0, -0.131432778, -0.0355875819, -0.279508497, 0, 0.226127124, 0 ],
+			[ 0.11785113, 0.131432778, -0.212662702, 0, -0.208333333, 0, 0, -0.139754249, -0.279508497 ],
+			[ 0.11785113, 0, -0.131432778, 0.212662702, 0.243920915, 0, -0.279508497, -0.0863728757, 0 ],
+			[ 0.11785113, 0.212662702, 0, 0.131432778, -0.0355875819, 0.279508497, 0, 0.226127124, 0 ],
+			[ 0.11785113, -0.131432778, -0.212662702, 0, -0.208333333, 0, 0, -0.139754249, 0.279508497 ],
+			[ 0.11785113, 0, 0.131432778, -0.212662702, 0.243920915, 0, -0.279508497, -0.0863728757, 0 ],
+			[ 0.11785113, -0.212662702, 0, -0.131432778, -0.0355875819, 0.279508497, 0, 0.226127124, 0 ],
+			[ 0.11785113, -0.131432778, 0.212662702, 0, -0.208333333, 0, 0, -0.139754249, -0.279508497 ],
+			[ 0.11785113, 0, 0.131432778, 0.212662702, 0.243920915, 0, 0.279508497, -0.0863728757, 0 ],
+			[ 0.11785113, -0.212662702, 0, 0.131432778, -0.0355875819, -0.279508497, 0, 0.226127124, 0 ],
+			[ 0.11785113, 0.131432778, 0.212662702, 0, -0.208333333, 0, 0, -0.139754249, 0.279508497 ],
+			[ 0.11785113, 0, -0.131432778, -0.212662702, 0.243920915, 0, 0.279508497, -0.0863728757, 0 ],
+		]);
+		
+		// a-12 encoder matrix
+		soa_a12_encoder_matrix = Matrix.with([
+			[ 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781 ],
+			[ 0.850650808, 0.525731112, 0, 0.850650808, -0.525731112, 0, -0.850650808, -0.525731112, 0, -0.850650808, 0.525731112, 0 ],
+			[ 0, -0.850650808, -0.525731112, 0, -0.850650808, 0.525731112, 0, 0.850650808, 0.525731112, 0, 0.850650808, -0.525731112 ],
+			[ -0.525731112, 0, 0.850650808, 0.525731112, 0, -0.850650808, -0.525731112, 0, 0.850650808, 0.525731112, 0, -0.850650808 ],
+			[ -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5, 0.585410197 ],
+			[ -0.894427191, 0, 0, 0.894427191, 0, 0, 0.894427191, 0, 0, -0.894427191, 0, 0 ],
+			[ 0, 0, -0.894427191, 0, 0, -0.894427191, 0, 0, 0.894427191, 0, 0, 0.894427191 ],
+			[ 0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202 ],
+			[ 0, -0.894427191, 0, 0, 0.894427191, 0, 0, -0.894427191, 0, 0, 0.894427191, 0 ],
+		]);
+		
+		/*
+			1st-order FuMa-MaxN A-format decoder
+		*/
+
+		cart = [
+			0.850650808352E+00,
+			0,
+			-0.525731112119E+00,
+			0.525731112119E+00,
+			-0.850650808352E+00,
+			0.000000000000E+00,
+			0,
+			-0.525731112119E+00,
+			0.850650808352E+00,
+			0.850650808352E+00,
+			0,
+			0.525731112119E+00,
+			-0.525731112119E+00,
+			-0.850650808352E+00,
+			0,
+			0,
+			0.525731112119E+00,
+			-0.850650808352E+00,
+			-0.850650808352E+00,
+			0,
+			-0.525731112119E+00,
+			-0.525731112119E+00,
+			0.850650808352E+00,
+			0,
+			0,
+			0.525731112119E+00,
+			0.850650808352E+00,
+			-0.850650808352E+00,
+			0,
+			0.525731112119E+00,
+			0.525731112119E+00,
+			0.850650808352E+00,
+			0,
+			0,
+			-0.525731112119E+00,
+			-0.850650808352E+00
+		];
+
+		// convert to angles -- use these directions
+		spher = cart.clump(3).collect({ arg cart, i;
+			cart.asCartesian.asSpherical.angles;
+		});	
+
+		foa_a12_decoder_matrix = FoaEncoderMatrix.newDirections(spher).matrix.pseudoInverse;
+		
+		/////////// END code for 2nd order matrices /////////////////////
+
+
+
 		/// START SYNTH DEFS ///////
 
 		SynthDef.new("revGlobalAmb",  { arg gbus;
@@ -245,7 +341,8 @@ GUI Parameters usable in SynthDefs
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			//		globallev = 0.0001, locallev, gsig, fonte;
-			globallev = 0.0004, locallev, gsig, fonte;
+			globallev = 0.0004, locallev, gsig, fonte,
+			soa_a12_sig;
 			var lrev, scale = 565;
 			var grevganho = 0.04; // needs less gain
 			fonte = Cartesian.new;
@@ -290,7 +387,10 @@ GUI Parameters usable in SynthDefs
 			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
 			
 			//	ambsinal = [w, x, y, u, v]; 
-			ambsinal = [w, x, y, z, r, s, t, u, v]; 
+			ambsinal = [w, x, y, z, r, s, t, u, v];
+
+				soa_a12_sig = AtkMatrixMix.ar(ambsinal, soa_a12_decoder_matrix);
+				 #w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(soa_a12_sig, soa_a12_encoder_matrix);
 			
 			ambsinal1O = [w, x, y, z];
 			
@@ -2040,8 +2140,7 @@ GUI Parameters usable in SynthDefs
 			}
 		};
 
-
-		
+	
 		//controle = Automation(dur).front(win, Rect(450, 10, 400, 25));
 		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win, Rect(450, 10, 400, 25));
 		controle.presetDir = prjDr ++ "/auto";
@@ -2087,7 +2186,6 @@ GUI Parameters usable in SynthDefs
 			isPlay = true;
 			//runTriggers.value;
 		};
-
 		
 		
 		controle.onSeek = {
