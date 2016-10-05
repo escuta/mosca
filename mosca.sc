@@ -389,8 +389,9 @@ GUI Parameters usable in SynthDefs
 			//	ambsinal = [w, x, y, u, v]; 
 			ambsinal = [w, x, y, z, r, s, t, u, v];
 
-				soa_a12_sig = AtkMatrixMix.ar(ambsinal, soa_a12_decoder_matrix);
-				 #w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(soa_a12_sig, soa_a12_encoder_matrix);
+			// This bit working
+			//soa_a12_sig = AtkMatrixMix.ar(ambsinal, soa_a12_decoder_matrix);
+			//#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(soa_a12_sig, soa_a12_encoder_matrix);
 			
 			ambsinal1O = [w, x, y, z];
 			
