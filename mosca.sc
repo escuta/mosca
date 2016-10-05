@@ -97,19 +97,14 @@ GUI Parameters usable in SynthDefs
 
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
+		/*
+		// REMOVE?
 		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
 		(this.nfontes * 4).do { arg x;
 			this.swinbus[x] = Bus.audio(server, 1); 
 		};
-
-
-
-
-		/*	this.synthOutFunc = Array.newClear(this.nfontes * 4);
-			(this.nfontes * 4).do { arg x;
-			this.synthOutFunc[x] = { |sig| Out(this.swinbus[x], sig)};
-			};
 		*/
+
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
 		if (decoder.isNil) {
@@ -137,8 +132,6 @@ GUI Parameters usable in SynthDefs
 		////////////////// END Functions to substitute blocs of code /////////////
 		
 		server = srvr ? Server.default;
-		//		nfontes = numFontes;
-		//		sprite = Array2D.new(nfontes, 2);
 		prjDr = projDir;
 		dec = decoder;
 		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
@@ -639,18 +632,7 @@ GUI Parameters usable in SynthDefs
 		^this.synthRegistry[source-1];
 	}
 
-	
-
-	
-	getSWBus {
-		|source |
-		if (source > 0) {
-			var bus = this.swinbus[this.busini[source - 1]];
-			^bus
-		}
-	}
-
-		getSCBus {
+	getSCBus {
 		|source |
 		if (source > 0) {
 			var bus = this.scInBus[source - 1].index;
@@ -2204,20 +2186,30 @@ GUI Parameters usable in SynthDefs
 				sombuf[x].free;
 				synt[x].free;
 				MIDIIn.removeFuncFrom(\sysex, sysex);
+				this.scInBus[x].free;
 				//		kespac[x].stop;
 			};
-			revGlobal.free;
-			//		revGlobalBF.free;
+
+			if(revGlobal.notNil){
+				revGlobal.free;
+			};
+			if(revGlobalBF.notNil){
+				revGlobalBF.free;
+			};
 			
 			wdados.close;
 			gbus.free;
-			//this.b2a.free;
-			//this.a2b.free;
-			//this.atob.free;
-			//this.gbfbus.free;
-			// The following should be removed, but...
-			// and if all that doesn't do it!:
-			server.freeAll;
+			gbfbus.free;
+			rirWspectrum.free;
+			rirXspectrum.free;
+			rirYspectrum.free;
+			rirZspectrum.free;
+			rirFLUspectrum.free;
+			rirFRDspectrum.free;
+			rirBLDspectrum.free;
+			rirBRUspectrum.free;
+			
+			
 		});
 
 		mmcslave = CheckBox( win, Rect(670, 65, 140, 20), "Slave to MMC").action_({ arg butt;
