@@ -141,7 +141,6 @@ GUI Parameters usable in SynthDefs
 		/////////// START code for 2nd order matrices /////////////////////
 		/*
 			2nd-order FuMa-MaxN A-format decoder & encoder
-			Use in conjunction with AtkMatrixMix*ar
 			Author: Joseph Anderson 
 			http://www.ambisonictoolkit.net
 			Taken from: https://gist.github.com/joslloand/c70745ef0106afded73e1ea07ff69afc
@@ -232,6 +231,7 @@ GUI Parameters usable in SynthDefs
 
 		foa_a12_decoder_matrix = FoaEncoderMatrix.newDirections(spher).matrix.pseudoInverse;
 		~teste2 = foa_a12_decoder_matrix;
+
 		/////////// END code for 2nd order matrices /////////////////////
 
 
@@ -334,8 +334,8 @@ GUI Parameters usable in SynthDefs
 		};
 		server.sync;
 
-		~rirSpecTest =  rirA12Spectrum;
-		~rirFLUspectrum = rirFLUspectrum;
+		//		~rirSpecTest =  rirA12Spectrum;
+		//		~rirFLUspectrum = rirFLUspectrum;
 
 		
 		rirW.free; // don't need time domain data anymore, just needed spectral version
@@ -384,6 +384,7 @@ GUI Parameters usable in SynthDefs
 			sig = FoaEncode.ar(sig, a2b);
 			revGlobalAmbFunc.value(sig, dec);
 		}).add;
+
 		
 
 		SynthDef.new("espacAmb",  {
@@ -2359,6 +2360,9 @@ GUI Parameters usable in SynthDefs
 			rirFRDspectrum.free;
 			rirBLDspectrum.free;
 			rirBRUspectrum.free;
+			12.do { arg i;
+				rirA12Spectrum[i].free;
+			};
 			
 			
 		});
