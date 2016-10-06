@@ -29,6 +29,8 @@ Mosca {
 	<>gbfbus, <>scInBus;
 	classvar server, rirW, rirX, rirY, rirZ,
 	rirFLU, rirFRD, rirBLD, rirBRU,
+	rirA12, // 2nd order a-format array of RIRs
+	rirA12Spectrum,
 	bufsize, irbuffer,
 	b2a, a2b,
 
@@ -70,14 +72,14 @@ GUI Parameters usable in SynthDefs
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
-		bufAformat, bufWXYZ,
+		bufAformat, bufAformat_soa_a12, bufWXYZ,
 		//synthRegistry = List[],
 		
 		testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
 
-
+		
 		this.nfontes = nsources;
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
 		playStereoInFunc = Array.newClear(3);
@@ -135,83 +137,6 @@ GUI Parameters usable in SynthDefs
 
 		////////////////// END Functions to substitute blocs of code /////////////
 		
-		server = srvr ? Server.default;
-		prjDr = projDir;
-		dec = decoder;
-		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
-		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
-		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
-		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
-		rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3]);
-
-		bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rirWXYZ);
-		server.sync;
-		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
-		server.sync;
-	
-				
-		{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
-			bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-			Out.ar(0, Silent.ar);
-		}.play;
-		
-		(bufAformat.numFrames / server.sampleRate).wait;
-		
-		
-		bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
-		server.sync;
-		rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
-		rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
-		rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
-		rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
-		
-		server.sync;
-		
-		
-		bufsize = PartConv.calcBufSize(fftsize, rirW); 
-
-		rirWspectrum= Buffer.alloc(server, bufsize, 1);
-		rirXspectrum= Buffer.alloc(server, bufsize, 1);
-		rirYspectrum= Buffer.alloc(server, bufsize, 1);
-		rirZspectrum= Buffer.alloc(server, bufsize, 1);
-		server.sync;
-		rirWspectrum.preparePartConv(rirW, fftsize);
-		server.sync;
-		rirXspectrum.preparePartConv(rirX, fftsize);
-		server.sync;
-		rirYspectrum.preparePartConv(rirY, fftsize);
-		server.sync;
-		rirZspectrum.preparePartConv(rirZ, fftsize);
-
-		
-		server.sync;
-		
-		rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
-		rirFRDspectrum= Buffer.alloc(server, bufsize, 1);
-		rirBLDspectrum= Buffer.alloc(server, bufsize, 1);
-		rirBRUspectrum= Buffer.alloc(server, bufsize, 1);
-		server.sync;
-		rirFLUspectrum.preparePartConv(rirFLU, fftsize);
-		server.sync;
-		rirFRDspectrum.preparePartConv(rirFRD, fftsize);
-		server.sync;
-		rirBLDspectrum.preparePartConv(rirBLD, fftsize);
-		server.sync;
-		rirBRUspectrum.preparePartConv(rirBRU, fftsize);
-		server.sync;
-		
-		rirW.free; // don't need time domain data anymore, just needed spectral version
-		rirX.free;
-		rirY.free;
-		rirZ.free;
-		rirFLU.free; 
-		rirFRD.free;
-		rirBLD.free;
-		rirBRU.free;
-		bufAformat.free;
-		bufWXYZ.free;
-		
-		server.sync;
 
 		/////////// START code for 2nd order matrices /////////////////////
 		/*
@@ -240,14 +165,20 @@ GUI Parameters usable in SynthDefs
 		
 		// a-12 encoder matrix
 		soa_a12_encoder_matrix = Matrix.with([
-			[ 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781 ],
-			[ 0.850650808, 0.525731112, 0, 0.850650808, -0.525731112, 0, -0.850650808, -0.525731112, 0, -0.850650808, 0.525731112, 0 ],
-			[ 0, -0.850650808, -0.525731112, 0, -0.850650808, 0.525731112, 0, 0.850650808, 0.525731112, 0, 0.850650808, -0.525731112 ],
-			[ -0.525731112, 0, 0.850650808, 0.525731112, 0, -0.850650808, -0.525731112, 0, 0.850650808, 0.525731112, 0, -0.850650808 ],
-			[ -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5, 0.585410197 ],
+			[ 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781,
+				0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781 ],
+			[ 0.850650808, 0.525731112, 0, 0.850650808, -0.525731112, 0, -0.850650808, -0.525731112, 0,
+				-0.850650808, 0.525731112, 0 ],
+			[ 0, -0.850650808, -0.525731112, 0, -0.850650808, 0.525731112, 0, 0.850650808, 0.525731112,
+				0, 0.850650808, -0.525731112 ],
+			[ -0.525731112, 0, 0.850650808, 0.525731112, 0, -0.850650808, -0.525731112, 0, 0.850650808,
+				0.525731112, 0, -0.850650808 ],
+			[ -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5, 0.585410197, -0.0854101966, -0.5,
+				0.585410197, -0.0854101966, -0.5, 0.585410197 ],
 			[ -0.894427191, 0, 0, 0.894427191, 0, 0, 0.894427191, 0, 0, -0.894427191, 0, 0 ],
 			[ 0, 0, -0.894427191, 0, 0, -0.894427191, 0, 0, 0.894427191, 0, 0, 0.894427191 ],
-			[ 0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202 ],
+			[ 0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202,
+				0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202 ],
 			[ 0, -0.894427191, 0, 0, 0.894427191, 0, 0, -0.894427191, 0, 0, 0.894427191, 0 ],
 		]);
 		
@@ -300,8 +231,129 @@ GUI Parameters usable in SynthDefs
 		});	
 
 		foa_a12_decoder_matrix = FoaEncoderMatrix.newDirections(spher).matrix.pseudoInverse;
-		
+		~teste2 = foa_a12_decoder_matrix;
 		/////////// END code for 2nd order matrices /////////////////////
+
+
+		
+
+		server = srvr ? Server.default;
+		prjDr = projDir;
+		dec = decoder;
+		
+		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
+		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
+		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
+		rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3]);
+		
+		bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rirWXYZ);
+		server.sync;
+		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
+		bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
+		server.sync;
+	
+				
+		{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
+			bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+			Out.ar(0, Silent.ar);
+		}.play;
+
+		
+		(bufAformat.numFrames / server.sampleRate).wait;
+
+		
+		bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
+		
+	
+		server.sync;
+		
+				
+		{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), foa_a12_decoder_matrix),
+        bufAformat_soa_a12, 
+        Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+        Out.ar(0, Silent.ar);
+		}.play;
+		
+
+		(bufAformat.numFrames / server.sampleRate).wait;
+
+		bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav", sampleFormat: "int24");
+		
+	
+	
+		server.sync;
+		rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
+		rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
+		rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
+		rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
+		
+		server.sync;
+		
+		
+		bufsize = PartConv.calcBufSize(fftsize, rirW); 
+
+		rirWspectrum= Buffer.alloc(server, bufsize, 1);
+		rirXspectrum= Buffer.alloc(server, bufsize, 1);
+		rirYspectrum= Buffer.alloc(server, bufsize, 1);
+		rirZspectrum= Buffer.alloc(server, bufsize, 1);
+		server.sync;
+		rirWspectrum.preparePartConv(rirW, fftsize);
+		server.sync;
+		rirXspectrum.preparePartConv(rirX, fftsize);
+		server.sync;
+		rirYspectrum.preparePartConv(rirY, fftsize);
+		server.sync;
+		rirZspectrum.preparePartConv(rirZ, fftsize);
+
+		
+		server.sync;
+		
+		rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
+		rirFRDspectrum= Buffer.alloc(server, bufsize, 1);
+		rirBLDspectrum= Buffer.alloc(server, bufsize, 1);
+		rirBRUspectrum= Buffer.alloc(server, bufsize, 1);
+		server.sync;
+		rirFLUspectrum.preparePartConv(rirFLU, fftsize);
+		server.sync;
+		rirFRDspectrum.preparePartConv(rirFRD, fftsize);
+		server.sync;
+		rirBLDspectrum.preparePartConv(rirBLD, fftsize);
+		server.sync;
+		rirBRUspectrum.preparePartConv(rirBRU, fftsize);
+		server.sync;
+
+		rirA12 = Array.newClear(12);
+		rirA12Spectrum = Array.newClear(12);
+		12.do { arg i;
+			rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav", channels: [i]);
+			server.sync;
+			rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
+			server.sync;
+			rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
+		};
+		server.sync;
+
+		~rirSpecTest =  rirA12Spectrum;
+		~rirFLUspectrum = rirFLUspectrum;
+
+		
+		rirW.free; // don't need time domain data anymore, just needed spectral version
+		rirX.free;
+		rirY.free;
+		rirZ.free;
+		rirFLU.free; 
+		rirFRD.free;
+		rirBLD.free;
+		rirBRU.free;
+		bufAformat.free;
+		bufWXYZ.free;
+		12.do { arg i;
+			rirA12[i].free;
+		};
+		
+		server.sync;
+
 
 
 
