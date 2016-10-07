@@ -21,7 +21,7 @@ Mosca {
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>sprite, <>nfontes,
-	<>controle, <>revGlobal, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
+	<>controle, <>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
 	<>dec,
@@ -339,8 +339,8 @@ GUI Parameters usable in SynthDefs
 		};
 		server.sync;
 
-		//		~rirSpecTest =  rirA12Spectrum;
-		//		~rirFLUspectrum = rirFLUspectrum;
+				~rirSpecTest =  rirA12Spectrum;
+				~rirFLUspectrum = rirFLUspectrum;
 
 		
 		rirW.free; // don't need time domain data anymore, just needed spectral version
@@ -390,25 +390,61 @@ GUI Parameters usable in SynthDefs
 			revGlobalAmbFunc.value(sig, dec);
 		}).add;
 
-		SynthDef.new("revGlobal_soa_a12",  { arg soaBus;
+		SynthDef.new("revGlobalSoaA12",  { arg soaBus;
 			var w, x, y, z, r, s, t, u, v,
 			foaSig, soaSig;
 			var sig = In.ar(soaBus, 9);
+			/*	
 			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
 			12.do {
 				arg i;
 				PartConv.ar(sig[i], fftsize, rirA12Spectrum[i]);
 			};
 			
+			
 			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
 			foaSig = [w, x, y, z];
 			soaSig = [w, x, y, z, r, s, t, u, v];
-			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+			*/
+			//sig = FoaDecode.ar(sig, b2a);
+
+
+			/*			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+			sig = [
+				PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]), 
+				PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]), 
+				PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]), 
+				PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]), 
+				PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]), 
+				PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]), 
+				PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]), 
+				PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]), 
+				PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]), 
+				PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]), 
+				PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]), 
+				PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]), 
+			];
+			//	foaSig = FoaEncode.ar(sig, a2b);
+			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
+			*/
+			sig = FoaDecode.ar(sig, b2a);
+			sig = [
+				PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
+				PartConv.ar(sig[1], fftsize, rirFRDspectrum), 
+				PartConv.ar(sig[2], fftsize, rirBLDspectrum),
+				PartConv.ar(sig[3], fftsize, rirBRUspectrum)
+			];
+			sig = FoaEncode.ar(sig, a2b);
+
+			//			foaSig = [w, x, y, z];
+			soaSig = [w, x, y, z, r, s, t, u, v];
+			//			//SendTrig.kr(Impulse.kr(1), 0, w); // debug
+			revGlobalSoaOutFunc.value(sig, sig, dec);
 		}).add;
 
 
 		SynthDef.new("espacAmb",  {
-			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
 			dopon = 0, dopamnt = 0,
 			glev = 0, llev = 0;
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
@@ -446,22 +482,27 @@ GUI Parameters usable in SynthDefs
 			
 			
 			gsig = p * grevganho * globallev;
-			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+			//DISABLED TEMP
+			//			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 			
 			// Local reverberation
 			locallev = 1 - dis; 
 			
 			locallev = locallev  * (llev*8);
 			
-			
-			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, 0.2 * locallev);
-			junto = p + lrev;
-			
+			// DISABLING!!		
+			//			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, 0.2 * locallev);
+			//			junto = p + lrev;
+			junto = p;
 			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
 			
 			//	ambsinal = [w, x, y, u, v]; 
 			ambsinal = [w, x, y, z, r, s, t, u, v];
 
+			// TESTING
+			SendTrig.kr(Impulse.kr(1),0,  globallev); // debugging
+			Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
+			
 			// This bit working
 			//soa_a12_sig = AtkMatrixMix.ar(ambsinal, soa_a12_decoder_matrix);
 			//#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(soa_a12_sig, soa_a12_encoder_matrix);
@@ -894,7 +935,7 @@ GUI Parameters usable in SynthDefs
 		scn = Array.newClear(this.nfontes); 
 		mbus = Array.newClear(this.nfontes); 
 		sbus = Array.newClear(this.nfontes); 
-		soaBus = Array.newClear(this.nfontes); 
+		//soaBus = Array.newClear(this.nfontes); 
 		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		// note that ncan refers to # of channels in streamed sources.
@@ -1111,6 +1152,9 @@ GUI Parameters usable in SynthDefs
 						if(revGlobal == nil) {
 							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 						};
+						if(revGlobalSoa == nil) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+						};
 						if (testado[i] == false) { // if source is testing don't relaunch synths
 							synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
@@ -1118,7 +1162,7 @@ GUI Parameters usable in SynthDefs
 									espacializador[i] = nil; synt[i] = nil});
 							
 							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
-								\gbus, gbus, \dopon, doppler[i]], 
+								\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
 						atualizarvariaveis.value;
@@ -2361,12 +2405,12 @@ GUI Parameters usable in SynthDefs
 			win.refresh;
 			
 		};
-		
+
+		soaBus = Bus.audio(server, 9);
 		// busses to send audio from player to spatialiser synths
 		this.nfontes.do { arg x;
 			mbus[x] = Bus.audio(server, 1); 
 			sbus[x] = Bus.audio(server, 2); 
-			soaBus[x] = Bus.audio(server, 9); 
 			//	bfbus[x] = Bus.audio(s, 4); 
 			if (dopflag == 0, {
 				
@@ -2408,9 +2452,9 @@ GUI Parameters usable in SynthDefs
 			rirFRDspectrum.free;
 			rirBLDspectrum.free;
 			rirBRUspectrum.free;
+			soaBus.free;
 			12.do { arg i;
 				rirA12Spectrum[i].free;
-				soaBus[i].free;
 			};
 			
 			
