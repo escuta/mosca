@@ -392,15 +392,9 @@ GUI Parameters usable in SynthDefs
 
 		SynthDef.new("revGlobalSoaA12",  { arg soaBus;
 			var w, x, y, z, r, s, t, u, v,
-			foaSig, soaSig;
+			foaSig, soaSig, tmpsig;
 			var sig = In.ar(soaBus, 9);
 			/*	
-			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-			12.do {
-				arg i;
-				PartConv.ar(sig[i], fftsize, rirA12Spectrum[i]);
-			};
-			
 			
 			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
 			foaSig = [w, x, y, z];
@@ -411,7 +405,7 @@ GUI Parameters usable in SynthDefs
 
 			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
 			//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
-			sig = [
+			tmpsig = [
 				PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]), 
 				PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]), 
 				PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]), 
@@ -425,9 +419,10 @@ GUI Parameters usable in SynthDefs
 				PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]), 
 				PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]), 
 			];
-			sig = sig*4;
+
+			tmpsig = tmpsig*4;
 			//	foaSig = FoaEncode.ar(sig, a2b);
-			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
+			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
 			foaSig = [w, x, y, z];
 			soaSig = [w, x, y, z, r, s, t, u, v];
 			/*
@@ -2447,6 +2442,10 @@ GUI Parameters usable in SynthDefs
 			if(revGlobalBF.notNil){
 				revGlobalBF.free;
 			};
+			if(revGlobalSoa.notNil){
+				revGlobalSoa.free;
+			};
+			
 			
 			wdados.close;
 			gbus.free;
