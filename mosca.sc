@@ -845,6 +845,7 @@ GUI Parameters usable in SynthDefs
 		itensdemenu, gbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
+		revcheck, rvcheck, rv,
 		hwInCheck, hwncheck, hwn, scInCheck, scncheck, scn,
 		dopcheque2, doppler, angle, level, glev, 
 		llev, angnumbox, volnumbox,
@@ -868,6 +869,7 @@ GUI Parameters usable in SynthDefs
 		espacializador = Array.newClear(this.nfontes);
 		doppler = Array.newClear(this.nfontes); 
 		lp = Array.newClear(this.nfontes); 
+		rv = Array.newClear(this.nfontes); 
 		hwn = Array.newClear(this.nfontes); 
 		scn = Array.newClear(this.nfontes); 
 		mbus = Array.newClear(this.nfontes); 
@@ -912,6 +914,7 @@ GUI Parameters usable in SynthDefs
 		cbox = Array.newClear(this.nfontes); // contrair b-format
 		dpbox = Array.newClear(this.nfontes); // dop amount
 		lpcheck = Array.newClear(this.nfontes); // loop
+		rvcheck = Array.newClear(this.nfontes); // loop
 		hwncheck = Array.newClear(this.nfontes); // stream check
 		scncheck = Array.newClear(this.nfontes); // stream check
 		tfield = Array.newClear(this.nfontes);
@@ -926,6 +929,7 @@ GUI Parameters usable in SynthDefs
 			glev[i] = 0;
 			llev[i] = 0;
 			lp[i] = 0;
+			rv[i] = 0;
 			hwn[i] = 0;
 			scn[i] = 0;
 			rlev[i] = 0;
@@ -1415,6 +1419,7 @@ GUI Parameters usable in SynthDefs
 			
 			if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
 			if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
+			if(rv[fatual] == 1){revcheck.value = true}{revcheck.value = false};
 			
 			if(hwn[fatual] == 1){hwInCheck.value = true}{hwInCheck.value = false};
 			if(scn[fatual] == 1){scInCheck.value = true}{scInCheck.value = false};
@@ -1470,7 +1475,13 @@ GUI Parameters usable in SynthDefs
 			("Loop is " ++ butt.value).postln;
 			{lpcheck[fatual].valueAction = butt.value;}.defer;
 		});
-		dopcheque.value = false;
+		loopcheck.value = false;
+		
+		revcheck = CheckBox( win, Rect(250, 10, 120, 20), "A-format reverb").action_({ arg butt;
+			("A-format rev is " ++ butt.value).postln;
+			{rvcheck[fatual].valueAction = butt.value;}.defer;
+		});
+		revcheck.value = false;
 		
 		
 		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW Bus").action_({ arg butt;
@@ -1891,7 +1902,22 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \lp, 0);
 				};
 			});
-			// testing
+
+			rvcheck[i] = CheckBox.new( wdados, Rect(0, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){revcheck.value = but.value;};
+				if (but.value == true) {
+					//	"Aqui!!!".postln;
+					rv[i] = 1;
+					//synt[i].set(\lp, 1);
+					this.setSynths(i, \rv, 1);
+				}{
+					rv[i] = 0;
+					//synt[i].set(\lp, 0);
+					this.setSynths(i, \rv, 0);
+				};
+			});
+			
 			hwncheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){hwInCheck.value = but.value;};
