@@ -409,7 +409,8 @@ GUI Parameters usable in SynthDefs
 			//sig = FoaDecode.ar(sig, b2a);
 
 
-			/*			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+			//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
 			sig = [
 				PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]), 
 				PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]), 
@@ -424,9 +425,12 @@ GUI Parameters usable in SynthDefs
 				PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]), 
 				PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]), 
 			];
+			sig = sig*4;
 			//	foaSig = FoaEncode.ar(sig, a2b);
 			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
-			*/
+			foaSig = [w, x, y, z];
+			soaSig = [w, x, y, z, r, s, t, u, v];
+			/*
 			sig = FoaDecode.ar(sig, b2a);
 			sig = [
 				PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
@@ -439,9 +443,11 @@ GUI Parameters usable in SynthDefs
 			//			foaSig = [w, x, y, z];
 			soaSig = [w, x, y, z, r, s, t, u, v];
 			//			//SendTrig.kr(Impulse.kr(1), 0, w); // debug
-			revGlobalSoaOutFunc.value(sig, sig, dec);
-		}).add;
+			*/
 
+			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+		}).add;
+			
 
 		SynthDef.new("espacAmb",  {
 			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
@@ -478,7 +484,7 @@ GUI Parameters usable in SynthDefs
 			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
 			
-			globallev = globallev * (glev*6);
+			globallev = globallev * (glev);
 			
 			
 			gsig = p * grevganho * globallev;
@@ -488,7 +494,7 @@ GUI Parameters usable in SynthDefs
 			// Local reverberation
 			locallev = 1 - dis; 
 			
-			locallev = locallev  * (llev*8);
+			locallev = locallev  * (llev);
 			
 			// DISABLING!!		
 			//			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, 0.2 * locallev);
@@ -500,7 +506,7 @@ GUI Parameters usable in SynthDefs
 			ambsinal = [w, x, y, z, r, s, t, u, v];
 
 			// TESTING
-			SendTrig.kr(Impulse.kr(1),0,  globallev); // debugging
+			//			SendTrig.kr(Impulse.kr(1),0,  globallev); // debugging
 			Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 			
 			// This bit working
@@ -588,7 +594,7 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("espacAmbEstereo",  {
-			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
+			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 			dopon = 0, dopamnt = 0, 
 			glev = 0, llev = 0;
 			var w, x, y, z, r, s, t, u, v, p, ambsinal,
@@ -630,10 +636,10 @@ GUI Parameters usable in SynthDefs
 			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
 			globallev = Select.kr(globallev < 0, [globallev, 0]); 
 			
-			globallev = globallev * (glev*4);
+			globallev = globallev * (glev);
 			
-			gsig = Mix.new(p) / 2 * grevganho * globallev;
-			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+			//			gsig = Mix.new(p) / 2 * grevganho * globallev;
+			//			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 			
 			
 			
@@ -642,11 +648,14 @@ GUI Parameters usable in SynthDefs
 			// Reverberação local
 			locallev = 1 - dis; 
 			
-			locallev = locallev  * (llev*4);
+			locallev = locallev  * (llev);
 			
 			
-			junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-			junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+			//			junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+			//			junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+			junto1 = p1;
+			junto2 = p2;
+			
 			
 			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, dis);
 			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, dis);
@@ -656,6 +665,8 @@ GUI Parameters usable in SynthDefs
 			
 			ambsinal1plus2 = ambsinal1 + ambsinal2;
 			ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
+
+			Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
 			
 			espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
 			
@@ -1149,16 +1160,13 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 						
 						
-						if(revGlobal == nil) {
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
 						if(revGlobalSoa == nil) {
 							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
 						};
 						if (testado[i] == false) { // if source is testing don't relaunch synths
 							synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
-								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+								revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 									espacializador[i] = nil; synt[i] = nil});
 							
 							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
@@ -1181,19 +1189,18 @@ GUI Parameters usable in SynthDefs
 						//						{angslider.value = 0.5;}.defer;
 						{angslider.value = 0.33;}.defer;
 						
-						
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+						if(revGlobalSoa == nil) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
 						};
 						if (testado[i] == false) {
 							synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
-								revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+								revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 									//	addAction: \addToHead).onFree({espacializador[i].free;
 									espacializador[i] = nil; synt[i] = nil});
 							
 							espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
-								\dopon, doppler[i]], 
+								\soaBus, soaBus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
 						
