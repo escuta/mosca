@@ -72,6 +72,7 @@ GUI Parameters usable in SynthDefs
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
+		revGlobalSoaOutFunc,
 		bufAformat, bufAformat_soa_a12, bufWXYZ,
 		//synthRegistry = List[],
 		
@@ -120,6 +121,8 @@ GUI Parameters usable in SynthDefs
 				Out.ar( 2, ambsinal1plus2); };
 			revGlobalAmbFunc = { |ambsinal, dec|
 				Out.ar( 2, ambsinal); };
+			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
+				Out.ar( 2, soaSig); };
 			playBFormatOutFunc = { |player, dec|
 				Out.ar( 2, player); };
 			
@@ -130,6 +133,8 @@ GUI Parameters usable in SynthDefs
 				Out.ar( 0, FoaDecode.ar(ambsinal1plus2_1O, dec)); };
 			revGlobalAmbFunc = { |ambsinal, dec|
 				Out.ar( 0, FoaDecode.ar(ambsinal, dec)); };
+			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
+				Out.ar( 0, FoaDecode.ar(foaSig, dec)); };
 			playBFormatOutFunc = { |player, dec|
 				Out.ar( 0, FoaDecode.ar(player, dec)); };
 		};
@@ -385,7 +390,22 @@ GUI Parameters usable in SynthDefs
 			revGlobalAmbFunc.value(sig, dec);
 		}).add;
 
-		
+		SynthDef.new("revGlobal_soa_a12",  { arg soaBus;
+			var w, x, y, z, r, s, t, u, v,
+			foaSig, soaSig;
+			var sig = In.ar(soaBus, 9);
+			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+			12.do {
+				arg i;
+				PartConv.ar(sig[i], fftsize, rirA12Spectrum[i]);
+			};
+			
+			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
+			foaSig = [w, x, y, z];
+			soaSig = [w, x, y, z, r, s, t, u, v];
+			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+		}).add;
+
 
 		SynthDef.new("espacAmb",  {
 			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
@@ -841,7 +861,7 @@ GUI Parameters usable in SynthDefs
 	openGui {
 
 		arg dur = 60;
-		var fonte, dist, scale = 565, espacializador, mbus, sbus, ncanais, synt, fatual = 0, 
+		var fonte, dist, scale = 565, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
 		itensdemenu, gbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
@@ -874,6 +894,7 @@ GUI Parameters usable in SynthDefs
 		scn = Array.newClear(this.nfontes); 
 		mbus = Array.newClear(this.nfontes); 
 		sbus = Array.newClear(this.nfontes); 
+		soaBus = Array.newClear(this.nfontes); 
 		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		// note that ncan refers to # of channels in streamed sources.
@@ -2341,11 +2362,12 @@ GUI Parameters usable in SynthDefs
 			
 		};
 		
-		
+		// busses to send audio from player to spatialiser synths
 		this.nfontes.do { arg x;
-			mbus[x] = Bus.audio(server, 1); // passar som da fonte ao espacializador
-			sbus[x] = Bus.audio(server, 2); // passar som da fonte ao espacializador
-			//	bfbus[x] = Bus.audio(s, 4); // passar som da fonte ao espacializador
+			mbus[x] = Bus.audio(server, 1); 
+			sbus[x] = Bus.audio(server, 2); 
+			soaBus[x] = Bus.audio(server, 9); 
+			//	bfbus[x] = Bus.audio(s, 4); 
 			if (dopflag == 0, {
 				
 			};, {
@@ -2388,6 +2410,7 @@ GUI Parameters usable in SynthDefs
 			rirBRUspectrum.free;
 			12.do { arg i;
 				rirA12Spectrum[i].free;
+				soaBus[i].free;
 			};
 			
 			

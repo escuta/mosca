@@ -146,7 +146,8 @@ o.numAudioBusChannels = 1024;
 
 // Add a SC internal decoder (1º only)
 // See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
-~decoder = FoaDecoderKernel.newUHJ;
+//~decoder = FoaDecoderKernel.newUHJ;
+~decoder = FoaDecoderKernel.newCIPIC(21);
 s.sync;
 MIDIIn.connect;
 s.sync;
@@ -159,7 +160,7 @@ s.sync;
 //If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
 // outputs for decoding with an external decoder
 
-~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 32,
+~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12,
 "QL14_tail48kHz.amb", s, ~decoder);
 
 s.sync;
