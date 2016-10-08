@@ -161,7 +161,7 @@ s.sync;
 // outputs for decoding with an external decoder
 
 ~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12,
-"QL14_tail48kHz.amb", s, ~decoder);
+"QL14Tail2Sec.amb", s, ~decoder);
 
 s.sync;
 ~testMosca.openGui(120);
@@ -170,6 +170,7 @@ s.sync;
 };
 
 )
+
 
 
 // If you close the Mosca window, tidy up

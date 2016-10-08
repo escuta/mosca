@@ -26,7 +26,7 @@ Mosca {
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
 	<>dec,
 	<>triggerFunc, <>stopFunc,
-	<>gbfbus, <>scInBus;
+	<>scInBus;
 	classvar server, rirW, rirX, rirY, rirZ,
 	rirFLU, rirFRD, rirBLD, rirBRU,
 	rirA12, // 2nd order a-format array of RIRs
@@ -296,7 +296,9 @@ GUI Parameters usable in SynthDefs
 		server.sync;
 		
 		
-		bufsize = PartConv.calcBufSize(fftsize, rirW); 
+		bufsize = PartConv.calcBufSize(fftsize, rirW);
+
+		~bufsize1=bufsize;
 
 		rirWspectrum= Buffer.alloc(server, bufsize, 1);
 		rirXspectrum= Buffer.alloc(server, bufsize, 1);
@@ -336,8 +338,11 @@ GUI Parameters usable in SynthDefs
 			rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
 			server.sync;
 			rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
+			server.sync;
 		};
 		server.sync;
+
+
 
 				~rirSpecTest =  rirA12Spectrum;
 				~rirFLUspectrum = rirFLUspectrum;
@@ -365,42 +370,35 @@ GUI Parameters usable in SynthDefs
 		/// START SYNTH DEFS ///////
 
 		SynthDef.new("revGlobalAmb",  { arg gbus;
-			var sig, ambsinal;
-			sig = In.ar(gbus, 1) * 5;
-			ambsinal = [
+			var sig, convsig;
+			sig = In.ar(gbus, 1);
+			convsig = [
 				PartConv.ar(sig, fftsize, rirWspectrum), 
 				PartConv.ar(sig, fftsize, rirXspectrum), 
 				PartConv.ar(sig, fftsize, rirYspectrum),
 				PartConv.ar(sig, fftsize, rirZspectrum)
 			];
-			revGlobalAmbFunc.value(ambsinal, dec);
+			revGlobalAmbFunc.value(convsig, dec);
 		}).add;
 		
 		
 		SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-			var sig = In.ar(gbfbus, 4);
+			var convsig, sig = In.ar(gbfbus, 4);
 			sig = FoaDecode.ar(sig, b2a);
-			sig = [
+			convsig = [
 				PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
 				PartConv.ar(sig[1], fftsize, rirFRDspectrum), 
 				PartConv.ar(sig[2], fftsize, rirBLDspectrum),
 				PartConv.ar(sig[3], fftsize, rirBRUspectrum)
 			];
-			sig = FoaEncode.ar(sig, a2b);
-			revGlobalAmbFunc.value(sig, dec);
+			convsig = FoaEncode.ar(convsig, a2b);
+			revGlobalAmbFunc.value(convsig, dec);
 		}).add;
 
 		SynthDef.new("revGlobalSoaA12",  { arg soaBus;
 			var w, x, y, z, r, s, t, u, v,
 			foaSig, soaSig, tmpsig;
 			var sig = In.ar(soaBus, 9);
-			/*	
-			
-			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
-			foaSig = [w, x, y, z];
-			soaSig = [w, x, y, z, r, s, t, u, v];
-			*/
-			//sig = FoaDecode.ar(sig, b2a);
 
 
 			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
@@ -421,26 +419,10 @@ GUI Parameters usable in SynthDefs
 			];
 
 			tmpsig = tmpsig*4;
-			//	foaSig = FoaEncode.ar(sig, a2b);
 			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
 			foaSig = [w, x, y, z];
 			soaSig = [w, x, y, z, r, s, t, u, v];
-			/*
-			sig = FoaDecode.ar(sig, b2a);
-			sig = [
-				PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
-				PartConv.ar(sig[1], fftsize, rirFRDspectrum), 
-				PartConv.ar(sig[2], fftsize, rirBLDspectrum),
-				PartConv.ar(sig[3], fftsize, rirBRUspectrum)
-			];
-			sig = FoaEncode.ar(sig, a2b);
-
-			//			foaSig = [w, x, y, z];
-			soaSig = [w, x, y, z, r, s, t, u, v];
-			//			//SendTrig.kr(Impulse.kr(1), 0, w); // debug
-			*/
-
-			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+		revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
 		}).add;
 			
 
@@ -909,7 +891,7 @@ GUI Parameters usable in SynthDefs
 
 		arg dur = 60;
 		var fonte, dist, scale = 565, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
-		itensdemenu, gbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
+		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
 		revcheck, rvcheck, rv,
@@ -1039,8 +1021,11 @@ GUI Parameters usable in SynthDefs
 		
 		
 		gbus = Bus.audio(server, 1); // global reverb bus
-		this.gbfbus = Bus.audio(server, 4); // global b-format bus
-		
+		gbfbus = Bus.audio(server, 4); // global b-format bus
+		soaBus = Bus.audio(server, 9);
+		~t1 = gbus;
+		~t2 = gbfbus;
+		~t3 = soaBus;
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, 900, 900, 900)).front;
 		wdados = Window.new("Data", Rect(900, 900, 990, (this.nfontes*20)+60 ));
@@ -1143,6 +1128,26 @@ GUI Parameters usable in SynthDefs
 			// busini is the initial bus used for a particular stream
 			// If we have ncan = 4 and busini = 7, the stream will enter
 			// in buses 7, 8, 9 and 10.
+
+			/*	if(revGlobal == nil){
+				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+			};
+						if(revGlobalBF == nil){
+				revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
+					addAction:\addToTail);
+			};
+			*/
+			if(revGlobalSoa == nil) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+			};
+			
+			if(revGlobal == nil){
+				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+			};
+			if(revGlobalBF == nil){
+				revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
+					addAction:\addToTail);
+			};
 			
 			("tpos = " ++ tpos).postln;
 			if ((path != "") && (hwncheck[i].value == false)) {
@@ -1154,10 +1159,11 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
 						
-						
+						/*				
 						if(revGlobalSoa == nil) {
 							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
 						};
+						*/
 						if (testado[i] == false) { // if source is testing don't relaunch synths
 							synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
@@ -1165,7 +1171,7 @@ GUI Parameters usable in SynthDefs
 									espacializador[i] = nil; synt[i] = nil});
 							
 							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
-								\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
+								\soaBus, soaBus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
 						atualizarvariaveis.value;
@@ -1183,10 +1189,11 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						//						{angslider.value = 0.5;}.defer;
 						{angslider.value = 0.33;}.defer;
-						
+						/*		
 						if(revGlobalSoa == nil) {
 							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
 						};
+						*/
 						if (testado[i] == false) {
 							synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
@@ -1216,20 +1223,21 @@ GUI Parameters usable in SynthDefs
 							// reverb for non-contracted (full b-format) component
 
 							// reverb for contracted (mono) component - and for rest too
-							if(revGlobal == nil){
+							/*		if(revGlobal == nil){
 								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 							};
 							if(revGlobalBF == nil){
-								revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, this.gbfbus],
+								revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
 									addAction:\addToTail);
 							};
+							*/
 							if (testado[i] == false) {
-								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, this.gbfbus, \outbus,
+								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
 									lp[i], \level, level[i], \dopon, doppler[i]], 
 									//					~revGlobal, addAction: \addBefore);
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 								//	xbox[i].valueAction = 1; // é preciso para aplicar rev global sem mexer com mouse
 								
@@ -1354,13 +1362,13 @@ GUI Parameters usable in SynthDefs
 						
 						if (testado[i] == false) {
 							if (hwncheck[i].value) {
-								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, this.gbfbus, \outbus, mbus[i],
+								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
 									\busini, this.busini[i]], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 							} {
-								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, this.gbfbus, \outbus, mbus[i],
+								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
 									\busini, this.scInBus[i] ], 
 									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
@@ -2408,7 +2416,6 @@ GUI Parameters usable in SynthDefs
 			
 		};
 
-		soaBus = Bus.audio(server, 9);
 		// busses to send audio from player to spatialiser synths
 		this.nfontes.do { arg x;
 			mbus[x] = Bus.audio(server, 1); 
