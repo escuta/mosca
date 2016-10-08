@@ -39,7 +39,10 @@ Mosca {
 
 	o, //debugging
 	prjDr;
-	classvar fftsize = 2048, server;
+		classvar fftsize = 2048,
+	//	classvar fftsize = 1024,
+	//classvar fftsize = 4096,
+	server;
 
 	*new { arg projDir, nsources = 1, rirWXYZ, srvr, decoder = nil;
 		^super.new.initMosca(projDir, nsources, rirWXYZ, srvr, decoder);
@@ -422,11 +425,14 @@ GUI Parameters usable in SynthDefs
 			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
 			foaSig = [w, x, y, z];
 			soaSig = [w, x, y, z, r, s, t, u, v];
-		revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
 		}).add;
-			
 
-		SynthDef.new("espacAmb",  {
+
+
+
+
+		SynthDef.new("espacAmbAFormatVerb",  {
 			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
 			dopon = 0, dopamnt = 0,
 			glev = 0, llev = 0;
@@ -496,6 +502,74 @@ GUI Parameters usable in SynthDefs
 			
 		}).add;
 
+		SynthDef.new("espacAmbChowning",  {
+			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
+			dopon = 0, dopamnt = 0,
+			glev = 0, llev = 0;
+			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
+			junto, rd, dopplershift, azim, dis, xatras, yatras,  
+			//		globallev = 0.0001, locallev, gsig, fonte;
+			globallev, locallev, gsig, fonte,
+			soa_a12_sig;
+			var lrev, scale = 565;
+			var grevganho = 0.04; // needs less gain
+			fonte = Cartesian.new;
+			fonte.set(mx, my, mz);
+			dis = (1 - (fonte.rho - scale)) / scale;
+			azim = fonte.theta;
+			el = fonte.phi;
+			dis = Select.kr(dis < 0, [dis, 0]); 
+			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
+			
+			// high freq attenuation
+			p = In.ar(inbus, 1);
+			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+			
+			// Doppler
+			rd = (1 - dis) * 340;
+			rd = Lag.kr(rd, 1.0);
+			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
+			p = dopplershift;
+			
+			// Global reverbearation
+			globallev = 1 / (1 - dis).sqrt;
+			globallev = globallev - 1.0; // lower tail of curve to zero
+			globallev = Select.kr(globallev > 1, [globallev, 1]); 
+			globallev = Select.kr(globallev < 0, [globallev, 0]);
+			
+			globallev = globallev * (glev);
+			
+			
+			gsig = p * globallev;
+			//DISABLED TEMP
+			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+			
+			// Local reverberation
+			locallev = 1 - dis; 
+			
+			locallev = locallev  * (llev);
+			
+			// DISABLING!!		
+			lrev = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+			junto = p + lrev;
+			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
+			
+			//	ambsinal = [w, x, y, u, v]; 
+			ambsinal = [w, x, y, z, r, s, t, u, v];
+
+			// TESTING
+			//			SendTrig.kr(Impulse.kr(1),0,  globallev); // debugging
+			//Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
+			
+			// This bit working
+			//soa_a12_sig = AtkMatrixMix.ar(ambsinal, soa_a12_decoder_matrix);
+			//#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(soa_a12_sig, soa_a12_encoder_matrix);
+			
+			ambsinal1O = [w, x, y, z];
+			
+			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
+			
+		}).add;
 
 		
 
@@ -908,7 +982,7 @@ GUI Parameters usable in SynthDefs
 		
 		dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
 		angslider, bsalvar, bcarregar, bdados, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
-		gslider, gnumbox, lslider, lnumbox, tfield, dopflag = 0, btestar, tocar, isPlay, isRec,
+		gslider, gnumbox, lslider, lnumbox, tfield, dopflag = 0, btestar, tocar, isPlay = false, isRec,
 		atualizarvariaveis, updateSynthInArgs,
 		testado,
 		rnumbox, rslider, rbox, 
@@ -1137,13 +1211,10 @@ GUI Parameters usable in SynthDefs
 					addAction:\addToTail);
 			};
 			*/
-			if(revGlobalSoa == nil) {
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
-			};
 			
-			if(revGlobal == nil){
-				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-			};
+			//			if(revGlobal == nil){
+			//				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+			//			};
 			if(revGlobalBF == nil){
 				revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
 					addAction:\addToTail);
@@ -1159,21 +1230,41 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
 						
-						/*				
-						if(revGlobalSoa == nil) {
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+						if(rv[i] == 1) {
+							if(revGlobalSoa == nil) {
+								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+							};
+							if (testado[i] == false) { // if source is testing don't relaunch synths
+								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+									\level, level[i]], 
+									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacAmbAFormatVerb, [\inbus, mbus[i], 
+									\soaBus, soaBus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+						} { 
+							if(revGlobal == nil){
+								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+							};
+							if (testado[i] == false) { // if source is testing don't relaunch synths
+								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+									\level, level[i]], revGlobal,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacAmbChowning, [\inbus, mbus[i], 
+									\gbus, gbus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+
 						};
-						*/
-						if (testado[i] == false) { // if source is testing don't relaunch synths
-							synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
-								revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
-							
-							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
-								\soaBus, soaBus, \dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
+
+
+						
 						atualizarvariaveis.value;
 						
 						
@@ -1201,8 +1292,8 @@ GUI Parameters usable in SynthDefs
 									//	addAction: \addToHead).onFree({espacializador[i].free;
 									espacializador[i] = nil; synt[i] = nil});
 							
-							espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
-								\soaBus, soaBus, \dopon, doppler[i]], 
+							espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i],
+								\gbus, gbus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
 						
@@ -1408,31 +1499,33 @@ GUI Parameters usable in SynthDefs
 		.action_({ arg but;
 			//	var testado = fatual;
 			//	but.value.postln;
-			{
-			if(but.value == 1)
-			{
-				
-				runTrigger.value(fatual);
-				//	("FATUAL + " ++ fatual).postln;
+			{ if(isPlay.not) {
+				if(but.value == 1)
+				{
+					
+					runTrigger.value(fatual);
+					//	("FATUAL + " ++ fatual).postln;
 
-
-				//atualizarvariaveis.value;
-				tocar.value(fatual, 0);
-				//		~testado = fatual;
+					//atualizarvariaveis.value;
+					tocar.value(fatual, 0);
+					//		~testado = fatual;
 					testado[fatual] = true;
-				
-				
-			}
-			{
-				
-				runStop.value(fatual);
-				synt[fatual].free;
-				synt[fatual] = nil;
+					
+					
+				}
+				{
+					
+					runStop.value(fatual);
+					synt[fatual].free;
+					synt[fatual] = nil;
 					testado[fatual] = false;
-			
-				
-			};
-		}.defer;
+					
+					
+				};
+			} {
+				but.value = 0;
+			}
+			}.defer;
 		});
 		
 		
@@ -1552,7 +1645,7 @@ GUI Parameters usable in SynthDefs
 		});
 		loopcheck.value = false;
 		
-		revcheck = CheckBox( win, Rect(250, 10, 120, 20), "A-format reverb").action_({ arg butt;
+		revcheck = CheckBox( win, Rect(250, 10, 180, 20), "2nd order diffuse reverb").action_({ arg butt;
 			("A-format rev is " ++ butt.value).postln;
 			{rvcheck[fatual].valueAction = butt.value;}.defer;
 		});
@@ -2364,6 +2457,19 @@ GUI Parameters usable in SynthDefs
 				//	espacializador[i].free;
 			};
 			isPlay = false;
+			if(revGlobal.notNil){
+				revGlobal.free;
+				revGlobal = nil;
+			};
+			if(revGlobalBF.notNil){
+				revGlobalBF.free;
+				revGlobalBF = nil;
+			};
+			if(revGlobalSoa.notNil){
+				revGlobalSoa.free;
+				revGlobalSoa = nil;
+			};
+
 		};
 
 		
