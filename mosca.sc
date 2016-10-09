@@ -5,14 +5,15 @@ http://creativecommons.org/licenses/by-nc/4.0/
 The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
 by Joseph Anderson and the Automation quark 
 (https://github.com/neeels/Automation) by Neels Hofmeyr.
-Required Quarks : Automation, Ctk, XML, MathLib
+Required Quarks : Automation, Ctk, XML and  MathLib
 Required classes: 
 SC Plugins: https://github.com/supercollider/sc3-plugins
 User must set up a project directory with subdirectoties "rir" and "auto"
 RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
 and must be placed in the "rir" directory.
-Run help on the "Mosca" class in SuperCollider for detailed information.
-More information and example RIRs and B-format recordings: http://escuta.org/mosca
+Run help on the "Mosca" class in SuperCollider for detailed information
+and code examples. Further information and sample RIRs and B-format recordings
+my be downloaded here: http://escuta.org/mosca
 */
 
 
@@ -826,7 +827,8 @@ GUI Parameters usable in SynthDefs
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - scale)) / scale;
-				pushang = (1 - dis) * pi / 2; // grau de deslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
+				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
+				                              //  0 = centred. pi/2 = 100% displaced
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				SendTrig.kr(Impulse.kr(1), 0, mx); // debug
@@ -1449,8 +1451,8 @@ GUI Parameters usable in SynthDefs
 					//	}); 
 				}.defer;	
 			} {
-				("HELLO scncheck[i].value = " ++ i ++ " " ++ scncheck[i].value).postln;
-				if ((scncheck[i].value) || (hwncheck[i].value)) {
+				("HELLO scncheck[i].value = " ++ scncheck[i].value).postln;
+				if ((scncheck[i].value) || (hwncheck[i])) {
 					var x;
 					("Streaming! ncan = " ++ this.ncan[i].value
 						++ " & this.busini = " ++ this.busini[i].value).postln;
@@ -1458,32 +1460,58 @@ GUI Parameters usable in SynthDefs
 					{ this.ncan[i] == 1 } {
 						"Mono!".postln;
 						
-						("HELLO MONO scncheck[i].value = " ++ i ++ " " ++ scncheck[i].value).postln;
 
-						
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
-						if (testado[i] == false) {
 
-							if (hwncheck[i].value) {
-								synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
-									\level, level[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-							} {
-								synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
-									\busini, this.scInBus[i], // use "index" method?
-									\level, level[i]], revGlobal,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+						if(rv[i] == 1) {
+							if(revGlobalSoa == nil) {
+								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+									revGlobalBF, addAction:\addBefore);
 							};
 							
+							if (testado[i].not) {
+								if (hwncheck[i].value) {
+									synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
+										\level, level[i]], revGlobalSoa,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								} {
+									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
+										\busini, this.scInBus[i], // use "index" method?
+										\level, level[i]], revGlobalSoa,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								};
+								
+								
+								espacializador[i] = Synth.new(\espacAmbAFormatVerb, [\inbus, mbus[i], 
+									\soaBus, soaBus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
 							
-							espacializador[i] = Synth.new(\espacAmb, [\inbus, mbus[i], 
-								\gbus, gbus, \dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
+						} {
+							if (testado[i].not) {
+								if (hwncheck[i].value) {
+									synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
+										\level, level[i]], revGlobalBF,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								} {
+									"But especially here".postln;
+									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
+										\busini, this.scInBus[i], // use "index" method?
+										\level, level[i]], revGlobalBF,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								};
+								
+								
+								espacializador[i] = Synth.new(\espacAmbChowning, [\inbus, mbus[i], 
+									\gbus, gbus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+
 						};
+						
 						atualizarvariaveis.value;
 						
 						
@@ -1493,7 +1521,7 @@ GUI Parameters usable in SynthDefs
 						
 					}
 					{ this.ncan[i] == 2 } {
-						"Estéreo!".postln;
+						"Stereo!".postln;
 						ncanais[i] = 0; // just in case!
 						angle[i] = pi/2;
 						{angnumbox.value = pi/2;}.defer;
@@ -1502,29 +1530,54 @@ GUI Parameters usable in SynthDefs
 						
 
 
-						
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
+					if(rv[i] == 1) {	
+
+
 						if (testado[i] == false) {
 
+							if(revGlobalSoa.isNil) {
+								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+									revGlobalBF, addAction:\addBefore);
+							};
 							if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
-									\level, level[i]], revGlobal,
+									\level, level[i]], revGlobalSoa,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							} {
 								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 									\busini, this.scInBus[i],
-									\level, level[i]], revGlobal,
+									\level, level[i]], revGlobalSoa,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							};
 							
-							espacializador[i] = Synth.new(\espacAmbEstereo, [\inbus, sbus[i], \gbus, gbus,
-								\dopon, doppler[i]], 
+							espacializador[i] = Synth.new(\espacAmbEstereoAFormat, [\inbus, sbus[i], \gbus, gbus,
+								\soaBus, soaBus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
+
+
+					} {
+							if (hwncheck[i].value) {
+								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
+									\level, level[i]], revGlobalBF,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+							} {
+								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+									\busini, this.scInBus[i],
+									\level, level[i]], revGlobalBF,
+									addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+							};
+							
+						espacializador[i] = Synth.new(\espacAmbEstereoChowning, [\inbus, sbus[i],
+							\gbus, gbus, \dopon, doppler[i]], 
+								synt[i], addAction: \addAfter);
+
+
+					};
 						atualizarvariaveis.value;
 						
 						
