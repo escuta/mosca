@@ -1,15 +1,19 @@
-// SuperCollider class by Iain Mott, 2016. Licensed under a 
-// Creative Commons Attribution-NonCommercial 4.0 International License
-// http://creativecommons.org/licenses/by-nc/4.0/
-// The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
-// and the Automation quark (https://github.com/supercollider-quarks/Automation).
-
-// Required Quarks : Automation, Ctk, XML, MathLib
-// Required classes: 
-// SC Plugins: https://github.com/supercollider/sc3-plugins
-// RIRs (first 100ms silenced) used in help files:
-// http://www.openairlib.net/auralizationdb/content/central-hall-university-york
-// http://www.openairlib.net/auralizationdb/content/koli-national-park-summer
+/*
+SuperCollider class by Iain Mott, 2016. Licensed under a 
+Creative Commons Attribution-NonCommercial 4.0 International License
+http://creativecommons.org/licenses/by-nc/4.0/
+The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
+by Joseph Anderson and the Automation quark 
+(https://github.com/neeels/Automation) by Neels Hofmeyr.
+Required Quarks : Automation, Ctk, XML, MathLib
+Required classes: 
+SC Plugins: https://github.com/supercollider/sc3-plugins
+User must set up a project directory with subdirectoties "rir" and "auto"
+RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
+and must be placed in the "rir" directory.
+Run help on the "Mosca" class in SuperCollider for detailed information.
+More information and example RIRs and B-format recordings: http://escuta.org/mosca
+*/
 
 
 Mosca {
@@ -1269,32 +1273,18 @@ GUI Parameters usable in SynthDefs
 			// If we have ncan = 4 and busini = 7, the stream will enter
 			// in buses 7, 8, 9 and 10.
 
-			/*	if(revGlobal == nil){
-				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-			};
-						if(revGlobalBF == nil){
+			if(revGlobalBF == nil){
 				revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
 					addAction:\addToTail);
 			};
-			*/
-			
-			//			if(revGlobal == nil){
-			//				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-			//			};
+			if(revGlobal == nil){
+				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+			};
 			
 			("tpos = " ++ tpos).postln;
 			if ((path != "") && (hwncheck[i].value == false)) {
 				{	
 					
-					if(revGlobalBF == nil){
-						revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
-							addAction:\addToTail);
-					};
-					if(revGlobal == nil){
-						revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-					};
-					
-
 					if (sombuf[i].numChannels == 1)  // arquivo mono
 					{ncanais[i] = 1;
 						angle[i] = 0;
@@ -1331,16 +1321,8 @@ GUI Parameters usable in SynthDefs
 							};
 
 						};
-
-
-						
 						atualizarvariaveis.value;
 						
-						
-
-
-
-
 						
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
