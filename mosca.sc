@@ -438,8 +438,7 @@ GUI Parameters usable in SynthDefs
 			glev = 0, llev = 0;
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
-			//		globallev = 0.0001, locallev, gsig, fonte;
-			globallev = 0.0004, locallev, gsig, fonte,
+			globallev, locallev, gsig, fonte,
 			soa_a12_sig;
 			var lrev, scale = 565;
 			var grevganho = 0.04; // needs less gain
@@ -523,12 +522,10 @@ GUI Parameters usable in SynthDefs
 		
 
 
-		// This second version of espacAmb is necessary with B-format sources, because the doppler
-		// in these is performed in the player itself
-
+		// This second version of espacAmb is necessary for contracted B-format sources
 
 		
-		SynthDef.new("espacAmb2",  { 
+		SynthDef.new("espacAmb2Chowning",  { 
 			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
 			glev = 0, llev = 0.2;
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
@@ -548,21 +545,13 @@ GUI Parameters usable in SynthDefs
 			p = In.ar(inbus, 1);
 			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
 			
-			// Doppler
-			
-			/*
-				rd = (1 - dis) * 340; 
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon);
-				p = dopplershift;
-			*/
-			
 			// Reverberação global
 			globallev = 1 / (1 - dis).sqrt;
 			globallev = globallev - 1.0; // lower tail of curve to zero
 			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
 			
-			globallev = globallev * (glev*6);
+			globallev = globallev * glev;
 			
 			
 			gsig = p * grevganho * globallev;
@@ -571,7 +560,7 @@ GUI Parameters usable in SynthDefs
 			// Reverberação local
 			locallev = 1 - dis; 
 			//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
-			locallev = locallev * (llev*25);
+			locallev = locallev * llev;
 			
 			
 			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
@@ -583,6 +572,60 @@ GUI Parameters usable in SynthDefs
 			//	ambsinal = [w, x, y, u, v]; 
 			ambsinal = [w, x, y, z, r, s, t, u, v]; 
 			
+			ambsinal1O = [w, x, y, z];
+			
+			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
+			
+		}).add;
+
+		SynthDef.new("espacAmb2Aformat",  { 
+			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
+			glev = 0, llev = 0.2, soaBus;
+			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
+			junto, rd, dopplershift, azim, dis, xatras, yatras,  
+			globallev = 0.0004, locallev, gsig, fonte;
+			var lrev, scale = 565;
+			var grevganho = 0.20;
+			fonte = Cartesian.new;
+			fonte.set(mx, my, mz);
+			dis = (1 - (fonte.rho - scale)) / scale;
+			azim = fonte.theta;
+			el = fonte.phi;
+			dis = Select.kr(dis < 0, [dis, 0]); 
+			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
+			
+			// high freq attenuation
+			p = In.ar(inbus, 1);
+			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+			
+			// Reverberação global
+			globallev = 1 / (1 - dis).sqrt;
+			globallev = globallev - 1.0; // lower tail of curve to zero
+			globallev = Select.kr(globallev > 1, [globallev, 1]); 
+			globallev = Select.kr(globallev < 0, [globallev, 0]);
+			
+			globallev = globallev * glev;
+			
+			
+			gsig = p * globallev;
+			// DISABLE
+			//Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+			
+			// Reverberação local
+			locallev = 1 - dis; 
+			//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
+			locallev = locallev * llev;
+			
+			
+			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
+			//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
+			junto = p ;
+			
+			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
+			
+			//	ambsinal = [w, x, y, u, v]; 
+			ambsinal = [w, x, y, z, r, s, t, u, v]; 
+			Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 			ambsinal1O = [w, x, y, z];
 			
 			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
@@ -782,7 +825,7 @@ GUI Parameters usable in SynthDefs
 				pushang = (1 - dis) * pi / 2; // grau de deslocamento do campo sonoro. 0 = centrado. pi/2 = 100% deslocado
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
-				
+				SendTrig.kr(Impulse.kr(1), 0, mx); // debug
 				playerRef = Ref(0);
 				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				
@@ -806,7 +849,7 @@ GUI Parameters usable in SynthDefs
 				// Reverberação global
 				globallev = 1 / (1 - dis).sqrt;
 				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
+				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
 				globallev = globallev * (glev* 6) * grevganho;
 				
@@ -819,11 +862,11 @@ GUI Parameters usable in SynthDefs
 				lsig = playerRef.value[0] * locallev;
 
 				//
-				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
+				//				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
 
 								// trying again ... testing
 				
-				gsig = playerRef.value * globallev; // b-format
+				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
 				Out.ar(gbfbus, gsig); 
 				
 				
@@ -999,6 +1042,7 @@ GUI Parameters usable in SynthDefs
 		//busini,
 		novoplot,
 		runTriggers, runStops, runTrigger, runStop,
+		playingBF,
 		
 		dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
 		angslider, bsalvar, bcarregar, bdados, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
@@ -1043,6 +1087,7 @@ GUI Parameters usable in SynthDefs
 
 		ncanbox = Array.newClear(this.nfontes); 
 		businibox = Array.newClear(this.nfontes); 
+		playingBF = Array.newClear(this.nfontes); 
 		
 		
 		xbox = Array.newClear(this.nfontes); 
@@ -1087,6 +1132,7 @@ GUI Parameters usable in SynthDefs
 			sprite[i, 0] = -20;
 			sprite[i, 1] = -20;
 			testado[i] = false;
+			playingBF[i] = false;
 		};
 		
 		
@@ -1235,15 +1281,20 @@ GUI Parameters usable in SynthDefs
 			//			if(revGlobal == nil){
 			//				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 			//			};
-			if(revGlobalBF == nil){
-				revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
-					addAction:\addToTail);
-			};
 			
 			("tpos = " ++ tpos).postln;
 			if ((path != "") && (hwncheck[i].value == false)) {
 				{	
 					
+					if(revGlobalBF == nil){
+						revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
+							addAction:\addToTail);
+					};
+					if(revGlobal == nil){
+						revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+					};
+					
+
 					if (sombuf[i].numChannels == 1)  // arquivo mono
 					{ncanais[i] = 1;
 						angle[i] = 0;
@@ -1252,7 +1303,8 @@ GUI Parameters usable in SynthDefs
 						
 						if(rv[i] == 1) {
 							if(revGlobalSoa == nil) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+									revGlobalBF, addAction:\addBefore);
 							};
 							if (testado[i] == false) { // if source is testing don't relaunch synths
 								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
@@ -1266,13 +1318,10 @@ GUI Parameters usable in SynthDefs
 									synt[i], addAction: \addAfter);
 							};
 						} { 
-							if(revGlobal.isNil){
-								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-							};
 							if (testado[i].not) { // if source is testing don't relaunch synths
 								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]], revGlobal,
+									\level, level[i]], revGlobalBF,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 								
@@ -1307,7 +1356,8 @@ GUI Parameters usable in SynthDefs
 						*/
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+									revGlobalBF, addAction:\addBefore);
 							};
 				
 						if (testado[i].not) {
@@ -1327,7 +1377,7 @@ GUI Parameters usable in SynthDefs
 								synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 									\level, level[i]], 
-									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 								
 								espacializador[i] = Synth.new(\espacAmbEstereoChowning, [\inbus, sbus[i],
@@ -1346,6 +1396,7 @@ GUI Parameters usable in SynthDefs
 					} {
 						if (sombuf[i].numChannels == 4) {
 							"B-format".postln;
+							playingBF[i] = true;
 							ncanais[i] = 4;
 							angle[i] = 0;
 							{angnumbox.value = 0;}.defer;
@@ -1353,27 +1404,48 @@ GUI Parameters usable in SynthDefs
 							// reverb for non-contracted (full b-format) component
 
 							// reverb for contracted (mono) component - and for rest too
-							/*		if(revGlobal == nil){
-								revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-							};
-							if(revGlobalBF == nil){
-								revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
-									addAction:\addToTail);
-							};
-							*/
-							if (testado[i] == false) {
+							if(rv[i] == 1) {
+
+								if(revGlobalSoa == nil) {
+								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+								};
+								
+
+								if (testado[i] == false) {
+
+									
 								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
 									lp[i], \level, level[i], \dopon, doppler[i]], 
 									//					~revGlobal, addAction: \addBefore);
 									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;});
-								//	xbox[i].valueAction = 1; // é preciso para aplicar rev global sem mexer com mouse
+										espacializador[i] = nil; synt[i] = nil;
+										playingBF[i] = false});
 								
-								espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
+								espacializador[i] = Synth.new(\espacAmb2Aformat, [\inbus, mbus[i], 
+									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							} {
+								if (testado[i] == false) {
+
+									
+								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+									\rate, 1, \tpos, tpos, \lp,
+									lp[i], \level, level[i], \dopon, doppler[i]], 
+									//					~revGlobal, addAction: \addBefore);
+									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil;
+										playingBF[i] = false});
+								
+								espacializador[i] = Synth.new(\espacAmb2Chowning, [\inbus, mbus[i], \gbus, gbus, 
 									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
+							};
+
+
 							};
 							atualizarvariaveis.value;
 							
@@ -1505,7 +1577,7 @@ GUI Parameters usable in SynthDefs
 										espacializador[i] = nil; synt[i] = nil;});
 							};
 							
-							espacializador[i] = Synth.new(\espacAmb2, [\inbus, mbus[i], \gbus, gbus, 
+							espacializador[i] = Synth.new(\espacAmb2Aformat, [\inbus, mbus[i], \gbus, gbus, 
 								\dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
@@ -2186,7 +2258,7 @@ GUI Parameters usable in SynthDefs
 				sprite[i, 1] = 450 + (num.value * -1);
 				novoplot.value(num.value, ybox[i], i, this.nfontes);
 				xval[i] = num.value;
-				if(espacializador[i] != nil){
+				if(espacializador[i].notNil || playingBF[i]){
 					espacializador[i].set(\mx, num.value);
 					this.setSynths(i, \mx, num.value);
 					synt[i].set(\mx, num.value);
@@ -2197,7 +2269,7 @@ GUI Parameters usable in SynthDefs
 			ybox[i].action = {arg num; 
 				sprite[i, 0] = (num.value * -1 + 450);
 				yval[i] = num.value;
-				if(espacializador[i] != nil){
+				if(espacializador[i].notNil || playingBF[i]){
 					espacializador[i].set(\my, num.value);
 					this.setSynths(i, \my, num.value);
 					synt[i].set(\my, num.value);
