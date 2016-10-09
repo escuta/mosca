@@ -1614,9 +1614,16 @@ GUI Parameters usable in SynthDefs
 							};
 							
 							espacializador[i] = Synth.new(\espacAmb2Aformat, [\inbus, mbus[i], \gbus, gbus, 
-								\dopon, doppler[i]], 
+    								\dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
+
+
+
+
+						
+
+					
 						atualizarvariaveis.value;
 						
 						
@@ -2773,5 +2780,6 @@ GUI Parameters usable in SynthDefs
 			};
 		}
 	}
-}
 
+
+}
