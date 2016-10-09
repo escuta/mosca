@@ -522,7 +522,7 @@ GUI Parameters usable in SynthDefs
 		
 
 
-		// This second version of espacAmb is necessary for contracted B-format sources
+		// This second version of espacAmb is used with contracted B-format sources
 
 		
 		SynthDef.new("espacAmb2Chowning",  { 
@@ -554,7 +554,7 @@ GUI Parameters usable in SynthDefs
 			globallev = globallev * glev;
 			
 			
-			gsig = p * grevganho * globallev;
+			gsig = p * globallev;
 			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 			
 			// Reverberação local
@@ -679,7 +679,7 @@ GUI Parameters usable in SynthDefs
 			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
 			globallev = Select.kr(globallev < 0, [globallev, 0]); 
 			
-			globallev = globallev * (glev);
+			globallev = globallev * glev;
 			
 			//			gsig = Mix.new(p) / 2 * grevganho * globallev;
 			//			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
@@ -1407,7 +1407,8 @@ GUI Parameters usable in SynthDefs
 							if(rv[i] == 1) {
 
 								if(revGlobalSoa == nil) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
+									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+										revGlobalBF, addAction:\addBefore);
 								};
 								
 
