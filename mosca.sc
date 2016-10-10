@@ -1032,7 +1032,7 @@ GUI Parameters usable in SynthDefs
 
 	openGui {
 
-		arg dur = 60;
+		arg dur = 120;
 		var fonte, dist, scale = 565, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
