@@ -1,5 +1,5 @@
 /*
-SuperCollider class by Iain Mott, 2016. Licensed under a 
+Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a 
 Creative Commons Attribution-NonCommercial 4.0 International License
 http://creativecommons.org/licenses/by-nc/4.0/
 The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
