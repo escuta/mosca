@@ -50,7 +50,7 @@ Mosca {
 	//classvar fftsize = 4096,
 	server;
 
-	*new { arg projDir, nsources = 1, width = 900, rirWXYZ, srvr, decoder = nil;
+	*new { arg projDir, nsources = 1, width = 800, rirWXYZ, srvr, decoder = nil;
 		^super.new.initMosca(projDir, nsources, width, rirWXYZ, srvr, decoder);
 	}
 
@@ -88,7 +88,11 @@ GUI Parameters usable in SynthDefs
 		testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
-		this.width = iwidth;
+		if (iwidth < 550) {
+			this.width = 550;
+		} {
+			this.width = iwidth;
+		};
 		this.halfwidth = this.width / 2;
 		this.scale = this.halfwidth; // for the moment at least
 		
@@ -1062,7 +1066,8 @@ GUI Parameters usable in SynthDefs
 		rnumbox, rslider, rbox, 
 		znumbox, zslider, zbox, zlev, // z-axis
 		xval, yval, zval,
-		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox;
+		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox,
+		zSliderHeight = this.width * 2 / 3;
 		espacializador = Array.newClear(this.nfontes);
 		doppler = Array.newClear(this.nfontes); 
 		lp = Array.newClear(this.nfontes); 
@@ -1715,7 +1720,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		
-		bsalvar = Button(win, Rect(670, 40, 90, 20))
+		bsalvar = Button(win, Rect(10, this.width - 40, 90, 20))
 		.states_([
 			["save auto", Color.black, Color.white],
 			
@@ -1732,7 +1737,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		
-		bcarregar = Button(win, Rect(760, 40, 90, 20))
+		bcarregar = Button(win, Rect(100, this.width - 40, 90, 20))
 		.states_([
 			["load auto", Color.black, Color.white],
 		])
@@ -1935,9 +1940,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////
 		
 		
-		textbuf = StaticText(win, Rect(810, 440, 90, 20));
+		textbuf = StaticText(win, Rect(this.width - 90, this.halfwidth - 10, 90, 20));
 		textbuf.string = "Z-Axis";
-		znumbox = NumberBox(win, Rect(835, 705, 60, 20));
+		znumbox = NumberBox(win, Rect(this.width - 65, ((this.width - zSliderHeight) / 2) + zSliderHeight, 60, 20));
 		znumbox.value = 0;
 		znumbox.clipHi = this.halfwidth;
 		znumbox.clipLo = this.halfwidth * -1;
@@ -1956,7 +1961,7 @@ GUI Parameters usable in SynthDefs
 		};
 		
 		
-		zslider = Slider.new(win, Rect(855, 200, 20, 500));
+		zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2), 20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = {arg num;
 			{znumbox.value = (this.halfwidth - (num.value * this.width)) * -1;}.defer;
@@ -2574,7 +2579,8 @@ GUI Parameters usable in SynthDefs
 
 	
 		//controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
-		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win, Rect(this.halfwidth, 10, 400, 25));
+		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win,
+			Rect(10, this.width - 80, 400, 20));
 		controle.presetDir = prjDr ++ "/auto";
 		//controle.setMinTimeStep(2.0);
 		controle.onEnd = {
@@ -2763,7 +2769,7 @@ GUI Parameters usable in SynthDefs
 			
 		});
 
-		mmcslave = CheckBox( win, Rect(670, 65, 140, 20), "Slave to MMC").action_({ arg butt;
+		mmcslave = CheckBox( win, Rect(195, this.width - 40, 140, 20), "Slave to MMC").action_({ arg butt;
 			//("Doppler is " ++ butt.value).postln;
 			if(butt.value) {
 				"Slaving transport to MMC".postln;
