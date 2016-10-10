@@ -4,7 +4,7 @@ categories:: Undocumented classes
 related:: Classes/SomeRelatedClass, http://www.ambisonictoolkit.net
 
 DESCRIPTION::
-Mmosca is a SuperCollider class for the creation of sound fields and the simulation of moving sound sources using either ambisonic or binaural spatialisation. It uses John Chowning's technique of applying "local" and "global" reverberation to sources in order to simulate distance cues,1 as well as simulating other phenomena such as the Doppler effect and high frequency attenuation with distance. The program has a GUI and sound sources are read from file, from hardware inputs or from other applications via Jack. It also supports basic synchronisation with audio edited in a DAW. Sound sources to be spatialised by ambisonic or binaural means may be mono, stereo or four-channel B-format in origin. The interface facilitates the 3D spatialisation of multiple sources and their positions and movements may be recorded for synchronised playback. While the audio output of the binaural mode requires no further processing, ambisonic signals must be decoded with an appropriate ambisonic decoder such as Ambdec via Jack on Linux platforms.
+Mosca is a SuperCollider class for the creation of sound fields and the simulation of moving sound sources using either ambisonic or binaural spatialisation. It uses John Chowning's technique of applying "local" and "global" reverberation to sources in order to simulate distance cues,1 as well as simulating other phenomena such as the Doppler effect and high frequency attenuation with distance. The program has a GUI and sound sources are read from file, from hardware inputs or from other applications via Jack. It also supports basic synchronisation with audio edited in a DAW. Sound sources to be spatialised by ambisonic or binaural means may be mono, stereo or four-channel B-format in origin. The interface facilitates the 3D spatialisation of multiple sources and their positions and movements may be recorded for synchronised playback. While the audio output of the binaural mode requires no further processing, ambisonic signals must be decoded with an appropriate ambisonic decoder such as Ambdec via Jack on Linux platforms.
 
 The program makes use of the Ambisonic Toolkit (ATK) for SuperCollider by Joseph Anderson and the Automation quark. It also uses B-format impulse responses (IRs) from the OpenAir project binaural IRs from the Salford-BBC Spatially-sampled Binaural Room Impulse Responses. The IRs have been modified here, having had the early reflections removed, to serve as "tail" IRs for use in reverberation.
 
@@ -52,9 +52,11 @@ l) At the top right of the interface is the transport for the "Automation" quark
 
 m) Beneath the the "Source" menu, there is a checkbox "Live" input and beneath that, two number fields for the number of channels of the signal (mono, stereo or b-format) and the starting number for a consecutive series of buses. So for example, if a 4 channel signal is entered and the start bus is zero, the signal will ocupy buses 0, 1, 2 & 3. These may be hardware inputs or virtual hardware inputs via jack, with the signals originating from edited material in a DAW.
 
-n) If "Slave to MMC" is selected one can control Mosca's transport with that od a DAW via Midi Machine Control (MMC). To do this in Linux, in my case, it was necessary to use the ALSA to MIDI bridging utility "a2jmidid" which comes as standard with Ubuntu Studio 16.04. I placed the following line at the end of an existing script that is launched by "qjackctl" in the options field "Execute script after startup":
+n) If "Slave to MMC" is selected one can control Mosca's transport with that od a DAW via Midi Machine Control (MMC). To do this in Linux, in my case, it was necessary to use the ALSA to MIDI bridging utility "a2jmidid" which comes as standard with Ubuntu Studio 16.04. I placed the following line:
 
 a2jmidid -e&
+
+at the end of an existing script that is launched by "qjackctl" in the options field "Execute script after startup".
 
 This allows you to make a connection in the "MIDI" tab of "qjackctl" from the DAW's (in my case Ardour) "MMC out" port to the 1st MIDI in port of Supercollider. This, like other settings may be saved as a patchbay and made active to automatically patch devices and buses on the launch of the program.
  
@@ -65,7 +67,7 @@ Note that the "synchronisation" performs start, stop and seek operation in Mosca
 CLASSMETHODS::
 
 METHOD:: new
-Create Mosca instance and prepare RIR spectrums and synth defs for spatialisation.
+Create Mosca instance, prepare RIR spectrum data and synth internals.
 
 ARGUMENT:: projDir
 Path to project directory. The project directory must have 2 subdirectories named "rir" and "auto". The first contains B-format RIRs to be used for reverberation and the second may be initially empty.
@@ -83,12 +85,14 @@ ARGUMENT:: decoder
 Name of 1st order ambisonic decoder to be used. See the following ATK links:
 http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDecoderMatrix.html http://doc.sccode.org/Classes/FoaDecoderKernel.html Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to the outputs for external decoding with, for example, AmbDec: http://kokkinizita.linuxaudio.org/linuxaudio/
 
-returns:: 
+returns:: New instance.
+
 
 METHOD:: printSynthParams
-PPPrint GUI parameters available in registered synths
+Print GUI Parameters usable in SynthDefs.
 
 
+returns:: A string.
 
 INSTANCEMETHODS::
 
@@ -122,14 +126,13 @@ Synth instance.
 
 returns:: (describe returnvalue here)
 
-METHOD:: getSCBus
+METHOD:: getSWBus
 Return the "real" bus number associated with synth registrant.
 
 ARGUMENT:: source
 The number of the source (starting with 1). See code example below.
 
 returns:: (describe returnvalue here)
-
 
 
 
@@ -142,22 +145,22 @@ code::
 /*
 Please also read "USING MOSCA" above
 
-Make sure the server is stopped before running this example code
+Make sure the server is stopped before running this block example code
 */
 
 (
 s = Server.local;
-o = s.options;
+o = Server.local.options;
 o.numAudioBusChannels = 1024;
 o.numInputBusChannels = 32;
-o.numOutputBusChannels = 11; // 2 for decoded stereo plus 9 for raw 2ndÂº ambisonics
+o.numOutputBusChannels = 11; // 2 for stereo & 9 for 2nd order ambisonics
 o.memSize = 64 * 8192;
 o.numAudioBusChannels = 512;
 o.numWireBufs = 512;
 
 s.waitForBoot {
 
-// Add a SC internal decoder (1Âº only)
+// Add a SC internal decoder (1º only)
 // See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
 //~decoder = FoaDecoderKernel.newUHJ;
 ~decoder = FoaDecoderKernel.newCIPIC(21);
@@ -170,7 +173,7 @@ s.sync;
 //here: http://escuta.org/mosca 
 
 // Mosca.new(<project directory path><b-format rir><binaural rir><server><decoder>)
-//If <decoder> is left blank, Mosca will send 2ndÂº and 1Âº signals out of SC's
+//If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
 // outputs for decoding with an external decoder
 
 ~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12,
@@ -193,7 +196,7 @@ MIDIIn.disconnect;
 ~decoder.free;
 )
 
-// "SC input". Note. Must have SC-in Input selected on GUI for particular source.
+// "SW input". Note. Must have SW Input selected on GUI for particular source.
 
 // write a synth def
 
@@ -217,11 +220,11 @@ SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 //  use the method to fetch the true bus associated with the chosen source (from 1 on). Note
 // this depends on the setting in the GUI. Use the value for the outbus of your synth instance.
 
-// ~testMosca.getSCBus(1) // eg. get bus for source 1
+// ~testMosca.getSCBus(1) // eg. get bus for source 2
 
 // To see the GUI parameters available in registered synths, run:
 
-Mosca.printSynthParams 
+Mosca.printSynthParams
 
 (
 ~source1PlayFunc = {
