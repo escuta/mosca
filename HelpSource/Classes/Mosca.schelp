@@ -4,7 +4,7 @@ categories:: Undocumented classes
 related:: Classes/SomeRelatedClass, http://www.ambisonictoolkit.net
 
 DESCRIPTION::
-Mosca is a SuperCollider class for the creation of sound fields and the simulation of moving sound sources using either ambisonic or binaural spatialisation. It uses John Chowning's technique of applying "local" and "global" reverberation to sources in order to simulate distance cues,1 as well as simulating other phenomena such as the Doppler effect and high frequency attenuation with distance. The program has a GUI and sound sources are read from file, from hardware inputs or from other applications via Jack. It also supports basic synchronisation with audio edited in a DAW. Sound sources to be spatialised by ambisonic or binaural means may be mono, stereo or four-channel B-format in origin. The interface facilitates the 3D spatialisation of multiple sources and their positions and movements may be recorded for synchronised playback. While the audio output of the binaural mode requires no further processing, ambisonic signals must be decoded with an appropriate ambisonic decoder such as Ambdec via Jack on Linux platforms.
+Mmosca is a SuperCollider class for the creation of sound fields and the simulation of moving sound sources using either ambisonic or binaural spatialisation. It uses John Chowning's technique of applying "local" and "global" reverberation to sources in order to simulate distance cues,1 as well as simulating other phenomena such as the Doppler effect and high frequency attenuation with distance. The program has a GUI and sound sources are read from file, from hardware inputs or from other applications via Jack. It also supports basic synchronisation with audio edited in a DAW. Sound sources to be spatialised by ambisonic or binaural means may be mono, stereo or four-channel B-format in origin. The interface facilitates the 3D spatialisation of multiple sources and their positions and movements may be recorded for synchronised playback. While the audio output of the binaural mode requires no further processing, ambisonic signals must be decoded with an appropriate ambisonic decoder such as Ambdec via Jack on Linux platforms.
 
 The program makes use of the Ambisonic Toolkit (ATK) for SuperCollider by Joseph Anderson and the Automation quark. It also uses B-format impulse responses (IRs) from the OpenAir project binaural IRs from the Salford-BBC Spatially-sampled Binaural Room Impulse Responses. The IRs have been modified here, having had the early reflections removed, to serve as "tail" IRs for use in reverberation.
 
@@ -86,7 +86,7 @@ http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDe
 returns:: 
 
 METHOD:: printSynthParams
-Print GUI parameters available in registered synths
+PPPrint GUI parameters available in registered synths
 
 
 
