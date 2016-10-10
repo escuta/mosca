@@ -63,8 +63,8 @@ GUI Parameters usable in SynthDefs
 \\dopon | Doppler effect on/off | 0 or 1
 \\dopamnt | Doppler ammount | 0 - 1 |
 \\angle | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
-\\glev | Global reverb level | 0 - 1 |
-\\llev | Local reverb level | 0 - 1 |
+\\glev | Global/Close reverb level | 0 - 1 |
+\\llev | Local/Distant reverb level | 0 - 1 |
 \\mx | X coord | -450 - 450 |
 \\my | Y coord | -450 - 450 |
 \\mz | Z coord | -450 - 450 |
@@ -2026,7 +2026,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
-		textbuf.string = "Global Reverberation";
+		textbuf.string = "Close Reverb Level";
 		gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
 		gnumbox.value = 1;
 		gnumbox.clipHi = pi;
@@ -2048,7 +2048,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
-		textbuf.string = "Local Reverberation";
+		textbuf.string = "Distant Reverb Level";
 		lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
 		lnumbox.value = 1;
 		lnumbox.clipHi = pi;

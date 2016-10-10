@@ -136,13 +136,23 @@ code::
 
 
 
-// Please also read "USING MOSCA" above
+/*
+Please also read "USING MOSCA" above
+
+Make sure the server is stopped before running this block example code
+*/
 
 (
-s.waitForBoot {
 s = Server.local;
 o = Server.local.options;
 o.numAudioBusChannels = 1024;
+o.numInputBusChannels = 32;
+o.numOutputBusChannels = 11; // 2 for stereo & 9 for 2nd order ambisonics
+o.memSize = 64 * 8192;
+o.numAudioBusChannels = 512;
+o.numWireBufs = 512;
+
+s.waitForBoot {
 
 // Add a SC internal decoder (1º only)
 // See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
