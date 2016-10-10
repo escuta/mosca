@@ -583,7 +583,7 @@ GUI Parameters usable in SynthDefs
 			
 		}).add;
 
-		SynthDef.new("espacAmb2Aformat",  { 
+		SynthDef.new("espacAmb2AFormat",  { 
 			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
 			glev = 0, llev = 0.2, soaBus;
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
@@ -831,7 +831,7 @@ GUI Parameters usable in SynthDefs
 				                              //  0 = centred. pi/2 = 100% displaced
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
-				SendTrig.kr(Impulse.kr(1), 0, mx); // debug
+				//SendTrig.kr(Impulse.kr(1), 0, mx); // debug
 				playerRef = Ref(0);
 				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				
@@ -1408,7 +1408,7 @@ GUI Parameters usable in SynthDefs
 										espacializador[i] = nil; synt[i] = nil;
 										playingBF[i] = false});
 								
-								espacializador[i] = Synth.new(\espacAmb2Aformat, [\inbus, mbus[i], 
+								espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i], 
 									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -1593,33 +1593,59 @@ GUI Parameters usable in SynthDefs
 						//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 						// reverb for non-contracted (full b-format) component
 
-						// reverb for contracted (mono) component - no, now it's for both
-						if(revGlobal == nil){
-							revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						};
 						
+							if(rv[i] == 1) {
+
+								if(revGlobalSoa == nil) {
+									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+										revGlobalBF, addAction:\addBefore);
+								};
+								
 						if (testado[i] == false) {
 							if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
 									\busini, this.busini[i]], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 							} {
 								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
 									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
 									\busini, this.scInBus[i] ], 
-									revGlobal, addAction: \addBefore).onFree({espacializador[i].free;
+									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil;});
 							};
 							
-							espacializador[i] = Synth.new(\espacAmb2Aformat, [\inbus, mbus[i], \gbus, gbus, 
-    								\dopon, doppler[i]], 
+							espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i], \gbus, gbus, 
+    								\soaBus, soaBus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 						};
 
+							} {
 
-
+								if (testado[i] == false) {
+									if (hwncheck[i].value) {
+										synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+											\busini, this.busini[i]], 
+											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;
+												playingBF[i] = false});
+									} {
+										synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+											\busini, this.scInBus[i] ], 
+											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;});
+									};
+									
+									espacializador[i] = Synth.new(\espacAmb2Chowning, [\inbus, mbus[i], \gbus, gbus, 
+										\dopon, doppler[i]], 
+										synt[i], addAction: \addAfter);
+								};
+								
+							};
+						
 
 						
 
