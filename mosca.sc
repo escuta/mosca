@@ -501,7 +501,7 @@ GUI Parameters usable in SynthDefs
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
 			dis = (1 - (fonte.rho - this.scale)) / this.scale;
-			SendTrig.kr(Impulse.kr(1), 0, dis); // debug
+			//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
@@ -1157,7 +1157,12 @@ GUI Parameters usable in SynthDefs
 			var btest;
 			{
 				win.drawFunc = {
-					
+
+
+								Pen.fillColor = Color(0.6,0.8,0.8);
+				Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+				Pen.fill;
+	
 					nfnts.do { arg ind;
 						Pen.fillColor = Color(0.8,0.2,0.9);
 						Pen.addArc(sprite[ind, 0]@sprite[ind, 1], 20, 0, 2pi);
@@ -1168,11 +1173,15 @@ GUI Parameters usable in SynthDefs
 					Pen.fillColor = Color.gray(0, 0.5);
 					Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 					Pen.fill;
+
+
+					
 				}
 			}.defer;
 			{ win.refresh; }.defer;
 			
 		};
+		
 		
 		
 		gbus = Bus.audio(server, 1); // global reverb bus
@@ -1276,6 +1285,7 @@ GUI Parameters usable in SynthDefs
 			arg i, tpos;
 			var path = tfield[i].value;
 
+			
 
 			// Note: ncanais refers to number of channels in the context of
 			// files on disk
@@ -1700,7 +1710,7 @@ GUI Parameters usable in SynthDefs
 					//		~testado = fatual;
 					testado[fatual] = true;
 					
-					
+					//win.drawFunc.value;	
 				}
 				{
 					
@@ -1715,9 +1725,10 @@ GUI Parameters usable in SynthDefs
 				but.value = 0;
 			}
 			}.defer;
+			
 		});
 		
-		
+		~win = win;
 		
 		
 		bsalvar = Button(win, Rect(10, this.width - 40, 90, 20))
@@ -1757,7 +1768,12 @@ GUI Parameters usable in SynthDefs
 		
 		win.drawFunc = {
 			//paint origin
-			Pen.fillColor = Color.white(0, 0.5);
+			Pen.fillColor = Color(0.6,0.8,0.8);
+					Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+					Pen.fill;
+					//Pen.width = 10;
+
+			Pen.fillColor = Color.gray(0, 0.5);
 			Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 			Pen.fill;
 			//	Pen.width = 10;
@@ -2694,6 +2710,13 @@ GUI Parameters usable in SynthDefs
 			xbox[fatual].valueAction = this.halfwidth - y;
 			ybox[fatual].valueAction = (x - this.halfwidth) * -1;
 			win.drawFunc = {
+				// big circle
+				Pen.fillColor = Color(0.6,0.8,0.8);
+				Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+				Pen.fill;
+					//Pen.width = 10;
+
+				
 				this.nfontes.do { arg i;	
 					Pen.fillColor = Color(0.8,0.2,0.9);
 					Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
@@ -2701,10 +2724,14 @@ GUI Parameters usable in SynthDefs
 					(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20), 
 						Font.default, Color.white);
 				};
-				// círculo central
+
+				
+				
+								// círculo central
 				Pen.fillColor = Color.gray(0, 0.5);
 				Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 				Pen.fill;
+
 				
 			};
 			
