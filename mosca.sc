@@ -31,7 +31,8 @@ Mosca {
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
 	<>dec,
 	<>triggerFunc, <>stopFunc,
-	<>scInBus;
+	<>scInBus,
+	<>width, <>halfwidth, <>scale;
 	classvar server, rirW, rirX, rirY, rirZ,
 	rirFLU, rirFRD, rirBLD, rirBRU,
 	rirA12, // 2nd order a-format array of RIRs
@@ -49,8 +50,8 @@ Mosca {
 	//classvar fftsize = 4096,
 	server;
 
-	*new { arg projDir, nsources = 1, rirWXYZ, srvr, decoder = nil;
-		^super.new.initMosca(projDir, nsources, rirWXYZ, srvr, decoder);
+	*new { arg projDir, nsources = 1, width = 900, rirWXYZ, srvr, decoder = nil;
+		^super.new.initMosca(projDir, nsources, width, rirWXYZ, srvr, decoder);
 	}
 
 	*printSynthParams {
@@ -76,7 +77,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, rirWXYZ, srvr, decoder;
+	initMosca { arg projDir, nsources, iwidth, rirWXYZ, srvr, decoder;
 		var makeSynthDefPlayers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -87,7 +88,9 @@ GUI Parameters usable in SynthDefs
 		testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
-
+		this.width = iwidth;
+		this.halfwidth = this.width / 2;
+		this.scale = this.halfwidth; // for the moment at least
 		
 		this.nfontes = nsources;
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
@@ -445,11 +448,11 @@ GUI Parameters usable in SynthDefs
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			globallev, locallev, gsig, fonte,
 			soa_a12_sig;
-			var lrev, scale = 565;
+			var lrev;
 			var grevganho = 0.04; // needs less gain
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - scale)) / scale;
+			dis = (1 - (fonte.rho - this.scale)) / this.scale;
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
@@ -468,7 +471,7 @@ GUI Parameters usable in SynthDefs
 			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
 			globallev = globallev * (glev);			
-			gsig = p * grevganho * globallev;
+			gsig = p * globallev;
 			// Local reverberation
 			locallev = 1 - dis; 			
 			locallev = locallev  * (llev);			
@@ -489,11 +492,12 @@ GUI Parameters usable in SynthDefs
 			//		globallev = 0.0001, locallev, gsig, fonte;
 			globallev, locallev, gsig, fonte,
 			soa_a12_sig;
-			var lrev, scale = 565;
+			var lrev;
 			var grevganho = 0.04; // needs less gain
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - scale)) / scale;
+			dis = (1 - (fonte.rho - this.scale)) / this.scale;
+			SendTrig.kr(Impulse.kr(1), 0, dis); // debug
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
@@ -536,11 +540,11 @@ GUI Parameters usable in SynthDefs
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			globallev = 0.0004, locallev, gsig, fonte;
-			var lrev, scale = 565;
+			var lrev;
 			var grevganho = 0.20;
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - scale)) / scale;
+			dis = (1 - (fonte.rho - this.scale)) / this.scale;
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
@@ -589,11 +593,11 @@ GUI Parameters usable in SynthDefs
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			globallev = 0.0004, locallev, gsig, fonte;
-			var lrev, scale = 565;
+			var lrev;
 			var grevganho = 0.20;
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - scale)) / scale;
+			dis = (1 - (fonte.rho - this.scale)) / this.scale;
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
@@ -652,7 +656,7 @@ GUI Parameters usable in SynthDefs
 			junto1, azim1, 
 			junto2, azim2, 
 			globallev = 0.0001, locallev, gsig, fonte;
-			var lrev, scale = 565;
+			var lrev;
 			var grevganho = 0.20;
 			
 			fonte = Cartesian.new;
@@ -664,7 +668,7 @@ GUI Parameters usable in SynthDefs
 			fonte.set(mx, my, mz);
 			el = fonte.phi;
 			
-			dis = (1 - (fonte.rho - scale)) / scale;
+			dis = (1 - (fonte.rho - this.scale)) / this.scale;
 			
 			dis = Select.kr(dis < 0, [dis, 0]); 
 
@@ -729,7 +733,7 @@ GUI Parameters usable in SynthDefs
 			junto1, azim1, 
 			junto2, azim2, 
 			globallev = 0.0001, locallev, gsig, fonte;
-			var lrev, scale = 565;
+			var lrev;
 			var grevganho = 0.20;
 			
 			fonte = Cartesian.new;
@@ -741,7 +745,7 @@ GUI Parameters usable in SynthDefs
 			fonte.set(mx, my, mz);
 			el = fonte.phi;
 			
-			dis = (1 - (fonte.rho - scale)) / scale;
+			dis = (1 - (fonte.rho - this.scale)) / this.scale;
 			
 			dis = Select.kr(dis < 0, [dis, 0]); 
 
@@ -821,12 +825,12 @@ GUI Parameters usable in SynthDefs
 				mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt,
 				busini;
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
-				azim, dis = 1, fonte, scale = 565, globallev, locallev, 
+				azim, dis = 1, fonte, globallev, locallev, 
 				gsig, lsig, rd, dopplershift;
 				var grevganho = 0.20;			
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - scale)) / scale;
+				dis = (1 - (fonte.rho - this.scale)) / this.scale;
 				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
 				                              //  0 = centred. pi/2 = 100% displaced
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
@@ -857,7 +861,7 @@ GUI Parameters usable in SynthDefs
 				globallev = globallev - 1.0; // lower tail of curve to zero
 				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				globallev = globallev * (glev* 6) * grevganho;
+				globallev = globallev * (glev* 6);
 				
 				gsig = playerRef.value[0] * globallev;
 				
@@ -1033,7 +1037,7 @@ GUI Parameters usable in SynthDefs
 	openGui {
 
 		arg dur = 120;
-		var fonte, dist, scale = 565, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
+		var fonte, dist, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		loopcheck, lpcheck, lp,
@@ -1157,7 +1161,7 @@ GUI Parameters usable in SynthDefs
 							Font.default, Color.white);
 					};
 					Pen.fillColor = Color.gray(0, 0.5);
-					Pen.addArc(450@450, 20, 0, 2pi);
+					Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 					Pen.fill;
 				}
 			}.defer;
@@ -1173,7 +1177,7 @@ GUI Parameters usable in SynthDefs
 		~t2 = gbfbus;
 		~t3 = soaBus;
 		fonte = Point.new;
-		win = Window.new("Mosca", Rect(0, 900, 900, 900)).front;
+		win = Window.new("Mosca", Rect(0, this.width, this.width, this.width)).front;
 		wdados = Window.new("Data", Rect(900, 900, 990, (this.nfontes*20)+60 ));
 		wdados.userCanClose = false;
 		
@@ -1749,7 +1753,7 @@ GUI Parameters usable in SynthDefs
 		win.drawFunc = {
 			//paint origin
 			Pen.fillColor = Color.white(0, 0.5);
-			Pen.addArc(450@450, 20, 0, 2pi);
+			Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 			Pen.fill;
 			//	Pen.width = 10;
 		};
@@ -1787,7 +1791,7 @@ GUI Parameters usable in SynthDefs
 			dirslider.value = dlev[fatual] / (pi/2);
 			dirnumbox.value = dlev[fatual];
 			cslider.value = clev[fatual];
-			zslider.value = (zlev[fatual] + 450) / 900;
+			zslider.value = (zlev[fatual] + this.halfwidth) / this.width;
 			("Z-lev = " ++  zlev[fatual]).postln;
 			
 			dpslider.value = dplev[fatual];
@@ -1935,8 +1939,8 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "Z-Axis";
 		znumbox = NumberBox(win, Rect(835, 705, 60, 20));
 		znumbox.value = 0;
-		znumbox.clipHi = 450;
-		znumbox.clipLo = -450;
+		znumbox.clipHi = this.halfwidth;
+		znumbox.clipLo = this.halfwidth * -1;
 		znumbox.step_(0.1); 
 		znumbox.scroll_step=0.1;
 		znumbox.align = \center;
@@ -1955,7 +1959,7 @@ GUI Parameters usable in SynthDefs
 		zslider = Slider.new(win, Rect(855, 200, 20, 500));
 		zslider.value = 0.5;
 		zslider.action = {arg num;
-			{znumbox.value = (450 - (num.value * 900)) * -1;}.defer;
+			{znumbox.value = (this.halfwidth - (num.value * this.width)) * -1;}.defer;
 			{zbox[fatual].valueAction = znumbox.value;}.defer;
 			{zlev[fatual] = znumbox.value;}.defer;
 			
@@ -2324,7 +2328,7 @@ GUI Parameters usable in SynthDefs
 			};
 			
 			xbox[i].action = {arg num;
-				sprite[i, 1] = 450 + (num.value * -1);
+				sprite[i, 1] = this.halfwidth + (num.value * -1);
 				novoplot.value(num.value, ybox[i], i, this.nfontes);
 				xval[i] = num.value;
 				if(espacializador[i].notNil || playingBF[i]){
@@ -2336,7 +2340,7 @@ GUI Parameters usable in SynthDefs
 				
 			};
 			ybox[i].action = {arg num; 
-				sprite[i, 0] = (num.value * -1 + 450);
+				sprite[i, 0] = (num.value * -1 + this.halfwidth);
 				yval[i] = num.value;
 				if(espacializador[i].notNil || playingBF[i]){
 					espacializador[i].set(\my, num.value);
@@ -2493,8 +2497,8 @@ GUI Parameters usable in SynthDefs
 				zlev[i] = num.value;
 				if(i == fatual) 
 				{
-					//var val = (450 - (num.value * 900)) * -1;
-					zslider.value = (num.value + 450) / 900;
+					//var val = (this.halfwidth - (num.value * width)) * -1;
+					zslider.value = (num.value + this.halfwidth) / this.width;
 					znumbox.value = num.value;
 				};
 			};
@@ -2507,7 +2511,7 @@ GUI Parameters usable in SynthDefs
 				this.ncan[i] = num.value;
 				if(i == fatual )
 				{
-					//var val = (450 - (num.value * 900)) * -1;
+					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
 					ncannumbox.value = num.value;
 				};
@@ -2519,7 +2523,7 @@ GUI Parameters usable in SynthDefs
 				this.busini[i] = num.value;
 				if(i == fatual) 
 				{
-					//var val = (450 - (num.value * 900)) * -1;
+					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
 					busininumbox.value = num.value;
 				};
@@ -2569,8 +2573,8 @@ GUI Parameters usable in SynthDefs
 		};
 
 	
-		//controle = Automation(dur).front(win, Rect(450, 10, 400, 25));
-		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win, Rect(450, 10, 400, 25));
+		//controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
+		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win, Rect(this.halfwidth, 10, 400, 25));
 		controle.presetDir = prjDr ++ "/auto";
 		//controle.setMinTimeStep(2.0);
 		controle.onEnd = {
@@ -2681,8 +2685,8 @@ GUI Parameters usable in SynthDefs
 		
 		win.view.mouseMoveAction = {|view, x, y, modifiers | [x, y];
 
-			xbox[fatual].valueAction = 450 - y;
-			ybox[fatual].valueAction = (x - 450) * -1;
+			xbox[fatual].valueAction = this.halfwidth - y;
+			ybox[fatual].valueAction = (x - this.halfwidth) * -1;
 			win.drawFunc = {
 				this.nfontes.do { arg i;	
 					Pen.fillColor = Color(0.8,0.2,0.9);
@@ -2693,7 +2697,7 @@ GUI Parameters usable in SynthDefs
 				};
 				// círculo central
 				Pen.fillColor = Color.gray(0, 0.5);
-				Pen.addArc(450@450, 20, 0, 2pi);
+				Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 				Pen.fill;
 				
 			};
