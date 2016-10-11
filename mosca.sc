@@ -2051,7 +2051,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
-		textbuf.string = "Close Reverb Level";
+		textbuf.string = "Close Reverb";
 		gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
 		gnumbox.value = 1;
 		gnumbox.clipHi = pi;
@@ -2073,7 +2073,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
-		textbuf.string = "Distant Reverb Level";
+		textbuf.string = "Distant Reverb";
 		lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
 		lnumbox.value = 1;
 		lnumbox.clipHi = pi;
