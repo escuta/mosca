@@ -150,7 +150,7 @@ Make sure the server is stopped before running this block example code
 
 (
 s = Server.local;
-o = Server.local.options;
+o = s.options;
 o.numAudioBusChannels = 1024;
 o.numInputBusChannels = 32;
 o.numOutputBusChannels = 11; // 2 for stereo & 9 for 2nd order ambisonics
@@ -163,7 +163,7 @@ s.waitForBoot {
 // Add a SC internal decoder (1º only)
 // See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
 //~decoder = FoaDecoderKernel.newUHJ;
-~decoder = FoaDecoderKernel.newCIPIC(21);
+~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
 s.sync;
 MIDIIn.connect;
 s.sync;
@@ -176,7 +176,7 @@ s.sync;
 //If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
 // outputs for decoding with an external decoder
 
-~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12, 990,
+~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12, 950,
 "QL14Tail2Sec.amb", s, ~decoder);
 
 s.sync;

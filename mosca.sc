@@ -451,6 +451,7 @@ GUI Parameters usable in SynthDefs
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			globallev, locallev, gsig, fonte,
+			intens,
 			soa_a12_sig;
 			var lrev;
 			var grevganho = 0.04; // needs less gain
@@ -460,6 +461,7 @@ GUI Parameters usable in SynthDefs
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
+			dis = Select.kr(dis > 1, [dis, 1]); 
 			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging			
 			// high freq attenuation
 			p = In.ar(inbus, 1);
@@ -469,8 +471,13 @@ GUI Parameters usable in SynthDefs
 			rd = Lag.kr(rd, 1.0);
 			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
 			p = dopplershift;			
-			// Global reverbearation
+			// Global reverberation & intensity
 			globallev = 1 / (1 - dis).sqrt;
+			intens = globallev - 1;
+			intens = Select.kr(intens > 4, [intens, 4]); 
+			intens = Select.kr(intens < 0, [intens, 0]);
+			intens = intens / 4;
+
 			globallev = globallev - 1.0; // lower tail of curve to zero
 			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
@@ -480,7 +487,7 @@ GUI Parameters usable in SynthDefs
 			locallev = 1 - dis; 			
 			locallev = locallev  * (llev);			
 			junto = p;
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
+			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 			ambsinal = [w, x, y, z, r, s, t, u, v];
 			Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 			ambsinal1O = [w, x, y, z];
@@ -495,6 +502,7 @@ GUI Parameters usable in SynthDefs
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			//		globallev = 0.0001, locallev, gsig, fonte;
 			globallev, locallev, gsig, fonte,
+			intens,
 			soa_a12_sig;
 			var lrev;
 			var grevganho = 0.04; // needs less gain
@@ -505,6 +513,7 @@ GUI Parameters usable in SynthDefs
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
+			dis = Select.kr(dis > 1, [dis, 1]); 
 			// high freq attenuation
 			p = In.ar(inbus, 1);
 			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
@@ -513,8 +522,14 @@ GUI Parameters usable in SynthDefs
 			rd = Lag.kr(rd, 1.0);
 			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
 			p = dopplershift;
-			// Global reverbearation
+			// Global reverberation & intensity
 			globallev = 1 / (1 - dis).sqrt;
+			intens = globallev - 1;
+			intens = Select.kr(intens > 4, [intens, 4]); 
+			intens = Select.kr(intens < 0, [intens, 0]);
+			intens = intens / 4;
+
+			//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
 			globallev = globallev - 1.0; // lower tail of curve to zero
 			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
@@ -526,7 +541,8 @@ GUI Parameters usable in SynthDefs
 			locallev = locallev  * (llev);
 			lrev = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
 			junto = p + lrev;
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
+			//			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
+			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 			ambsinal = [w, x, y, z, r, s, t, u, v];
 			ambsinal1O = [w, x, y, z];
 			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
@@ -544,7 +560,8 @@ GUI Parameters usable in SynthDefs
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			globallev = 0.0004, locallev, gsig, fonte;
-			var lrev;
+			var lrev,
+			intens;
 			var grevganho = 0.20;
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
@@ -552,6 +569,7 @@ GUI Parameters usable in SynthDefs
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
+			dis = Select.kr(dis > 1, [dis, 1]); 
 			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
 			
 			// high freq attenuation
@@ -560,6 +578,11 @@ GUI Parameters usable in SynthDefs
 			
 			// Reverberação global
 			globallev = 1 / (1 - dis).sqrt;
+			intens = globallev - 1;
+			intens = Select.kr(intens > 4, [intens, 4]); 
+			intens = Select.kr(intens < 0, [intens, 0]);
+			intens = intens / 4;
+
 			globallev = globallev - 1.0; // lower tail of curve to zero
 			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
@@ -580,7 +603,7 @@ GUI Parameters usable in SynthDefs
 			//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
 			junto = p + lrev;
 			
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
+			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 			
 			//	ambsinal = [w, x, y, u, v]; 
 			ambsinal = [w, x, y, z, r, s, t, u, v]; 
@@ -597,7 +620,7 @@ GUI Parameters usable in SynthDefs
 			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
 			junto, rd, dopplershift, azim, dis, xatras, yatras,  
 			globallev = 0.0004, locallev, gsig, fonte;
-			var lrev;
+			var lrev, intens;
 			var grevganho = 0.20;
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
@@ -605,6 +628,7 @@ GUI Parameters usable in SynthDefs
 			azim = fonte.theta;
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]); 
+			dis = Select.kr(dis > 1, [dis, 1]); 
 			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
 			
 			// high freq attenuation
@@ -613,6 +637,11 @@ GUI Parameters usable in SynthDefs
 			
 			// Reverberação global
 			globallev = 1 / (1 - dis).sqrt;
+			intens = globallev - 1;
+			intens = Select.kr(intens > 4, [intens, 4]); 
+			intens = Select.kr(intens < 0, [intens, 0]);
+			intens = intens / 4;
+
 			globallev = globallev - 1.0; // lower tail of curve to zero
 			globallev = Select.kr(globallev > 1, [globallev, 1]); 
 			globallev = Select.kr(globallev < 0, [globallev, 0]);
@@ -634,7 +663,7 @@ GUI Parameters usable in SynthDefs
 			//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
 			junto = p ;
 			
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
+			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 			
 			//	ambsinal = [w, x, y, u, v]; 
 			ambsinal = [w, x, y, z, r, s, t, u, v]; 
@@ -658,7 +687,8 @@ GUI Parameters usable in SynthDefs
 			w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
 			junto, rd, dopplershift, azim, dis, 
 			junto1, azim1, 
-			junto2, azim2, 
+			junto2, azim2,
+			intens,
 			globallev = 0.0001, locallev, gsig, fonte;
 			var lrev;
 			var grevganho = 0.20;
@@ -675,6 +705,7 @@ GUI Parameters usable in SynthDefs
 			dis = (1 - (fonte.rho - this.scale)) / this.scale;
 			
 			dis = Select.kr(dis < 0, [dis, 0]); 
+			dis = Select.kr(dis > 1, [dis, 1]); 
 
 			p = In.ar(inbus, 2);
 			//p = p[0];
@@ -688,6 +719,11 @@ GUI Parameters usable in SynthDefs
 			
 			// Reverberação global
 			globallev = 1 / (1 - dis).sqrt;
+			intens = globallev - 1;
+			intens = Select.kr(intens > 4, [intens, 4]); 
+			intens = Select.kr(intens < 0, [intens, 0]);
+			intens = intens / 4;
+
 			globallev = globallev - 1.0; // lower tail of curve to zero
 			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
 			globallev = Select.kr(globallev < 0, [globallev, 0]); 
@@ -711,8 +747,8 @@ GUI Parameters usable in SynthDefs
 			junto2 = p2;
 			
 			
-			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, dis);
-			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, dis);
+			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
+			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
 			
 			ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
 			ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
@@ -737,7 +773,8 @@ GUI Parameters usable in SynthDefs
 			junto1, azim1, 
 			junto2, azim2, 
 			globallev = 0.0001, locallev, gsig, fonte;
-			var lrev;
+			var lrev,
+			intens;
 			var grevganho = 0.20;
 			
 			fonte = Cartesian.new;
@@ -752,6 +789,7 @@ GUI Parameters usable in SynthDefs
 			dis = (1 - (fonte.rho - this.scale)) / this.scale;
 			
 			dis = Select.kr(dis < 0, [dis, 0]); 
+			dis = Select.kr(dis > 1, [dis, 1]); 
 
 			p = In.ar(inbus, 2);
 			//p = p[0];
@@ -765,6 +803,11 @@ GUI Parameters usable in SynthDefs
 			
 			// Reverberação global
 			globallev = 1 / (1 - dis).sqrt;
+			intens = globallev - 1;
+			intens = Select.kr(intens > 4, [intens, 4]); 
+			intens = Select.kr(intens < 0, [intens, 0]);
+			intens = intens / 4;
+			
 			globallev = globallev - 1.0; // lower tail of curve to zero
 			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
 			globallev = Select.kr(globallev < 0, [globallev, 0]); 
@@ -785,8 +828,8 @@ GUI Parameters usable in SynthDefs
 			junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
 			junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
 			
-			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, dis);
-			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, dis);
+			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
+			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
 			
 			ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
 			ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
@@ -830,7 +873,8 @@ GUI Parameters usable in SynthDefs
 				busini;
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
 				azim, dis = 1, fonte, globallev, locallev, 
-				gsig, lsig, rd, dopplershift;
+				gsig, lsig, rd, dopplershift,
+				intens;
 				var grevganho = 0.20;			
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
@@ -839,6 +883,7 @@ GUI Parameters usable in SynthDefs
 				                              //  0 = centred. pi/2 = 100% displaced
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
+				dis = Select.kr(dis > 1, [dis, 1]); 
 				//SendTrig.kr(Impulse.kr(1), 0, mx); // debug
 				playerRef = Ref(0);
 				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
@@ -851,17 +896,23 @@ GUI Parameters usable in SynthDefs
 				wsinal = playerRef.value[0] * contr * level * dis * 2.0;
 				
 				Out.ar(outbus, wsinal);
-				
+
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]); 
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+				SendTrig.kr(Impulse.kr(1), 0, dis); // debug
 				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
 				
-				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle, level * dis * (1 - contr));
+				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle, level * intens * (1 - contr));
 				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
 
 				//	Out.ar(2, player);
 				playBFormatOutFunc.value(playerRef.value, dec);
 				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
+
 				globallev = globallev - 1.0; // lower tail of curve to zero
 				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
@@ -2596,7 +2647,7 @@ GUI Parameters usable in SynthDefs
 	
 		//controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
 		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win,
-			Rect(10, this.width - 80, 400, 20));
+			Rect(10, this.width - 80, 400, 22));
 		controle.presetDir = prjDr ++ "/auto";
 		//controle.setMinTimeStep(2.0);
 		controle.onEnd = {
