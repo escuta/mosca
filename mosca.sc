@@ -948,78 +948,98 @@ GUI Parameters usable in SynthDefs
 				Out.ar(outbus, playerRef.value * level);
 			}).add;
 
+			2.do {   // make linear and non-linear versions
+				arg x;
+				var prepareRotateFunc, linear = "";
+				if (x == 1) {
+					linear = "_linear";
+					prepareRotateFunc = {|dis, intens, playerRef, contr, rotAngle, level|
+						playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+							level * dis * (1 - contr));
+					};
+				} {
+					prepareRotateFunc = {|dis, intens, playerRef, contr, rotAngle, level|
+						playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+							level * intens * (1 - contr));
+					};
+				};
+				
+				
+				SynthDef.new("playBFormat"++type++linear, { arg outbus, bufnum = 0, rate = 1, 
+					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+					mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt,
+					busini;
+					var scaledRate, playerRef, wsinal, spos, pushang = 0,
+					azim, dis = 1, fonte, globallev, locallev, 
+					gsig, lsig, rd, dopplershift,
+					intens;
+					var grevganho = 0.20;			
+					fonte = Cartesian.new;
+					fonte.set(mx, my, mz);
+					dis = (1 - (fonte.rho - this.scale)) / this.scale;
+					pushang = (1 - dis) * pi / 2; // degree of sound field displacement
+					//  0 = centred. pi/2 = 100% displaced
+					azim = fonte.theta; // ângulo (azimuth) de deslocamento
+					dis = Select.kr(dis < 0, [dis, 0]); 
+					dis = Select.kr(dis > 1, [dis, 1]); 
+					//SendTrig.kr(Impulse.kr(1), 0, mx); // debug
+					playerRef = Ref(0);
+					playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+					
+					rd = (1 - dis) * 340;
+					rd = Lag.kr(rd, 1.0);
+					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
+					playerRef.value = dopplershift;
+					
+					wsinal = playerRef.value[0] * contr * level * dis * 2.0;
+					
+					Out.ar(outbus, wsinal);
+					
+					// Reverberação global
+					globallev = 1 / (1 - dis).sqrt;
+					intens = globallev - 1;
+					intens = Select.kr(intens > 4, [intens, 4]); 
+					intens = Select.kr(intens < 0, [intens, 0]);
+					intens = intens / 4;
+					//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
+					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
+					
+
+					//					playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+					//						level * intens * (1 - contr));
+					prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, level);
+
+					playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
+					
+					//	Out.ar(2, player);
+					playBFormatOutFunc.value(playerRef.value, dec);
+					
+					
+					globallev = globallev - 1.0; // lower tail of curve to zero
+					globallev = Select.kr(globallev > 1, [globallev, 1]); 
+					globallev = Select.kr(globallev < 0, [globallev, 0]); 
+					globallev = globallev * (glev* 6);
+					
+					gsig = playerRef.value[0] * globallev;
+					
+					locallev = 1 - dis; 
+					
+					//				locallev = locallev  * (llev*10) * grevganho;
+					locallev = locallev  * (llev*5);
+					lsig = playerRef.value[0] * locallev;
+					
+					//
+					//				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
+					
+					// trying again ... testing
+					
+					gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+					Out.ar(gbfbus, gsig); 
+					
+					
+				}).add;
+			};
 			
-			
-			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1, 
-				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt,
-				busini;
-				var scaledRate, playerRef, wsinal, spos, pushang = 0,
-				azim, dis = 1, fonte, globallev, locallev, 
-				gsig, lsig, rd, dopplershift,
-				intens;
-				var grevganho = 0.20;			
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - this.scale)) / this.scale;
-				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
-				//  0 = centred. pi/2 = 100% displaced
-				azim = fonte.theta; // ângulo (azimuth) de deslocamento
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				dis = Select.kr(dis > 1, [dis, 1]); 
-				//SendTrig.kr(Impulse.kr(1), 0, mx); // debug
-				playerRef = Ref(0);
-				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
-				
-				rd = (1 - dis) * 340;
-				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
-				playerRef.value = dopplershift;
-				
-				wsinal = playerRef.value[0] * contr * level * dis * 2.0;
-				
-				Out.ar(outbus, wsinal);
-
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]); 
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
-				SendTrig.kr(Impulse.kr(1), 0, dis); // debug
-				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
-				
-				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle, level * intens * (1 - contr));
-				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
-
-				//	Out.ar(2, player);
-				playBFormatOutFunc.value(playerRef.value, dec);
-				
-
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); 
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				globallev = globallev * (glev* 6);
-				
-				gsig = playerRef.value[0] * globallev;
-				
-				locallev = 1 - dis; 
-				
-				//				locallev = locallev  * (llev*10) * grevganho;
-				locallev = locallev  * (llev*5);
-				lsig = playerRef.value[0] * locallev;
-
-				//
-				//				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
-
-				// trying again ... testing
-				
-				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
-				Out.ar(gbfbus, gsig); 
-				
-				
-			}).add;
-
 		}; //end makeSynthDefPlayers
 
 		// Make File-in SynthDefs
@@ -1556,7 +1576,7 @@ GUI Parameters usable in SynthDefs
 								if (testado[i] == false) {
 
 									
-									synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+									synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
 										mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 										\rate, 1, \tpos, tpos, \lp,
 										lp[i], \level, level[i], \dopon, doppler[i]], 
@@ -1573,7 +1593,7 @@ GUI Parameters usable in SynthDefs
 								if (testado[i] == false) {
 
 									
-									synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+									synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
 										mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 										\rate, 1, \tpos, tpos, \lp,
 										lp[i], \level, level[i], \dopon, doppler[i]], 
@@ -1640,7 +1660,7 @@ GUI Parameters usable in SynthDefs
 								};
 								
 								
-								espacializador[i] = Synth.new(\espacAmbAFormatVerb, [\inbus, mbus[i], 
+								espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
 									\soaBus, soaBus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -1662,7 +1682,7 @@ GUI Parameters usable in SynthDefs
 								};
 								
 								
-								espacializador[i] = Synth.new(\espacAmbChowning, [\inbus, mbus[i], 
+								espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
 									\gbus, gbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -1709,7 +1729,7 @@ GUI Parameters usable in SynthDefs
 											espacializador[i] = nil; synt[i] = nil});
 								};
 								
-								espacializador[i] = Synth.new(\espacAmbEstereoAFormat, [\inbus, sbus[i], \gbus, gbus,
+								espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i], \gbus, gbus,
 									\soaBus, soaBus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -1729,7 +1749,7 @@ GUI Parameters usable in SynthDefs
 										espacializador[i] = nil; synt[i] = nil});
 							};
 							
-							espacializador[i] = Synth.new(\espacAmbEstereoChowning, [\inbus, sbus[i],
+							espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
 								\gbus, gbus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 
@@ -1760,21 +1780,22 @@ GUI Parameters usable in SynthDefs
 							
 							if (testado[i] == false) {
 								if (hwncheck[i].value) {
-									synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+									synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus, mbus[i],
 										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
 										\busini, this.busini[i]], 
 										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil;});
 								} {
-									synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
-										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+									synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+										level[i], \dopon, doppler[i],
 										\busini, this.scInBus[i] ], 
 										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil;});
 								};
 								
-								espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i], \gbus, gbus, 
-    								\soaBus, soaBus, \dopon, doppler[i]], 
+								espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 
@@ -1782,22 +1803,24 @@ GUI Parameters usable in SynthDefs
 
 							if (testado[i] == false) {
 								if (hwncheck[i].value) {
-									synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
-										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+									synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+										level[i], \dopon, doppler[i],
 										\busini, this.busini[i]], 
 										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil;
 											playingBF[i] = false});
 								} {
-									synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
-										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+									synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+										level[i], \dopon, doppler[i],
 										\busini, this.scInBus[i] ], 
 										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil;});
 								};
 								
-								espacializador[i] = Synth.new(\espacAmb2Chowning, [\inbus, mbus[i], \gbus, gbus, 
-									\dopon, doppler[i]], 
+								espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
+									\gbus, gbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 							
@@ -2630,7 +2653,6 @@ GUI Parameters usable in SynthDefs
 
 			dbox[i].action = {arg num; 
 				//	num.value.postln;
-				"dirBox!".postln;
 				synt[i].set(\directang, num.value);
 				this.setSynths(i, \directang, num.value);
 				dlev[i] = num.value;
