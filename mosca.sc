@@ -32,7 +32,9 @@ Mosca {
 	<>dec,
 	<>triggerFunc, <>stopFunc,
 	<>scInBus,
-	<>width, <>halfwidth, <>scale;
+	<>width, <>halfwidth, <>scale,
+    <>delaytime, <>decaytime; // for allpass 
+
 	classvar server, rirW, rirX, rirY, rirZ,
 	rirFLU, rirFRD, rirBLD, rirBRU,
 	rirA12, // 2nd order a-format array of RIRs
@@ -50,8 +52,8 @@ Mosca {
 	//classvar fftsize = 4096,
 	server;
 
-	*new { arg projDir, nsources = 1, width = 800, rirWXYZ, srvr, decoder = nil;
-		^super.new.initMosca(projDir, nsources, width, rirWXYZ, srvr, decoder);
+	*new { arg projDir, nsources = 1, width = 800, rir, srvr, decoder = nil;
+		^super.new.initMosca(projDir, nsources, width, rir, srvr, decoder);
 	}
 
 	*printSynthParams {
@@ -79,16 +81,17 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, rirWXYZ, srvr, decoder;
+	initMosca { arg projDir, nsources, iwidth, rir, srvr, decoder;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
 		revGlobalSoaOutFunc,
 		prepareSoaSigFunc,
-		bufAformat, bufAformat_soa_a12, bufWXYZ,
+		localReverbFunc, localReverbStereoFunc,
+		bufAformat, bufAformat_soa_a12, bufWXYZ;
 		//synthRegistry = List[],
 		
-		testit; // remove at some point with other debugging stuff
+		//	testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
 		if (iwidth < 550) {
@@ -263,187 +266,245 @@ GUI Parameters usable in SynthDefs
 		server = srvr ? Server.default;
 		prjDr = projDir;
 		dec = decoder;
-		
-		//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
-		rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [0]);
-		rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [1]);
-		rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [2]);
-		rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rirWXYZ, channels: [3]);
-		
-		bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rirWXYZ);
-		server.sync;
-		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
-		bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
-		server.sync;
-		
-		
-		{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
-			bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-			Out.ar(0, Silent.ar);
-		}.play;
 
-		
-		(bufAformat.numFrames / server.sampleRate).wait;
-
-		
-		bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
-		
-		
-		server.sync;
-		
-		
-		{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), foa_a12_decoder_matrix),
-			bufAformat_soa_a12, 
-			Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-			Out.ar(0, Silent.ar);
-		}.play;
-		
-
-		(bufAformat.numFrames / server.sampleRate).wait;
-
-		bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav", sampleFormat: "int24");
-		
-		
-		
-		server.sync;
-		rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
-		rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
-		rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
-		rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
-		
-		server.sync;
-		
-		
-		bufsize = PartConv.calcBufSize(fftsize, rirW);
-
-		~bufsize1=bufsize;
-
-		rirWspectrum= Buffer.alloc(server, bufsize, 1);
-		rirXspectrum= Buffer.alloc(server, bufsize, 1);
-		rirYspectrum= Buffer.alloc(server, bufsize, 1);
-		rirZspectrum= Buffer.alloc(server, bufsize, 1);
-		server.sync;
-		rirWspectrum.preparePartConv(rirW, fftsize);
-		server.sync;
-		rirXspectrum.preparePartConv(rirX, fftsize);
-		server.sync;
-		rirYspectrum.preparePartConv(rirY, fftsize);
-		server.sync;
-		rirZspectrum.preparePartConv(rirZ, fftsize);
-
-		
-		server.sync;
-		
-		rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
-		rirFRDspectrum= Buffer.alloc(server, bufsize, 1);
-		rirBLDspectrum= Buffer.alloc(server, bufsize, 1);
-		rirBRUspectrum= Buffer.alloc(server, bufsize, 1);
-		server.sync;
-		rirFLUspectrum.preparePartConv(rirFLU, fftsize);
-		server.sync;
-		rirFRDspectrum.preparePartConv(rirFRD, fftsize);
-		server.sync;
-		rirBLDspectrum.preparePartConv(rirBLD, fftsize);
-		server.sync;
-		rirBRUspectrum.preparePartConv(rirBRU, fftsize);
-		server.sync;
-
-		rirA12 = Array.newClear(12);
-		rirA12Spectrum = Array.newClear(12);
-		12.do { arg i;
-			rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav", channels: [i]);
+		if (rir.isString) {
+			//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+			rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
+			rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
+			rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
+			rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [3]);
+			
+			bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rir);
 			server.sync;
-			rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
+			bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
+			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
 			server.sync;
-			rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
+			
+			
+			{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
+				bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+				Out.ar(0, Silent.ar);
+			}.play;
+
+			
+			(bufAformat.numFrames / server.sampleRate).wait;
+
+			
+			bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
+			
+			
 			server.sync;
+			
+			
+			{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), foa_a12_decoder_matrix),
+				bufAformat_soa_a12, 
+				Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+				Out.ar(0, Silent.ar);
+			}.play;
+			
+
+			(bufAformat.numFrames / server.sampleRate).wait;
+
+			bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav", sampleFormat: "int24");
+			
+			
+			
+			server.sync;
+			rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
+			rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
+			rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
+			rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
+			
+			server.sync;
+			
+			
+			bufsize = PartConv.calcBufSize(fftsize, rirW);
+
+			~bufsize1=bufsize;
+
+			rirWspectrum= Buffer.alloc(server, bufsize, 1);
+			rirXspectrum= Buffer.alloc(server, bufsize, 1);
+			rirYspectrum= Buffer.alloc(server, bufsize, 1);
+			rirZspectrum= Buffer.alloc(server, bufsize, 1);
+			server.sync;
+			rirWspectrum.preparePartConv(rirW, fftsize);
+			server.sync;
+			rirXspectrum.preparePartConv(rirX, fftsize);
+			server.sync;
+			rirYspectrum.preparePartConv(rirY, fftsize);
+			server.sync;
+			rirZspectrum.preparePartConv(rirZ, fftsize);
+
+			
+			server.sync;
+			
+			rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
+			rirFRDspectrum= Buffer.alloc(server, bufsize, 1);
+			rirBLDspectrum= Buffer.alloc(server, bufsize, 1);
+			rirBRUspectrum= Buffer.alloc(server, bufsize, 1);
+			server.sync;
+			rirFLUspectrum.preparePartConv(rirFLU, fftsize);
+			server.sync;
+			rirFRDspectrum.preparePartConv(rirFRD, fftsize);
+			server.sync;
+			rirBLDspectrum.preparePartConv(rirBLD, fftsize);
+			server.sync;
+			rirBRUspectrum.preparePartConv(rirBRU, fftsize);
+			server.sync;
+
+			rirA12 = Array.newClear(12);
+			rirA12Spectrum = Array.newClear(12);
+			12.do { arg i;
+				rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav", channels: [i]);
+				server.sync;
+				rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
+				server.sync;
+				rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
+				server.sync;
+			};
+			server.sync;
+
+
+
+			~rirSpecTest =  rirA12Spectrum;
+			~rirFLUspectrum = rirFLUspectrum;
+
+			
+			rirW.free; // don't need time domain data anymore, just needed spectral version
+			rirX.free;
+			rirY.free;
+			rirZ.free;
+			rirFLU.free; 
+			rirFRD.free;
+			rirBLD.free;
+			rirBRU.free;
+			bufAformat.free;
+			bufWXYZ.free;
+			12.do { arg i;
+				rirA12[i].free;
+			};
+			
+			server.sync;
+
+
+
+			/// START SYNTH DEFS ///////
+
+			SynthDef.new("revGlobalAmb",  { arg gbus;
+				var sig, convsig;
+				sig = In.ar(gbus, 1);
+				convsig = [
+					PartConv.ar(sig, fftsize, rirWspectrum), 
+					PartConv.ar(sig, fftsize, rirXspectrum), 
+					PartConv.ar(sig, fftsize, rirYspectrum),
+					PartConv.ar(sig, fftsize, rirZspectrum)
+				];
+				revGlobalAmbFunc.value(convsig, dec);
+			}).add;
+			
+			
+			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
+				var convsig, sig = In.ar(gbfbus, 4);
+				sig = FoaDecode.ar(sig, b2a);
+				convsig = [
+					PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
+					PartConv.ar(sig[1], fftsize, rirFRDspectrum), 
+					PartConv.ar(sig[2], fftsize, rirBLDspectrum),
+					PartConv.ar(sig[3], fftsize, rirBRUspectrum)
+				];
+				convsig = FoaEncode.ar(convsig, a2b);
+				revGlobalAmbFunc.value(convsig, dec);
+			}).add;
+
+			SynthDef.new("revGlobalSoaA12",  { arg soaBus;
+				var w, x, y, z, r, s, t, u, v,
+				foaSig, soaSig, tmpsig;
+				var sig = In.ar(soaBus, 9);
+
+
+				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+				//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
+				tmpsig = [
+					PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]), 
+					PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]), 
+					PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]), 
+					PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]), 
+					PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]), 
+					PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]), 
+					PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]), 
+					PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]), 
+					PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]), 
+					PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]), 
+					PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]), 
+					PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]), 
+				];
+
+				tmpsig = tmpsig*4;
+				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
+				foaSig = [w, x, y, z];
+				soaSig = [w, x, y, z, r, s, t, u, v];
+				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+			}).add;
+
+			localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+				lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+			};
+
+			localReverbStereoFunc = { | junto1Ref, junto2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+				junto1Ref.value = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				junto2Ref.value = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+			};
+
+
+		} // end if rir.isString
+		{  // else
+
+			this.decaytime = rir;
+			this.delaytime = rir / 2;
+			SynthDef.new("revGlobalAmb",  { arg gbus;
+				var sig = In.ar(gbus, 1);
+				sig = [sig, sig, sig, sig];
+				sig = AllpassN.ar(sig, 0.050, Array.fill(4, {0.050}).rand, 0.5);
+				
+				sig = FoaEncode.ar(sig, a2b);
+				revGlobalAmbFunc.value(sig, dec);
+			}).add;
+			
+			
+			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
+				var convsig, sig = In.ar(gbfbus, 4);
+				sig = DelayN.ar(sig, 0.048, 0.048);
+				sig = Mix.ar(Array.fill(7,{ CombL.ar(sig, 0.1, LFNoise1.kr(0.1.rand, 0.04, 0.05), 15) })); 
+				sig = FoaDecode.ar(sig, b2a);
+				sig = AllpassN.ar(sig, 0.05, Array.fill(4, {0.05}).rand, 1.0);
+				sig = FoaEncode.ar(sig, a2b);
+				revGlobalAmbFunc.value(sig, dec);
+			}).add;
+
+			SynthDef.new("revGlobalSoaA12",  { arg soaBus;
+				var w, x, y, z, r, s, t, u, v,
+				foaSig, soaSig, tmpsig;
+				var sig = In.ar(soaBus, 9);
+				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+				//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
+				sig = AllpassN.ar(sig, delaytime, Array.fill(12, {delaytime}).rand, decaytime);
+				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
+				foaSig = [w, x, y, z];
+				soaSig = [w, x, y, z, r, s, t, u, v];
+				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+			}).add;
+
+			localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+				//				lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+				lrevRef.value = AllpassN.ar(p, delaytime, delaytime.rand, decaytime);
+			};
+			localReverbStereoFunc = { | junto1Ref, junto2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+				junto1Ref.value = p1 + AllpassN.ar(p1, delaytime, delaytime.rand, decaytime);
+				junto2Ref.value = p2 + AllpassN.ar(p2, delaytime, delaytime.rand, decaytime);
+			};
+			
 		};
-		server.sync;
-
-
-
-		~rirSpecTest =  rirA12Spectrum;
-		~rirFLUspectrum = rirFLUspectrum;
-
 		
-		rirW.free; // don't need time domain data anymore, just needed spectral version
-		rirX.free;
-		rirY.free;
-		rirZ.free;
-		rirFLU.free; 
-		rirFRD.free;
-		rirBLD.free;
-		rirBRU.free;
-		bufAformat.free;
-		bufWXYZ.free;
-		12.do { arg i;
-			rirA12[i].free;
-		};
-		
-		server.sync;
-
-
-
-
-		/// START SYNTH DEFS ///////
-
-		SynthDef.new("revGlobalAmb",  { arg gbus;
-			var sig, convsig;
-			sig = In.ar(gbus, 1);
-			convsig = [
-				PartConv.ar(sig, fftsize, rirWspectrum), 
-				PartConv.ar(sig, fftsize, rirXspectrum), 
-				PartConv.ar(sig, fftsize, rirYspectrum),
-				PartConv.ar(sig, fftsize, rirZspectrum)
-			];
-			revGlobalAmbFunc.value(convsig, dec);
-		}).add;
-		
-		
-		SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-			var convsig, sig = In.ar(gbfbus, 4);
-			sig = FoaDecode.ar(sig, b2a);
-			convsig = [
-				PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
-				PartConv.ar(sig[1], fftsize, rirFRDspectrum), 
-				PartConv.ar(sig[2], fftsize, rirBLDspectrum),
-				PartConv.ar(sig[3], fftsize, rirBRUspectrum)
-			];
-			convsig = FoaEncode.ar(convsig, a2b);
-			revGlobalAmbFunc.value(convsig, dec);
-		}).add;
-
-		SynthDef.new("revGlobalSoaA12",  { arg soaBus;
-			var w, x, y, z, r, s, t, u, v,
-			foaSig, soaSig, tmpsig;
-			var sig = In.ar(soaBus, 9);
-
-
-			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-			//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
-			tmpsig = [
-				PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]), 
-				PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]), 
-				PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]), 
-				PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]), 
-				PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]), 
-				PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]), 
-				PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]), 
-				PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]), 
-				PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]), 
-				PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]), 
-				PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]), 
-				PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]), 
-			];
-
-			tmpsig = tmpsig*4;
-			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
-			foaSig = [w, x, y, z];
-			soaSig = [w, x, y, z, r, s, t, u, v];
-			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-		}).add;
-
-
 		makeSpatialisers = { arg linear = false;
 			if(linear) {
 				linear = "_linear";
@@ -527,6 +588,7 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.04; // needs less gain
 				var w, x, y, z, r, s, t, u, v;
 				var soaSigRef = Ref(0);
+				var lrevRef = Ref(0);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - this.scale)) / this.scale;
@@ -560,8 +622,11 @@ GUI Parameters usable in SynthDefs
 				// Local reverberation
 				locallev = 1 - dis; 
 				locallev = locallev  * (llev);
-				lrev = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
-				junto = p + lrev;
+
+				//lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
 				//			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
 
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
@@ -593,6 +658,7 @@ GUI Parameters usable in SynthDefs
 				var lrev,
 				intens;
 				var soaSigRef = Ref(0);
+				var lrevRef = Ref(0);
 				var grevganho = 0.20;
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
@@ -630,9 +696,12 @@ GUI Parameters usable in SynthDefs
 				locallev = locallev * llev;
 				
 				
-				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
+				//lrev = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+				
 				//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
-				junto = p + lrev;
+				junto = p + lrevRef.value;
 				
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 				//				ambsinal = [w, x, y, z, r, s, t, u, v]; 
@@ -695,7 +764,7 @@ GUI Parameters usable in SynthDefs
 				locallev = locallev * llev;
 				
 				
-				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
+				//				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
 				//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
 				junto = p ;
 				
@@ -834,6 +903,8 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.20;
 				var soaSigLRef = Ref(0);
 				var soaSigRRef = Ref(0);
+				var junto1Ref =  Ref(0);
+				var junto2Ref =  Ref(0);
 
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
@@ -883,21 +954,16 @@ GUI Parameters usable in SynthDefs
 				locallev = locallev  * (llev);
 				
 				
-				junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-				junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-				
-				//				#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
-				//				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
-				
-				//				ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-				//				ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
+				//				junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				//				junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				localReverbStereoFunc.value(junto1Ref, junto2Ref, p1, p2, fftsize, rirZspectrum, locallev);
 
-				prepareSoaSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				prepareSoaSigFunc.value(soaSigLRef, junto1Ref.value, azim1, el, intens: intens, dis: dis);
 				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
 					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
 					soaSigLRef[8].value];
 
-				prepareSoaSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				prepareSoaSigFunc.value(soaSigRRef, junto2Ref.value, azim2, el, intens: intens, dis: dis);
 				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
 					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
 					soaSigRRef[8].value];
