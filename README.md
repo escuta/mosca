@@ -1,7 +1,7 @@
 # Mosca
-Mosca is a SuperCollider (SC) class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. Soundfields may be decoded using a variety of built in 1st order ambisonic (FOA) SC decoders (including binaural) or with external 2nd order (SOA) decoders.
+Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. Soundfields may be decoded using a variety of built in 1st order ambisonic SuperCollider decoders (including binaural) or with external 2nd order decoders.
 
-Mosca is written by Iain Mott, 2016. Licensed under a Creative Commons Attribution-NonCommercial 4.0 International License http://creativecommons.org/licenses/by-nc/4.0/
+Mosca is written by Iain Mott, 2016 and licensed under a Creative Commons Attribution-NonCommercial 4.0 International License http://creativecommons.org/licenses/by-nc/4.0/
 
 The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/) by Joseph Anderson and the Automation quark (https://github.com/neeels/Automation) by Neels Hofmeyr. Required Quarks : Automation, Ctk, XML and MathLib. It is necessary to install the SC Plugins: https://github.com/supercollider/sc3-plugins
 

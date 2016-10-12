@@ -1,19 +1,19 @@
 /*
-Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a 
-Creative Commons Attribution-NonCommercial 4.0 International License
-http://creativecommons.org/licenses/by-nc/4.0/
-The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
-by Joseph Anderson and the Automation quark 
-(https://github.com/neeels/Automation) by Neels Hofmeyr.
-Required Quarks : Automation, Ctk, XML and  MathLib
-Required classes: 
-SC Plugins: https://github.com/supercollider/sc3-plugins
-User must set up a project directory with subdirectoties "rir" and "auto"
-RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
-and must be placed in the "rir" directory.
-Run help on the "Mosca" class in SuperCollider for detailed information
-and code examples. Further information and sample RIRs and B-format recordings
-my be downloaded here: http://escuta.org/mosca
+	Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a 
+	Creative Commons Attribution-NonCommercial 4.0 International License
+	http://creativecommons.org/licenses/by-nc/4.0/
+	The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
+	by Joseph Anderson and the Automation quark 
+	(https://github.com/neeels/Automation) by Neels Hofmeyr.
+	Required Quarks : Automation, Ctk, XML and  MathLib
+	Required classes: 
+	SC Plugins: https://github.com/supercollider/sc3-plugins
+	User must set up a project directory with subdirectoties "rir" and "auto"
+	RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
+	and must be placed in the "rir" directory.
+	Run help on the "Mosca" class in SuperCollider for detailed information
+	and code examples. Further information and sample RIRs and B-format recordings
+	my be downloaded here: http://escuta.org/mosca
 */
 
 
@@ -45,7 +45,7 @@ Mosca {
 
 	o, //debugging
 	prjDr;
-		classvar fftsize = 2048,
+	classvar fftsize = 2048,
 	//	classvar fftsize = 1024,
 	//classvar fftsize = 4096,
 	server;
@@ -70,18 +70,21 @@ GUI Parameters usable in SynthDefs
 \\my | Y coord | -450 - 450 |
 \\mz | Z coord | -450 - 450 |
 \\rotAngle | B-format rotation angle | -3.14 - 3.14 |
-\\\directang | B-format directivity | 0 - 1.57 |
+\\directang | B-format directivity | 0 - 1.57 |
 \\contr | Contraction: fade between WXYZ & W | 0 - 1 |
+\\rv | Diffuse 2nd order A-format reverb check | 0 or 1 |
+\\ln | Linear intensity check | 0 or 1 |
 ";
 		^string;
 		
 	}
 
 	initMosca { arg projDir, nsources, iwidth, rirWXYZ, srvr, decoder;
-		var makeSynthDefPlayers, revGlobTxt,
+		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
 		revGlobalSoaOutFunc,
+		prepareSoaSigFunc,
 		bufAformat, bufAformat_soa_a12, bufWXYZ,
 		//synthRegistry = List[],
 		
@@ -120,11 +123,11 @@ GUI Parameters usable in SynthDefs
 		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		/*
-		// REMOVE?
-		this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
-		(this.nfontes * 4).do { arg x;
+			// REMOVE?
+			this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
+			(this.nfontes * 4).do { arg x;
 			this.swinbus[x] = Bus.audio(server, 1); 
-		};
+			};
 		*/
 
 		
@@ -272,8 +275,8 @@ GUI Parameters usable in SynthDefs
 		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
 		bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
 		server.sync;
-	
-				
+		
+		
 		{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
 			bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
 			Out.ar(0, Silent.ar);
@@ -285,14 +288,14 @@ GUI Parameters usable in SynthDefs
 		
 		bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
 		
-	
+		
 		server.sync;
 		
-				
+		
 		{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), foa_a12_decoder_matrix),
-        bufAformat_soa_a12, 
-        Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-        Out.ar(0, Silent.ar);
+			bufAformat_soa_a12, 
+			Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+			Out.ar(0, Silent.ar);
 		}.play;
 		
 
@@ -300,8 +303,8 @@ GUI Parameters usable in SynthDefs
 
 		bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav", sampleFormat: "int24");
 		
-	
-	
+		
+		
 		server.sync;
 		rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
 		rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
@@ -359,8 +362,8 @@ GUI Parameters usable in SynthDefs
 
 
 
-				~rirSpecTest =  rirA12Spectrum;
-				~rirFLUspectrum = rirFLUspectrum;
+		~rirSpecTest =  rirA12Spectrum;
+		~rirFLUspectrum = rirFLUspectrum;
 
 		
 		rirW.free; // don't need time domain data anymore, just needed spectral version
@@ -441,408 +444,488 @@ GUI Parameters usable in SynthDefs
 		}).add;
 
 
+		makeSpatialisers = { arg linear = false;
+			if(linear) {
+				linear = "_linear";
+			} {
+				linear = "";
+			};
 
+			SynthDef.new("espacAmbAFormatVerb"++linear,  {
+				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
+				dopon = 0, dopamnt = 0,
+				glev = 0, llev = 0;
+				//var w, x, y, z, r, s, t, u, v,
+				var p, ambsinal, ambsinal1O,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,  
+				globallev, locallev, gsig, fonte,
+				intens,
+				soa_a12_sig;
+				var lrev;
+				var grevganho = 0.04; // needs less gain
+				var soaSigRef = Ref(0);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]); 
+				dis = Select.kr(dis > 1, [dis, 1]); 
+				//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging			
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				// Doppler
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
+				p = dopplershift;			
+				// Global reverberation & intensity
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]); 
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
 
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]); 
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				globallev = globallev * (glev);			
+				gsig = p * globallev;
+				// Local reverberation
+				locallev = 1 - dis; 			
+				locallev = locallev  * (llev);			
+				junto = p;
+				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
+				//				ambsinal = [w, x, y, z, r, s, t, u, v];
+				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
 
-		SynthDef.new("espacAmbAFormatVerb",  {
-			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
-			dopon = 0, dopamnt = 0,
-			glev = 0, llev = 0;
-			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
-			junto, rd, dopplershift, azim, dis, xatras, yatras,  
-			globallev, locallev, gsig, fonte,
-			intens,
-			soa_a12_sig;
-			var lrev;
-			var grevganho = 0.04; // needs less gain
-			fonte = Cartesian.new;
-			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - this.scale)) / this.scale;
-			azim = fonte.theta;
-			el = fonte.phi;
-			dis = Select.kr(dis < 0, [dis, 0]); 
-			dis = Select.kr(dis > 1, [dis, 1]); 
-			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging			
-			// high freq attenuation
-			p = In.ar(inbus, 1);
-			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-			// Doppler
-			rd = (1 - dis) * 340;
-			rd = Lag.kr(rd, 1.0);
-			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-			p = dopplershift;			
-			// Global reverberation & intensity
-			globallev = 1 / (1 - dis).sqrt;
-			intens = globallev - 1;
-			intens = Select.kr(intens > 4, [intens, 4]); 
-			intens = Select.kr(intens < 0, [intens, 0]);
-			intens = intens / 4;
+				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
 
-			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); 
-			globallev = Select.kr(globallev < 0, [globallev, 0]);
-			globallev = globallev * (glev);			
-			gsig = p * globallev;
-			// Local reverberation
-			locallev = 1 - dis; 			
-			locallev = locallev  * (llev);			
-			junto = p;
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-			ambsinal = [w, x, y, z, r, s, t, u, v];
-			Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
-			ambsinal1O = [w, x, y, z];
-			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
-		}).add;
+				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
+					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
+					soaSigRef[8].value];
 
-		SynthDef.new("espacAmbChowning",  {
-			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
-			dopon = 0, dopamnt = 0,
-			glev = 0, llev = 0;
-			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
-			junto, rd, dopplershift, azim, dis, xatras, yatras,  
-			//		globallev = 0.0001, locallev, gsig, fonte;
-			globallev, locallev, gsig, fonte,
-			intens,
-			soa_a12_sig;
-			var lrev;
-			var grevganho = 0.04; // needs less gain
-			fonte = Cartesian.new;
-			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - this.scale)) / this.scale;
-			//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
-			azim = fonte.theta;
-			el = fonte.phi;
-			dis = Select.kr(dis < 0, [dis, 0]); 
-			dis = Select.kr(dis > 1, [dis, 1]); 
-			// high freq attenuation
-			p = In.ar(inbus, 1);
-			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-			// Doppler
-			rd = (1 - dis) * 340;
-			rd = Lag.kr(rd, 1.0);
-			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-			p = dopplershift;
-			// Global reverberation & intensity
-			globallev = 1 / (1 - dis).sqrt;
-			intens = globallev - 1;
-			intens = Select.kr(intens > 4, [intens, 4]); 
-			intens = Select.kr(intens < 0, [intens, 0]);
-			intens = intens / 4;
+				//				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
+				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
+				//				ambsinal1O = [w, x, y, z];
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
+			}).add;
 
-			//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
-			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); 
-			globallev = Select.kr(globallev < 0, [globallev, 0]);
-			globallev = globallev * (glev);
-			gsig = p * globallev;
-			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-			// Local reverberation
-			locallev = 1 - dis; 
-			locallev = locallev  * (llev);
-			lrev = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
-			junto = p + lrev;
-			//			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-			ambsinal = [w, x, y, z, r, s, t, u, v];
-			ambsinal1O = [w, x, y, z];
-			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
-		}).add;
+			SynthDef.new("espacAmbChowning"++linear,  {
+				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
+				dopon = 0, dopamnt = 0,
+				glev = 0, llev = 0;
+				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
+				ambsinal, ambsinal1O,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,  
+				//		globallev = 0.0001, locallev, gsig, fonte;
+				globallev, locallev, gsig, fonte,
+				intens,
+				soa_a12_sig;
+				var lrev, p;
+				var grevganho = 0.04; // needs less gain
+				var w, x, y, z, r, s, t, u, v;
+				var soaSigRef = Ref(0);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]); 
+				dis = Select.kr(dis > 1, [dis, 1]); 
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				// Doppler
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
+				p = dopplershift;
+				// Global reverberation & intensity
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]); 
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
 
-		
+				//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]); 
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				globallev = globallev * (glev);
+				gsig = p * globallev;
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				// Local reverberation
+				locallev = 1 - dis; 
+				locallev = locallev  * (llev);
+				lrev = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+				junto = p + lrev;
+				//			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
 
+				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
+				//				ambsinal = [w, x, y, z, r, s, t, u, v];
+				//soaSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
 
-		// This second version of espacAmb is used with contracted B-format sources
+				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
 
-		
-		SynthDef.new("espacAmb2Chowning",  { 
-			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-			glev = 0, llev = 0.2;
-			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
-			junto, rd, dopplershift, azim, dis, xatras, yatras,  
-			globallev = 0.0004, locallev, gsig, fonte;
-			var lrev,
-			intens;
-			var grevganho = 0.20;
-			fonte = Cartesian.new;
-			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - this.scale)) / this.scale;
-			azim = fonte.theta;
-			el = fonte.phi;
-			dis = Select.kr(dis < 0, [dis, 0]); 
-			dis = Select.kr(dis > 1, [dis, 1]); 
-			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
-			
-			// high freq attenuation
-			p = In.ar(inbus, 1);
-			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-			
-			// Reverberação global
-			globallev = 1 / (1 - dis).sqrt;
-			intens = globallev - 1;
-			intens = Select.kr(intens > 4, [intens, 4]); 
-			intens = Select.kr(intens < 0, [intens, 0]);
-			intens = intens / 4;
+				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
+				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
+					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
+					soaSigRef[8].value];
 
-			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); 
-			globallev = Select.kr(globallev < 0, [globallev, 0]);
-			
-			globallev = globallev * glev;
-			
-			
-			gsig = p * globallev;
-			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-			
-			// Reverberação local
-			locallev = 1 - dis; 
-			//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
-			locallev = locallev * llev;
-			
-			
-			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
-			//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
-			junto = p + lrev;
-			
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-			
-			//	ambsinal = [w, x, y, u, v]; 
-			ambsinal = [w, x, y, z, r, s, t, u, v]; 
-			
-			ambsinal1O = [w, x, y, z];
-			
-			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
-			
-		}).add;
-
-		SynthDef.new("espacAmb2AFormat",  { 
-			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-			glev = 0, llev = 0.2, soaBus;
-			var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
-			junto, rd, dopplershift, azim, dis, xatras, yatras,  
-			globallev = 0.0004, locallev, gsig, fonte;
-			var lrev, intens;
-			var grevganho = 0.20;
-			fonte = Cartesian.new;
-			fonte.set(mx, my, mz);
-			dis = (1 - (fonte.rho - this.scale)) / this.scale;
-			azim = fonte.theta;
-			el = fonte.phi;
-			dis = Select.kr(dis < 0, [dis, 0]); 
-			dis = Select.kr(dis > 1, [dis, 1]); 
-			//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
-			
-			// high freq attenuation
-			p = In.ar(inbus, 1);
-			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-			
-			// Reverberação global
-			globallev = 1 / (1 - dis).sqrt;
-			intens = globallev - 1;
-			intens = Select.kr(intens > 4, [intens, 4]); 
-			intens = Select.kr(intens < 0, [intens, 0]);
-			intens = intens / 4;
-
-			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); 
-			globallev = Select.kr(globallev < 0, [globallev, 0]);
-			
-			globallev = globallev * glev;
-			
-			
-			gsig = p * globallev;
-			// DISABLE
-			//Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-			
-			// Reverberação local
-			locallev = 1 - dis; 
-			//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
-			locallev = locallev * llev;
-			
-			
-			lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
-			//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
-			junto = p ;
-			
-			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-			
-			//	ambsinal = [w, x, y, u, v]; 
-			ambsinal = [w, x, y, z, r, s, t, u, v]; 
-			Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
-			ambsinal1O = [w, x, y, z];
-			
-			espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
-			
-		}).add;
-
-
-		
-
-
-		SynthDef.new("espacAmbEstereoAFormat",  {
-			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
-			dopon = 0, dopamnt = 0, 
-			glev = 0, llev = 0;
-			var w, x, y, z, r, s, t, u, v, p, ambsinal,
-			w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-			w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
-			junto, rd, dopplershift, azim, dis, 
-			junto1, azim1, 
-			junto2, azim2,
-			intens,
-			globallev = 0.0001, locallev, gsig, fonte;
-			var lrev;
-			var grevganho = 0.20;
-			
-			fonte = Cartesian.new;
-			fonte.set(mx, my);
-			
-			azim1 = fonte.rotate(angle / -2).theta;
-			azim2 = fonte.rotate(angle / 2).theta;
-			
-			fonte.set(mx, my, mz);
-			el = fonte.phi;
-			
-			dis = (1 - (fonte.rho - this.scale)) / this.scale;
-			
-			dis = Select.kr(dis < 0, [dis, 0]); 
-			dis = Select.kr(dis > 1, [dis, 1]); 
-
-			p = In.ar(inbus, 2);
-			//p = p[0];
-			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-			
-			// Doppler
-			rd = (1 - dis) * 340; 
-			rd = Lag.kr(rd, 1.0);
-			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-			p = dopplershift;
-			
-			// Reverberação global
-			globallev = 1 / (1 - dis).sqrt;
-			intens = globallev - 1;
-			intens = Select.kr(intens > 4, [intens, 4]); 
-			intens = Select.kr(intens < 0, [intens, 0]);
-			intens = intens / 4;
-
-			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-			globallev = Select.kr(globallev < 0, [globallev, 0]); 
-			
-			globallev = globallev * glev;
-			
-			//			gsig = Mix.new(p) / 2 * grevganho * globallev;
-			//			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-	
-			p1 = p[0];
-			p2 = p[1];
-			// Reverberação local
-			locallev = 1 - dis; 
-			
-			locallev = locallev  * (llev);
-			
-			
-			//			junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-			//			junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-			junto1 = p1;
-			junto2 = p2;
-			
-			
-			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
-			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
-			
-			ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-			ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
-			
-			ambsinal1plus2 = ambsinal1 + ambsinal2;
-			ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
-
-			Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
-			
-			espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
-			
-		}).add;
-
-		SynthDef.new("espacAmbEstereoChowning",  {
-			arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
-			dopon = 0, dopamnt = 0, 
-			glev = 0, llev = 0;
-			var w, x, y, z, r, s, t, u, v, p, ambsinal,
-			w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-			w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
-			junto, rd, dopplershift, azim, dis, 
-			junto1, azim1, 
-			junto2, azim2, 
-			globallev = 0.0001, locallev, gsig, fonte;
-			var lrev,
-			intens;
-			var grevganho = 0.20;
-			
-			fonte = Cartesian.new;
-			fonte.set(mx, my);
-			
-			azim1 = fonte.rotate(angle / -2).theta;
-			azim2 = fonte.rotate(angle / 2).theta;
-			
-			fonte.set(mx, my, mz);
-			el = fonte.phi;
-			
-			dis = (1 - (fonte.rho - this.scale)) / this.scale;
-			
-			dis = Select.kr(dis < 0, [dis, 0]); 
-			dis = Select.kr(dis > 1, [dis, 1]); 
-
-			p = In.ar(inbus, 2);
-			//p = p[0];
-			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-			
-			// Doppler
-			rd = (1 - dis) * 340; 
-			rd = Lag.kr(rd, 1.0);
-			dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-			p = dopplershift;
-			
-			// Reverberação global
-			globallev = 1 / (1 - dis).sqrt;
-			intens = globallev - 1;
-			intens = Select.kr(intens > 4, [intens, 4]); 
-			intens = Select.kr(intens < 0, [intens, 0]);
-			intens = intens / 4;
-			
-			globallev = globallev - 1.0; // lower tail of curve to zero
-			globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-			globallev = Select.kr(globallev < 0, [globallev, 0]); 
-			
-			globallev = globallev * (glev);
-			
-			gsig = Mix.new(p) / 2 * globallev;
-			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-	
-			p1 = p[0];
-			p2 = p[1];
-			// Reverberação local
-			locallev = 1 - dis; 
-			
-			locallev = locallev  * (llev);
-			
-			
-			junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-			junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-			
-			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
-			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
-			
-			ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-			ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
-			
-			ambsinal1plus2 = ambsinal1 + ambsinal2;
-			ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
+			}).add;
 
 			
-			espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
+
+
+			// This second version of espacAmb is used with contracted B-format sources
+
 			
-		}).add;
+			SynthDef.new("espacAmb2Chowning"++linear,  { 
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
+				glev = 0, llev = 0.2;
+				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,  
+				globallev = 0.0004, locallev, gsig, fonte;
+				var lrev,
+				intens;
+				var soaSigRef = Ref(0);
+				var grevganho = 0.20;
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]); 
+				dis = Select.kr(dis > 1, [dis, 1]); 
+				//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
+				
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]); 
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]); 
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				
+				globallev = globallev * glev;
+				
+				
+				gsig = p * globallev;
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				
+				// Reverberação local
+				locallev = 1 - dis; 
+				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
+				locallev = locallev * llev;
+				
+				
+				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
+				//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
+				junto = p + lrev;
+				
+				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
+				//				ambsinal = [w, x, y, z, r, s, t, u, v]; 
+				
+				//	ambsinal1O = [w, x, y, z];
+				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
+				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
+					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
+					soaSigRef[8].value];
+
+				
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
+				
+			}).add;
+
+			SynthDef.new("espacAmb2AFormat"++linear,  { 
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
+				glev = 0, llev = 0.2, soaBus;
+				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,  
+				globallev = 0.0004, locallev, gsig, fonte;
+				var lrev, intens;
+				var grevganho = 0.20;
+				var soaSigRef = Ref(0);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]); 
+				dis = Select.kr(dis > 1, [dis, 1]); 
+				//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
+				
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]); 
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]); 
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				
+				globallev = globallev * glev;
+				
+				
+				gsig = p * globallev;
+				// DISABLE
+				//Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				
+				// Reverberação local
+				locallev = 1 - dis; 
+				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
+				locallev = locallev * llev;
+				
+				
+				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
+				//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
+				junto = p ;
+				
+				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
+				//				ambsinal = [w, x, y, z, r, s, t, u, v];
+
+				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
+				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
+					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
+					soaSigRef[8].value];
 
 
+				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
+				//				ambsinal1O = [w, x, y, z];
+				
+				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
+				
+			}).add;
+
+
+			
+
+
+			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
+				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
+				dopon = 0, dopamnt = 0, 
+				glev = 0, llev = 0;
+				var w, x, y, z, r, s, t, u, v, p, ambsinal,
+				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
+				junto, rd, dopplershift, azim, dis, 
+				junto1, azim1, 
+				junto2, azim2,
+				intens,
+				globallev = 0.0001, locallev, gsig, fonte;
+				var lrev;
+				var grevganho = 0.20;
+				var soaSigLRef = Ref(0);
+				var soaSigRRef = Ref(0);
+				fonte = Cartesian.new;
+				fonte.set(mx, my);
+				
+				azim1 = fonte.rotate(angle / -2).theta;
+				azim2 = fonte.rotate(angle / 2).theta;
+				
+				fonte.set(mx, my, mz);
+				el = fonte.phi;
+				
+				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				
+				dis = Select.kr(dis < 0, [dis, 0]); 
+				dis = Select.kr(dis > 1, [dis, 1]); 
+
+				p = In.ar(inbus, 2);
+				//p = p[0];
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				
+				// Doppler
+				rd = (1 - dis) * 340; 
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
+				p = dopplershift;
+				
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]); 
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
+				globallev = Select.kr(globallev < 0, [globallev, 0]); 
+				
+				globallev = globallev * glev;
+				
+				//			gsig = Mix.new(p) / 2 * grevganho * globallev;
+				//			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				
+				p1 = p[0];
+				p2 = p[1];
+				// Reverberação local
+				locallev = 1 - dis; 
+				
+				locallev = locallev  * (llev);
+				
+				
+				//			junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				//			junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				junto1 = p1;
+				junto2 = p2;
+				
+				
+				//				#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
+				//				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
+
+				prepareSoaSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
+					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
+					soaSigLRef[8].value];
+
+				prepareSoaSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
+					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
+					soaSigRRef[8].value];
+				
+				
+				//ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
+				//ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
+				
+				ambsinal1plus2 = ambsinal1 + ambsinal2;
+				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
+					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
+						soaSigRRef[2].value, soaSigRRef[3].value];
+
+				Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
+				
+				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
+				
+			}).add;
+
+			SynthDef.new("espacAmbEstereoChowning"++linear,  {
+				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
+				dopon = 0, dopamnt = 0, 
+				glev = 0, llev = 0;
+				var w, x, y, z, r, s, t, u, v, p, ambsinal,
+				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
+				junto, rd, dopplershift, azim, dis, 
+				junto1, azim1, 
+				junto2, azim2, 
+				globallev = 0.0001, locallev, gsig, fonte;
+				var lrev,
+				intens;
+				var grevganho = 0.20;
+				var soaSigLRef = Ref(0);
+				var soaSigRRef = Ref(0);
+
+				fonte = Cartesian.new;
+				fonte.set(mx, my);
+				
+				azim1 = fonte.rotate(angle / -2).theta;
+				azim2 = fonte.rotate(angle / 2).theta;
+				
+				fonte.set(mx, my, mz);
+				el = fonte.phi;
+				
+				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				
+				dis = Select.kr(dis < 0, [dis, 0]); 
+				dis = Select.kr(dis > 1, [dis, 1]); 
+
+				p = In.ar(inbus, 2);
+				//p = p[0];
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				
+				// Doppler
+				rd = (1 - dis) * 340; 
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
+				p = dopplershift;
+				
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]); 
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+				
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
+				globallev = Select.kr(globallev < 0, [globallev, 0]); 
+				
+				globallev = globallev * (glev);
+				
+				gsig = Mix.new(p) / 2 * globallev;
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				
+				p1 = p[0];
+				p2 = p[1];
+				// Reverberação local
+				locallev = 1 - dis; 
+				
+				locallev = locallev  * (llev);
+				
+				
+				junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				
+				//				#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
+				//				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
+				
+				//				ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
+				//				ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
+
+				prepareSoaSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
+					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
+					soaSigLRef[8].value];
+
+				prepareSoaSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
+					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
+					soaSigRRef[8].value];
+				
+				
+				ambsinal1plus2 = ambsinal1 + ambsinal2;
+				//				ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
+				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
+					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
+						soaSigRRef[2].value, soaSigRRef[3].value];
+				
+				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
+				
+			}).add;
+
+		}; //end makeSpatialisers
+
+		prepareSoaSigFunc = { |soaSigRef, junto, azim, el, intens, dis|
+			soaSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
+		};
+		makeSpatialisers.value(linear: false);
+
+		prepareSoaSigFunc = { |soaSigRef, junto, azim, el, intens, dis|
+			soaSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
+
+		};
+		makeSpatialisers.value(linear: true);
 
 		
 		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
@@ -880,7 +963,7 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				dis = (1 - (fonte.rho - this.scale)) / this.scale;
 				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
-				                              //  0 = centred. pi/2 = 100% displaced
+				//  0 = centred. pi/2 = 100% displaced
 				azim = fonte.theta; // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				dis = Select.kr(dis > 1, [dis, 1]); 
@@ -929,7 +1012,7 @@ GUI Parameters usable in SynthDefs
 				//
 				//				Out.ar(gbus, gsig + lsig); //send part of direct signal global reverb synth
 
-								// trying again ... testing
+				// trying again ... testing
 				
 				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
 				Out.ar(gbfbus, gsig); 
@@ -1053,7 +1136,7 @@ GUI Parameters usable in SynthDefs
 			arg item, i;
 			
 			//	if(item.isPlaying) {
-				item.set(param, value);
+			item.set(param, value);
 			//	}
 		});
 		
@@ -1097,6 +1180,7 @@ GUI Parameters usable in SynthDefs
 		dopcheque,
 		loopcheck, lpcheck, lp,
 		revcheck, rvcheck, rv,
+		lincheck, lncheck, ln,
 		hwInCheck, hwncheck, hwn, scInCheck, scncheck, scn,
 		dopcheque2, doppler, angle, level, glev, 
 		llev, angnumbox, volnumbox,
@@ -1123,6 +1207,7 @@ GUI Parameters usable in SynthDefs
 		doppler = Array.newClear(this.nfontes); 
 		lp = Array.newClear(this.nfontes); 
 		rv = Array.newClear(this.nfontes); 
+		ln = Array.newClear(this.nfontes); 
 		hwn = Array.newClear(this.nfontes); 
 		scn = Array.newClear(this.nfontes); 
 		mbus = Array.newClear(this.nfontes); 
@@ -1169,9 +1254,10 @@ GUI Parameters usable in SynthDefs
 		cbox = Array.newClear(this.nfontes); // contrair b-format
 		dpbox = Array.newClear(this.nfontes); // dop amount
 		lpcheck = Array.newClear(this.nfontes); // loop
-		rvcheck = Array.newClear(this.nfontes); // loop
-		hwncheck = Array.newClear(this.nfontes); // stream check
-		scncheck = Array.newClear(this.nfontes); // stream check
+		rvcheck = Array.newClear(this.nfontes); // diffuse reverb
+		lncheck = Array.newClear(this.nfontes); // linear intensity
+		hwncheck = Array.newClear(this.nfontes); // hardware-in check
+		scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
 		tfield = Array.newClear(this.nfontes);
 		
 		testado = Array.newClear(this.nfontes);
@@ -1185,6 +1271,7 @@ GUI Parameters usable in SynthDefs
 			llev[i] = 0;
 			lp[i] = 0;
 			rv[i] = 0;
+			ln[i] = "";
 			hwn[i] = 0;
 			scn[i] = 0;
 			rlev[i] = 0;
@@ -1210,10 +1297,10 @@ GUI Parameters usable in SynthDefs
 				win.drawFunc = {
 
 
-								Pen.fillColor = Color(0.6,0.8,0.8);
-				Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
-				Pen.fill;
-	
+					Pen.fillColor = Color(0.6,0.8,0.8);
+					Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+					Pen.fill;
+					
 					nfnts.do { arg ind;
 						Pen.fillColor = Color(0.8,0.2,0.9);
 						Pen.addArc(sprite[ind, 0]@sprite[ind, 1], 20, 0, 2pi);
@@ -1247,7 +1334,7 @@ GUI Parameters usable in SynthDefs
 		wdados.userCanClose = false;
 		
 		
-		bdados = Button(win, Rect(280, 30, 90, 20))
+		bdados = Button(win, Rect(280, 50, 90, 20))
 		.states_([
 			["show data", Color.black, Color.white],
 			["hide data", Color.white, Color.blue]
@@ -1375,7 +1462,7 @@ GUI Parameters usable in SynthDefs
 									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 								
-								espacializador[i] = Synth.new(\espacAmbAFormatVerb, [\inbus, mbus[i], 
+								espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
 									\soaBus, soaBus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -1387,7 +1474,7 @@ GUI Parameters usable in SynthDefs
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 								
-								espacializador[i] = Synth.new(\espacAmbChowning, [\inbus, mbus[i], 
+								espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
 									\gbus, gbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -1404,26 +1491,26 @@ GUI Parameters usable in SynthDefs
 						//						{angslider.value = 0.5;}.defer;
 						{angslider.value = 0.33;}.defer;
 						/*		
-						if(revGlobalSoa == nil) {
+							if(revGlobalSoa == nil) {
 							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus], addAction:\addToTail);
-						};
+							};
 						*/
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
 							};
-				
-						if (testado[i].not) {
-							synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
-								revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-									espacializador[i] = nil; synt[i] = nil});
 							
-							espacializador[i] = Synth.new(\espacAmbEstereoAFormat, [\inbus, sbus[i],
-								\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
+							if (testado[i].not) {
+								synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
+									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+										espacializador[i] = nil; synt[i] = nil});
+								
+								espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
 
 
 						} {
@@ -1434,7 +1521,7 @@ GUI Parameters usable in SynthDefs
 									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 								
-								espacializador[i] = Synth.new(\espacAmbEstereoChowning, [\inbus, sbus[i],
+								espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
 									\gbus, gbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -1469,36 +1556,36 @@ GUI Parameters usable in SynthDefs
 								if (testado[i] == false) {
 
 									
-								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
-									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-									\rate, 1, \tpos, tpos, \lp,
-									lp[i], \level, level[i], \dopon, doppler[i]], 
-									//					~revGlobal, addAction: \addBefore);
-									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;
-										playingBF[i] = false});
-								
-								espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i], 
-									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
+									synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+										mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+										\rate, 1, \tpos, tpos, \lp,
+										lp[i], \level, level[i], \dopon, doppler[i]], 
+										//					~revGlobal, addAction: \addBefore);
+										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;
+											playingBF[i] = false});
+									
+									espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
+										\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
+										synt[i], addAction: \addAfter);
+								};
 							} {
 								if (testado[i] == false) {
 
 									
-								synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
-									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-									\rate, 1, \tpos, tpos, \lp,
-									lp[i], \level, level[i], \dopon, doppler[i]], 
-									//					~revGlobal, addAction: \addBefore);
-									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;
-										playingBF[i] = false});
-								
-								espacializador[i] = Synth.new(\espacAmb2Chowning, [\inbus, mbus[i], \gbus, gbus, 
-									\dopon, doppler[i]], 
-									synt[i], addAction: \addAfter);
-							};
+									synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+										mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+										\rate, 1, \tpos, tpos, \lp,
+										lp[i], \level, level[i], \dopon, doppler[i]], 
+										//					~revGlobal, addAction: \addBefore);
+										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;
+											playingBF[i] = false});
+									
+									espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i], \gbus, gbus, 
+										\dopon, doppler[i]], 
+										synt[i], addAction: \addAfter);
+								};
 
 
 							};
@@ -1600,54 +1687,54 @@ GUI Parameters usable in SynthDefs
 						
 
 
-					if(rv[i] == 1) {	
+						if(rv[i] == 1) {	
 
 
-						if (testado[i] == false) {
+							if (testado[i] == false) {
 
-							if(revGlobalSoa.isNil) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									revGlobalBF, addAction:\addBefore);
+								if(revGlobalSoa.isNil) {
+									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+										revGlobalBF, addAction:\addBefore);
+								};
+								if (hwncheck[i].value) {
+									synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
+										\level, level[i]], revGlobalSoa,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								} {
+									synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+										\busini, this.scInBus[i],
+										\level, level[i]], revGlobalSoa,
+										addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								};
+								
+								espacializador[i] = Synth.new(\espacAmbEstereoAFormat, [\inbus, sbus[i], \gbus, gbus,
+									\soaBus, soaBus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
 							};
+
+
+						} {
 							if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
-									\level, level[i]], revGlobalSoa,
+									\level, level[i]], revGlobalBF,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							} {
 								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 									\busini, this.scInBus[i],
-									\level, level[i]], revGlobalSoa,
+									\level, level[i]], revGlobalBF,
 									addAction: \addBefore).onFree({espacializador[i].free;
 										espacializador[i] = nil; synt[i] = nil});
 							};
 							
-							espacializador[i] = Synth.new(\espacAmbEstereoAFormat, [\inbus, sbus[i], \gbus, gbus,
-								\soaBus, soaBus, \dopon, doppler[i]], 
+							espacializador[i] = Synth.new(\espacAmbEstereoChowning, [\inbus, sbus[i],
+								\gbus, gbus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
+
+
 						};
-
-
-					} {
-							if (hwncheck[i].value) {
-								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
-									\level, level[i]], revGlobalBF,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-							} {
-								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
-									\busini, this.scInBus[i],
-									\level, level[i]], revGlobalBF,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-							};
-							
-						espacializador[i] = Synth.new(\espacAmbEstereoChowning, [\inbus, sbus[i],
-							\gbus, gbus, \dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-
-
-					};
 						atualizarvariaveis.value;
 						
 						
@@ -1664,62 +1751,62 @@ GUI Parameters usable in SynthDefs
 						// reverb for non-contracted (full b-format) component
 
 						
-							if(rv[i] == 1) {
+						if(rv[i] == 1) {
 
-								if(revGlobalSoa == nil) {
-									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-										revGlobalBF, addAction:\addBefore);
-								};
-								
-						if (testado[i] == false) {
-							if (hwncheck[i].value) {
-								synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
-									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
-									\busini, this.busini[i]], 
-									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;});
-							} {
-								synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
-									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
-									\busini, this.scInBus[i] ], 
-									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil;});
+							if(revGlobalSoa == nil) {
+								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+									revGlobalBF, addAction:\addBefore);
 							};
 							
-							espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i], \gbus, gbus, 
-    								\soaBus, soaBus, \dopon, doppler[i]], 
-								synt[i], addAction: \addAfter);
-						};
-
-							} {
-
-								if (testado[i] == false) {
-									if (hwncheck[i].value) {
-										synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
-											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
-											\busini, this.busini[i]], 
-											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;
-												playingBF[i] = false});
-									} {
-										synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
-											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
-											\busini, this.scInBus[i] ], 
-											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;});
-									};
-									
-									espacializador[i] = Synth.new(\espacAmb2Chowning, [\inbus, mbus[i], \gbus, gbus, 
-										\dopon, doppler[i]], 
-										synt[i], addAction: \addAfter);
+							if (testado[i] == false) {
+								if (hwncheck[i].value) {
+									synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+										\busini, this.busini[i]], 
+										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;});
+								} {
+									synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+										\busini, this.scInBus[i] ], 
+										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;});
 								};
 								
+								espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i], \gbus, gbus, 
+    								\soaBus, soaBus, \dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
 							};
+
+						} {
+
+							if (testado[i] == false) {
+								if (hwncheck[i].value) {
+									synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+										\busini, this.busini[i]], 
+										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;
+											playingBF[i] = false});
+								} {
+									synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus, \outbus, mbus[i],
+										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
+										\busini, this.scInBus[i] ], 
+										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil;});
+								};
+								
+								espacializador[i] = Synth.new(\espacAmb2Chowning, [\inbus, mbus[i], \gbus, gbus, 
+									\dopon, doppler[i]], 
+									synt[i], addAction: \addAfter);
+							};
+							
+						};
 						
 
 						
 
-					
+						
 						atualizarvariaveis.value;
 						
 						
@@ -1741,7 +1828,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		
-		btestar = Button(win, Rect(280, 50, 90, 20))
+		btestar = Button(win, Rect(280, 70, 90, 20))
 		.states_([
 			["test", Color.black, Color.white],
 			["stop", Color.white, Color.red]
@@ -1820,9 +1907,9 @@ GUI Parameters usable in SynthDefs
 		win.drawFunc = {
 			//paint origin
 			Pen.fillColor = Color(0.6,0.8,0.8);
-					Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
-					Pen.fill;
-					//Pen.width = 10;
+			Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+			Pen.fill;
+			//Pen.width = 10;
 
 			Pen.fillColor = Color.gray(0, 0.5);
 			Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
@@ -1844,6 +1931,7 @@ GUI Parameters usable in SynthDefs
 			if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
 			if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
 			if(rv[fatual] == 1){revcheck.value = true}{revcheck.value = false};
+			if(ln[fatual] == "_linear"){lincheck.value = true}{lincheck.value = false};
 			
 			if(hwn[fatual] == 1){hwInCheck.value = true}{hwInCheck.value = false};
 			if(scn[fatual] == 1){scInCheck.value = true}{scInCheck.value = false};
@@ -1906,7 +1994,13 @@ GUI Parameters usable in SynthDefs
 			{rvcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		revcheck.value = false;
-		
+
+		lincheck = CheckBox( win, Rect(184, 30, 180, 20), "Linear intensity").action_({ arg butt;
+			("Linear intensity is " ++ butt.value).postln;
+			{lncheck[fatual].valueAction = butt.value;}.defer;
+		});
+		lincheck.value = false;
+
 		
 		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW Bus").action_({ arg butt;
 			{hwncheck[fatual].valueAction = butt.value;}.defer;
@@ -1915,7 +2009,7 @@ GUI Parameters usable in SynthDefs
 			};
 		});
 
-		scInCheck = CheckBox( win, Rect(104, 30, 100, 20), "SC-in").action_({ arg butt;
+		scInCheck = CheckBox( win, Rect(104, 30, 60, 20), "SC-in").action_({ arg butt;
 			{scncheck[fatual].valueAction = butt.value;}.defer;
 			if (scInCheck.value && hwInCheck.value) {
 				//hwInCheck.value = false;
@@ -2216,7 +2310,7 @@ GUI Parameters usable in SynthDefs
 
 		
 		
-		bload = Button(win, Rect(220, 30, 60, 20))
+		bload = Button(win, Rect(220, 50, 60, 20))
 		.states_([
 			["load", Color.black, Color.white],
 		])
@@ -2244,7 +2338,7 @@ GUI Parameters usable in SynthDefs
 			);	
 		});
 
-		bnodes = Button(win, Rect(220, 50, 60, 20))
+		bnodes = Button(win, Rect(220, 70, 60, 20))
 		.states_([
 			["nodes", Color.black, Color.white],
 		])
@@ -2341,7 +2435,23 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \rv, 0);
 				};
 			});
-			
+
+			// FIX!!!
+			lncheck[i] = CheckBox.new( wdados, Rect(2, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){lincheck.value = but.value;};
+				if (but.value == true) {
+					//	"Aqui!!!".postln;
+					ln[i] = "_linear";
+					//synt[i].set(\lp, 1);
+					this.setSynths(i, \ln, 1);
+				}{
+					ln[i] = "";
+					//synt[i].set(\lp, 0);
+					this.setSynths(i, \ln, 0);
+				};
+			});
+
 			hwncheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){hwInCheck.value = but.value;};
@@ -2604,7 +2714,7 @@ GUI Parameters usable in SynthDefs
 			
 		};
 
-				
+		
 		runTriggers = {
 			this.nfontes.do({
 				arg i;
@@ -2644,7 +2754,7 @@ GUI Parameters usable in SynthDefs
 			}
 		};
 
-	
+		
 		//controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
 		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win,
 			Rect(10, this.width - 80, 400, 22));
@@ -2680,7 +2790,7 @@ GUI Parameters usable in SynthDefs
 				}			
 				{
 					if(sombuf[i].notNil){
-					var dur = sombuf[i].numFrames / sombuf[i].sampleRate;
+						var dur = sombuf[i].numFrames / sombuf[i].sampleRate;
 						{tocar.value(i, dur.rand);}.defer;
 					}
 				};
@@ -2751,6 +2861,8 @@ GUI Parameters usable in SynthDefs
 			controle.dock(ncanbox[i], "numchannels_" ++ i);
 			controle.dock(businibox[i], "busini_" ++ i);
 			controle.dock(scncheck[i], "scin_" ++ i);
+			controle.dock(rvcheck[i], "rev_" ++ i);
+			controle.dock(lncheck[i], "linear_" ++ i);
 			
 		};
 
@@ -2765,7 +2877,7 @@ GUI Parameters usable in SynthDefs
 				Pen.fillColor = Color(0.6,0.8,0.8);
 				Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
 				Pen.fill;
-					//Pen.width = 10;
+				//Pen.width = 10;
 
 				
 				this.nfontes.do { arg i;	
@@ -2778,7 +2890,7 @@ GUI Parameters usable in SynthDefs
 
 				
 				
-								// círculo central
+				// círculo central
 				Pen.fillColor = Color.gray(0, 0.5);
 				Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 				Pen.fill;
