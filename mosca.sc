@@ -470,13 +470,25 @@ GUI Parameters usable in SynthDefs
 				revGlobalAmbFunc.value(sig, dec);
 			}).add;
 			
-			
+			/*
 			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
 				var convsig, sig = In.ar(gbfbus, 4);
 				sig = DelayN.ar(sig, 0.048, 0.048);
 				sig = Mix.ar(Array.fill(7,{ CombL.ar(sig, 0.1, LFNoise1.kr(0.1.rand, 0.04, 0.05), 15) })); 
 				sig = FoaDecode.ar(sig, b2a);
 				sig = AllpassN.ar(sig, 0.05, Array.fill(4, {0.05}).rand, 1.0);
+				sig = FoaEncode.ar(sig, a2b);
+				revGlobalAmbFunc.value(sig, dec);
+			}).add;
+			*/
+			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
+				var convsig, sig = In.ar(gbfbus, 4);
+				sig = FoaDecode.ar(sig, b2a);
+				
+				//sig = AllpassN.ar(sig, 0.05, Array.fill(4, {0.05}).rand, 1.0);
+
+				sig = AllpassL.ar(sig, 1.0, Array.fill( 4, {1.0}).rand, 2.0);
+				
 				sig = FoaEncode.ar(sig, a2b);
 				revGlobalAmbFunc.value(sig, dec);
 			}).add;
