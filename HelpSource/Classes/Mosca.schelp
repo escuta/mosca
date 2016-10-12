@@ -176,10 +176,10 @@ s.sync;
 //If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
 // outputs for decoding with an external decoder
 
-//~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12, 950,
-//"QL14Tail2Sec.amb", s, ~decoder);
 ~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12, 950,
-1.2, s, ~decoder);
+"QL14Tail2Sec.amb", s, ~decoder);
+//~testMosca = Mosca.new("/home/iain/projects/ambisonics/moscaproject", 12, 950,
+//0.2, s, ~decoder);
 
 s.sync;
 ~testMosca.openGui(120);
