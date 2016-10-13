@@ -450,9 +450,13 @@ GUI Parameters usable in SynthDefs
 				lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
 			};
 
-			localReverbStereoFunc = { | junto1Ref, junto2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-				junto1Ref.value = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-				junto2Ref.value = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+				var temp1 = p1, temp2 = p2;
+				temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				lrev1Ref.value = temp1 * locallev; 
+				lrev2Ref.value = temp2 * locallev; 
+
 			};
 
 
@@ -523,12 +527,14 @@ GUI Parameters usable in SynthDefs
 				16.do({ temp = AllpassC.ar(temp, 0.04, { Rand(0.001,0.04) }, 1)});
 				lrevRef.value = temp * locallev; 
 			};
-			localReverbStereoFunc = { | junto1Ref, junto2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
 				var temp1 = p1, temp2 = p2;
-				junto1Ref.value = p1 + (16.do({ temp1 = AllpassC.ar(temp1, 0.04,
-					{ Rand(0.001,0.04) }, 1)}) * locallev);
-				junto2Ref.value = p2 + (16.do({ temp2 = AllpassC.ar(temp2, 0.04,
-					{ Rand(0.001,0.04) }, 1)}) * locallev);
+				16.do({ temp1 = AllpassC.ar(temp1, 0.04, { Rand(0.001,0.04) }, 1)});
+				16.do({ temp2 = AllpassC.ar(temp2, 0.04, { Rand(0.001,0.04) }, 1)});
+				lrev1Ref.value = temp1 * locallev; 
+				lrev2Ref.value = temp2 * locallev; 
+
+
 			};
 			
 		};
@@ -931,8 +937,10 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.20;
 				var soaSigLRef = Ref(0);
 				var soaSigRRef = Ref(0);
-				var junto1Ref =  Ref(0);
-				var junto2Ref =  Ref(0);
+				//var junto1Ref =  Ref(0);
+				//	var junto2Ref =  Ref(0);
+				var lrev1Ref =  Ref(0);
+				var lrev2Ref =  Ref(0);
 
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
@@ -984,14 +992,17 @@ GUI Parameters usable in SynthDefs
 				
 				//				junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
 				//				junto2 = p2 + PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-				localReverbStereoFunc.value(junto1Ref, junto2Ref, p1, p2, fftsize, rirZspectrum, locallev);
 
-				prepareSoaSigFunc.value(soaSigLRef, junto1Ref.value, azim1, el, intens: intens, dis: dis);
+				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev);
+				junto1 = p1 + lrev1Ref.value;
+				junto2 = p2 + lrev2Ref.value;
+
+				prepareSoaSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
 					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
 					soaSigLRef[8].value];
 
-				prepareSoaSigFunc.value(soaSigRRef, junto2Ref.value, azim2, el, intens: intens, dis: dis);
+				prepareSoaSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
 				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
 					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
 					soaSigRRef[8].value];
