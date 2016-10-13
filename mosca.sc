@@ -463,8 +463,8 @@ GUI Parameters usable in SynthDefs
 			this.delaytime = rir / 2;
 			SynthDef.new("revGlobalAmb",  { arg gbus;
 				var sig = In.ar(gbus, 1);
-				sig = [sig, sig, sig, sig];
-				sig = AllpassN.ar(sig, 0.050, Array.fill(4, {0.050}).rand, 0.5);
+				//	sig = [sig, sig, sig, sig];
+				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.01,0.05) }.dup(4), 3)});
 				
 				sig = FoaEncode.ar(sig, a2b);
 				revGlobalAmbFunc.value(sig, dec);
@@ -482,12 +482,20 @@ GUI Parameters usable in SynthDefs
 			}).add;
 			*/
 			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-				var convsig, sig = In.ar(gbfbus, 4);
+				var temp, sig = In.ar(gbfbus, 4);
+
 				sig = FoaDecode.ar(sig, b2a);
+				//sig = DelayN.ar(sig, 0.048,0.048);
+
+				//sig=Mix.fill(8,{CombL.ar(sig,0.1,rrand(0.01, 0.1),5)});
+				
+				//				6.do({ sig = AllpassN.ar(sig, 0.051, [rrand(0.01, 0.05),rrand(0.01, 0.05)], 1) });
+				//12.do({ sig = AllpassN.ar(sig, 0.051, rrand(0.01, 0.05), 3) });
+				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.01,0.05) }.dup(4), 3)});
 				
 				//sig = AllpassN.ar(sig, 0.05, Array.fill(4, {0.05}).rand, 1.0);
 
-				sig = AllpassL.ar(sig, 1.0, Array.fill( 4, {1.0}).rand, 2.0);
+				//sig = AllpassL.ar(sig, 1.0, Array.fill( 4, {1.0}).rand, 2.0);
 				
 				sig = FoaEncode.ar(sig, a2b);
 				revGlobalAmbFunc.value(sig, dec);
@@ -499,7 +507,8 @@ GUI Parameters usable in SynthDefs
 				var sig = In.ar(soaBus, 9);
 				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
 				//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
-				sig = AllpassN.ar(sig, delaytime, Array.fill(12, {delaytime}).rand, decaytime);
+				//	sig = AllpassN.ar(sig, delaytime, Array.fill(12, {delaytime}).rand, decaytime);
+				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.001,0.04) }.dup(4), 1)});
 				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
 				foaSig = [w, x, y, z];
 				soaSig = [w, x, y, z, r, s, t, u, v];
