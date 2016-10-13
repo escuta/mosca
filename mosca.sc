@@ -267,7 +267,7 @@ GUI Parameters usable in SynthDefs
 		prjDr = projDir;
 		dec = decoder;
 
-		if (rir.isString) {
+		if (rir != "allpass") {
 			//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 			rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
 			rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
@@ -460,32 +460,22 @@ GUI Parameters usable in SynthDefs
 			};
 
 
-		} // end if rir.isString
-		{  // else
+		} 
+		{  // else use allpass filters
 
-			this.decaytime = rir;
-			this.delaytime = rir / 20;
+			this.decaytime = 1.0;
+			//this.delaytime = rir / 20;
 			this.delaytime = 0.04;
 			SynthDef.new("revGlobalAmb",  { arg gbus;
 				var sig = In.ar(gbus, 1);
 				//	sig = [sig, sig, sig, sig];
-				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.01,0.05) }.dup(4), this.decaytime)});
+				16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
+					this.decaytime)});
 				sig = sig / 4; // running too hot, so attenuate
 				sig = FoaEncode.ar(sig, a2b);
 				revGlobalAmbFunc.value(sig, dec);
 			}).add;
-			
-			/*
-			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-				var convsig, sig = In.ar(gbfbus, 4);
-				sig = DelayN.ar(sig, 0.048, 0.048);
-				sig = Mix.ar(Array.fill(7,{ CombL.ar(sig, 0.1, LFNoise1.kr(0.1.rand, 0.04, 0.05), 15) })); 
-				sig = FoaDecode.ar(sig, b2a);
-				sig = AllpassN.ar(sig, 0.05, Array.fill(4, {0.05}).rand, 1.0);
-				sig = FoaEncode.ar(sig, a2b);
-				revGlobalAmbFunc.value(sig, dec);
-			}).add;
-			*/
+
 			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
 				var temp, sig = In.ar(gbfbus, 4);
 
@@ -496,7 +486,8 @@ GUI Parameters usable in SynthDefs
 				
 				//				6.do({ sig = AllpassN.ar(sig, 0.051, [rrand(0.01, 0.05),rrand(0.01, 0.05)], 1) });
 				//12.do({ sig = AllpassN.ar(sig, 0.051, rrand(0.01, 0.05), 3) });
-				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.01,0.05) }.dup(4), this.decaytime)});
+				16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
+					this.decaytime)});
 				
 				
 				//sig = AllpassN.ar(sig, 0.05, Array.fill(4, {0.05}).rand, 1.0);
@@ -512,7 +503,8 @@ GUI Parameters usable in SynthDefs
 				foaSig, soaSig, tmpsig;
 				var sig = In.ar(soaBus, 9);
 				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.001,0.04) }.dup(12), this.decaytime)});
+				16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.001,this.delaytime) }.dup(12),
+					this.decaytime)});
 				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
 				foaSig = [w, x, y, z];
 				soaSig = [w, x, y, z, r, s, t, u, v];
@@ -523,13 +515,15 @@ GUI Parameters usable in SynthDefs
 				var temp;
 				temp = p;
 				//lrevRef.value = AllpassN.ar(p, delaytime, delaytime.rand, decaytime);
-				16.do({ temp = AllpassC.ar(temp, 0.04, { Rand(0.001,0.04) }, this.decaytime)});
+				16.do({ temp = AllpassC.ar(temp, this.delaytime, { Rand(0.001,this.delaytime) }, this.decaytime)});
 				lrevRef.value = temp * locallev; 
 			};
 			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
 				var temp1 = p1, temp2 = p2;
-				16.do({ temp1 = AllpassC.ar(temp1, 0.04, { Rand(0.001,0.04) }, this.decaytime)});
-				16.do({ temp2 = AllpassC.ar(temp2, 0.04, { Rand(0.001,0.04) }, this.decaytime)});
+				16.do({ temp1 = AllpassC.ar(temp1, this.delaytime, { Rand(0.001,this.delaytime) },
+					this.decaytime)});
+				16.do({ temp2 = AllpassC.ar(temp2, this.delaytime, { Rand(0.001,this.delaytime) },
+					this.decaytime)});
 				lrev1Ref.value = temp1 * locallev; 
 				lrev2Ref.value = temp2 * locallev; 
 
