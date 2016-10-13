@@ -465,7 +465,7 @@ GUI Parameters usable in SynthDefs
 				var sig = In.ar(gbus, 1);
 				//	sig = [sig, sig, sig, sig];
 				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.01,0.05) }.dup(4), 3)});
-				
+				sig = sig / 4; // running too hot so attenuate
 				sig = FoaEncode.ar(sig, a2b);
 				revGlobalAmbFunc.value(sig, dec);
 			}).add;
@@ -493,6 +493,7 @@ GUI Parameters usable in SynthDefs
 				//12.do({ sig = AllpassN.ar(sig, 0.051, rrand(0.01, 0.05), 3) });
 				16.do({ sig = AllpassC.ar(sig, 0.04, { Rand(0.01,0.05) }.dup(4), 3)});
 				
+				
 				//sig = AllpassN.ar(sig, 0.05, Array.fill(4, {0.05}).rand, 1.0);
 
 				//sig = AllpassL.ar(sig, 1.0, Array.fill( 4, {1.0}).rand, 2.0);
@@ -516,12 +517,18 @@ GUI Parameters usable in SynthDefs
 			}).add;
 
 			localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-				//				lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
-				lrevRef.value = AllpassN.ar(p, delaytime, delaytime.rand, decaytime);
+				var temp;
+				temp = p;
+				//lrevRef.value = AllpassN.ar(p, delaytime, delaytime.rand, decaytime);
+				16.do({ temp = AllpassC.ar(temp, 0.04, { Rand(0.001,0.04) }, 1)});
+				lrevRef.value = temp * locallev; 
 			};
 			localReverbStereoFunc = { | junto1Ref, junto2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-				junto1Ref.value = p1 + AllpassN.ar(p1, delaytime, delaytime.rand, decaytime);
-				junto2Ref.value = p2 + AllpassN.ar(p2, delaytime, delaytime.rand, decaytime);
+				var temp1 = p1, temp2 = p2;
+				junto1Ref.value = p1 + (16.do({ temp1 = AllpassC.ar(temp1, 0.04,
+					{ Rand(0.001,0.04) }, 1)}) * locallev);
+				junto2Ref.value = p2 + (16.do({ temp2 = AllpassC.ar(temp2, 0.04,
+					{ Rand(0.001,0.04) }, 1)}) * locallev);
 			};
 			
 		};
