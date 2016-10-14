@@ -52,8 +52,8 @@ Mosca {
 	//classvar fftsize = 4096,
 	server;
 
-	*new { arg projDir, nsources = 1, width = 800, rir, srvr, decoder = nil;
-		^super.new.initMosca(projDir, nsources, width, rir, srvr, decoder);
+	*new { arg projDir, nsources = 1, width = 800, rir, server, decoder = nil;
+		^super.new.initMosca(projDir, nsources, width, rir, server, decoder);
 	}
 
 	*printSynthParams {
@@ -81,7 +81,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, rir, srvr, decoder;
+	initMosca { arg projDir, nsources, iwidth, rir, iserver, decoder;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -112,10 +112,14 @@ GUI Parameters usable in SynthDefs
 			this.synthRegistry[x] = List[];
 		};
 
+				server = iserver ? Server.default;
+
+		o = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+
 		// Note. this will replace swinbus 
 		this.scInBus = Array.newClear(this.nfontes);
 		this.nfontes.do { arg x;
-			this.scInBus[x] = Bus.audio(srvr, 4);
+			this.scInBus[x] = Bus.audio(server, 4);
 		};
 		
 		// array of functions, 1 for each source (if defined), that will be launched on Automation's "play"
@@ -123,7 +127,6 @@ GUI Parameters usable in SynthDefs
 		//companion to above. Launched by "Stop"
 		this.stopFunc = Array.newClear(this.nfontes);
 
-		o = OSCresponderNode(srvr.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		/*
 			// REMOVE?
@@ -263,7 +266,6 @@ GUI Parameters usable in SynthDefs
 
 		
 
-		server = srvr ? Server.default;
 		prjDr = projDir;
 		dec = decoder;
 

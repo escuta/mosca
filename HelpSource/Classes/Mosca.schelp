@@ -183,7 +183,7 @@ s.sync;
 	   width: 950, rir: "QL14Tail2Sec.amb", srvr: s, decoder: ~decoder);
 
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 950, rir: "allpass", srvr: s, decoder: ~decoder);
+//	   width: 950, rir: "allpass", server: s, decoder: ~decoder);
 
 
 s.sync;
