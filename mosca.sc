@@ -1322,6 +1322,7 @@ GUI Parameters usable in SynthDefs
 		}
 	}
 
+
 	openGui {
 
 		arg dur = 120;
@@ -2021,6 +2022,7 @@ GUI Parameters usable in SynthDefs
 		
 		~win = win;
 		
+// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
 		
 		bsalvar = Button(win, Rect(10, this.width - 40, 90, 20))
 		.states_([
@@ -2029,15 +2031,44 @@ GUI Parameters usable in SynthDefs
 		])
 		.action_({
 			//arg but;
-			controle.seek;
-			controle.snapshot; // rewind to zero
-			controle.save(controle.presetDir);
+
+						var title="Save: select automation dir", onSuccess, onFailure=nil,
+			preset=nil, bounds,  dwin, textField, success=false;
+			bounds = Rect(100,300,300,30);
+			if(prjDr.isNil) { preset = "HOME".getenv ++ "/auto/"; } {
+				preset = prjDr ++ "/auto/";
+			};
+			dwin = GUI.window.new(title, bounds);
+            dwin.onClose = {
+                if (success.not){
+                    onFailure.value(textField.value);
+					"Aborted save".postln;
+                };
+            };
+            textField = GUI.textField.new(dwin, Rect(0,0,bounds.width,bounds.height));
+            textField.value = preset;
+            textField.action = {
+                success = true;
+                onSuccess.value(textField.value);
+                dwin.close;
+				
+				controle.seek; // rewind to zero
+				controle.snapshot; // and take snapshot
+				("FILE IS " ++ textField.value).postln;
+				("mkdir -p" + textField.value).systemCmd;
+				controle.save(textField.value);
+            };
+            dwin.front;
+
+			//			controle.seek;
+			//			controle.snapshot; // rewind to zero
+			//			controle.save(controle.presetDir);
 			
 			
 		});
 		
 		
-		
+		// load automation - adapted from chooseDirectoryDialog in AutomationGui.sc
 		
 		bcarregar = Button(win, Rect(100, this.width - 40, 90, 20))
 		.states_([
@@ -2045,8 +2076,32 @@ GUI Parameters usable in SynthDefs
 		])
 		.action_({
 			//arg but;
-			controle.load(controle.presetDir);
-			controle.seek;
+			var title="Select Automation directory", onSuccess, onFailure=nil,
+			preset=nil, bounds,  dwin, textField, success=false;
+			bounds = Rect(100,300,300,30);
+			if(prjDr.isNil) { preset = "HOME".getenv ++ "/auto/"; } {
+				preset = prjDr ++ "/auto/";
+			};
+			dwin = GUI.window.new(title, bounds);
+            dwin.onClose = {
+                if (success.not){
+                    onFailure.value(textField.value);
+					"Aborted load".postln;
+                };
+            };
+            textField = GUI.textField.new(dwin, Rect(0,0,bounds.width,bounds.height));
+            textField.value = preset;
+            textField.action = {
+                success = true;
+                onSuccess.value(textField.value);
+                dwin.close;
+				controle.load(textField.value);
+				controle.seek;
+
+            };
+            dwin.front;
+			
+			//			controle.load(controle.presetDir);
 		});
 		
 		
@@ -2480,6 +2535,9 @@ GUI Parameters usable in SynthDefs
 				arg path;
 
 				{tfield[fatual].valueAction = path;}.defer;
+				controle.seek;  // need to take an Automation snapshot at zero or we'll lose
+				controle.snapshot; // this filename on next rewind of transport
+				// perhaps we should resume prior transport position afterwards
 				
 
 			}, 
@@ -2908,7 +2966,7 @@ GUI Parameters usable in SynthDefs
 
 		
 		//controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
-		controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win,
+		~autotest = controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win,
 			Rect(10, this.width - 80, 400, 22));
 		controle.presetDir = prjDr ++ "/auto";
 		//controle.setMinTimeStep(2.0);
