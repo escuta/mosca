@@ -597,6 +597,12 @@ GUI Parameters usable in SynthDefs
 				//				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 				//				ambsinal1O = [w, x, y, z];
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
+				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
+
 				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
 			}).add;
 
@@ -663,6 +669,13 @@ GUI Parameters usable in SynthDefs
 				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
 
 				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
+				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
+
+				
 				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
 					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
 					soaSigRef[8].value];
@@ -740,7 +753,11 @@ GUI Parameters usable in SynthDefs
 					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
 					soaSigRef[8].value];
 
-				
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
+				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
+
 				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 				
 			}).add;
@@ -807,6 +824,11 @@ GUI Parameters usable in SynthDefs
 
 				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 				//				ambsinal1O = [w, x, y, z];
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
+				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
 				
 				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
 				
@@ -909,7 +931,12 @@ GUI Parameters usable in SynthDefs
 						soaSigRRef[2].value, soaSigRRef[3].value];
 
 				Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
-				
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambsinal1plus2_1O = HPF.ar(ambsinal1plus2_1O, 20); // stops bass frequency blow outs by proximity
+				ambsinal1plus2_1O = FoaTransform.ar(ambsinal1plus2_1O, 'proximity', dis);
+
 				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
 				
 			}).add;
@@ -1007,6 +1034,11 @@ GUI Parameters usable in SynthDefs
 					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
 						soaSigRRef[2].value, soaSigRRef[3].value];
 				
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambsinal1plus2_1O = HPF.ar(ambsinal1plus2_1O, 20); // stops bass frequency blow outs by proximity
+				ambsinal1plus2_1O = FoaTransform.ar(ambsinal1plus2_1O, 'proximity', dis);
+
 				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
 				
 			}).add;
