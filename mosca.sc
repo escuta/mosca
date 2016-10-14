@@ -554,7 +554,11 @@ GUI Parameters usable in SynthDefs
 				var soaSigRef = Ref(0);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				//				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				dis = 1 - fonte.rho;
+
+				//SendTrig.kr(Impulse.kr(1),0,  dis); // debugging
+				
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -624,7 +628,7 @@ GUI Parameters usable in SynthDefs
 				var lrevRef = Ref(0);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				dis = 1 - fonte.rho;
 				//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
 				azim = fonte.theta;
 				el = fonte.phi;
@@ -702,7 +706,8 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.20;
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				//dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				dis = 1 - fonte.rho;
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -773,7 +778,8 @@ GUI Parameters usable in SynthDefs
 				var soaSigRef = Ref(0);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
-				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				//dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				dis = 1 - fonte.rho;
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -863,8 +869,8 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				el = fonte.phi;
 				
-				dis = (1 - (fonte.rho - this.scale)) / this.scale;
-				
+				//				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				dis = 1 - fonte.rho;
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				dis = Select.kr(dis > 1, [dis, 1]); 
 
@@ -971,7 +977,8 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				el = fonte.phi;
 				
-				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				//				dis = (1 - (fonte.rho - this.scale)) / this.scale;
+				dis = 1 - fonte.rho;
 				
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				dis = Select.kr(dis > 1, [dis, 1]); 
@@ -1106,7 +1113,8 @@ GUI Parameters usable in SynthDefs
 					var grevganho = 0.20;			
 					fonte = Cartesian.new;
 					fonte.set(mx, my, mz);
-					dis = (1 - (fonte.rho - this.scale)) / this.scale;
+					//					dis = (1 - (fonte.rho - this.scale)) / this.scale;
+					dis = 1 - fonte.rho;
 					pushang = (1 - dis) * pi / 2; // degree of sound field displacement
 					//  0 = centred. pi/2 = 100% displaced
 					azim = fonte.theta; // ângulo (azimuth) de deslocamento
@@ -2313,8 +2321,8 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "Z-Axis";
 		znumbox = NumberBox(win, Rect(this.width - 65, ((this.width - zSliderHeight) / 2) + zSliderHeight, 60, 20));
 		znumbox.value = 0;
-		znumbox.clipHi = this.halfwidth;
-		znumbox.clipLo = this.halfwidth * -1;
+		znumbox.clipHi = 1;
+		znumbox.clipLo = -1;
 		znumbox.step_(0.1); 
 		znumbox.scroll_step=0.1;
 		znumbox.align = \center;
@@ -2333,7 +2341,7 @@ GUI Parameters usable in SynthDefs
 		zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2), 20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = {arg num;
-			{znumbox.value = (this.halfwidth - (num.value * this.width)) * -1;}.defer;
+			{znumbox.value = (0.5 - num.value) * -2;}.defer;
 			{zbox[fatual].valueAction = znumbox.value;}.defer;
 			{zlev[fatual] = znumbox.value;}.defer;
 			
@@ -2709,6 +2717,11 @@ GUI Parameters usable in SynthDefs
 			dpbox[i] = NumberBox(wdados, Rect(580, 40+ (i*20), 40, 20));
 			tfield[i] = TextField(wdados, Rect(620, 40+ (i*20), 350, 20));
 
+
+			xbox[i].decimals = 4;
+			ybox[i].decimals = 4;
+			zbox[i].decimals = 4;
+			
 			tfield[i].action = {arg path;
 				if (path != "") {
 					
@@ -2721,28 +2734,57 @@ GUI Parameters usable in SynthDefs
 			};
 			
 			xbox[i].action = {arg num;
-				sprite[i, 1] = this.halfwidth + (num.value * -1);
+				sprite[i, 1] = this.halfwidth + (num.value * -1 * this.halfwidth);
 				novoplot.value(num.value, ybox[i], i, this.nfontes);
+				//xval[i] = num.value;
 				xval[i] = num.value;
+				if (xval[i] > 1) {xval[i] = 1};
+				if (xval[i] < -1) {xval[i] = -1};
 				if(espacializador[i].notNil || playingBF[i]){
-					espacializador[i].set(\mx, num.value);
-					this.setSynths(i, \mx, num.value);
-					synt[i].set(\mx, num.value);
+					espacializador[i].set(\mx, xval[i]);
+					this.setSynths(i, \mx, xval[i]);
+					synt[i].set(\mx, xval[i]);
+					//xval[i].postln;
 				};
 				
 				
 			};
 			ybox[i].action = {arg num; 
-				sprite[i, 0] = (num.value * -1 + this.halfwidth);
+				sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
 				yval[i] = num.value;
+				yval[i] = num.value;
+				if (yval[i] > 1) {yval[i] = 1};
+				if (yval[i] < -1) {yval[i] = -1};
+
 				if(espacializador[i].notNil || playingBF[i]){
-					espacializador[i].set(\my, num.value);
-					this.setSynths(i, \my, num.value);
-					synt[i].set(\my, num.value);
+					espacializador[i].set(\my, yval[i]);
+					this.setSynths(i, \my, yval[i]);
+					synt[i].set(\my, yval[i]);
 				};		
 				
 			};
 
+			zbox[i].action = {arg num;
+				espacializador[i].set(\mz, num.value);
+				//	zval[i] = num.value;
+				zval[i] = num.value / this.halfwidth;
+				if (zval[i] > 1) {zval[i] = 1};
+				if (zval[i] < -1) {zval[i] = -1};
+				
+				this.setSynths(i, \mz, zval[i]);
+				//"fooooob".postln;
+				synt[i].set(\mz, zval[i]);
+				//synt[i].set(\elev, num.value);
+				zlev[i] = zval[i];
+				if(i == fatual) 
+				{
+					//var val = (this.halfwidth - (num.value * width)) * -1;
+					//					zslider.value = (num.value + this.halfwidth) / this.width;
+					zslider.value = (num.value + 1) / 2;
+					znumbox.value = num.value;
+				};
+			};
+			
 			
 			dcheck[i].value = 0;
 			
@@ -2879,21 +2921,6 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			zbox[i].action = {arg num;
-				espacializador[i].set(\mz, num.value);
-				zval[i] = num.value;
-				this.setSynths(i, \mz, num.value);
-				//"fooooob".postln;
-				synt[i].set(\mz, num.value);
-				//synt[i].set(\elev, num.value);
-				zlev[i] = num.value;
-				if(i == fatual) 
-				{
-					//var val = (this.halfwidth - (num.value * width)) * -1;
-					zslider.value = (num.value + this.halfwidth) / this.width;
-					znumbox.value = num.value;
-				};
-			};
 
 			// CHECK THESE NEXT 2
 			ncanbox[i].action = {arg num;
@@ -3080,8 +3107,8 @@ GUI Parameters usable in SynthDefs
 		
 		win.view.mouseMoveAction = {|view, x, y, modifiers | [x, y];
 
-			xbox[fatual].valueAction = this.halfwidth - y;
-			ybox[fatual].valueAction = (x - this.halfwidth) * -1;
+			xbox[fatual].valueAction = (this.halfwidth - y) / this.halfwidth;
+			ybox[fatual].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
 			win.drawFunc = {
 				// big circle
 				Pen.fillColor = Color(0.6,0.8,0.8);
