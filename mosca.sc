@@ -2349,7 +2349,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
-		textbuf.string = "Close Reverb";
+		textbuf.string = "Proximal Reverb";
 		gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
 		gnumbox.value = 1;
 		gnumbox.clipHi = pi;

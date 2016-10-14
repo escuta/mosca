@@ -1,67 +1,26 @@
 TITLE:: Mosca
-summary:: GUI-assisted production of ambisonic and binaural sound fields with simulated moving or stationary sound sources
+summary:: GUI-assisted production of dynamic ambisonic sound fields
 categories:: Undocumented classes
 related:: Classes/SomeRelatedClass, http://www.ambisonictoolkit.net
 
 DESCRIPTION::
-Mosca is a SuperCollider class for the creation of sound fields and the simulation of moving sound sources using either ambisonic or binaural spatialisation. It uses John Chowning's technique of applying "local" and "global" reverberation to sources in order to simulate distance cues,1 as well as simulating other phenomena such as the Doppler effect and high frequency attenuation with distance. The program has a GUI and sound sources are read from file, from hardware inputs or from other applications via Jack. It also supports basic synchronisation with audio edited in a DAW. Sound sources to be spatialised by ambisonic or binaural means may be mono, stereo or four-channel B-format in origin. The interface facilitates the 3D spatialisation of multiple sources and their positions and movements may be recorded for synchronised playback. While the audio output of the binaural mode requires no further processing, ambisonic signals must be decoded with an appropriate ambisonic decoder such as Ambdec via Jack on Linux platforms.
+Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. Sound fields may be decoded using a variety of built in 1st order ambisonic SuperCollider decoders (including binaural) or with external 2nd order decoders such as Ambdec in Linux. The class makes extensive use of the Ambisonic Toolkit (ATK, see: http://www.ambisonictoolkit.net/) by Joseph Anderson and the Automation quark (https://github.com/neeels/Automation) by Neels Hofmeyr.
 
-The program makes use of the Ambisonic Toolkit (ATK) for SuperCollider by Joseph Anderson and the Automation quark. It also uses B-format impulse responses (IRs) from the OpenAir project binaural IRs from the Salford-BBC Spatially-sampled Binaural Room Impulse Responses. The IRs have been modified here, having had the early reflections removed, to serve as "tail" IRs for use in reverberation.
+Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from hardware inputs (physical or from other applications such a DAW via Jack) or from SuperCollider's own synths. In the case of synth input, synths are associated by the user with a particular source in the GUI and registered in a synth registry. In this way, they are spatialised by the GUI and also receive all of the data from the GUI pertaining to the source (eg. x, y and z coordinates or auxiliary fader data). Mosca has its own transport provided by the Automation quark for recording and playback of source data. This may be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack.
+
+Mono and stereo sources are encoded as second order ambisonic signals whereas B-format signals remain as 1st order and are angled in space using "push" transformations. Source signals are attenuated proportionally to the inverse of the square root of proximity or in a linear relationship with distance, selectable on a per-source basis via the GUI. All sources are subject to high-frequency attenuation with distance and if decoding is performed by one of the ATK's 1st order decoders, a proximity effect is generated adding a bass boost to proximal sources among other phase effects to simulate wave curvature (see: http://doc.sccode.org/Classes/FoaProximity.html).
+
+Reverberation is performed either using a B-format tail room impulse response (RIR) - the preferred method - or using simple built-in allpass filters, options selectable on creation of a Mosca instance. With both options, two reverberation level controls are included in the GUI to set proximal and distant levels. A further two reverb types are selectable in the GUI on a per-source basis for both RIR and allpass reverberation modes. The default reverb type uses John Chowning's technique of applying "local" and "global" reverberation to sources. Proximal reverberation in this case is "global" and is audible by the listener from all directions when the source is close where as distant reverb is "local" in scope and is encoded as a 2nd order ambisonic signal along with the dry signal. This predominates as the source becomes more distant. The second type of reverberation may be described as a "2nd order diffuse reverberation". This technique produces reverberation weighted in the direction of sound events encoded in the dry ambisonic signal. The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either a) convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum, or, as in the case of the allpass option, b) passed through a 12-channel bank of allpass filters before being converted back to a 2nd order B-format diffuse signal. Please note that the 2nd order diffuse reverberation may require the user to set a larger audio output buffer and thus increase the latency of the system. The "Chowning" type reverberation is more efficient and the "allpass" option, more still. 
+
+Mosca also has other features including a scalable Doppler Effect on moving sources, looping of sources loaded from file, adjustment of virtualloudspeaker angle of stereo sources and in the case of B-format sources: a rotation control, adjustment of "directivity" (see ATK documentation) and a control of "contraction", whereby the B-format signal may be crossfaded with its W component and which is spatialised as a 2nd order ambisonic signal.
 
 USING MOSCA
 
-To use mosca, create a specific project directory. Within this include two further directories named "rir" and "auto". The rir directory must contain at least one b-format rir and one binaural rir. The auto directory is empty until you begin to save automation data from the Mosca GUI. For convenience, please download the "moscaproject.zip" file on the following page which contains the file structure, example RIRs and B-format recordings as well as other information and demos: http://escuta.org/mosca
+The user must set up a project directory with subdirectories "rir" and "auto". RIRs should have the first 100 or 120ms silenced to act as "tail" reverberator and must be placed in the "rir" directory. For convenience, please download the "moscaproject.zip" file on the following page which contains the file structure, example RIRs and B-format recordings as well as other information and demos:
 
-See the code examples below for further on how to launch Mosca. The code example assumes the download of moscaproject.zip. You will need to change the path to match the location of your project file. If using these files, please run your system at 48kHz.
+http://escuta.org/mosca
 
-Once you have successfully opened the GUI, read this:
-
-The GUI
-
-a) First, select a source.
-
-b) Mosca is in binaural mode by default. Click the binaural button to toggle it to ambisonic if you wish. Ambisonics is rendered as 1st order in the case of B-format sources and as 2nd order ambisonic signals in the case of mono and stereo sources.
-
-c) Next, load a file for that source with the "load" button. Files may be mono, stereo or in B-format and may be of any sampling rate.
-
-d) Click the "test" button and raise the volume fader.
-
-NB. To hear any source, the user must either use the "test" button or operate the "Automation" transport, see item "l)" below.
-
-e) click on the screen to position or move the sound source and use the z-axis slider to adjust the elevation. Since you can't do these two things at once, you'll need to use "automation" (see below).
-
-f) The sound may be looped with the loop check box. Note that if loop is selected, the sound will start at a random position in the file.
-
-g) Select the Doppler check box to enable a Doppler effect and shift the "Dopller amount" fader to adjust the degree of the effect (note, this can cause glitches if moved when the sound is audible). Note also, when using test mode, the Doppler check box must be selected before selecting "test" for the Doppler effect to be active.
-
-h) To use the local/global reverb, first position a sound source far from the central position on the interface. Note: the horse.wav file is a good test to learn how to use this effect and is to be found in the "sounds" folder. Raise the "Local Reverberation" fader to taste. Local reverb is spatialised along with the source and becomes apparent only when the source is distant. Global reverb take precedence when the source gets closer. Now, move the source closer to the centre of the interface and raise the Global Reverberation fader to apply.
-
-i) The angle fader is used for stereo sources and to adjust the angle of a virtual speaker pair. The default angle is 1.57 radians (90 degrees)
-
-j) B-format signals are manipulated using the Ambisonic Tool Kit (ATK). See the "imaging" section of the following page for details:
-
-http://www.ambisonictoolkit.net/documentation/supercollider/
-
-The position of the source on the interface (the pink dots) affects the "PushX" imaging of the ATK as well as additional attenuation of the signal such that the B-format image may appear approach or recede in any direction.
-
-The "Rotation" slider rotates the B-format signal around the vertical axis. The "Directivity" fader adjusts the ATK's "DirectO" imaging. The "Contraction" fader performs a cross-fade between the B-format signal and its W component, to contract the image to a spatialised mono source.
-
-k) The "open data" button opens a window with the data for all sound sources and may itself be used to adjust parameters. Please note that this window may only be closed on the main interface window.
-
-l) At the top right of the interface is the transport for the "Automation" quark. It includes a "play/stop" button, a return to start button, a record button, a record initial values button, a save button* and a load button*. Note that the save and load buttons do not at present record Doppler and Loop check boxes. It's recommended therefore that you use the "save auto" and "load auto" buttons below the transport. These save all data in the "auto" directory in the chosen project directory. The Automation transport also contains a slider to move the "play head". Loaded sounds which are not looped will start at the beginning of the file at "0" on the transport and the transport fader may be used to advance through these sounds as well as advance through the recorded fader settings.
-
-m) Beneath the the "Source" menu, there is a checkbox "Live" input and beneath that, two number fields for the number of channels of the signal (mono, stereo or b-format) and the starting number for a consecutive series of buses. So for example, if a 4 channel signal is entered and the start bus is zero, the signal will ocupy buses 0, 1, 2 & 3. These may be hardware inputs or virtual hardware inputs via jack, with the signals originating from edited material in a DAW.
-
-n) If "Slave to MMC" is selected one can control Mosca's transport with that od a DAW via Midi Machine Control (MMC). To do this in Linux, in my case, it was necessary to use the ALSA to MIDI bridging utility "a2jmidid" which comes as standard with Ubuntu Studio 16.04. I placed the following line:
-
-a2jmidid -e&
-
-at the end of an existing script that is launched by "qjackctl" in the options field "Execute script after startup".
-
-This allows you to make a connection in the "MIDI" tab of "qjackctl" from the DAW's (in my case Ardour) "MMC out" port to the 1st MIDI in port of Supercollider. This, like other settings may be saved as a patchbay and made active to automatically patch devices and buses on the launch of the program.
- 
-Note that the "synchronisation" performs start, stop and seek operation in Mosca. To record in Mosca, the user must enter into record mode.
-
+Please then see the methods and code examples below.
 
 
 CLASSMETHODS::
