@@ -35,6 +35,7 @@ Mosca {
 	<>scInBus,
 	<>width, <>halfwidth, <>scale,
 	<>dur,
+	<>rawbus,
     <>delaytime, <>decaytime; // for allpass 
 
 	classvar server, rirW, rirX, rirY, rirZ,
@@ -54,8 +55,8 @@ Mosca {
 	//classvar fftsize = 4096,
 	server;
 
-	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass", server, decoder = nil;
-		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder);
+	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass", server = Server.default, decoder = nil, rawbus = 0;
+		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder, rawbus);
 	}
 
 	*printSynthParams {
@@ -83,7 +84,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, decoder;
+	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, decoder, irawbus;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -104,6 +105,7 @@ GUI Parameters usable in SynthDefs
 		this.halfwidth = this.width / 2;
 		this.scale = this.halfwidth; // for the moment at least
 		this.dur = idur;
+		this.rawbus = irawbus;
 		
 		this.nfontes = nsources;
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
@@ -115,7 +117,7 @@ GUI Parameters usable in SynthDefs
 			this.synthRegistry[x] = List[];
 		};
 
-				server = iserver ? Server.default;
+		server = iserver;
 
 		o = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
@@ -131,27 +133,19 @@ GUI Parameters usable in SynthDefs
 		this.stopFunc = Array.newClear(this.nfontes);
 
 
-		/*
-			// REMOVE?
-			this.swinbus = Array.newClear(this.nfontes * 4); // busses software input
-			(this.nfontes * 4).do { arg x;
-			this.swinbus[x] = Bus.audio(server, 1); 
-			};
-		*/
-
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
 		if (decoder.isNil) {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-				Out.ar( 2, ambsinal); };
+				Out.ar( this.rawbus, ambsinal); };
 			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-				Out.ar( 2, ambsinal1plus2); };
+				Out.ar( this.rawbus, ambsinal1plus2); };
 			revGlobalAmbFunc = { |ambsinal, dec|
-				Out.ar( 2, ambsinal); };
+				Out.ar( this.rawbus, ambsinal); };
 			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-				Out.ar( 2, soaSig); };
+				Out.ar( this.rawbus, soaSig); };
 			playBFormatOutFunc = { |player, dec|
-				Out.ar( 2, player); };
+				Out.ar( this.rawbus, player); };
 			
 		} {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
