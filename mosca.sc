@@ -1340,6 +1340,7 @@ GUI Parameters usable in SynthDefs
 		var fonte, dist, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
+		lastAutomation = nil,
 		loopcheck, lpcheck, lp,
 		revcheck, rvcheck, rv,
 		lincheck, lncheck, ln,
@@ -2139,11 +2140,16 @@ GUI Parameters usable in SynthDefs
 		.action_({
 			//arg but;
 
-						var title="Save: select automation dir", onSuccess, onFailure=nil,
+			var title="Save: select automation dir", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
 			bounds = Rect(100,300,300,30);
-			if(prjDr.isNil) { preset = "HOME".getenv ++ "/auto/"; } {
-				preset = prjDr ++ "/auto/";
+			if(prjDr.isNil && lastAutomation.isNil) {
+				preset = "HOME".getenv ++ "/auto/"; } {
+					if (lastAutomation.isNil) {
+						preset = prjDr ++ "/auto/";
+					} {
+						preset = lastAutomation;
+					};
 			};
 			dwin = GUI.window.new(title, bounds);
             dwin.onClose = {
@@ -2164,6 +2170,8 @@ GUI Parameters usable in SynthDefs
 				("FILE IS " ++ textField.value).postln;
 				("mkdir -p" + textField.value).systemCmd;
 				controle.save(textField.value);
+				lastAutomation = textField.value;
+
             };
             dwin.front;
 
@@ -2186,8 +2194,13 @@ GUI Parameters usable in SynthDefs
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
 			bounds = Rect(100,300,300,30);
-			if(prjDr.isNil) { preset = "HOME".getenv ++ "/auto/"; } {
-				preset = prjDr ++ "/auto/";
+			if(prjDr.isNil && lastAutomation.isNil) {
+				preset = "HOME".getenv ++ "/auto/"; } {
+					if(lastAutomation.isNil) {
+						preset = prjDr ++ "/auto/";
+					} {
+						preset = lastAutomation;
+					};
 			};
 			dwin = GUI.window.new(title, bounds);
             dwin.onClose = {
@@ -2204,7 +2217,7 @@ GUI Parameters usable in SynthDefs
                 dwin.close;
 				controle.load(textField.value);
 				controle.seek;
-
+				lastAutomation = textField.value;
             };
             dwin.front;
 			
@@ -3293,7 +3306,6 @@ GUI Parameters usable in SynthDefs
 		};
 
 		controle.onStop = {
-			("Acabou! = " ++ controle.now).postln;
 			runStops.value;
 			this.nfontes.do { arg i;
 				// if sound is currently being "tested", don't switch off on stop
