@@ -2094,7 +2094,7 @@ GUI Parameters usable in SynthDefs
 		
 		btestar = Button(win, Rect(280, 90, 90, 20))
 		.states_([
-			["test", Color.black, Color.white],
+			["audition", Color.black, Color.white],
 			["stop", Color.white, Color.red]
 		])
 		.action_({ arg but;
@@ -2343,7 +2343,7 @@ GUI Parameters usable in SynthDefs
 		lincheck.value = false;
 
 		
-		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW Bus").action_({ arg butt;
+		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ arg butt;
 			{hwncheck[fatual].valueAction = butt.value;}.defer;
 			if (hwInCheck.value && scInCheck.value) {
 				//scInCheck.value = false;
