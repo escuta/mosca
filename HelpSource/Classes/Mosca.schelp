@@ -78,7 +78,10 @@ The number of sources to be spatialised.
 ARGUMENT:: width
 Pixel width and height of GUI window. Minimum of 550 pixels.
 
-ARGUMENT:: rirWXYZ
+ARGUMENT:: dur
+Duration in seconds of automation transport.
+
+ARGUMENT:: rir
 B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has the same sample rate as your system.
 
 ARGUMENT:: server
@@ -86,7 +89,9 @@ Server used. eg. Server.default
 
 ARGUMENT:: decoder
 Name of 1st order ambisonic decoder to be used. See the following ATK links:
-http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDecoderMatrix.html http://doc.sccode.org/Classes/FoaDecoderKernel.html Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to the outputs for external decoding with, for example, AmbDec: http://kokkinizita.linuxaudio.org/linuxaudio/
+http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDecoderMatrix.html http://doc.sccode.org/Classes/FoaDecoderKernel.html
+
+Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to the outputs for external decoding with, for example, AmbDec: http://kokkinizita.linuxaudio.org/linuxaudio/
 
 returns:: New instance.
 
@@ -179,15 +184,15 @@ s.sync;
 //If <decoder> is left blank, Mosca will send 2ndº and 1º signals out of SC's
 // outputs for decoding with an external decoder
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 950, rir: "QL14Tail2Sec.amb", server: s, decoder: ~decoder);
-
 ~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-	   width: 1000, rir: "allpass", server: s);
+	   width: 950, dur: 180, rir: "QL14Tail2Sec.amb", server: s, decoder: ~decoder);
+
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 995, dur: 200, rir: "allpass", server: s, decoder: ~decoder);
 
 
 s.sync;
-~testMosca.openGui(120);
+~testMosca.openGui;
 
 };
 

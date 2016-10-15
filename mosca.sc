@@ -34,6 +34,7 @@ Mosca {
 	<>triggerFunc, <>stopFunc,
 	<>scInBus,
 	<>width, <>halfwidth, <>scale,
+	<>dur,
     <>delaytime, <>decaytime; // for allpass 
 
 	classvar server, rirW, rirX, rirY, rirZ,
@@ -53,8 +54,8 @@ Mosca {
 	//classvar fftsize = 4096,
 	server;
 
-	*new { arg projDir, nsources = 1, width = 800, rir, server, decoder = nil;
-		^super.new.initMosca(projDir, nsources, width, rir, server, decoder);
+	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass", server, decoder = nil;
+		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder);
 	}
 
 	*printSynthParams {
@@ -82,7 +83,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, rir, iserver, decoder;
+	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, decoder;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -102,6 +103,7 @@ GUI Parameters usable in SynthDefs
 		};
 		this.halfwidth = this.width / 2;
 		this.scale = this.halfwidth; // for the moment at least
+		this.dur = idur;
 		
 		this.nfontes = nsources;
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
@@ -1336,7 +1338,7 @@ GUI Parameters usable in SynthDefs
 
 	openGui {
 
-		arg dur = 120;
+		//arg dur = 120;
 		var fonte, dist, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
@@ -3249,7 +3251,7 @@ GUI Parameters usable in SynthDefs
 
 		
 		//controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
-		~autotest = controle = Automation(dur, showLoadSave: false, minTimeStep: 0.001).front(win,
+		~autotest = controle = Automation(this.dur, showLoadSave: false, minTimeStep: 0.001).front(win,
 			Rect(10, this.width - 80, 400, 22));
 		controle.presetDir = prjDr ++ "/auto";
 		//controle.setMinTimeStep(2.0);
