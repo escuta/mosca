@@ -25,10 +25,11 @@ Mosca {
 	//	<>rirWXYZspectrum,  rirWXYZ, // experimental!
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 
-	<>irbuffer, <>bufsize, <>win, <>wdados, <>sprite, <>nfontes,
+	<>irbuffer, <>bufsize, <>win, <>wdados, <>waux, <>sprite, <>nfontes,
 	<>controle, <>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
+	<>aux1, <>aux2, <>aux3, <>aux4, <>aux5, 
 	<>dec,
 	<>triggerFunc, <>stopFunc,
 	<>scInBus,
@@ -1348,6 +1349,7 @@ GUI Parameters usable in SynthDefs
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
 		ncanbox, businibox,
+		
 		//ncan,
 		//busini,
 		novoplot,
@@ -1355,14 +1357,17 @@ GUI Parameters usable in SynthDefs
 		playingBF,
 		
 		dopnumbox, volslider, dirnumbox, dirslider, connumbox, conslider, cbox,
-		angslider, bsalvar, bcarregar, bdados, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
+		a1box, a2box, a3box, a4box, a5box, 
+		angslider, bsalvar, bcarregar, bdados, baux, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
 		gslider, gnumbox, lslider, lnumbox, tfield, dopflag = 0, btestar, tocar, isPlay = false, isRec,
 		atualizarvariaveis, updateSynthInArgs,
+		auxslider1, auxslider2, auxslider3, auxslider4, auxslider5, 
 		testado,
 		rnumbox, rslider, rbox, 
 		znumbox, zslider, zbox, zlev, // z-axis
 		xval, yval, zval,
 		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox,
+		aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox, 
 		zSliderHeight = this.width * 2 / 3;
 		espacializador = Array.newClear(this.nfontes);
 		doppler = Array.newClear(this.nfontes); 
@@ -1379,6 +1384,11 @@ GUI Parameters usable in SynthDefs
 		// note that ncan refers to # of channels in streamed sources.
 		// ncanais is related to sources read from file
 		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
+		this.aux1 = Array.newClear(this.nfontes);
+		this.aux2 = Array.newClear(this.nfontes);
+		this.aux3 = Array.newClear(this.nfontes);
+		this.aux4 = Array.newClear(this.nfontes);
+		this.aux5 = Array.newClear(this.nfontes);
 		sombuf = Array.newClear(this.nfontes); 
 		xval = Array.newClear(this.nfontes); 
 		yval = Array.newClear(this.nfontes); 
@@ -1419,6 +1429,12 @@ GUI Parameters usable in SynthDefs
 		lncheck = Array.newClear(this.nfontes); // linear intensity
 		hwncheck = Array.newClear(this.nfontes); // hardware-in check
 		scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
+		a1box = Array.newClear(this.nfontes); // aux 
+		a2box = Array.newClear(this.nfontes); // aux 
+		a3box = Array.newClear(this.nfontes); // aux 
+		a4box = Array.newClear(this.nfontes); // aux 
+		a5box = Array.newClear(this.nfontes); // aux 
+
 		tfield = Array.newClear(this.nfontes);
 		
 		testado = Array.newClear(this.nfontes);
@@ -1440,7 +1456,13 @@ GUI Parameters usable in SynthDefs
 			clev[i] = 0;
 			zlev[i] = 0;
 			dplev[i] = 0;
-			
+
+			aux1[i] = 0;
+			aux2[i] = 0;
+			aux3[i] = 0;
+			aux4[i] = 0;
+			aux5[i] = 0;
+
 			this.ncan[i] = 0;
 			this.busini[i] = 0;
 			sprite[i, 0] = -20;
@@ -1491,7 +1513,7 @@ GUI Parameters usable in SynthDefs
 		~t3 = soaBus;
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, this.width, this.width, this.width)).front;
-		wdados = Window.new("Data", Rect(900, 900, 990, (this.nfontes*20)+60 ));
+		wdados = Window.new("Data", Rect(this.width, 900, 955, (this.nfontes*20)+60 ));
 		wdados.userCanClose = false;
 		
 		
@@ -1507,6 +1529,75 @@ GUI Parameters usable in SynthDefs
 			{wdados.visible = false;};
 		});
 
+		waux = Window.new("Auxiliary Controllers", Rect(this.width, 400, 260, 240 ));
+		waux.userCanClose = false;
+		
+		
+		baux = Button(win, Rect(280, 70, 90, 20))
+		.states_([
+			["show aux", Color.black, Color.white],
+			["hide aux", Color.white, Color.blue]
+		])
+		.action_({ arg but;
+			//	but.value.postln;
+			if(but.value == 1)
+			{waux.front;}
+			{waux.visible = false;};
+		});
+
+		auxslider1 = Slider.new(waux, Rect(40, 20, 20, 160));
+		auxslider2 = Slider.new(waux, Rect(80, 20, 20, 160));
+		auxslider3 = Slider.new(waux, Rect(120, 20, 20, 160));
+		auxslider4 = Slider.new(waux, Rect(160, 20, 20, 160));
+		auxslider5 = Slider.new(waux, Rect(200, 20, 20, 160));
+
+		aux1numbox = NumberBox(waux, Rect(30, 185, 40, 20));
+		aux2numbox = NumberBox(waux, Rect(70, 185, 40, 20));
+		aux3numbox = NumberBox(waux, Rect(110, 185, 40, 20));
+		aux4numbox = NumberBox(waux, Rect(150, 185, 40, 20));
+		aux5numbox = NumberBox(waux, Rect(190, 185, 40, 20));
+
+		aux1numbox.clipHi = 1;
+		aux1numbox.clipLo = 0;
+		aux2numbox.clipHi = 1;
+		aux2numbox.clipLo = 0;
+		aux3numbox.clipHi = 1;
+		aux3numbox.clipLo = 0;
+		aux4numbox.clipHi = 1;
+		aux4numbox.clipLo = 0;
+		aux5numbox.clipHi = 1;
+		aux5numbox.clipLo = 0;
+
+
+			aux1numbox.action = {arg num;
+				a1box[fatual].valueAction = num.value;
+				//this.aux1[fatual] = num.value;
+				auxslider1.value = num.value;
+			};
+
+		auxslider1.action = {arg num;
+			a1box[fatual].valueAction = num.value;
+			aux1numbox.value = num.value;
+		};
+		auxslider2.action = {arg num;
+			a2box[fatual].valueAction = num.value;
+			aux2numbox.value = num.value;
+		};
+		auxslider3.action = {arg num;
+			a3box[fatual].valueAction = num.value;
+			aux3numbox.value = num.value;
+		};
+		auxslider4.action = {arg num;
+			a4box[fatual].valueAction = num.value;
+			aux4numbox.value = num.value;
+		};
+		auxslider5.action = {arg num;
+			a5box[fatual].valueAction = num.value;
+			aux5numbox.value = num.value;
+		};
+
+
+		
 		updateSynthInArgs = { arg source;
 			{
 				server.sync;
@@ -1523,7 +1614,13 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \rotAngle, rlev[source]);
 				this.setSynths(source, \directang, dlev[source]);
 				this.setSynths(source, \contr, clev[source]);
-				
+
+				this.setSynths(source, \aux1, aux1[source]);
+				this.setSynths(source, \aux2, aux2[source]);
+				this.setSynths(source, \aux3, aux3[source]);
+				this.setSynths(source, \aux4, aux4[source]);
+				this.setSynths(source, \aux5, aux5[source]);
+
 				("Updating source" ++ (source+1)).postln;
 			}.fork;
 		};
@@ -1992,7 +2089,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		
-		btestar = Button(win, Rect(280, 70, 90, 20))
+		btestar = Button(win, Rect(280, 90, 90, 20))
 		.states_([
 			["test", Color.black, Color.white],
 			["stop", Color.white, Color.red]
@@ -2177,6 +2274,17 @@ GUI Parameters usable in SynthDefs
 			
 			ncannumbox.value = this.ncan[fatual];
 			busininumbox.value = this.busini[fatual];
+
+			auxslider1.value = this.aux1[fatual];
+			aux1numbox.value = this.aux1[fatual];
+			auxslider2.value = this.aux2[fatual];
+			aux2numbox.value = this.aux2[fatual];
+			auxslider3.value = this.aux3[fatual];
+			aux3numbox.value = this.aux3[fatual];
+			auxslider4.value = this.aux4[fatual];
+			aux4numbox.value = this.aux4[fatual];
+			auxslider5.value = this.aux5[fatual];
+			aux5numbox.value = this.aux5[fatual];
 			
 			if(testado[fatual]) {  // don't change button if we are playing via automation
 				// only if it is being played/streamed manually
@@ -2567,52 +2675,93 @@ GUI Parameters usable in SynthDefs
 			server.plotTree;
 		});
 
-		
-		textbuf = StaticText(wdados, Rect(15, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(10, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Dp";
-		textbuf = StaticText(wdados, Rect(35, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(25, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Lp";
+		textbuf = StaticText(wdados, Rect(40, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Rv";
 		textbuf = StaticText(wdados, Rect(55, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Hw";
-		textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
-		textbuf.string = "Sw";
+		textbuf = StaticText(wdados, Rect(70, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Sc";
+		textbuf = StaticText(wdados, Rect(85, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Ln";
 
 		textbuf = StaticText(wdados, Rect(100, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "NCan";
-		textbuf = StaticText(wdados, Rect(140, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(125, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "SBus";
 
-		textbuf = StaticText(wdados, Rect(180, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(150, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "X";
-		textbuf = StaticText(wdados, Rect(220, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(190, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Y";
 
-		textbuf = StaticText(wdados, Rect(260, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(230, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Z";
 
 		
-		textbuf = StaticText(wdados, Rect(300, 20, 50, 20));
-		textbuf.string = "Ang";
-		textbuf = StaticText(wdados, Rect(340, 20, 50, 20));
-		textbuf.string = "Vol";
-		textbuf = StaticText(wdados, Rect(380, 20, 50, 20));
-		textbuf.string = "Glob";
-		textbuf = StaticText(wdados, Rect(420, 20, 50, 20));
-		textbuf.string = "Loc";
-		textbuf = StaticText(wdados, Rect(460, 20, 50, 20));
-		textbuf.string = "Rot";
-		textbuf = StaticText(wdados, Rect(500, 20, 50, 20));
-		textbuf.string = "Dir";
-		textbuf = StaticText(wdados, Rect(540, 20, 50, 20));
-		textbuf.string = "Cntr";
-		textbuf = StaticText(wdados, Rect(580, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(270, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Lev";
+		textbuf = StaticText(wdados, Rect(295, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "DAmt";
-		textbuf = StaticText(wdados, Rect(620, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(320, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Prox";
+		textbuf = StaticText(wdados, Rect(345, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Dist";
+		textbuf = StaticText(wdados, Rect(370, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Ang";
+		textbuf = StaticText(wdados, Rect(395, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Rot";
+		textbuf = StaticText(wdados, Rect(420, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Dir";
+		textbuf = StaticText(wdados, Rect(445, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Cont";
+
+		textbuf = StaticText(wdados, Rect(470, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A1";
+		textbuf = StaticText(wdados, Rect(495, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A2";
+		textbuf = StaticText(wdados, Rect(520, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A3";
+		textbuf = StaticText(wdados, Rect(545, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A4";
+		textbuf = StaticText(wdados, Rect(570, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A5";
+
+
+		textbuf = StaticText(wdados, Rect(595, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "File";
 
 		
 		this.nfontes.do { arg i;	
-			dcheck[i] = CheckBox.new( wdados, Rect(15, 40 + (i*20), 40, 20))
+			dcheck[i] = CheckBox.new( wdados, Rect(10, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){dopcheque.value = but.value;};
 				if (but.value == true) {
@@ -2627,7 +2776,7 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			lpcheck[i] = CheckBox.new( wdados, Rect(35, 40 + (i*20), 40, 20))
+			lpcheck[i] = CheckBox.new( wdados, Rect(25, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){loopcheck.value = but.value;};
 				if (but.value == true) {
@@ -2642,7 +2791,7 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			rvcheck[i] = CheckBox.new( wdados, Rect(0, 40 + (i*20), 40, 20))
+			rvcheck[i] = CheckBox.new( wdados, Rect(40, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){revcheck.value = but.value;};
 				if (but.value == true) {
@@ -2657,21 +2806,6 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			// FIX!!!
-			lncheck[i] = CheckBox.new( wdados, Rect(2, 40 + (i*20), 40, 20))
-			.action_({ arg but;
-				if(i==fatual){lincheck.value = but.value;};
-				if (but.value == true) {
-					//	"Aqui!!!".postln;
-					ln[i] = "_linear";
-					//synt[i].set(\lp, 1);
-					this.setSynths(i, \ln, 1);
-				}{
-					ln[i] = "";
-					//synt[i].set(\lp, 0);
-					this.setSynths(i, \ln, 0);
-				};
-			});
 
 			hwncheck[i] = CheckBox.new( wdados, Rect(55, 40 + (i*20), 40, 20))
 			.action_({ arg but;
@@ -2688,7 +2822,7 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 			
-			scncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20))
+			scncheck[i] = CheckBox.new( wdados, Rect(70, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){scInCheck.value = but.value;};
 				if (but.value == true) {
@@ -2702,27 +2836,134 @@ GUI Parameters usable in SynthDefs
 					synt[i].set(\scn, 0);
 				};
 			});
+
+						
+			lncheck[i] = CheckBox.new( wdados, Rect(85, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){lincheck.value = but.value;};
+				if (but.value == true) {
+					//	"Aqui!!!".postln;
+					ln[i] = "_linear";
+					//synt[i].set(\lp, 1);
+					this.setSynths(i, \ln, 1);
+				}{
+					ln[i] = "";
+					//synt[i].set(\lp, 0);
+					this.setSynths(i, \ln, 0);
+				};
+			});
+
 			
-			
-			ncanbox[i] = NumberBox(wdados, Rect(100, 40 + (i*20), 40, 20));
-			businibox[i] = NumberBox(wdados, Rect(140, 40 + (i*20), 40, 20));
-			xbox[i] = NumberBox(wdados, Rect(180, 40 + (i*20), 40, 20));
-			ybox[i] = NumberBox(wdados, Rect(220, 40+ (i*20), 40, 20));
-			zbox[i] = NumberBox(wdados, Rect(260, 40+ (i*20), 40, 20));
-			abox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 40, 20));
-			vbox[i] = NumberBox(wdados, Rect(340, 40+ (i*20), 40, 20));
-			gbox[i] = NumberBox(wdados, Rect(380, 40+ (i*20), 40, 20));
-			lbox[i] = NumberBox(wdados, Rect(420, 40+ (i*20), 40, 20));
-			rbox[i] = NumberBox(wdados, Rect(460, 40+ (i*20), 40, 20));
-			dbox[i] = NumberBox(wdados, Rect(500, 40+ (i*20), 40, 20));
-			cbox[i] = NumberBox(wdados, Rect(540, 40+ (i*20), 40, 20));
-			dpbox[i] = NumberBox(wdados, Rect(580, 40+ (i*20), 40, 20));
-			tfield[i] = TextField(wdados, Rect(620, 40+ (i*20), 350, 20));
+			ncanbox[i] = NumberBox(wdados, Rect(100, 40 + (i*20), 25, 20));
+			businibox[i] = NumberBox(wdados, Rect(125, 40 + (i*20), 25, 20));
+
+			xbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 40, 20));
+			ybox[i] = NumberBox(wdados, Rect(190, 40+ (i*20), 40, 20));
+			zbox[i] = NumberBox(wdados, Rect(230, 40+ (i*20), 40, 20));
+
+			vbox[i] = NumberBox(wdados, Rect(270, 40 + (i*20), 25, 20));
+			dpbox[i] = NumberBox(wdados, Rect(295, 40+ (i*20), 25, 20));
+			gbox[i] = NumberBox(wdados, Rect(320, 40+ (i*20), 25, 20));
+			lbox[i] = NumberBox(wdados, Rect(345, 40+ (i*20), 25, 20));
+			abox[i] = NumberBox(wdados, Rect(370, 40+ (i*20), 25, 20));
+			rbox[i] = NumberBox(wdados, Rect(395, 40+ (i*20), 25, 20));
+			dbox[i] = NumberBox(wdados, Rect(420, 40+ (i*20), 25, 20));
+			cbox[i] = NumberBox(wdados, Rect(445, 40+ (i*20), 25, 20));
+
+			a1box[i] = NumberBox(wdados, Rect(470, 40+ (i*20), 25, 20));
+			a2box[i] = NumberBox(wdados, Rect(495, 40+ (i*20), 25, 20));
+			a3box[i] = NumberBox(wdados, Rect(520, 40+ (i*20), 25, 20));
+			a4box[i] = NumberBox(wdados, Rect(545, 40+ (i*20), 25, 20));
+			a5box[i] = NumberBox(wdados, Rect(570, 40+ (i*20), 25, 20));
 
 
+			a1box[i].clipHi = 1;
+			a1box[i].clipLo = 0;
+			a2box[i].clipHi = 1;
+			a2box[i].clipLo = 0;
+			a3box[i].clipHi = 1;
+			a3box[i].clipLo = 0;
+			a4box[i].clipHi = 1;
+			a4box[i].clipLo = 0;
+			a5box[i].clipHi = 1;
+			a5box[i].clipLo = 0;
+
+			tfield[i] = TextField(wdados, Rect(595, 40+ (i*20), 350, 20));
+
+
+			
+			ncanbox[i].font = Font(Font.defaultSansFace, 9);
+			businibox[i].font = Font(Font.defaultSansFace, 9);
+			xbox[i].font = Font(Font.defaultSansFace, 9);
+			ybox[i].font = Font(Font.defaultSansFace, 9);
+			zbox[i].font = Font(Font.defaultSansFace, 9);
+			abox[i].font = Font(Font.defaultSansFace, 9);
+			vbox[i].font = Font(Font.defaultSansFace, 9);
+			gbox[i].font = Font(Font.defaultSansFace, 9);
+			lbox[i].font = Font(Font.defaultSansFace, 9);
+			rbox[i].font = Font(Font.defaultSansFace, 9);
+			dbox[i].font = Font(Font.defaultSansFace, 9);
+			cbox[i].font = Font(Font.defaultSansFace, 9);
+			dpbox[i].font = Font(Font.defaultSansFace, 9);
+			a1box[i].font = Font(Font.defaultSansFace, 9);
+			a2box[i].font = Font(Font.defaultSansFace, 9);
+			a3box[i].font = Font(Font.defaultSansFace, 9);
+			a4box[i].font = Font(Font.defaultSansFace, 9);
+			a5box[i].font = Font(Font.defaultSansFace, 9);
+
+			tfield[i].font = Font(Font.defaultSansFace, 9);
+			
 			xbox[i].decimals = 4;
 			ybox[i].decimals = 4;
 			zbox[i].decimals = 4;
+
+
+			a1box[i].action = {arg num;
+				this.setSynths(i, \aux1, num.value);
+				aux1[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider1.value = num.value;
+					aux1numbox.value = num.value;
+				};
+			}; 
+			a2box[i].action = {arg num;
+				this.setSynths(i, \aux2, num.value);
+				aux2[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider2.value = num.value;
+					aux2numbox.value = num.value;
+				};
+			}; 
+			a3box[i].action = {arg num;
+				this.setSynths(i, \aux3, num.value);
+				aux3[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider3.value = num.value;
+					aux3numbox.value = num.value;
+				};
+			}; 
+			a4box[i].action = {arg num;
+				this.setSynths(i, \aux4, num.value);
+				aux4[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider4.value = num.value;
+					aux4numbox.value = num.value;
+				};
+			}; 
+			a5box[i].action = {arg num;
+				this.setSynths(i, \aux5, num.value);
+				aux5[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider5.value = num.value;
+					aux5numbox.value = num.value;
+				};
+			}; 
+
 			
 			tfield[i].action = {arg path;
 				if (path != "") {
@@ -3102,6 +3343,14 @@ GUI Parameters usable in SynthDefs
 			controle.dock(scncheck[i], "scin_" ++ i);
 			controle.dock(rvcheck[i], "rev_" ++ i);
 			controle.dock(lncheck[i], "linear_" ++ i);
+
+			controle.dock(a1box[i], "aux1_" ++ i);
+			controle.dock(a2box[i], "aux2_" ++ i);
+			controle.dock(a3box[i], "aux3_" ++ i);
+			controle.dock(a4box[i], "aux4_" ++ i);
+			controle.dock(a5box[i], "aux5_" ++ i);
+
+			
 			
 		};
 
@@ -3180,6 +3429,7 @@ GUI Parameters usable in SynthDefs
 			
 			
 			wdados.close;
+			waux.close;
 			gbus.free;
 			gbfbus.free;
 			rirWspectrum.free;
