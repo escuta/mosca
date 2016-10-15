@@ -131,11 +131,6 @@ INSTANCEMETHODS::
 METHOD:: openGui
 Creates GUI window
 
-ARGUMENT:: dur
-Duration in seconds of the "Automation" transport.
-
-returns:: (describe returnvalue here)
-
 METHOD:: registerSynth
 Registers synth instance for a given source so that it may be spatialised and receive control data from GUI.
 
@@ -144,8 +139,6 @@ The number of the source (starting with 1).
 
 ARGUMENT:: synth
 Synth instance.
-
-returns:: (describe returnvalue here)
 
 METHOD:: deregisterSynth
 Deregisters synth instance for a given source.
@@ -156,16 +149,11 @@ The number of the source (starting with 1).
 ARGUMENT:: synth
 Synth instance.
 
-returns:: (describe returnvalue here)
-
 METHOD:: getSCBus
 Return the bus number associated with synth registrant.
 
 ARGUMENT:: source
 The number of the source (starting with 1). See code example below.
-
-returns:: (describe returnvalue here)
-
 
 
 EXAMPLES::
@@ -249,8 +237,8 @@ SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 	var source, point, adjust, delEnv;
 	point = Point.new;
 	point.set(mx, my);
-	adjust = point.rho;
-	adjust = Lag.kr(adjust, 0.1);
+	adjust = point.rho * 0;
+	adjust = Lag.kr(adjust, 0.5);
 	delEnv = Env.dadsr(0.1, attackTime: 0.01, decayTime: 200,
 	sustainLevel: 0.1); // envelope with an onset delay equal to lag buffer
 	source = SinOsc.ar(freq + adjust, mul: EnvGen.kr(delEnv, doneAction: 2));

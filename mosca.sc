@@ -71,14 +71,19 @@ GUI Parameters usable in SynthDefs
 \\angle | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
 \\glev | Global/Close reverb level | 0 - 1 |
 \\llev | Local/Distant reverb level | 0 - 1 |
-\\mx | X coord | -450 - 450 |
-\\my | Y coord | -450 - 450 |
-\\mz | Z coord | -450 - 450 |
+\\mx | X coord | -1 - 1 |
+\\my | Y coord | -1 - 1 |
+\\mz | Z coord | -1 - 1 |
 \\rotAngle | B-format rotation angle | -3.14 - 3.14 |
 \\directang | B-format directivity | 0 - 1.57 |
 \\contr | Contraction: fade between WXYZ & W | 0 - 1 |
 \\rv | Diffuse 2nd order A-format reverb check | 0 or 1 |
 \\ln | Linear intensity check | 0 or 1 |
+\\aux1 | Auxiliary slider 1 value | 0 - 1 |
+\\aux2 | Auxiliary slider 2 value | 0 - 1 |
+\\aux3 | Auxiliary slider 3 value | 0 - 1 |
+\\aux4 | Auxiliary slider 4 value | 0 - 1 |
+\\aux5 | Auxiliary slider 5 value | 0 - 1 |
 ";
 		^string;
 		
@@ -539,7 +544,7 @@ GUI Parameters usable in SynthDefs
 			};
 
 			SynthDef.new("espacAmbAFormatVerb"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
+				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
 				dopon = 0, dopamnt = 0,
 				glev = 0, llev = 0;
 				//var w, x, y, z, r, s, t, u, v,
@@ -551,6 +556,9 @@ GUI Parameters usable in SynthDefs
 				var lrev;
 				var grevganho = 0.04; // needs less gain
 				var soaSigRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				//				dis = (1 - (fonte.rho - this.scale)) / this.scale;
@@ -581,11 +589,11 @@ GUI Parameters usable in SynthDefs
 				globallev = globallev - 1.0; // lower tail of curve to zero
 				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				globallev = globallev * (glev);			
+				globallev = globallev * Lag.kr(glev, 0.1);			
 				gsig = p * globallev;
 				// Local reverberation
 				locallev = 1 - dis; 			
-				locallev = locallev  * (llev);			
+				locallev = locallev  * Lag.kr(llev, 0.1);			
 				junto = p;
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 				//				ambsinal = [w, x, y, z, r, s, t, u, v];
@@ -625,6 +633,9 @@ GUI Parameters usable in SynthDefs
 				var w, x, y, z, r, s, t, u, v;
 				var soaSigRef = Ref(0);
 				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
@@ -652,12 +663,12 @@ GUI Parameters usable in SynthDefs
 				globallev = globallev - 1.0; // lower tail of curve to zero
 				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				globallev = globallev * (glev);
+				globallev = globallev * Lag.kr(glev, 0.1);
 				gsig = p * globallev;
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 				// Local reverberation
 				locallev = 1 - dis; 
-				locallev = locallev  * (llev);
+				locallev = locallev  * Lag.kr(llev, 0.1);
 
 				//lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
 				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
@@ -703,6 +714,9 @@ GUI Parameters usable in SynthDefs
 				var soaSigRef = Ref(0);
 				var lrevRef = Ref(0);
 				var grevganho = 0.20;
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				//dis = (1 - (fonte.rho - this.scale)) / this.scale;
@@ -728,7 +742,7 @@ GUI Parameters usable in SynthDefs
 				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
 				
-				globallev = globallev * glev;
+				globallev = globallev * Lag.kr(glev, 0.1);
 				
 				
 				gsig = p * globallev;
@@ -737,7 +751,7 @@ GUI Parameters usable in SynthDefs
 				// Reverberação local
 				locallev = 1 - dis; 
 				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
-				locallev = locallev * llev;
+				locallev = locallev * Lag.kr(llev, 0.1);
 				
 				
 				//lrev = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
@@ -775,6 +789,9 @@ GUI Parameters usable in SynthDefs
 				var lrev, intens;
 				var grevganho = 0.20;
 				var soaSigRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				//dis = (1 - (fonte.rho - this.scale)) / this.scale;
@@ -800,7 +817,7 @@ GUI Parameters usable in SynthDefs
 				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
 				
-				globallev = globallev * glev;
+				globallev = globallev * Lag.kr(glev, 0.1);
 				
 				
 				gsig = p * globallev;
@@ -810,7 +827,7 @@ GUI Parameters usable in SynthDefs
 				// Reverberação local
 				locallev = 1 - dis; 
 				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
-				locallev = locallev * llev;
+				locallev = locallev * Lag.kr(llev, 0.1);
 				
 				
 				//				lrev = PartConv.ar(p, fftsize, rirZspectrum.bufnum, locallev);
@@ -859,6 +876,9 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.20;
 				var soaSigLRef = Ref(0);
 				var soaSigRRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
 				
@@ -894,7 +914,7 @@ GUI Parameters usable in SynthDefs
 				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
 				
-				globallev = globallev * glev;
+				globallev = globallev * Lag.kr(glev, 0.1);
 				
 				//			gsig = Mix.new(p) / 2 * grevganho * globallev;
 				//			Out.ar(gbus, gsig); //send part of direct signal global reverb synth
@@ -904,7 +924,7 @@ GUI Parameters usable in SynthDefs
 				// Reverberação local
 				locallev = 1 - dis; 
 				
-				locallev = locallev  * (llev);
+				locallev = locallev  * Lag.kr(llev, 0.1);
 				
 				
 				//			junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
@@ -967,6 +987,9 @@ GUI Parameters usable in SynthDefs
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
 
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
 				
@@ -1003,7 +1026,7 @@ GUI Parameters usable in SynthDefs
 				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
 				
-				globallev = globallev * (glev);
+				globallev = globallev * Lag.kr(glev, 0.1);
 				
 				gsig = Mix.new(p) / 2 * globallev;
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
@@ -1013,7 +1036,7 @@ GUI Parameters usable in SynthDefs
 				// Reverberação local
 				locallev = 1 - dis; 
 				
-				locallev = locallev  * (llev);
+				locallev = locallev  * Lag.kr(llev, 0.1);
 				
 				
 				//				junto1 = p1 + PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
@@ -1072,7 +1095,7 @@ GUI Parameters usable in SynthDefs
 				playerRef = Ref(0);
 				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
 				//SendTrig.kr(Impulse.kr(1),0,  funcString); // debugging
-				Out.ar(outbus, playerRef.value * level);
+				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
 			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
@@ -1081,7 +1104,7 @@ GUI Parameters usable in SynthDefs
 				var scaledRate, spos, playerRef;
 				playerRef = Ref(0);
 				playStereoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
-				Out.ar(outbus, playerRef.value * level);
+				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
 			2.do {   // make linear and non-linear versions
@@ -1091,12 +1114,12 @@ GUI Parameters usable in SynthDefs
 					linear = "_linear";
 					prepareRotateFunc = {|dis, intens, playerRef, contr, rotAngle, level|
 						playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
-							level * dis * (1 - contr));
+							Lag.kr(level, 0.1) * dis * (1 - contr));
 					};
 				} {
 					prepareRotateFunc = {|dis, intens, playerRef, contr, rotAngle, level|
 						playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
-							level * intens * (1 - contr));
+							Lag.kr(level, 0.1) * intens * (1 - contr));
 					};
 				};
 				
@@ -1110,6 +1133,9 @@ GUI Parameters usable in SynthDefs
 					gsig, lsig, rd, dopplershift,
 					intens;
 					var grevganho = 0.20;			
+					mx = Lag.kr(mx, 0.1);
+					my = Lag.kr(my, 0.1);
+					mz = Lag.kr(mz, 0.1);
 					fonte = Cartesian.new;
 					fonte.set(mx, my, mz);
 					//					dis = (1 - (fonte.rho - this.scale)) / this.scale;
@@ -1128,11 +1154,11 @@ GUI Parameters usable in SynthDefs
 					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
 					playerRef.value = dopplershift;
 					
-					wsinal = playerRef.value[0] * contr * level * dis * 2.0;
+					wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
 					
 					Out.ar(outbus, wsinal);
 					
-					// Reverberação global
+					// global reverb
 					globallev = 1 / (1 - dis).sqrt;
 					intens = globallev - 1;
 					intens = Select.kr(intens > 4, [intens, 4]); 
@@ -1144,7 +1170,7 @@ GUI Parameters usable in SynthDefs
 
 					//					playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
 					//						level * intens * (1 - contr));
-					prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, level);
+					prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
 
 					playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
 					
@@ -1155,14 +1181,14 @@ GUI Parameters usable in SynthDefs
 					globallev = globallev - 1.0; // lower tail of curve to zero
 					globallev = Select.kr(globallev > 1, [globallev, 1]); 
 					globallev = Select.kr(globallev < 0, [globallev, 0]); 
-					globallev = globallev * (glev* 6);
+					globallev = globallev * Lag.kr(glev, 0.1) * 6;
 					
 					gsig = playerRef.value[0] * globallev;
 					
 					locallev = 1 - dis; 
 					
 					//				locallev = locallev  * (llev*10) * grevganho;
-					locallev = locallev  * (llev*5);
+					locallev = locallev  * Lag.kr(llev, 0.1) * 5;
 					lsig = playerRef.value[0] * locallev;
 					
 					//
@@ -1657,7 +1683,6 @@ GUI Parameters usable in SynthDefs
 						\mx, xbox[i].value,
 						\my, ybox[i].value,
 						\mz, zbox[i].value
-						
 					);
 					
 					("x value = " ++ xbox[i].value).postln;
