@@ -3296,7 +3296,9 @@ GUI Parameters usable in SynthDefs
 			};
 			this.nfontes.do { arg i;	
 				var loaded, dur, looped;
-				{runTrigger.value(i);}.defer;
+				if(testado[i].not) {
+					{runTrigger.value(i);}.defer;
+				};
 				{loaded = tfield[i].value;}.defer;
 				looped = lp[i];
 				if(lp[i] != 1){
@@ -3337,7 +3339,7 @@ GUI Parameters usable in SynthDefs
 				//	espacializador[i].free;
 			};
 			isPlay = false;
-			if(revGlobal.notNil){
+			/*			if(revGlobal.notNil){
 				revGlobal.free;
 				revGlobal = nil;
 			};
@@ -3349,7 +3351,7 @@ GUI Parameters usable in SynthDefs
 				revGlobalSoa.free;
 				revGlobalSoa = nil;
 			};
-
+			*/
 		};
 
 		
