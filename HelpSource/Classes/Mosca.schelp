@@ -155,6 +155,24 @@ Return the bus number associated with synth registrant.
 ARGUMENT:: source
 The number of the source (starting with 1). See code example below.
 
+METHOD:: setTriggerFunc
+Designate a function to be triggered when selecting play in the transport or auditioning a sound in SC-in mode. See code examples below. 
+
+ARGUMENT:: source
+The number of the source (starting with 1). See code example below.
+
+ARGUMENT:: function
+Function name. See code example below.
+
+METHOD:: setStopFunc
+Companion method to setTriggerFunc. Designate the name of a function to be called when a particular source stops auditioning or playing. See code examples below.
+
+ARGUMENT:: source
+The number of the source (starting with 1). See code example below.
+
+ARGUMENT:: function
+Function name. See code example below.
+
 
 EXAMPLES::
 
@@ -187,15 +205,10 @@ s.waitForBoot {
 s.sync;
 MIDIIn.connect;
 s.sync;
-//create a project directory and in it create to more directories "rir" and "auto".
-//place your ambisonic rirs in the rir folder. For some demo rirs
-//and ambisonic recordings see the zip archive
-//here: http://escuta.org/mosca 
 
-// Create Mosca instance
-// with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder)
-//If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's
-// outputs for decoding with an external decoder
+/*Create a project directory and in it create to more directories "rir" and "auto". Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings see the zip archive here: http://escuta.org/mosca 
+
+Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
 //	   width: 950, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
@@ -225,13 +238,16 @@ MIDIIn.disconnect;
 ~decoder.free;
 )
 
+/*
+Using SuperCollider synths as input
 
-// "SW input". Note. Must have SC-in selected on GUI for particular source.
+Must have SC-in selected on GUI for particular source and the number of channels entered (either 1, 2 or 4).
 
-// write a synth def
-// In this example, dedicated two sources in the GUI. Mark source 1 and 2 as each having 1 channel (in "No. of Channels) and select "SC-in" for both sources
+In this example, two sources are dedicated in the GUI. Source 1 and 2 each with 1 channel (in "No. of Channels) and select "SC-in" for both sources.
 
-// write a synthdef
+Write a synthdef. Note that you must specify an out bus in the arguments as well as any GUI data that you wish to use (in this example mx and my). For a full list of GUI data available run: */
+
+Mosca.printSynthParams
 
 (
 SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
@@ -248,16 +264,12 @@ SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 }).send(s);
 )
 
-//  use the method to fetch the true bus associated with the chosen source (from 1 on). Note
-// this depends on the setting in the GUI. Use the value for the outbus of your synth instance.
+/* 
+Set up first source
 
-// ~testMosca.getSCBus(1) // eg. get bus for source 1
+The user must create a "Trigger function" that contains synths. This function will be called when "audition" a particular source or when the transport's play button is selected in the GUI. The user must use the getSCBus method to set the bus number for the particular source (sources numbered from 1 on) as well as "onFree" of the Synth class to deregister the synth (with the method deregisterSynth). The method registerSynth is used to register it.
+*/
 
-// To see the GUI parameters available in registered synths, run:
-
-Mosca.printSynthParams
-
-// set up first source
 (
 ~source1PlayFunc = {
 ~mySynth = Synth.new("test-out", [\freq, 50, \outbus, ~testMosca.getSCBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1, ~mySynth)});
@@ -277,6 +289,7 @@ Mosca.printSynthParams
 ~testMosca.registerSynth(2, ~myOtherSynth);
 };
 ~source2StopFunc = {~myOtherSynth.free; };
+
 ~testMosca.setTriggerFunc(2, ~source2PlayFunc); 
 ~testMosca.setStopFunc(2, ~source2StopFunc);
 )
