@@ -27,13 +27,13 @@ Once you have successfully opened the GUI, read this:
 
 NOTES ON GUI COMPONENTS
 
-a) Use source pull down menu to sect and control a source
+a) Source pull down menu. Select a source
 
-b) Doppler toggle. The user must also use the "Doppler Amount" slider to adjust the effect
+b) Doppler. The user must also use the "Doppler Amount" slider to adjust the effect
 
-c) Loop toggle. Loop sounds loaded from file
+c) Loop. Loop sounds loaded from file
 
-d) 2nd order diffuse reverb toggle. By default the system uses the more efficient Chowning-style reverb described above. This toggle applies a second order diffuse 2nd order reverberation to mono and stereo sources as well as "contracted" B-format material (see below)
+d) A-format reverb. By default the system uses the more efficient Chowning-style reverb described above. This toggle applies a second order diffuse 2nd order reverberation to mono and stereo sources as well as "contracted" B-format material (see below)
 
 e) HW-in. Toggle this to read audio from hardware inputs. The user must specify the number of channels and the staring bus (starting with zero) in the two fields beneath the toggle. Note this will override any loaded sound file. It is up to the user to manage the start busses for the various source. If for example source 1 is a 4 channel signal and starts on bus zero, a second stereo source myst use a starting bus of 4 or higher.
 
@@ -41,11 +41,11 @@ f) SC-in. Get audio in from a SuperCollider synth. The user needs to specify the
 
 g) Linear Intensity. Select this to apply linear attenuation of itensity with distance. By default, intensity is adjusted in proportion to the invesrse square root of proximity.
 
-h) load. Load a sound file for a given a source.
+h) load audio. Load a sound file for a given a source.
 
 i) show data. Open and close a data window for all sources showing all parameters.
 
-j) nodes. Show SuperCollider node tree.
+j) show nodes. Show SuperCollider node tree.
 
 k) show aux. Open and close an auxiliary controller window for a source. These sliders do not affect spatialisation of the source, however the data produced is sent to any "registered" SuperCollider synth is recorded and reproduced by the GUI's transport. See the code examples for more information.
 
@@ -128,7 +128,7 @@ returns:: A string.
 
 INSTANCEMETHODS::
 
-METHOD:: openGui
+METHOD:: gui
 Creates GUI window
 
 METHOD:: registerSynth
@@ -197,12 +197,12 @@ s.sync;
 //If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's
 // outputs for decoding with an external decoder
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-	   width: 950, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 950, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 995, dur: 200, rir: "allpass", decoder: ~decoder);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+	   width: 995, dur: 200, rir: "allpass", decoder: ~decoder);
 
 // Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
 //using no decoder and rawbus value of 2.
@@ -212,7 +212,7 @@ s.sync;
 
 s.sync;
 
-~testMosca.openGui;
+~testMosca.gui;
 
 };
 
@@ -224,6 +224,7 @@ s.sync;
 MIDIIn.disconnect; 
 ~decoder.free;
 )
+
 
 // "SW input". Note. Must have SC-in selected on GUI for particular source.
 
@@ -237,11 +238,11 @@ SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 	var source, point, adjust, delEnv;
 	point = Point.new;
 	point.set(mx, my);
-	adjust = point.rho * 0;
-	adjust = Lag.kr(adjust, 0.5);
-	delEnv = Env.dadsr(0.1, attackTime: 0.01, decayTime: 200,
+	adjust = point.rho * 200;
+	adjust = Lag.kr(adjust, 0.1);
+	delEnv = Env.dadsr(0.2, attackTime: 0.01, decayTime: 200,
 	sustainLevel: 0.1); // envelope with an onset delay equal to lag buffer
-	source = SinOsc.ar(freq + adjust, mul: EnvGen.kr(delEnv, doneAction: 2));
+	source = Pulse.ar(freq + adjust, mul: EnvGen.kr(delEnv, doneAction: 2));
 	Out.ar(outbus, source);
 
 }).send(s);
@@ -259,7 +260,7 @@ Mosca.printSynthParams
 // set up first source
 (
 ~source1PlayFunc = {
-~mySynth = Synth.new("test-out", [\freq, 500, \outbus, ~testMosca.getSCBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1, ~mySynth)});
+~mySynth = Synth.new("test-out", [\freq, 50, \outbus, ~testMosca.getSCBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1, ~mySynth)});
 
 ~testMosca.registerSynth(1, ~mySynth);
 };
@@ -271,7 +272,7 @@ Mosca.printSynthParams
 // second source
 (
 ~source2PlayFunc = {
-~myOtherSynth = Synth.new("test-out", [\freq, 500, \outbus, ~testMosca.getSCBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2, ~myOtherSynth)});
+~myOtherSynth = Synth.new("test-out", [\freq, 50, \outbus, ~testMosca.getSCBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2, ~myOtherSynth)});
 
 ~testMosca.registerSynth(2, ~myOtherSynth);
 };

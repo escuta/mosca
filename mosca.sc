@@ -102,8 +102,8 @@ GUI Parameters usable in SynthDefs
 		//	testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
-		if (iwidth < 550) {
-			this.width = 550;
+		if (iwidth < 600) {
+			this.width = 600;
 		} {
 			this.width = iwidth;
 		};
@@ -1356,7 +1356,7 @@ GUI Parameters usable in SynthDefs
 	}
 
 
-	openGui {
+	gui {
 
 		//arg dur = 120;
 		var fonte, dist, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
@@ -1540,7 +1540,7 @@ GUI Parameters usable in SynthDefs
 		wdados.userCanClose = false;
 		
 		
-		bdados = Button(win, Rect(280, 50, 90, 20))
+		bdados = Button(win, Rect(this.width - 100, 10, 90, 20))
 		.states_([
 			["show data", Color.black, Color.white],
 			["hide data", Color.white, Color.blue]
@@ -1556,7 +1556,7 @@ GUI Parameters usable in SynthDefs
 		waux.userCanClose = false;
 		
 		
-		baux = Button(win, Rect(280, 70, 90, 20))
+		baux = Button(win, Rect(this.width - 100, 30, 90, 20))
 		.states_([
 			["show aux", Color.black, Color.white],
 			["hide aux", Color.white, Color.blue]
@@ -2111,9 +2111,9 @@ GUI Parameters usable in SynthDefs
 		
 		
 		
-		btestar = Button(win, Rect(280, 90, 90, 20))
+		btestar = Button(win, Rect(this.width - 100, 50, 90, 20))
 		.states_([
-			["audition", Color.black, Color.white],
+			["audition", Color.red, Color.white],
 			["stop", Color.white, Color.red]
 		])
 		.action_({ arg but;
@@ -2349,7 +2349,7 @@ GUI Parameters usable in SynthDefs
 		});
 		loopcheck.value = false;
 		
-		revcheck = CheckBox( win, Rect(250, 10, 180, 20), "2nd order diffuse reverb").action_({ arg butt;
+		revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
 			("A-format rev is " ++ butt.value).postln;
 			{rvcheck[fatual].valueAction = butt.value;}.defer;
 		});
@@ -2670,9 +2670,9 @@ GUI Parameters usable in SynthDefs
 
 		
 		
-		bload = Button(win, Rect(220, 50, 60, 20))
+		bload = Button(win, Rect(this.width - 190, 10, 90, 20))
 		.states_([
-			["load", Color.black, Color.white],
+			["load audio", Color.black, Color.white],
 		])
 		.action_({ arg but;
 			//var filebuf, filebuf1, filebuf2;
@@ -2694,16 +2694,16 @@ GUI Parameters usable in SynthDefs
 
 			}, 
 				{
-					"cancelado".postln;
+					"cancelled".postln;
 					{tfield[fatual].value = "";}.defer;
 					
 				}
 			);	
 		});
 
-		bnodes = Button(win, Rect(220, 70, 60, 20))
+		bnodes = Button(win, Rect(this.width - 190, 30, 90, 20))
 		.states_([
-			["nodes", Color.black, Color.white],
+			["show nodes", Color.black, Color.white],
 		])
 		.action_({
 			server.plotTree;
