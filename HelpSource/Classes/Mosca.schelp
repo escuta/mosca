@@ -10,7 +10,7 @@ Input sources may be any combination of mono, stereo or B-format material and th
 
 Mono and stereo sources are encoded as second order ambisonic signals whereas B-format signals remain as 1st order and are angled in space using "push" transformations. Source signals are attenuated proportionally to the inverse of the square root of proximity or in a linear relationship with distance, selectable on a per-source basis via the GUI. All sources are subject to high-frequency attenuation with distance and if decoding is performed by one of the ATK's 1st order decoders, a proximity effect is generated adding a bass boost to proximal sources among other phase effects to simulate wave curvature (see: http://doc.sccode.org/Classes/FoaProximity.html).
 
-Reverberation is performed either using a B-format tail room impulse response (RIR) - the preferred method - or using simple built-in allpass filters, options selectable on creation of a Mosca instance. With both options, two reverberation level controls are included in the GUI to set proximal and distant levels. A further two reverb types are selectable in the GUI on a per-source basis for both RIR and allpass reverberation modes. The default reverb type uses John Chowning's technique of applying "local" and "global" reverberation to sources (CHOWNING). "Near" reverberation in this case is "global" and is audible by the listener from all directions when the source is close where as "far" reverb is "local" in scope and is encoded as a 2nd order ambisonic signal along with the dry signal. This predominates as the source becomes more distant. The second type of reverberation may be described as a "2nd order diffuse reverberation". This technique produces reverberation weighted in the direction of sound events encoded in the dry ambisonic signal and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either a) convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum, or, as in the case of the allpass option, b) passed through a 12-channel bank of allpass filters before being converted back to a 2nd order B-format diffuse signal. Please note that the 2nd order diffuse reverberation may require the user to set a larger audio output buffer and thus increase the latency of the system. The "Chowning" type reverberation is more efficient and the "allpass" option, more still. 
+Reverberation is performed either using a B-format tail room impulse response (RIR) - the preferred method - or using simple built-in allpass filters, options selectable on creation of a Mosca instance. With both options, two reverberation level controls are included in the GUI to set proximal and distant levels. A further two reverb types are selectable in the GUI on a per-source basis for both RIR and allpass reverberation modes. The default reverb type uses John Chowning's technique of applying "local" and "global" reverberation to sources (CHOWNING). The "Close" reverberation of the GUI in this case is "global" and is audible by the listener from all directions when the source is close where as "distant" reverb is "local" in scope and is encoded as a 2nd order ambisonic signal along with the dry signal. This predominates as the source becomes more distant. The second type of reverberation may be described as a "2nd order diffuse reverberation". This technique produces reverberation weighted in the direction of sound events encoded in the dry ambisonic signal and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either a) convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum, or, as in the case of the allpass option, b) passed through a 12-channel bank of allpass filters before being converted back to a 2nd order B-format diffuse signal. Please note that the 2nd order diffuse reverberation may require the user to set a larger audio output buffer and thus increase the latency of the system. The "Chowning" type reverberation is more efficient and the "allpass" option, more still. 
 
 Mosca also has other features including a scalable Doppler Effect on moving sources, looping of sources loaded from file, adjustment of virtual loudspeaker angle of stereo sources and in the case of B-format sources: a rotation control, adjustment of "directivity" (see ATK documentation) and a control of "contraction", whereby the B-format signal may be crossfaded with its W component and which is spatialised as a 2nd order ambisonic signal.
 
@@ -33,7 +33,7 @@ b) Doppler. The user must also use the "Doppler Amount" slider to adjust the eff
 
 c) Loop. Loop sounds loaded from file
 
-d) A-format reverb. By default the system uses the more efficient Chowning-style reverb described above. This toggle applies a second order diffuse 2nd order reverberation to mono and stereo sources as well as "contracted" B-format material (see below)
+d) A-format reverb. By default the system uses the more efficient Chowning-style reverb described above. This toggle applies a second order diffuse 2nd order reverberation to mono and stereo sources as well as "contracted" B-format material (see below). Note that the reverberation applied to B-format signals is always via A-format transformation.
 
 e) HW-in. Toggle this to read audio from hardware inputs. The user must specify the number of channels and the staring bus (starting with zero) in the two fields beneath the toggle. Note this will override any loaded sound file. It is up to the user to manage the start busses for the various source. If for example source 1 is a 4 channel signal and starts on bus zero, a second stereo source myst use a starting bus of 4 or higher.
 
@@ -55,9 +55,9 @@ m) Level. Adjust playback level of source.
 
 n) Doppler amount. See b) above.
 
-o) Near Reverb. Adjust level of reverberation for proximal sources.
+o) Close Reverb. Adjust level of reverberation for proximal sources.
 
-p) Far Reverb. Adjust level of reverberation for distant sources.
+p) Distant Reverb. Adjust level of reverberation for distant sources.
 
 q) Angle. Adjust angle of virtual speaker pair for stereo sources. The default is 1.05 radians or 60 degrees.
 
@@ -183,7 +183,7 @@ code::
 /*
 Please also read "USING MOSCA" above
 
-Make sure the server is stopped before running this block example code
+Make sure the server is stopped before running this block of example code
 */
 
 (
@@ -192,7 +192,7 @@ s.quit;
 o = s.options;
 o.numAudioBusChannels = 1024;
 o.numInputBusChannels = 32;
-o.numOutputBusChannels = 11; // 2 for stereo & 9 for 2nd order ambisonics
+o.numOutputBusChannels = 11; // eg. 2 for stereo & 9 for 2nd order ambisonics
 o.memSize = 64 * 8192;
 o.numAudioBusChannels = 512;
 o.numWireBufs = 512;
@@ -214,7 +214,7 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 //	   width: 950, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 42,
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
 	   width: 995, dur: 200, rir: "allpass", decoder: ~decoder);
 
 // Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
