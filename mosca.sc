@@ -1536,8 +1536,9 @@ GUI Parameters usable in SynthDefs
 		~t3 = soaBus;
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, this.width, this.width, this.width)).front;
-		wdados = Window.new("Data", Rect(this.width, 900, 955, (this.nfontes*20)+60 ));
+		wdados = Window.new("Data", Rect(this.width, 0, 955, (this.nfontes*20)+60 ));
 		wdados.userCanClose = false;
+		wdados.alwaysOnTop = true;
 		
 		
 		bdados = Button(win, Rect(this.width - 100, 10, 90, 20))
@@ -1552,8 +1553,9 @@ GUI Parameters usable in SynthDefs
 			{wdados.visible = false;};
 		});
 
-		waux = Window.new("Auxiliary Controllers", Rect(this.width, 400, 260, 240 ));
+		waux = Window.new("Auxiliary Controllers", Rect(this.width, (this.nfontes*20)+114, 260, 240 ));
 		waux.userCanClose = false;
+		waux.alwaysOnTop = true;
 		
 		
 		baux = Button(win, Rect(this.width - 100, 30, 90, 20))
@@ -2556,7 +2558,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
-		textbuf.string = "Proximal Reverb";
+		textbuf.string = "Near Reverb";
 		gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
 		gnumbox.value = 1;
 		gnumbox.clipHi = pi;
@@ -2578,7 +2580,7 @@ GUI Parameters usable in SynthDefs
 		
 		
 		textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
-		textbuf.string = "Distant Reverb";
+		textbuf.string = "Far Reverb";
 		lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
 		lnumbox.value = 1;
 		lnumbox.clipHi = pi;
