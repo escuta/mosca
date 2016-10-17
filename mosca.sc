@@ -54,6 +54,7 @@ Mosca {
 	//	classvar fftsize = 1024,
 	//classvar fftsize = 4096,
 	server;
+	classvar foaEncoder;
 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass", server = Server.default, decoder = nil, rawbus = 0;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder, rawbus);
@@ -84,6 +85,12 @@ GUI Parameters usable in SynthDefs
 \\aux3 | Auxiliary slider 3 value | 0 - 1 |
 \\aux4 | Auxiliary slider 4 value | 0 - 1 |
 \\aux5 | Auxiliary slider 5 value | 0 - 1 |
+\\a1check | Auxiliary checkbox/button | 0 or 1 |
+\\a2check | Auxiliary checkbox/button | 0 or 1 |
+\\a3check | Auxiliary checkbox/button | 0 or 1 |
+\\a4check | Auxiliary checkbox/button | 0 or 1 |
+\\a5check | Auxiliary checkbox/button | 0 or 1 |
+
 ";
 		^string;
 		
@@ -94,7 +101,7 @@ GUI Parameters usable in SynthDefs
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
 		revGlobalSoaOutFunc,
-		prepareSoaSigFunc,
+		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
 		bufAformat, bufAformat_soa_a12, bufWXYZ;
 		//synthRegistry = List[],
@@ -102,6 +109,7 @@ GUI Parameters usable in SynthDefs
 		//	testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
+		foaEncoder = FoaEncoderMatrix.newOmni;
 		if (iwidth < 600) {
 			this.width = 600;
 		} {
@@ -546,7 +554,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbAFormatVerb"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
 				dopon = 0, dopamnt = 0,
-				glev = 0, llev = 0;
+				glev = 0, llev = 0, contr;
 				//var w, x, y, z, r, s, t, u, v,
 				var p, ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
@@ -555,7 +563,7 @@ GUI Parameters usable in SynthDefs
 				soa_a12_sig;
 				var lrev;
 				var grevganho = 0.04; // needs less gain
-				var soaSigRef = Ref(0);
+				var ambSigRef = Ref(0);
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
@@ -597,13 +605,16 @@ GUI Parameters usable in SynthDefs
 				junto = p;
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 				//				ambsinal = [w, x, y, z, r, s, t, u, v];
-				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
+		//ambSigRef.value = [0,0,0,0];				
+				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				junto = FoaEncode.ar(junto, foaEncoder);
+		ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
-				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
+				//				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 
-				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
-					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
-					soaSigRef[8].value];
+				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
 
 				//				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
@@ -620,7 +631,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
 				dopon = 0, dopamnt = 0,
-				glev = 0, llev = 0;
+				glev = 0, llev = 0, contr;
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
 				ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
@@ -631,7 +642,7 @@ GUI Parameters usable in SynthDefs
 				var lrev, p;
 				var grevganho = 0.04; // needs less gain
 				var w, x, y, z, r, s, t, u, v;
-				var soaSigRef = Ref(0);
+				var ambSigRef = Ref(0);
 				var lrevRef = Ref(0);
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
@@ -670,19 +681,18 @@ GUI Parameters usable in SynthDefs
 				locallev = 1 - dis; 
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-				//lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
 				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
 
 				junto = p + lrevRef.value;
-				//			#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, dis);
 
-				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambsinal = [w, x, y, z, r, s, t, u, v];
-				//soaSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
 
-				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
 
-				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
+					prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+
+				junto = FoaEncode.ar(junto, foaEncoder);
+		ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+				
+				//ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
@@ -690,9 +700,9 @@ GUI Parameters usable in SynthDefs
 				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
 
 				
-				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
-					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
-					soaSigRef[8].value];
+				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
 
 				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
 			}).add;
@@ -711,7 +721,7 @@ GUI Parameters usable in SynthDefs
 				globallev = 0.0004, locallev, gsig, fonte;
 				var lrev,
 				intens;
-				var soaSigRef = Ref(0);
+				var ambSigRef = Ref(0);
 				var lrevRef = Ref(0);
 				var grevganho = 0.20;
 				mx = Lag.kr(mx, 0.1);
@@ -765,11 +775,11 @@ GUI Parameters usable in SynthDefs
 				//				ambsinal = [w, x, y, z, r, s, t, u, v]; 
 				
 				//	ambsinal1O = [w, x, y, z];
-				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
-				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
-					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
-					soaSigRef[8].value];
+				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
@@ -788,7 +798,7 @@ GUI Parameters usable in SynthDefs
 				globallev = 0.0004, locallev, gsig, fonte;
 				var lrev, intens;
 				var grevganho = 0.20;
-				var soaSigRef = Ref(0);
+				var ambSigRef = Ref(0);
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
@@ -837,11 +847,11 @@ GUI Parameters usable in SynthDefs
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 				//				ambsinal = [w, x, y, z, r, s, t, u, v];
 
-				prepareSoaSigFunc.value(soaSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambsinal1O = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value];
-				ambsinal = [soaSigRef[0].value, soaSigRef[1].value, soaSigRef[2].value, soaSigRef[3].value,
-					soaSigRef[4].value, soaSigRef[5].value, soaSigRef[6].value, soaSigRef[7].value,
-					soaSigRef[8].value];
+				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
 
 
 				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
@@ -936,12 +946,12 @@ GUI Parameters usable in SynthDefs
 				//				#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
 				//				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
 
-				prepareSoaSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
 					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
 					soaSigLRef[8].value];
 
-				prepareSoaSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
 				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
 					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
 					soaSigRRef[8].value];
@@ -1046,12 +1056,12 @@ GUI Parameters usable in SynthDefs
 				junto1 = p1 + lrev1Ref.value;
 				junto2 = p2 + lrev2Ref.value;
 
-				prepareSoaSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
 					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
 					soaSigLRef[8].value];
 
-				prepareSoaSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
 				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
 					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
 					soaSigRRef[8].value];
@@ -1074,17 +1084,17 @@ GUI Parameters usable in SynthDefs
 
 		}; //end makeSpatialisers
 
-		prepareSoaSigFunc = { |soaSigRef, junto, azim, el, intens, dis|
-			soaSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
 
-		};
-		makeSpatialisers.value(linear: false);
-
-		prepareSoaSigFunc = { |soaSigRef, junto, azim, el, intens, dis|
-			soaSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
-
-		};
-		makeSpatialisers.value(linear: true);
+		
+			prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);				
+			};
+			makeSpatialisers.value(linear: false);
+			
+			prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
+			};
+			makeSpatialisers.value(linear: true);
 
 		
 		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
@@ -1732,11 +1742,11 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \aux4, aux4[source]);
 				this.setSynths(source, \aux5, aux5[source]);
 
-				this.setSynths(source, \a1but, a1but[source]);
-				this.setSynths(source, \a2but, a2but[source]);
-				this.setSynths(source, \a3but, a3but[source]);
-				this.setSynths(source, \a4but, a4but[source]);
-				this.setSynths(source, \a5but, a5but[source]);
+				this.setSynths(source, \a1check, a1but[source]);
+				this.setSynths(source, \a2check, a2but[source]);
+				this.setSynths(source, \a3check, a3but[source]);
+				this.setSynths(source, \a4check, a4but[source]);
+				this.setSynths(source, \a5check, a5but[source]);
 
 				("Updating source" ++ (source+1)).postln;
 			}.fork;
@@ -3042,10 +3052,10 @@ GUI Parameters usable in SynthDefs
 				
 				if (but.value == true) {
 					a1but[i] = 1;
-					this.setSynths(i, \a1but, 1);
+					this.setSynths(i, \a1check, 1);
 				}{
 					a1but[i] = 0;
-					this.setSynths(i, \a1but, 0);
+					this.setSynths(i, \a1check, 0);
 				};
 			});
 			a2check[i] = CheckBox.new( wdados, Rect(630, 40 + (i*20), 40, 20))
@@ -3053,10 +3063,10 @@ GUI Parameters usable in SynthDefs
 				
 				if (but.value == true) {
 					a2but[i] = 1;
-					this.setSynths(i, \a2but, 1);
+					this.setSynths(i, \a2check, 1);
 				}{
 					a2but[i] = 0;
-					this.setSynths(i, \a2but, 0);
+					this.setSynths(i, \a2check, 0);
 				};
 			});
 			a3check[i] = CheckBox.new( wdados, Rect(645, 40 + (i*20), 40, 20))
@@ -3064,10 +3074,10 @@ GUI Parameters usable in SynthDefs
 				
 				if (but.value == true) {
 					a3but[i] = 1;
-					this.setSynths(i, \a3but, 1);
+					this.setSynths(i, \a3check, 1);
 				}{
 					a3but[i] = 0;	
-				this.setSynths(i, \a3but, 0);
+				this.setSynths(i, \a3check, 0);
 				};
 			});
 			a4check[i] = CheckBox.new( wdados, Rect(660, 40 + (i*20), 40, 20))
@@ -3075,10 +3085,10 @@ GUI Parameters usable in SynthDefs
 				
 				if (but.value == true) {
 					a4but[i] = 1;
-					this.setSynths(i, \a4but, 1);
+					this.setSynths(i, \a4check, 1);
 				}{
 					a4but[i] = 0;
-					this.setSynths(i, \a4but, 0);
+					this.setSynths(i, \a4check, 0);
 				};
 			});
 			a5check[i] = CheckBox.new( wdados, Rect(675, 40 + (i*20), 40, 20))
@@ -3086,10 +3096,10 @@ GUI Parameters usable in SynthDefs
 				
 				if (but.value == true) {
 					a5but[i] = 1;
-					this.setSynths(i, \a5but, 1);
+					this.setSynths(i, \a5check, 1);
 				}{
 					a5but[i] = 0;
-					this.setSynths(i, \a5but, 0);
+					this.setSynths(i, \a5check, 0);
 				};
 			});
 
@@ -3347,6 +3357,11 @@ GUI Parameters usable in SynthDefs
 				//	num.value.postln;
 				//	"cbox!".postln;
 				synt[i].set(\contr, num.value);
+
+				// TESTING
+				espacializador[i].set(\contr, num.value);
+
+				
 				this.setSynths(i, \contr, num.value);
 				clev[i] = num.value;
 				if(i == fatual) 
