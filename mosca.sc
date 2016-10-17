@@ -873,7 +873,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0, 
-				glev = 0, llev = 0;
+				glev = 0, llev = 0, contr;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
@@ -959,11 +959,17 @@ GUI Parameters usable in SynthDefs
 				
 				//ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
 				//ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
+
+				junto1 = FoaEncode.ar(junto1, foaEncoder);
+				junto2 = FoaEncode.ar(junto2, foaEncoder);
+				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
+				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
+
 				
 				ambsinal1plus2 = ambsinal1 + ambsinal2;
-				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
-					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
-						soaSigRRef[2].value, soaSigRRef[3].value];
+				//				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
+				//					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
+				//						soaSigRRef[2].value, soaSigRRef[3].value];
 
 				Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
 
@@ -979,7 +985,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbEstereoChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0, 
-				glev = 0, llev = 0;
+				glev = 0, llev = 0, contr;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
@@ -1057,6 +1063,7 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+
 				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
 					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
 					soaSigLRef[8].value];
@@ -1066,12 +1073,17 @@ GUI Parameters usable in SynthDefs
 					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
 					soaSigRRef[8].value];
 				
-				
 				ambsinal1plus2 = ambsinal1 + ambsinal2;
-				//				ambsinal1plus2_1O = [w1, x1, y1, z1] + [w2, x2, y2, z2];
-				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
-					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
-						soaSigRRef[2].value, soaSigRRef[3].value];
+
+
+				junto1 = FoaEncode.ar(junto1, foaEncoder);
+				junto2 = FoaEncode.ar(junto2, foaEncoder);
+				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
+				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
+
+				//				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
+				//					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
+				//						soaSigRRef[2].value, soaSigRRef[3].value];
 				
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
