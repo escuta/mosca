@@ -554,7 +554,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbAFormatVerb"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
 				dopon = 0, dopamnt = 0,
-				glev = 0, llev = 0, contr;
+				glev = 0, llev = 0, contr = 1;
 				//var w, x, y, z, r, s, t, u, v,
 				var p, ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
@@ -631,7 +631,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
 				dopon = 0, dopamnt = 0,
-				glev = 0, llev = 0, contr;
+				glev = 0, llev = 0, contr=1;
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
 				ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
@@ -873,7 +873,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0, 
-				glev = 0, llev = 0, contr;
+				glev = 0, llev = 0, contr=1;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
@@ -985,7 +985,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbEstereoChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0, 
-				glev = 0, llev = 0, contr;
+				glev = 0, llev = 0, contr=1;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
@@ -1845,6 +1845,10 @@ GUI Parameters usable in SynthDefs
 						angle[i] = 0;
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
+						//{cnumbox.value = 1;}.defer;
+						cbox[i].valueAction = 1;
+						//connumbox.value = 1;
+						//cslider.value = 1;
 						
 						if(rv[i] == 1) {
 							if(revGlobalSoa == nil) {
@@ -1882,6 +1886,7 @@ GUI Parameters usable in SynthDefs
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
 						angle[i] = pi/2;
+						cbox[i].valueAction = 1;
 						//						{angnumbox.value = pi/2;}.defer; 
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						//						{angslider.value = 0.5;}.defer;
@@ -2013,7 +2018,7 @@ GUI Parameters usable in SynthDefs
 					{ this.ncan[i] == 1 } {
 						"Mono!".postln;
 						
-
+						cbox[i].valueAction = 1;
 
 						if(rv[i] == 1) {
 							if(revGlobalSoa == nil) {
@@ -2080,7 +2085,7 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
 						
-						
+						cbox[i].valueAction = 1;
 
 
 						if(rv[i] == 1) {	
