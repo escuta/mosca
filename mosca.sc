@@ -1575,7 +1575,7 @@ GUI Parameters usable in SynthDefs
 			{wdados.visible = false;};
 		});
 
-		waux = Window.new("Auxiliary Controllers", Rect(this.width, (this.nfontes*20)+114, 260, 240 ));
+		waux = Window.new("Auxiliary Controllers", Rect(this.width, (this.nfontes*20)+114, 260, 250 ));
 		waux.userCanClose = false;
 		waux.alwaysOnTop = true;
 		
@@ -1598,11 +1598,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a1check[fatual].value = 1;
+			a1check[fatual].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a1check[fatual].value = 0;
+			a1check[fatual].valueAction = 0;
 		});
 
 		auxbutton2 = Button(waux, Rect(80, 210, 20, 20))
@@ -1611,11 +1611,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a2check[fatual].value = 1;
+			a2check[fatual].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a2check[fatual].value = 0;
+			a2check[fatual].valueAction = 0;
 		});
 		auxbutton3 = Button(waux, Rect(120, 210, 20, 20))
 		.states_([
@@ -1623,11 +1623,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a3check[fatual].value = 1;
+			a3check[fatual].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a3check[fatual].value = 0;
+			a3check[fatual].valueAction = 0;
 		});
 		auxbutton4 = Button(waux, Rect(160, 210, 20, 20))
 		.states_([
@@ -1635,11 +1635,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a4check[fatual].value = 1;
+			a4check[fatual].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a4check[fatual].value = 0;
+			a4check[fatual].valueAction = 0;
 		});
 		auxbutton5 = Button(waux, Rect(200, 210, 20, 20))
 		.states_([
@@ -1647,11 +1647,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a5check[fatual].value = 1;
+			a5check[fatual].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a5check[fatual].value = 0;
+			a5check[fatual].valueAction = 0;
 		});
 
 
@@ -1731,6 +1731,12 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \aux3, aux3[source]);
 				this.setSynths(source, \aux4, aux4[source]);
 				this.setSynths(source, \aux5, aux5[source]);
+
+				this.setSynths(source, \a1but, a1but[source]);
+				this.setSynths(source, \a2but, a2but[source]);
+				this.setSynths(source, \a3but, a3but[source]);
+				this.setSynths(source, \a4but, a4but[source]);
+				this.setSynths(source, \a5but, a5but[source]);
 
 				("Updating source" ++ (source+1)).postln;
 			}.fork;
@@ -2876,8 +2882,24 @@ GUI Parameters usable in SynthDefs
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "A5";
 
-
 		textbuf = StaticText(wdados, Rect(615, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a1";
+		textbuf = StaticText(wdados, Rect(630, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a2";
+		textbuf = StaticText(wdados, Rect(645, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a3";
+		textbuf = StaticText(wdados, Rect(660, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a4";
+		textbuf = StaticText(wdados, Rect(675, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a5";
+		
+
+		textbuf = StaticText(wdados, Rect(690, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "File";
 
@@ -2903,7 +2925,7 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			lpcheck[i] = CheckBox.new( wdados, Rect(45, 40 + (i*20), 40, 20))
+			lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){loopcheck.value = but.value;};
 				if (but.value == true) {
@@ -2918,7 +2940,7 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			rvcheck[i] = CheckBox.new( wdados, Rect(60, 40 + (i*20), 40, 20))
+			rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){revcheck.value = but.value;};
 				if (but.value == true) {
@@ -3044,8 +3066,8 @@ GUI Parameters usable in SynthDefs
 					a3but[i] = 1;
 					this.setSynths(i, \a3but, 1);
 				}{
-					a3but[i] = 0;
-					this.setSynths(i, \a3but, 0);
+					a3but[i] = 0;	
+				this.setSynths(i, \a3but, 0);
 				};
 			});
 			a4check[i] = CheckBox.new( wdados, Rect(660, 40 + (i*20), 40, 20))
@@ -3072,7 +3094,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 
-			tfield[i] = TextField(wdados, Rect(690, 40+ (i*20), 220, 20));
+			tfield[i] = TextField(wdados, Rect(690, 40+ (i*20), 250, 20));
 
 
 			
@@ -3534,6 +3556,12 @@ GUI Parameters usable in SynthDefs
 			controle.dock(a3box[i], "aux3_" ++ i);
 			controle.dock(a4box[i], "aux4_" ++ i);
 			controle.dock(a5box[i], "aux5_" ++ i);
+
+			controle.dock(a1check[i], "aux1check_" ++ i);
+			controle.dock(a2check[i], "aux2check_" ++ i);
+			controle.dock(a3check[i], "aux3check_" ++ i);
+			controle.dock(a4check[i], "aux4check_" ++ i);
+			controle.dock(a5check[i], "aux5check_" ++ i);
 
 			
 			
