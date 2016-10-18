@@ -876,7 +876,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
+				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0, 
 				glev = 0, llev = 0, contr=1;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
@@ -972,16 +972,17 @@ GUI Parameters usable in SynthDefs
 
 				
 				ambsinal1plus2 = ambsinal1 + ambsinal2;
-				//				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
-				//					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
-				//						soaSigRRef[2].value, soaSigRRef[3].value];
 
-				Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
 
+				//Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
+
+				
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
 				ambsinal1plus2_1O = HPF.ar(ambsinal1plus2_1O, 20); // stops bass frequency blow outs by proximity
 				ambsinal1plus2_1O = FoaTransform.ar(ambsinal1plus2_1O, 'proximity', dis);
+
+				reverbOutFunc.value(soaBus, gbfbus, ambsinal1plus2, ambsinal1plus2_1O, globallev, locallev);
 
 				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
 				
@@ -1865,8 +1866,8 @@ GUI Parameters usable in SynthDefs
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 									\level, level[i]], 
 									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
-								
+										espacializador[i] = nil; synt[i] = nil});	
+							
 								espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
 									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
