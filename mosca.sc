@@ -18,11 +18,9 @@
 
 
 Mosca {
-	//	classvar fftsize = 2048; 
    	var <>myTestVar;
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
-	//	<>rirWXYZspectrum,  rirWXYZ, // experimental!
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>waux, <>sprite, <>nfontes,
@@ -51,12 +49,11 @@ Mosca {
 	o, //debugging
 	prjDr;
 	classvar fftsize = 2048,
-	//	classvar fftsize = 1024,
-	//classvar fftsize = 4096,
 	server;
 	classvar foaEncoder;
 
-	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass", server = Server.default, decoder = nil, rawbus = 0;
+	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
+		server = Server.default, decoder = nil, rawbus = 0;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder, rawbus);
 	}
 
@@ -605,10 +602,10 @@ GUI Parameters usable in SynthDefs
 				junto = p;
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
 				//				ambsinal = [w, x, y, z, r, s, t, u, v];
-		//ambSigRef.value = [0,0,0,0];				
+				//ambSigRef.value = [0,0,0,0];				
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 				junto = FoaEncode.ar(junto, foaEncoder);
-		ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
 				//				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 
@@ -687,10 +684,10 @@ GUI Parameters usable in SynthDefs
 
 
 
-					prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 
 				junto = FoaEncode.ar(junto, foaEncoder);
-		ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 				
 				//ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 
@@ -1098,15 +1095,15 @@ GUI Parameters usable in SynthDefs
 
 
 		
-			prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
-				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);				
-			};
-			makeSpatialisers.value(linear: false);
-			
-			prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
-				ambSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
-			};
-			makeSpatialisers.value(linear: true);
+		prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
+			ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);				
+		};
+		makeSpatialisers.value(linear: false);
+		
+		prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
+			ambSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
+		};
+		makeSpatialisers.value(linear: true);
 
 		
 		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
@@ -1677,7 +1674,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-	
+		
 		auxslider1 = Slider.new(waux, Rect(40, 20, 20, 160));
 		auxslider2 = Slider.new(waux, Rect(80, 20, 20, 160));
 		auxslider3 = Slider.new(waux, Rect(120, 20, 20, 160));
@@ -1702,11 +1699,11 @@ GUI Parameters usable in SynthDefs
 		aux5numbox.clipLo = 0;
 
 
-			aux1numbox.action = {arg num;
-				a1box[fatual].valueAction = num.value;
-				//this.aux1[fatual] = num.value;
-				auxslider1.value = num.value;
-			};
+		aux1numbox.action = {arg num;
+			a1box[fatual].valueAction = num.value;
+			//this.aux1[fatual] = num.value;
+			auxslider1.value = num.value;
+		};
 
 		auxslider1.action = {arg num;
 			a1box[fatual].valueAction = num.value;
@@ -2272,7 +2269,7 @@ GUI Parameters usable in SynthDefs
 		
 		~win = win;
 		
-// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
+		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
 		
 		bsalvar = Button(win, Rect(10, this.width - 40, 90, 20))
 		.states_([
@@ -2292,7 +2289,7 @@ GUI Parameters usable in SynthDefs
 					} {
 						preset = lastAutomation;
 					};
-			};
+				};
 			dwin = GUI.window.new(title, bounds);
             dwin.onClose = {
                 if (success.not){
@@ -2343,7 +2340,7 @@ GUI Parameters usable in SynthDefs
 					} {
 						preset = lastAutomation;
 					};
-			};
+				};
 			dwin = GUI.window.new(title, bounds);
             dwin.onClose = {
                 if (success.not){
@@ -3013,7 +3010,7 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-						
+			
 			lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				if(i==fatual){lincheck.value = but.value;};
@@ -3094,7 +3091,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a3check, 1);
 				}{
 					a3but[i] = 0;	
-				this.setSynths(i, \a3check, 0);
+					this.setSynths(i, \a3check, 0);
 				};
 			});
 			a4check[i] = CheckBox.new( wdados, Rect(660, 40 + (i*20), 40, 20))
@@ -3546,15 +3543,15 @@ GUI Parameters usable in SynthDefs
 			/*			if(revGlobal.notNil){
 				revGlobal.free;
 				revGlobal = nil;
-			};
-			if(revGlobalBF.notNil){
+				};
+				if(revGlobalBF.notNil){
 				revGlobalBF.free;
 				revGlobalBF = nil;
-			};
-			if(revGlobalSoa.notNil){
+				};
+				if(revGlobalSoa.notNil){
 				revGlobalSoa.free;
 				revGlobalSoa = nil;
-			};
+				};
 			*/
 		};
 
