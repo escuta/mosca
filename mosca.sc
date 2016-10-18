@@ -582,7 +582,7 @@ GUI Parameters usable in SynthDefs
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				dis = Select.kr(dis > 1, [dis, 1]); 
-				//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging			
+						
 				// high freq attenuation
 				p = In.ar(inbus, 1);
 				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
@@ -623,7 +623,7 @@ GUI Parameters usable in SynthDefs
 
 				//Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 
-		reverbOutFunc.value(soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev);
+				reverbOutFunc.value(soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev);
 				
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
@@ -677,10 +677,18 @@ GUI Parameters usable in SynthDefs
 
 				//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
 				globallev = globallev - 1.0; // lower tail of curve to zero
+				//				SendTrig.kr(Impulse.kr(1), 0, globallev); // debug
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
 				globallev = Select.kr(globallev > 1, [globallev, 1]); 
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				
+
 				globallev = globallev * Lag.kr(glev, 0.1);
 				gsig = p * globallev;
+
+				
+				
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 				// Local reverberation
 				locallev = 1 - dis; 
@@ -1045,6 +1053,8 @@ GUI Parameters usable in SynthDefs
 				intens = intens / 4;
 				
 				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; //scale so it values 1 close to origin
+				
 				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
 				globallev = Select.kr(globallev < 0, [globallev, 0]); 
 				
@@ -1862,12 +1872,21 @@ GUI Parameters usable in SynthDefs
 									revGlobalBF, addAction:\addBefore);
 							};
 							if (testado[i] == false) { // if source is testing don't relaunch synths
-								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]], 
-									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});	
-							
+
+								if(this.decoder.isNil) {
+									synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+										\level, level[i]], 
+										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});	
+								} {
+									synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+										\level, level[i]], 
+										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});								
+
+								};
 								espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
 									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
@@ -1909,10 +1928,20 @@ GUI Parameters usable in SynthDefs
 							};
 							
 							if (testado[i].not) {
-								synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i]], 
-									revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+
+								if(this.decoder.isNil) {
+									synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+										\level, level[i]],
+										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								} {
+									synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+										\level, level[i]],
+										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+											espacializador[i] = nil; synt[i] = nil});
+								};
 								
 								espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
 									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
