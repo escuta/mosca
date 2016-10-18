@@ -2613,9 +2613,9 @@ GUI Parameters usable in SynthDefs
 		
 		
 		
-		textbuf = StaticText(win, Rect(163, 110 + offset, 90, 20));
+		textbuf = StaticText(win, Rect(163, 130 + offset, 90, 20));
 		textbuf.string = "Angle (Stereo)";
-		angnumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
+		angnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
 		angnumbox.value = 0;
 		angnumbox.clipHi = pi;
 		angnumbox.clipLo = 0;
@@ -2633,7 +2633,7 @@ GUI Parameters usable in SynthDefs
 			{angnumbox.value = 0;};
 		};
 		
-		angslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
+		angslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
 		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 		
 		angslider.action = {arg num;
@@ -2791,9 +2791,9 @@ GUI Parameters usable in SynthDefs
 		
 		
 
-		textbuf = StaticText(win, Rect(163, 130 + offset, 150, 20));
+		textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
 		textbuf.string = "Rotation (B-Format)";
-		rnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
+		rnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
 		rnumbox.value = 0;
 		rnumbox.clipHi = pi;
 		rnumbox.clipLo = -pi;
@@ -2805,7 +2805,7 @@ GUI Parameters usable in SynthDefs
 			
 		};
 		// stepsize?
-		rslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
+		rslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
 		rslider.value = 0.5;
 		rslider.action = {arg num;
 			{rbox[fatual].valueAction = num.value * 6.28 - pi;}.defer;
@@ -2815,9 +2815,9 @@ GUI Parameters usable in SynthDefs
 		
 		
 
-		textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
+		textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
 		textbuf.string = "Directivity (B-Format)";
-		dirnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
+		dirnumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
 		dirnumbox.value = 0;
 		dirnumbox.clipHi = pi;
 		dirnumbox.clipLo = -pi;
@@ -2828,7 +2828,7 @@ GUI Parameters usable in SynthDefs
 			{dbox[fatual].valueAction = num.value;}.defer;
 		};
 		// stepsize?
-		dirslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
+		dirslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
 		dirslider.value = 0;
 		dirslider.action = {arg num;
 			{dbox[fatual].valueAction = num.value * pi/2;}.defer;
@@ -2837,9 +2837,9 @@ GUI Parameters usable in SynthDefs
 
 		
 
-		textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
-		textbuf.string = "Contraction (B-Format)";
-		connumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
+		textbuf = StaticText(win, Rect(163, 110 + offset, 150, 20));
+		textbuf.string = "Contraction";
+		connumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
 		connumbox.value = 0;
 		connumbox.clipHi = pi;
 		connumbox.clipLo = -pi;
@@ -2851,7 +2851,7 @@ GUI Parameters usable in SynthDefs
 			
 		};
 		// stepsize?
-		cslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
+		cslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
 		cslider.value = 0;
 		cslider.action = {arg num;
 			{cbox[fatual].valueAction = num.value;}.defer;

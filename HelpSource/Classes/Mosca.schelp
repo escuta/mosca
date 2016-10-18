@@ -210,12 +210,12 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
-//	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
+	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
 
 // Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
 //using no decoder and rawbus value of 2.
