@@ -34,6 +34,7 @@ Mosca {
 	<>width, <>halfwidth, <>scale,
 	<>dur,
 	<>rawbus,
+	<>decoder,
     <>delaytime, <>decaytime; // for allpass 
 
 	classvar server, rirW, rirX, rirY, rirZ,
@@ -93,13 +94,14 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, decoder, irawbus;
+	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder, irawbus;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
 		revGlobalSoaOutFunc,
 		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
+		reverbOutFunc,
 		bufAformat, bufAformat_soa_a12, bufWXYZ;
 		//synthRegistry = List[],
 		
@@ -116,6 +118,7 @@ GUI Parameters usable in SynthDefs
 		this.scale = this.halfwidth; // for the moment at least
 		this.dur = idur;
 		this.rawbus = irawbus;
+		this.decoder = idecoder;
 		
 		this.nfontes = nsources;
 		playMonoInFunc = Array.newClear(3); // one for File, Stereo & BFormat;
@@ -145,7 +148,7 @@ GUI Parameters usable in SynthDefs
 
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
-		if (decoder.isNil) {
+		if (this.decoder.isNil) {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
 				Out.ar( this.rawbus, ambsinal); };
 			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
@@ -156,7 +159,8 @@ GUI Parameters usable in SynthDefs
 				Out.ar( this.rawbus, soaSig); };
 			playBFormatOutFunc = { |player, dec|
 				Out.ar( this.rawbus, player); };
-			
+			reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
+				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));	};			
 		} {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
 				Out.ar( 0, FoaDecode.ar(ambsinal1O, dec)); };
@@ -168,6 +172,8 @@ GUI Parameters usable in SynthDefs
 				Out.ar( 0, FoaDecode.ar(foaSig, dec)); };
 			playBFormatOutFunc = { |player, dec|
 				Out.ar( 0, FoaDecode.ar(player, dec)); };
+			reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
+				Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));};
 		};
 
 
@@ -274,7 +280,7 @@ GUI Parameters usable in SynthDefs
 		
 
 		prjDr = projDir;
-		dec = decoder;
+		dec = this.decoder;
 
 		if (rir != "allpass") {
 			//testit = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
@@ -551,7 +557,8 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbAFormatVerb"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
 				dopon = 0, dopamnt = 0,
-				glev = 0, llev = 0, contr = 1;
+				glev = 0, llev = 0, contr = 1,
+				gbfbus;
 				//var w, x, y, z, r, s, t, u, v,
 				var p, ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
@@ -604,6 +611,7 @@ GUI Parameters usable in SynthDefs
 				//				ambsinal = [w, x, y, z, r, s, t, u, v];
 				//ambSigRef.value = [0,0,0,0];				
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+
 				junto = FoaEncode.ar(junto, foaEncoder);
 				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
@@ -613,10 +621,10 @@ GUI Parameters usable in SynthDefs
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
 
-				//				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
-				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
-				//				ambsinal1O = [w, x, y, z];
+				//Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 
+		reverbOutFunc.value(soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev);
+				
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
 				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
@@ -1848,7 +1856,7 @@ GUI Parameters usable in SynthDefs
 						//cslider.value = 1;
 						
 						if(rv[i] == 1) {
-							if(revGlobalSoa == nil) {
+							if(revGlobalSoa.isNil && this.decoder.isNil) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
 							};
@@ -1860,7 +1868,7 @@ GUI Parameters usable in SynthDefs
 										espacializador[i] = nil; synt[i] = nil});
 								
 								espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
-									\soaBus, soaBus, \dopon, doppler[i]], 
+									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 						} { 
@@ -1894,7 +1902,7 @@ GUI Parameters usable in SynthDefs
 							};
 						*/
 						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil) {
+							if(revGlobalSoa.isNil && this.decoder.isNil) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
 							};
@@ -1906,7 +1914,7 @@ GUI Parameters usable in SynthDefs
 										espacializador[i] = nil; synt[i] = nil});
 								
 								espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
-									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
+									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 
