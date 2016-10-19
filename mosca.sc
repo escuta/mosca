@@ -1853,7 +1853,7 @@ GUI Parameters usable in SynthDefs
 			};
 			
 			("tpos = " ++ tpos).postln;
-			if ((path != "") && (hwncheck[i].value == false)) {
+			if ((path != "") && (hwncheck[i].value.not || scncheck[i].value.not)) {
 				{	
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
