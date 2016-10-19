@@ -17,6 +17,9 @@ Mosca also has other features including a scalable Doppler Effect on moving sour
 
 USING MOSCA
 
+Please ensure that SuperCollider is installed with plugins from: https://github.com/supercollider/sc3-plugins
+It is also necessary to install the ATK Kernels: http://www.ambisonictoolkit.net/download/kernels 
+
 The user must set up a project directory with subdirectories "rir" and "auto". RIRs should have the first 100 or 120ms silenced to act as "tail" reverberator and must be placed in the "rir" directory. For convenience, please download the "moscaproject.zip" file on the following page which contains the file structure, example RIRs and B-format recordings as well as other information and demos. Note that the example RIR is recorded at 48kHz:
 
 http://escuta.org/mosca
@@ -65,7 +68,7 @@ r) Rotate. Rotate a B-format signal on the horizontal plane.
 
 s) Directivity. Adjust the directivity of B-format signal (see ATK documentation)
 
-t) Contraction. Cross-fade between B-format signal an its W component. Note that the "contracted" signal is spatialised with 2nd order ambisonics.
+t) Contraction. In the case of B-format input, contraction is a cross-fade between B-format signal an its W component. Note that the "contracted" signal is spatialised with 2nd order ambisonics when using an external decoder. When the user is decoding with a 1st order decoder from the ATK, mono and stereo signals are encoded as omnidirectional B-format signals and angled in space using the ATK's "push" transformation. In this this case contraction varies between an omnidirectional signal and a spatially focussed signal.
 
 u) Z-axis. Manipulate the Z-axis of current source.
 
