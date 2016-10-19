@@ -1,7 +1,7 @@
 TITLE:: Mosca
 summary:: GUI-assisted authoring of ambisonic sound fields with simulated moving or stationary sound sources.
-categories:: Undocumented classes
-related:: Classes/SomeRelatedClass, http://www.ambisonictoolkit.net
+categories:: Ambisonics
+related:: http://www.ambisonictoolkit.net
 
 DESCRIPTION::
 Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. Sound fields may be decoded using a variety of built in 1st order ambisonic SuperCollider decoders (including binaural) or with external 2nd order decoders such as Ambdec in Linux. The class makes extensive use of the Ambisonic Toolkit (ATK, see: http://www.ambisonictoolkit.net/) by Joseph Anderson and the Automation quark (https://github.com/neeels/Automation) by Neels Hofmeyr.
@@ -128,6 +128,108 @@ returns:: A string.
 
 INSTANCEMETHODS::
 
+private:: clearStopFunc
+private:: clearTriggerFunc
+private:: getSynthRegistry
+private:: initMosca
+private:: setSynths
+private:: aux1
+private:: aux1 = value
+private:: aux2
+private:: aux2 = value
+private:: aux3
+private:: aux3 = value
+private:: aux4
+private:: aux4 = value
+private:: aux5
+private:: aux5 = value
+private:: bufsize
+private:: bufsize = value
+private:: busini
+private:: busini = value
+private:: controle
+private:: controle = value
+private:: dec
+private:: dec = value
+private:: decaytime
+private:: decaytime = value
+private:: decoder
+private:: decoder = value
+private:: delaytime
+private:: delaytime = value
+private:: dur
+private:: dur = value
+private:: halfwidth
+private:: halfwidth = value
+private:: irbuffer
+private:: irbuffer = value
+private:: kernelSize
+private:: kernelSize = value
+private:: m
+private:: m = value
+private:: mmcslave
+private:: mmcslave = value
+private:: myTestVar
+private:: myTestVar = value
+private:: ncan
+private:: ncan = value
+private:: nfontes
+private:: nfontes = value
+private:: offset
+private:: offset = value
+private:: rawbus
+private:: rawbus = value
+private:: revGlobal
+private:: revGlobal = value
+private:: revGlobalBF
+private:: revGlobalBF = value
+private:: revGlobalSoa
+private:: revGlobalSoa = value
+private:: rirW
+private:: rirW = value
+private:: rirZ
+private:: rirZ = value
+private:: rirY
+private:: rirY = value
+private:: rirX
+private:: rirX = value
+private:: rirWspectrum
+private:: rirWspectrum = value
+private:: rirXspectrum
+private:: rirXspectrum = value
+private:: rirYspectrum
+private:: rirYspectrum = value
+private:: rirZspectrum
+private:: rirZspectrum = value
+private:: scInBus
+private:: scInBus = value
+private:: scale
+private:: scale = value
+private:: sprite
+private:: sprite = value
+private:: stopFunc
+private:: stopFunc = value
+private:: swinbus
+private:: swinbus = value
+private:: synthRegistry
+private:: synthRegistry = value
+private:: sysex
+private:: sysex = value
+private:: textbuf
+private:: textbuf = value
+private:: triggerFunc
+private:: triggerFunc = value
+private:: waux
+private:: waux = value
+private:: wdados
+private:: wdados = value
+private:: width
+private:: width = value
+private:: win
+private:: win = value
+
+
+
 METHOD:: gui
 Creates GUI window
 
@@ -183,7 +285,7 @@ code::
 /*
 Please also read "USING MOSCA" above
 
-Make sure the server is stopped before running this block of example code
+Make sure the server is stopped before running this block of example code for first time
 */
 
 (
@@ -251,7 +353,7 @@ Mosca.printSynthParams
 
 (
 SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
-	var source, point, freqAdjust, delEnv, dis;
+	var source, source2, point, freqAdjust, delEnv, dis;
         var mod;	
 	point = Point.new;
 	point.set(mx, my);
@@ -265,6 +367,9 @@ mod = 0;
 	sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
 	source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2) + mod);
 	Out.ar(outbus, source);
+// or try stereo with 2 channels set in gui
+//	source2 = Pulse.ar(freq + 3 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2) + mod);
+//	Out.ar(outbus, [source, source2]);
 
 }).send(s);
 )
