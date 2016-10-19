@@ -1776,12 +1776,12 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \a4check, a4but[source]);
 				this.setSynths(source, \a5check, a5but[source]);
 
-				("Updating source" ++ (source+1)).postln;
+				
 			}.fork;
 		};
 		
 		atualizarvariaveis = {
-			"atualizando!".postln;
+		
 			
 			this.nfontes.do { arg i;
 				//	updateSynthInArgs.value(i);
@@ -1844,11 +1844,11 @@ GUI Parameters usable in SynthDefs
 			// If we have ncan = 4 and busini = 7, the stream will enter
 			// in buses 7, 8, 9 and 10.
 
-			if(revGlobalBF == nil){
+			if(revGlobalBF.isNil){
 				revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
 					addAction:\addToTail);
 			};
-			if(revGlobal == nil){
+			if(revGlobal.isNil){
 				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 			};
 			
@@ -2045,11 +2045,9 @@ GUI Parameters usable in SynthDefs
 					//	}); 
 				}.defer;	
 			} {
-				("HELLO scncheck[i].value = " ++ scncheck[i].value).postln;
+				
 				if ((scncheck[i].value) || (hwncheck[i])) {
 					var x;
-					("Streaming! ncan = " ++ this.ncan[i].value
-						++ " & this.busini = " ++ this.busini[i].value).postln;
 					x = case
 					{ this.ncan[i] == 1 } {
 						"Mono!".postln;
@@ -2107,7 +2105,6 @@ GUI Parameters usable in SynthDefs
 										addAction: \addBefore).onFree({espacializador[i].free;
 											espacializador[i] = nil; synt[i] = nil});
 								} {
-									"But especially here".postln;
 									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
 										\level, level[i]], revGlobalBF,

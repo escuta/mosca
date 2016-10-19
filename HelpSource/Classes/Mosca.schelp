@@ -210,12 +210,12 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
-	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
+//	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
 
 // Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
 //using no decoder and rawbus value of 2.
@@ -251,14 +251,19 @@ Mosca.printSynthParams
 
 (
 SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
-	var source, point, adjust, delEnv;
+	var source, point, freqAdjust, delEnv, dis;
+        var mod;	
 	point = Point.new;
 	point.set(mx, my);
-	adjust = point.rho * 200;
-	adjust = Lag.kr(adjust, 0.1);
-	delEnv = Env.dadsr(0.2, attackTime: 0.01, decayTime: 200,
-	sustainLevel: 0.1); // envelope with an onset delay equal to lag buffer
-	source = Pulse.ar(freq + adjust, mul: EnvGen.kr(delEnv, doneAction: 2));
+	dis = point.rho;
+//	mod = SinOsc.kr(5 + (dis * 4), 0, 0.4);
+mod = 0;
+	dis = Lag.kr(dis, 0.1);
+	
+	freqAdjust = dis * 1;	
+	delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
+	sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
+	source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2) + mod);
 	Out.ar(outbus, source);
 
 }).send(s);
@@ -268,11 +273,13 @@ SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 Set up first source
 
 The user must create a "Trigger function" that contains synths. This function will be called when "audition" a particular source or when the transport's play button is selected in the GUI. The user must use the getSCBus method to set the bus number for the particular source (sources numbered from 1 on) as well as "onFree" of the Synth class to deregister the synth (with the method deregisterSynth). The method registerSynth is used to register it.
+
+These simple sounds work best with some doppler set in GUI and some reverb.
 */
 
 (
 ~source1PlayFunc = {
-~mySynth = Synth.new("test-out", [\freq, 50, \outbus, ~testMosca.getSCBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1, ~mySynth)});
+~mySynth = Synth.new("test-out", [\freq, 220, \outbus, ~testMosca.getSCBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1, ~mySynth)});
 
 ~testMosca.registerSynth(1, ~mySynth);
 };
@@ -284,7 +291,7 @@ The user must create a "Trigger function" that contains synths. This function wi
 // second source
 (
 ~source2PlayFunc = {
-~myOtherSynth = Synth.new("test-out", [\freq, 50, \outbus, ~testMosca.getSCBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2, ~myOtherSynth)});
+~myOtherSynth = Synth.new("test-out", [\freq, 550, \outbus, ~testMosca.getSCBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2, ~myOtherSynth)});
 
 ~testMosca.registerSynth(2, ~myOtherSynth);
 };
