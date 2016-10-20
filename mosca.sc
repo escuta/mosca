@@ -108,7 +108,9 @@ GUI Parameters usable in SynthDefs
 		//	testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
-		foaEncoder = FoaEncoderMatrix.newOmni;
+		//		foaEncoder = FoaEncoderMatrix.newOmni;
+		//foaEncoder = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048);
+		foaEncoder = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
 		if (iwidth < 600) {
 			this.width = 600;
 		} {
@@ -1402,6 +1404,8 @@ GUI Parameters usable in SynthDefs
 		dopcheque,
 		lastAutomation = nil,
 		loopcheck, lpcheck, lp,
+		spreadcheck, spcheck, sp,
+		diffusecheck, dfcheck, df,
 		revcheck, rvcheck, rv,
 		lincheck, lncheck, ln,
 		hwInCheck, hwncheck, hwn, scInCheck, scncheck, scn,
@@ -2468,6 +2472,10 @@ GUI Parameters usable in SynthDefs
 			
 			if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
 			if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
+
+			if(sp[fatual] == 1){spreadcheck.value = true}{spreadcheck.value = false};
+			if(df[fatual] == 1){diffusecheck.value = true}{diffusecheck.value = false};
+
 			if(rv[fatual] == 1){revcheck.value = true}{revcheck.value = false};
 			if(ln[fatual] == "_linear"){lincheck.value = true}{lincheck.value = false};
 			
@@ -2537,6 +2545,18 @@ GUI Parameters usable in SynthDefs
 			{lpcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		loopcheck.value = false;
+
+		spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
+			("Spread is " ++ butt.value).postln;
+			{spcheck[fatual].valueAction = butt.value;}.defer;
+		});
+		spreadcheck.value = false;
+		diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
+			("Spread is " ++ butt.value).postln;
+			{spcheck[fatual].valueAction = butt.value;}.defer;
+		});
+		diffusecheck.value = false;
+
 		
 		revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
 			("A-format rev is " ++ butt.value).postln;
@@ -2834,7 +2854,7 @@ GUI Parameters usable in SynthDefs
 
 		
 
-		textbuf = StaticText(win, Rect(163, 110 + offset, 150, 20));
+		textbuf = StaticText(win, Rect(163, 110 + offset, 80, 20));
 		textbuf.string = "Contraction";
 		connumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
 		connumbox.value = 0;
