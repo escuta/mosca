@@ -106,13 +106,20 @@ GUI Parameters usable in SynthDefs
 		reverbOutFunc,
 		bufAformat, bufAformat_soa_a12, bufWXYZ;
 		//synthRegistry = List[],
-		
+		server = iserver;
 		//	testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
 		foaEncoderOmni = FoaEncoderMatrix.newOmni;
+		server.sync;
 		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048);
+		server.sync;
 		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
+		server.sync;
+			
+		
+		//foaEncoderSpread = foaEncoderOmni;
+		//foaEncoderDiffuse = foaEncoderOmni;
 		if (iwidth < 600) {
 			this.width = 600;
 		} {
@@ -134,7 +141,7 @@ GUI Parameters usable in SynthDefs
 			this.synthRegistry[x] = List[];
 		};
 
-		server = iserver;
+		
 
 		o = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
@@ -548,7 +555,6 @@ GUI Parameters usable in SynthDefs
 
 
 			};
-			
 		};
 		
 		makeSpatialisers = { arg linear = false;
@@ -3314,7 +3320,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 
-			tfield[i] = TextField(wdados, Rect(690, 40+ (i*20), 250, 20));
+			tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
 
 			
