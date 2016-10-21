@@ -33,7 +33,7 @@ Mosca {
 	<>scInBus,
 	<>width, <>halfwidth, <>scale,
 	<>dur,
-	<>rawbus,
+	<>rawbus, <>raworder,
 	<>decoder,
     <>delaytime, <>decaytime; // for allpass 
 
@@ -54,8 +54,8 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
-		server = Server.default, decoder = nil, rawbus = 0;
-		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder, rawbus);
+		server = Server.default, decoder = nil, rawbus = 0, raworder = 2;
+		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder, rawbus, raworder);
 	}
 
 	*printSynthParams {
@@ -96,7 +96,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder, irawbus;
+	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder, irawbus, iraworder;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -129,6 +129,7 @@ GUI Parameters usable in SynthDefs
 		this.scale = this.halfwidth; // for the moment at least
 		this.dur = idur;
 		this.rawbus = irawbus;
+		this.raworder = iraworder;
 		this.decoder = idecoder;
 		
 		this.nfontes = nsources;
@@ -159,20 +160,7 @@ GUI Parameters usable in SynthDefs
 
 		
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
-		if (this.decoder.isNil) {
-			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-				Out.ar( this.rawbus, ambsinal); };
-			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-				Out.ar( this.rawbus, ambsinal1plus2); };
-			revGlobalAmbFunc = { |ambsinal, dec|
-				Out.ar( this.rawbus, ambsinal); };
-			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-				Out.ar( this.rawbus, soaSig); };
-			playBFormatOutFunc = { |player, dec|
-				Out.ar( this.rawbus, player); };
-			reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
-				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));	};			
-		} {
+		if (this.decoder.notNil) {
 			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
 				Out.ar( 0, FoaDecode.ar(ambsinal1O, dec)); };
 			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
@@ -185,6 +173,22 @@ GUI Parameters usable in SynthDefs
 				Out.ar( 0, FoaDecode.ar(player, dec)); };
 			reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
 				Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));};
+
+
+		} {
+						espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+				Out.ar( this.rawbus, ambsinal); };
+			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+				Out.ar( this.rawbus, ambsinal1plus2); };
+			revGlobalAmbFunc = { |ambsinal, dec|
+				Out.ar( this.rawbus, ambsinal); };
+			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
+				Out.ar( this.rawbus, soaSig); };
+			playBFormatOutFunc = { |player, dec|
+				Out.ar( this.rawbus, player); };
+			reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
+				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));	};			
+
 		};
 
 
@@ -583,6 +587,7 @@ GUI Parameters usable in SynthDefs
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				//				dis = (1 - (fonte.rho - this.scale)) / this.scale;
@@ -673,6 +678,7 @@ GUI Parameters usable in SynthDefs
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
@@ -933,6 +939,7 @@ GUI Parameters usable in SynthDefs
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
 				
@@ -1067,6 +1074,7 @@ GUI Parameters usable in SynthDefs
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
 				

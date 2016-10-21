@@ -70,7 +70,7 @@ NOTES ON GUI COMPONENTS
 
 - Contraction. In the case of B-format input, contraction is a cross-fade between B-format signal an its W component. Note that the "contracted" signal is spatialised with 2nd order ambisonics when using an external decoder. When the user is decoding with a 1st order decoder from the ATK, mono and stereo signals are encoded as omnidirectional B-format signals and angled in space using the ATK's "push" transformation. In this this case contraction varies between an omnidirectional signal and a spatially focussed signal.
 
-- Spread / Diffuse. As mentioned above when using a 1st order decoder, mono and stereo signals are signals are encoded as omni B-format signals before being "pushed" into an angular location (if fully "contracted"). The Spread and Diffuse toggles allow the user to perform two other methods to diffuse the signal omni-directionally. See "spread diffusion encoder" and "frequency spreading encoder" here: http://doc.sccode.org/Classes/FoaEncode.html
+- Spread / Diffuse. As mentioned above, when using a 1st order decoder, mono and stereo signals are signals are encoded as omni B-format signals before being "pushed" into an angular location (if fully "contracted"). The Spread and Diffuse toggles allow the user to select two other methods to diffuse the signal omni-directionally. See "spread diffusion encoder" and "frequency spreading encoder" here: http://doc.sccode.org/Classes/FoaEncode.html
 
 - Z-axis. Manipulate the Z-axis of current source.
 
@@ -121,6 +121,9 @@ Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order sign
 
 ARGUMENT:: rawbus
 Starting bus for raw ambisonic output. Useful for separating decoded and raw signals in patching set up.
+
+ARGUMENT:: raworder
+Ambisonics order for raw output to external decoder. Default is 2. 1st order may be used with an extenal decoder to take advantage of ATK 1st order features such as proximity effect and frequency spreading (see "Contraction"above).
 
 returns:: New instance.
 
@@ -317,17 +320,17 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
-	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
+//	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
 
 // Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
 //using no decoder and rawbus value of 2.
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2);
+//	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2, raworder: 1);
 
 
 s.sync;
