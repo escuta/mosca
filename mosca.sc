@@ -3010,82 +3010,89 @@ GUI Parameters usable in SynthDefs
 
 		textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Sp";
+		textbuf = StaticText(wdados, Rect(135, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Df";
+
+		textbuf = StaticText(wdados, Rect(150, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "NCan";
-		textbuf = StaticText(wdados, Rect(145, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(175, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "SBus";
 
-		textbuf = StaticText(wdados, Rect(170, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(200, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "X";
-		textbuf = StaticText(wdados, Rect(210, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(240, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Y";
 
-		textbuf = StaticText(wdados, Rect(250, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(280, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Z";
 
 		
-		textbuf = StaticText(wdados, Rect(290, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(320, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Lev";
-		textbuf = StaticText(wdados, Rect(315, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(345, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "DAmt";
-		textbuf = StaticText(wdados, Rect(340, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(370, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Prox";
-		textbuf = StaticText(wdados, Rect(365, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(395, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Dist";
-		textbuf = StaticText(wdados, Rect(390, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(420, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Ang";
-		textbuf = StaticText(wdados, Rect(415, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(445, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Rot";
-		textbuf = StaticText(wdados, Rect(440, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(470, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Dir";
-		textbuf = StaticText(wdados, Rect(465, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(495, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Cont";
 
-		textbuf = StaticText(wdados, Rect(490, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(520, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "A1";
-		textbuf = StaticText(wdados, Rect(515, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(545, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "A2";
-		textbuf = StaticText(wdados, Rect(540, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(570, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "A3";
-		textbuf = StaticText(wdados, Rect(565, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(595, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "A4";
-		textbuf = StaticText(wdados, Rect(590, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(620, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "A5";
 
-		textbuf = StaticText(wdados, Rect(615, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a1";
-		textbuf = StaticText(wdados, Rect(630, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a2";
 		textbuf = StaticText(wdados, Rect(645, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a3";
+		textbuf.string = "a1";
 		textbuf = StaticText(wdados, Rect(660, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a4";
+		textbuf.string = "a2";
 		textbuf = StaticText(wdados, Rect(675, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a3";
+		textbuf = StaticText(wdados, Rect(690, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a4";
+		textbuf = StaticText(wdados, Rect(705, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "a5";
 		
 
-		textbuf = StaticText(wdados, Rect(690, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(720, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "File";
 
@@ -3127,44 +3134,6 @@ GUI Parameters usable in SynthDefs
 			});
 
 
-			spcheck[i] = CheckBox.new(wdados, Rect(0, 40 + (i*20), 40, 20))
-			.action_({ arg but;
-				if(i==fatual){spreadcheck.value = but.value;};
-				if (but.value == true) {
-					dfcheck[i].value = false;
-					if(i==fatual){diffusecheck.value = false;};
-					sp[i] = 1;
-					df[i] = 0;
-					espacializador[i].set(\sp, 1);
-					espacializador[i].set(\df, 0);
-					synt[i].set(\sp, 1);
-					this.setSynths(i, \ls, 1);
-				}{
-					sp[i] = 0;
-					espacializador[i].set(\sp, 0);
-					synt[i].set(\sp, 0);
-					this.setSynths(i, \sp, 0);
-				};
-			});
-			dfcheck[i] = CheckBox.new(wdados, Rect(10, 40 + (i*20), 40, 20))
-			.action_({ arg but;
-				if(i==fatual){diffusecheck.value = but.value;};
-				if (but.value == true) {
-					spcheck[i].value = false;
-					if(i==fatual){spreadcheck.value = false;};
-					df[i] = 1;
-					sp[i] = 0;
-					espacializador[i].set(\df, 1);
-					espacializador[i].set(\sp, 0);
-					synt[i].set(\df, 1);
-					this.setSynths(i, \df, 1);
-				}{
-					df[i] = 0;
-					espacializador[i].set(\df, 0);
-					synt[i].set(\df, 0);
-					this.setSynths(i, \df, 0);
-				};
-			});
 
 			rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20))
 			.action_({ arg but;
@@ -3228,28 +3197,68 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
+			spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){spreadcheck.value = but.value;};
+				if (but.value == true) {
+					dfcheck[i].value = false;
+					if(i==fatual){diffusecheck.value = false;};
+					sp[i] = 1;
+					df[i] = 0;
+					espacializador[i].set(\sp, 1);
+					espacializador[i].set(\df, 0);
+					synt[i].set(\sp, 1);
+					this.setSynths(i, \ls, 1);
+				}{
+					sp[i] = 0;
+					espacializador[i].set(\sp, 0);
+					synt[i].set(\sp, 0);
+					this.setSynths(i, \sp, 0);
+				};
+			});
+			dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){diffusecheck.value = but.value;};
+				if (but.value == true) {
+					spcheck[i].value = false;
+					if(i==fatual){spreadcheck.value = false;};
+					df[i] = 1;
+					sp[i] = 0;
+					espacializador[i].set(\df, 1);
+					espacializador[i].set(\sp, 0);
+					synt[i].set(\df, 1);
+					this.setSynths(i, \df, 1);
+				}{
+					df[i] = 0;
+					espacializador[i].set(\df, 0);
+					synt[i].set(\df, 0);
+					this.setSynths(i, \df, 0);
+				};
+			});
+
+
 			
-			ncanbox[i] = NumberBox(wdados, Rect(120, 40 + (i*20), 25, 20));
-			businibox[i] = NumberBox(wdados, Rect(145, 40 + (i*20), 25, 20));
+			ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
+			businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
 
-			xbox[i] = NumberBox(wdados, Rect(170, 40 + (i*20), 40, 20));
-			ybox[i] = NumberBox(wdados, Rect(210, 40+ (i*20), 40, 20));
-			zbox[i] = NumberBox(wdados, Rect(250, 40+ (i*20), 40, 20));
+			xbox[i] = NumberBox(wdados, Rect(200, 40 + (i*20), 40, 20));
+			ybox[i] = NumberBox(wdados, Rect(240, 40+ (i*20), 40, 20));
+			zbox[i] = NumberBox(wdados, Rect(280, 40+ (i*20), 40, 20));
 
-			vbox[i] = NumberBox(wdados, Rect(290, 40 + (i*20), 25, 20));
-			dpbox[i] = NumberBox(wdados, Rect(315, 40+ (i*20), 25, 20));
-			gbox[i] = NumberBox(wdados, Rect(340, 40+ (i*20), 25, 20));
-			lbox[i] = NumberBox(wdados, Rect(365, 40+ (i*20), 25, 20));
-			abox[i] = NumberBox(wdados, Rect(390, 40+ (i*20), 25, 20));
-			rbox[i] = NumberBox(wdados, Rect(415, 40+ (i*20), 25, 20));
-			dbox[i] = NumberBox(wdados, Rect(440, 40+ (i*20), 25, 20));
-			cbox[i] = NumberBox(wdados, Rect(465, 40+ (i*20), 25, 20));
+			vbox[i] = NumberBox(wdados, Rect(320, 40 + (i*20), 25, 20));
+			dpbox[i] = NumberBox(wdados, Rect(345, 40+ (i*20), 25, 20));
+			gbox[i] = NumberBox(wdados, Rect(370, 40+ (i*20), 25, 20));
+			lbox[i] = NumberBox(wdados, Rect(395, 40+ (i*20), 25, 20));
+			abox[i] = NumberBox(wdados, Rect(420, 40+ (i*20), 25, 20));
+			rbox[i] = NumberBox(wdados, Rect(445, 40+ (i*20), 25, 20));
+			dbox[i] = NumberBox(wdados, Rect(470, 40+ (i*20), 25, 20));
+			cbox[i] = NumberBox(wdados, Rect(495, 40+ (i*20), 25, 20));
 
-			a1box[i] = NumberBox(wdados, Rect(490, 40+ (i*20), 25, 20));
-			a2box[i] = NumberBox(wdados, Rect(515, 40+ (i*20), 25, 20));
-			a3box[i] = NumberBox(wdados, Rect(540, 40+ (i*20), 25, 20));
-			a4box[i] = NumberBox(wdados, Rect(565, 40+ (i*20), 25, 20));
-			a5box[i] = NumberBox(wdados, Rect(590, 40+ (i*20), 25, 20));
+			a1box[i] = NumberBox(wdados, Rect(520, 40+ (i*20), 25, 20));
+			a2box[i] = NumberBox(wdados, Rect(545, 40+ (i*20), 25, 20));
+			a3box[i] = NumberBox(wdados, Rect(570, 40+ (i*20), 25, 20));
+			a4box[i] = NumberBox(wdados, Rect(595, 40+ (i*20), 25, 20));
+			a5box[i] = NumberBox(wdados, Rect(620, 40+ (i*20), 25, 20));
 
 
 			a1box[i].clipHi = 1;
@@ -3263,7 +3272,7 @@ GUI Parameters usable in SynthDefs
 			a5box[i].clipHi = 1;
 			a5box[i].clipLo = 0;
 
-			a1check[i] = CheckBox.new( wdados, Rect(615, 40 + (i*20), 40, 20))
+			a1check[i] = CheckBox.new( wdados, Rect(645, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				
 				if (but.value == true) {
@@ -3274,7 +3283,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a1check, 0);
 				};
 			});
-			a2check[i] = CheckBox.new( wdados, Rect(630, 40 + (i*20), 40, 20))
+			a2check[i] = CheckBox.new( wdados, Rect(660, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				
 				if (but.value == true) {
@@ -3285,7 +3294,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a2check, 0);
 				};
 			});
-			a3check[i] = CheckBox.new( wdados, Rect(645, 40 + (i*20), 40, 20))
+			a3check[i] = CheckBox.new( wdados, Rect(675, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				
 				if (but.value == true) {
@@ -3296,7 +3305,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a3check, 0);
 				};
 			});
-			a4check[i] = CheckBox.new( wdados, Rect(660, 40 + (i*20), 40, 20))
+			a4check[i] = CheckBox.new( wdados, Rect(690, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				
 				if (but.value == true) {
@@ -3307,7 +3316,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a4check, 0);
 				};
 			});
-			a5check[i] = CheckBox.new( wdados, Rect(675, 40 + (i*20), 40, 20))
+			a5check[i] = CheckBox.new( wdados, Rect(705, 40 + (i*20), 40, 20))
 			.action_({ arg but;
 				
 				if (but.value == true) {
