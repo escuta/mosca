@@ -176,18 +176,34 @@ GUI Parameters usable in SynthDefs
 
 
 		} {
-						espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-				Out.ar( this.rawbus, ambsinal); };
-			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-				Out.ar( this.rawbus, ambsinal1plus2); };
-			revGlobalAmbFunc = { |ambsinal, dec|
-				Out.ar( this.rawbus, ambsinal); };
-			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-				Out.ar( this.rawbus, soaSig); };
-			playBFormatOutFunc = { |player, dec|
-				Out.ar( this.rawbus, player); };
-			reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
-				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));	};			
+			if(raworder == 1) {
+				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+					Out.ar( this.rawbus, ambsinal1O); };
+				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+					Out.ar( this.rawbus, ambsinal1plus2_1O); };
+				revGlobalAmbFunc = { |ambsinal, dec|
+					Out.ar( this.rawbus, ambsinal); };
+				
+				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
+					Out.ar( this.rawbus, foaSig); };
+				playBFormatOutFunc = { |player, dec|
+					Out.ar( this.rawbus, player); };
+				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
+					Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));	};
+			} {
+				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+					Out.ar( this.rawbus, ambsinal); };
+				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+					Out.ar( this.rawbus, ambsinal1plus2); };
+				revGlobalAmbFunc = { |ambsinal, dec|
+					Out.ar( this.rawbus, ambsinal); };
+				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
+					Out.ar( this.rawbus, soaSig); };
+				playBFormatOutFunc = { |player, dec|
+					Out.ar( this.rawbus, player); };
+				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
+					Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));	};
+			}
 
 		};
 
@@ -1257,6 +1273,7 @@ GUI Parameters usable in SynthDefs
 					
 					rd = (1 - dis) * 340;
 					rd = Lag.kr(rd, 1.0);
+					SendTrig.kr(Impulse.kr(1), 0, dopon); //debug
 					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
 					playerRef.value = dopplershift;
 					
@@ -1950,13 +1967,13 @@ GUI Parameters usable in SynthDefs
 						//cslider.value = 1;
 						
 						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil) {
+							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
 							};
 							if (testado[i] == false) { // if source is testing don't relaunch synths
 
-								if(this.decoder.isNil) {
+								if(this.decoder.isNil && (this.raworder == 2)) {
 									synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 										\level, level[i]], 
@@ -2005,7 +2022,7 @@ GUI Parameters usable in SynthDefs
 							};
 						*/
 						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil) {
+							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
@@ -2013,7 +2030,7 @@ GUI Parameters usable in SynthDefs
 							
 							if (testado[i].not) {
 
-								if(this.decoder.isNil) {
+								if(this.decoder.isNil && (this.raworder == 2)) {
 									synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 										\level, level[i]],
@@ -2067,7 +2084,7 @@ GUI Parameters usable in SynthDefs
 							// reverb for contracted (mono) component - and for rest too
 							if(rv[i] == 1) {
 
-								if(revGlobalSoa == nil) {
+								if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 										revGlobalBF, addAction:\addBefore);
 								};
@@ -2075,15 +2092,25 @@ GUI Parameters usable in SynthDefs
 
 								if (testado[i] == false) {
 
-									
-									synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
-										mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-										\rate, 1, \tpos, tpos, \lp,
-										lp[i], \level, level[i], \dopon, doppler[i]], 
-										//					~revGlobal, addAction: \addBefore);
-										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;
-											playingBF[i] = false});
+									if(this.decoder.isNil && (this.raworder == 2)) {
+										synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+											gbfbus, \outbus,
+											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+											\rate, 1, \tpos, tpos, \lp,
+											lp[i], \level, level[i], \dopon, doppler[i]], 
+											revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;
+												playingBF[i] = false});
+									} {
+										synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+											gbfbus, \outbus,
+											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+											\rate, 1, \tpos, tpos, \lp,
+											lp[i], \level, level[i], \dopon, doppler[i]], 
+											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;
+												playingBF[i] = false});					
+									};
 									
 									espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
 										\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
@@ -3118,10 +3145,12 @@ GUI Parameters usable in SynthDefs
 					//	"Aqui!!!".postln;
 					doppler[i] = 1;
 					espacializador[i].set(\dopon, 1);
+					synt[i].set(\dopon, 1);
 					this.setSynths(i, \dopon, 1);
 				}{
 					doppler[i] = 0;
 					espacializador[i].set(\dopon, 0);
+					synt[i].set(\dopon, 0);
 					this.setSynths(i, \dopon, 0);
 				};
 			});
