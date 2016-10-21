@@ -623,7 +623,7 @@ GUI Parameters usable in SynthDefs
 				junto = Select.ar(df, [omni, diffuse]);
 				junto = Select.ar(sp, [junto, spread]);
 				
-				SendTrig.kr(Impulse.kr(1), 0, df); // debug
+				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
 				
 				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
@@ -647,7 +647,7 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("espacAmbChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
-				dopon = 0, dopamnt = 0,
+				dopon = 0, dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1;
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
 				ambsinal, ambsinal1O,
@@ -655,6 +655,7 @@ GUI Parameters usable in SynthDefs
 				//		globallev = 0.0001, locallev, gsig, fonte;
 				globallev, locallev, gsig, fonte,
 				intens,
+				spread, diffuse, omni,
 				soa_a12_sig;
 				var lrev, p;
 				var grevganho = 0.04; // needs less gain
@@ -714,7 +715,14 @@ GUI Parameters usable in SynthDefs
 
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 
-				junto = FoaEncode.ar(junto, foaEncoderOmni);
+				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
+
+				omni = FoaEncode.ar(junto, foaEncoderOmni);
+				spread = FoaEncode.ar(junto, foaEncoderSpread);
+				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
+				junto = Select.ar(df, [omni, diffuse]);
+				junto = Select.ar(sp, [junto, spread]);
+
 				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 				
 				//ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
@@ -1779,7 +1787,10 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \mx, xval[source]);
 				this.setSynths(source, \my, yval[source]);
 				this.setSynths(source, \mz, zval[source]);
-				
+
+				this.setSynths(source, \sp, sp[source]);
+				this.setSynths(source, \df, df[source]);
+
 				this.setSynths(source, \rotAngle, rlev[source]);
 				this.setSynths(source, \directang, dlev[source]);
 				this.setSynths(source, \contr, clev[source]);
@@ -1818,7 +1829,9 @@ GUI Parameters usable in SynthDefs
 						\llev, llev[i],
 						\mx, xbox[i].value,
 						\my, ybox[i].value,
-						\mz, zbox[i].value
+						\mz, zbox[i].value,
+						\sp, sp[i].value,
+						\df, df[i].value
 					);
 				};
 				
@@ -1834,7 +1847,9 @@ GUI Parameters usable in SynthDefs
 						\llev, llev[i],
 						\mx, xbox[i].value,
 						\my, ybox[i].value,
-						\mz, zbox[i].value
+						\mz, zbox[i].value,
+						\sp, sp[i].value,
+						\df, df[i].value
 					);
 					
 					("x value = " ++ xbox[i].value).postln;
