@@ -698,7 +698,7 @@ GUI Parameters usable in SynthDefs
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
-				//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
+				
 				azim = fonte.theta;
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]); 
@@ -752,7 +752,8 @@ GUI Parameters usable in SynthDefs
 				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
 				junto = Select.ar(df, [omni, diffuse]);
 				junto = Select.ar(sp, [junto, spread]);
-
+				//junto = diffuse;
+				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
 				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 				
 				//ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
@@ -1273,7 +1274,7 @@ GUI Parameters usable in SynthDefs
 					
 					rd = (1 - dis) * 340;
 					rd = Lag.kr(rd, 1.0);
-					SendTrig.kr(Impulse.kr(1), 0, dopon); //debug
+					//SendTrig.kr(Impulse.kr(1), 0, dopon); //debug
 					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
 					playerRef.value = dopplershift;
 					
@@ -2165,14 +2166,14 @@ GUI Parameters usable in SynthDefs
 						cbox[i].valueAction = 1;
 
 						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil) {
+							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
 							};
 							
 							if (testado[i].not) {
 								if (hwncheck[i].value) {
-									if(this.decoder.isNil) {
+									if(this.decoder.isNil && (this.raworder == 2)) {
 										synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 											this.busini[i],
 											\level, level[i]], revGlobalSoa,
@@ -2186,7 +2187,7 @@ GUI Parameters usable in SynthDefs
 												espacializador[i] = nil; synt[i] = nil});
 									};
 								} {
-									if(this.decoder.isNil) {
+									if(this.decoder.isNil && (this.raworder == 2)) {
 									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
 										\level, level[i]], revGlobalSoa,
@@ -2253,13 +2254,13 @@ GUI Parameters usable in SynthDefs
 
 							if (testado[i] == false) {
 
-								if(revGlobalSoa.isNil && this.decoder.isNil) {
+								if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 										revGlobalBF, addAction:\addBefore);
 								};
 								if (hwncheck[i].value) {
 
-									if(this.decoder.isNil){
+									if(this.decoder.isNil && (this.raworder == 2)){
 										synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
 											this.busini[i],
 											\level, level[i]], revGlobalSoa,
@@ -2273,7 +2274,7 @@ GUI Parameters usable in SynthDefs
 												espacializador[i] = nil; synt[i] = nil});							
 									};
 								} {
-									if(this.decoder.isNil){
+									if(this.decoder.isNil && (this.raworder == 2)){
 										synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 											\busini, this.scInBus[i],
 											\level, level[i]], revGlobalSoa,
@@ -2332,27 +2333,48 @@ GUI Parameters usable in SynthDefs
 						
 						if(rv[i] == 1) {
 
-							if(revGlobalSoa == nil) {
+							if(revGlobalSoa == nil && this.decoder.isNil && (this.raworder == 2)) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
 							};
 							
 							if (testado[i] == false) {
-								if (hwncheck[i].value) {
-									synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus, mbus[i],
-										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i], \dopon, doppler[i],
-										\busini, this.busini[i]], 
-										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;});
+								if(this.decoder.isNil && (this.raworder == 2)) {
+									if (hwncheck[i].value) {
+										synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+											\outbus, mbus[i],
+											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
+											\dopon, doppler[i],
+											\busini, this.busini[i]], 
+											revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;});
+									} {
+										synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+											mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+											level[i], \dopon, doppler[i],
+											\busini, this.scInBus[i] ], 
+											revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;});
+									};
 								} {
-									synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
-										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-										level[i], \dopon, doppler[i],
-										\busini, this.scInBus[i] ], 
-										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;});
-								};
-								
+									if (hwncheck[i].value) {
+										synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+											\outbus, mbus[i],
+											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
+											\dopon, doppler[i],
+											\busini, this.busini[i]], 
+											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;});
+									} {
+										synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+											mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+											level[i], \dopon, doppler[i],
+											\busini, this.scInBus[i] ], 
+											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
+												espacializador[i] = nil; synt[i] = nil;});
+									};
+									
+									};
 								espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
 									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);

@@ -329,6 +329,10 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 
 // Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
 //using no decoder and rawbus value of 2.
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2, raworder: 2);
+
+// do same thing but in using first order ambisonics
 ~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
 	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2, raworder: 1);
 
