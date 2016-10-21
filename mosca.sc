@@ -51,7 +51,7 @@ Mosca {
 	prjDr;
 	classvar fftsize = 2048,
 	server;
-	classvar foaEncoder;
+	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
 		server = Server.default, decoder = nil, rawbus = 0;
@@ -108,9 +108,9 @@ GUI Parameters usable in SynthDefs
 		//	testit; // remove at some point with other debugging stuff
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
-		//		foaEncoder = FoaEncoderMatrix.newOmni;
-		//foaEncoder = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048);
-		foaEncoder = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
+		foaEncoderOmni = FoaEncoderMatrix.newOmni;
+		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048);
+		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
 		if (iwidth < 600) {
 			this.width = 600;
 		} {
@@ -560,12 +560,14 @@ GUI Parameters usable in SynthDefs
 				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
 				dopon = 0, dopamnt = 0,
 				glev = 0, llev = 0, contr = 1,
-				gbfbus;
+				gbfbus,
+				sp = 0, df = 0;
 				//var w, x, y, z, r, s, t, u, v,
 				var p, ambsinal, ambsinal1O,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
 				globallev, locallev, gsig, fonte,
 				intens,
+				omni, spread, diffuse,
 				soa_a12_sig;
 				var lrev;
 				var grevganho = 0.04; // needs less gain
@@ -614,7 +616,15 @@ GUI Parameters usable in SynthDefs
 				//ambSigRef.value = [0,0,0,0];				
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 
-				junto = FoaEncode.ar(junto, foaEncoder);
+				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
+				omni = FoaEncode.ar(junto, foaEncoderOmni);
+				spread = FoaEncode.ar(junto, foaEncoderSpread);
+				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
+				junto = Select.ar(df, [omni, diffuse]);
+				junto = Select.ar(sp, [junto, spread]);
+				
+				SendTrig.kr(Impulse.kr(1), 0, df); // debug
+				
 				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
 				//				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
@@ -704,7 +714,7 @@ GUI Parameters usable in SynthDefs
 
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 
-				junto = FoaEncode.ar(junto, foaEncoder);
+				junto = FoaEncode.ar(junto, foaEncoderOmni);
 				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 				
 				//ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
@@ -975,8 +985,8 @@ GUI Parameters usable in SynthDefs
 				//ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
 				//ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
 
-				junto1 = FoaEncode.ar(junto1, foaEncoder);
-				junto2 = FoaEncode.ar(junto2, foaEncoder);
+				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
 				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 
@@ -1094,8 +1104,8 @@ GUI Parameters usable in SynthDefs
 				ambsinal1plus2 = ambsinal1 + ambsinal2;
 
 
-				junto1 = FoaEncode.ar(junto1, foaEncoder);
-				junto2 = FoaEncode.ar(junto2, foaEncoder);
+				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
 				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 
@@ -1440,6 +1450,8 @@ GUI Parameters usable in SynthDefs
 		espacializador = Array.newClear(this.nfontes);
 		doppler = Array.newClear(this.nfontes); 
 		lp = Array.newClear(this.nfontes); 
+		sp = Array.newClear(this.nfontes); 
+		df = Array.newClear(this.nfontes); 
 		rv = Array.newClear(this.nfontes); 
 		ln = Array.newClear(this.nfontes); 
 		hwn = Array.newClear(this.nfontes); 
@@ -1500,6 +1512,8 @@ GUI Parameters usable in SynthDefs
 		cbox = Array.newClear(this.nfontes); // contrair b-format
 		dpbox = Array.newClear(this.nfontes); // dop amount
 		lpcheck = Array.newClear(this.nfontes); // loop
+		spcheck = Array.newClear(this.nfontes); // spread
+		dfcheck = Array.newClear(this.nfontes); // diffuse
 		rvcheck = Array.newClear(this.nfontes); // diffuse reverb
 		lncheck = Array.newClear(this.nfontes); // linear intensity
 		hwncheck = Array.newClear(this.nfontes); // hardware-in check
@@ -1534,6 +1548,8 @@ GUI Parameters usable in SynthDefs
 			glev[i] = 0;
 			llev[i] = 0;
 			lp[i] = 0;
+			sp[i] = 0;
+			df[i] = 0;
 			rv[i] = 0;
 			ln[i] = "";
 			hwn[i] = 0;
@@ -2552,8 +2568,8 @@ GUI Parameters usable in SynthDefs
 		});
 		spreadcheck.value = false;
 		diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
-			("Spread is " ++ butt.value).postln;
-			{spcheck[fatual].valueAction = butt.value;}.defer;
+			("Diffuse is " ++ butt.value).postln;
+			{dfcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		diffusecheck.value = false;
 
@@ -3052,6 +3068,46 @@ GUI Parameters usable in SynthDefs
 					lp[i] = 0;
 					synt[i].set(\lp, 0);
 					this.setSynths(i, \lp, 0);
+				};
+			});
+
+
+			spcheck[i] = CheckBox.new(wdados, Rect(0, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){spreadcheck.value = but.value;};
+				if (but.value == true) {
+					dfcheck[i].value = false;
+					if(i==fatual){diffusecheck.value = false;};
+					sp[i] = 1;
+					df[i] = 0;
+					espacializador[i].set(\sp, 1);
+					espacializador[i].set(\df, 0);
+					synt[i].set(\sp, 1);
+					this.setSynths(i, \ls, 1);
+				}{
+					sp[i] = 0;
+					espacializador[i].set(\sp, 0);
+					synt[i].set(\sp, 0);
+					this.setSynths(i, \sp, 0);
+				};
+			});
+			dfcheck[i] = CheckBox.new(wdados, Rect(10, 40 + (i*20), 40, 20))
+			.action_({ arg but;
+				if(i==fatual){diffusecheck.value = but.value;};
+				if (but.value == true) {
+					spcheck[i].value = false;
+					if(i==fatual){spreadcheck.value = false;};
+					df[i] = 1;
+					sp[i] = 0;
+					espacializador[i].set(\df, 1);
+					espacializador[i].set(\sp, 0);
+					synt[i].set(\df, 1);
+					this.setSynths(i, \df, 1);
+				}{
+					df[i] = 0;
+					espacializador[i].set(\df, 0);
+					synt[i].set(\df, 0);
+					this.setSynths(i, \df, 0);
 				};
 			});
 
@@ -3670,6 +3726,8 @@ GUI Parameters usable in SynthDefs
 			controle.dock(scncheck[i], "scin_" ++ i);
 			controle.dock(rvcheck[i], "rev_" ++ i);
 			controle.dock(lncheck[i], "linear_" ++ i);
+			controle.dock(spcheck[i], "spread_" ++ i);
+			controle.dock(dfcheck[i], "diffuse_" ++ i);
 
 			controle.dock(a1box[i], "aux1_" ++ i);
 			controle.dock(a2box[i], "aux2_" ++ i);
@@ -3745,11 +3803,10 @@ GUI Parameters usable in SynthDefs
 				//	bfbus.[x].free;
 				sombuf[x].free;
 				synt[x].free;
-				MIDIIn.removeFuncFrom(\sysex, sysex);
 				this.scInBus[x].free;
 				//		kespac[x].stop;
 			};
-
+			MIDIIn.removeFuncFrom(\sysex, sysex);
 			if(revGlobal.notNil){
 				revGlobal.free;
 			};
@@ -3765,19 +3822,30 @@ GUI Parameters usable in SynthDefs
 			waux.close;
 			gbus.free;
 			gbfbus.free;
-			rirWspectrum.free;
-			rirXspectrum.free;
-			rirYspectrum.free;
-			rirZspectrum.free;
-			rirFLUspectrum.free;
-			rirFRDspectrum.free;
-			rirBLDspectrum.free;
-			rirBRUspectrum.free;
+			if(rirWspectrum.notNil){
+				rirWspectrum.free; };
+			if(rirXspectrum.notNil){
+				rirXspectrum.free;};
+			if(rirYspectrum.notNil){
+				rirYspectrum.free;};
+			if(rirZspectrum.notNil){
+				rirZspectrum.free;};
+			if(rirFLUspectrum.notNil){
+				rirFLUspectrum.free;};
+			if(rirFRDspectrum.notNil){
+				rirFRDspectrum.free;};
+			if(rirBLDspectrum.notNil){
+				rirBLDspectrum.free;};
+			if(rirBRUspectrum.notNil){
+				rirBRUspectrum.free;};
 			soaBus.free;
 			12.do { arg i;
-				rirA12Spectrum[i].free;
+				if(rirA12Spectrum[i].notNil){
+					rirA12Spectrum[i].free;};
 			};
-			
+			foaEncoderOmni.free;
+			foaEncoderSpread.free;
+			foaEncoderDiffuse.free;
 			
 		});
 
