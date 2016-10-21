@@ -73,6 +73,8 @@ GUI Parameters usable in SynthDefs
 \\mx | X coord | -1 - 1 |
 \\my | Y coord | -1 - 1 |
 \\mz | Z coord | -1 - 1 |
+\\sp | Spread 1st order encoding | 0 or 1 |
+\\df | Diffuse 1st order encoding | 0 or 1 |
 \\rotAngle | B-format rotation angle | -3.14 - 3.14 |
 \\directang | B-format directivity | 0 - 1.57 |
 \\contr | Contraction: fade between WXYZ & W | 0 - 1 |
@@ -905,7 +907,8 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
-				dopon = 0, dopamnt = 0, 
+				dopon = 0, dopamnt = 0,
+				sp, df,
 				glev = 0, llev = 0, contr=1;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
@@ -913,6 +916,8 @@ GUI Parameters usable in SynthDefs
 				junto, rd, dopplershift, azim, dis, 
 				junto1, azim1, 
 				junto2, azim2,
+				omni1, spread1, diffuse1,
+				omni2, spread2, diffuse2,
 				intens,
 				globallev = 0.0001, locallev, gsig, fonte;
 				var lrev;
@@ -993,8 +998,21 @@ GUI Parameters usable in SynthDefs
 				//ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
 				//ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
 
-				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
-				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
+				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
+				junto1 = Select.ar(df, [omni1, diffuse1]);
+				junto1 = Select.ar(sp, [junto1, spread1]);
+
+				//				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
+				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
+				junto2 = Select.ar(df, [omni2, diffuse2]);
+				junto2 = Select.ar(sp, [junto2, spread2]);
+
+				
 				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 
@@ -1019,13 +1037,16 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbEstereoChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0, 
-				glev = 0, llev = 0, contr=1;
+				glev = 0, llev = 0, contr=1,
+				sp, df;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
 				junto, rd, dopplershift, azim, dis, 
 				junto1, azim1, 
-				junto2, azim2, 
+				junto2, azim2,
+				omni1, spread1, diffuse1,
+				omni2, spread2, diffuse2,
 				globallev = 0.0001, locallev, gsig, fonte;
 				var lrev,
 				intens;
@@ -1112,8 +1133,21 @@ GUI Parameters usable in SynthDefs
 				ambsinal1plus2 = ambsinal1 + ambsinal2;
 
 
-				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
-				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
+				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
+				junto1 = Select.ar(df, [omni1, diffuse1]);
+				junto1 = Select.ar(sp, [junto1, spread1]);
+
+			
+				//				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
+				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
+				junto2 = Select.ar(df, [omni2, diffuse2]);
+				junto2 = Select.ar(sp, [junto2, spread2]);
+
 				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 

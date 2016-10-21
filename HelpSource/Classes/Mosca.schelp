@@ -30,53 +30,55 @@ Once you have successfully opened the GUI, read this:
 
 NOTES ON GUI COMPONENTS
 
-a) Source pull down menu. Select a source
+- Source pull down menu. Select a source
 
-b) Doppler. The user must also use the "Doppler Amount" slider to adjust the effect
+- Doppler. The user must also use the "Doppler Amount" slider to adjust the effect
 
-c) Loop. Loop sounds loaded from file
+- Loop. Loop sounds loaded from file
 
-d) A-format reverb. By default the system uses the more efficient Chowning-style reverb described above. This toggle applies a second order diffuse 2nd order reverberation to mono and stereo sources as well as "contracted" B-format material (see below). Note that the reverberation applied to B-format signals is always via A-format transformation.
+- A-format reverb. By default the system uses the more efficient Chowning-style reverb described above. This toggle applies a second order diffuse 2nd order reverberation to mono and stereo sources as well as "contracted" B-format material (see below). Note that the reverberation applied to B-format signals is always via A-format transformation.
 
-e) HW-in. Toggle this to read audio from hardware inputs. The user must specify the number of channels and the staring bus (starting with zero) in the two fields beneath the toggle. Note this will override any loaded sound file. It is up to the user to manage the start busses for the various source. If for example source 1 is a 4 channel signal and starts on bus zero, a second stereo source myst use a starting bus of 4 or higher.
+- HW-in. Toggle this to read audio from hardware inputs. The user must specify the number of channels and the staring bus (starting with zero) in the two fields beneath the toggle. Note this will override any loaded sound file. It is up to the user to manage the start busses for the various source. If for example source 1 is a 4 channel signal and starts on bus zero, a second stereo source myst use a starting bus of 4 or higher.
 
-f) SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number of channels in the GUI but does not need to specify the starting bus. See code examples below for more information. Like HW-in, selecting SC-in for a particular source will disable any sound file that has been loaded.
+- SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number of channels in the GUI but does not need to specify the starting bus. See code examples below for more information. Like HW-in, selecting SC-in for a particular source will disable any sound file that has been loaded.
 
-g) Linear Intensity. Select this to apply linear attenuation of itensity with distance. By default, intensity is adjusted in proportion to the invesrse square root of proximity.
+- Linear Intensity. Select this to apply linear attenuation of itensity with distance. By default, intensity is adjusted in proportion to the invesrse square root of proximity.
 
-h) load audio. Load a sound file for a given a source.
+- load audio. Load a sound file for a given a source.
 
-i) show data. Open and close a data window for all sources showing all parameters.
+- show data. Open and close a data window for all sources showing all parameters.
 
-j) show nodes. Show SuperCollider node tree.
+- show nodes. Show SuperCollider node tree.
 
-k) show aux. Open and close an auxiliary controller window for a source. These sliders do not affect spatialisation of the source, however the data produced is sent to any "registered" SuperCollider synth is recorded and reproduced by the GUI's transport. See the code examples for more information.
+- show aux. Open and close an auxiliary controller window for a source. These sliders do not affect spatialisation of the source, however the data produced is sent to any "registered" SuperCollider synth is recorded and reproduced by the GUI's transport. See the code examples for more information.
 
-l) audition. Use this button to audition a given source. Note that the transport also plays and cues sounds, "audition" should only be used to test sounds with the interface.
+- audition. Use this button to audition a given source. Note that the transport also plays and cues sounds, "audition" should only be used to test sounds with the interface.
 
-m) Level. Adjust playback level of source.
+- Level. Adjust playback level of source.
 
-n) Doppler amount. See b) above.
+- Doppler amount. See b) above.
 
-o) Close Reverb. Adjust level of reverberation for proximal sources.
+- Close Reverb. Adjust level of reverberation for proximal sources.
 
-p) Distant Reverb. Adjust level of reverberation for distant sources.
+- Distant Reverb. Adjust level of reverberation for distant sources.
 
-q) Angle. Adjust angle of virtual speaker pair for stereo sources. The default is 1.05 radians or 60 degrees.
+- Angle. Adjust angle of virtual speaker pair for stereo sources. The default is 1.05 radians or 60 degrees.
 
-r) Rotate. Rotate a B-format signal on the horizontal plane.
+- Rotate. Rotate a B-format signal on the horizontal plane.
 
-s) Directivity. Adjust the directivity of B-format signal (see ATK documentation)
+- Directivity. Adjust the directivity of B-format signal (see ATK documentation)
 
-t) Contraction. In the case of B-format input, contraction is a cross-fade between B-format signal an its W component. Note that the "contracted" signal is spatialised with 2nd order ambisonics when using an external decoder. When the user is decoding with a 1st order decoder from the ATK, mono and stereo signals are encoded as omnidirectional B-format signals and angled in space using the ATK's "push" transformation. In this this case contraction varies between an omnidirectional signal and a spatially focussed signal.
+- Contraction. In the case of B-format input, contraction is a cross-fade between B-format signal an its W component. Note that the "contracted" signal is spatialised with 2nd order ambisonics when using an external decoder. When the user is decoding with a 1st order decoder from the ATK, mono and stereo signals are encoded as omnidirectional B-format signals and angled in space using the ATK's "push" transformation. In this this case contraction varies between an omnidirectional signal and a spatially focussed signal.
 
-u) Z-axis. Manipulate the Z-axis of current source.
+- Spread / Diffuse. As mentioned above when using a 1st order decoder, mono and stereo signals are signals are encoded as omni B-format signals before being "pushed" into an angular location (if fully "contracted"). The Spread and Diffuse toggles allow the user to perform two other methods to diffuse the signal omni-directionally. See "spread diffusion encoder" and "frequency spreading encoder" here: http://doc.sccode.org/Classes/FoaEncode.html
 
-v) Automation transport. Includes a "play/stop" button, a return to start button, a record button and a "snapshot" button of current values button. The Automation transport also contains a slider to move the "play head". Loaded sounds which are not looped will start at the beginning of the file at "0" on the transport and the transport fader may be used to advance through these sounds as well as advance through the recorded fader settings.
+- Z-axis. Manipulate the Z-axis of current source.
 
-w) save auto / load auto. Save/load to/from a chosen directory.
+- Automation transport. Includes a "play/stop" button, a return to start button, a record button and a "snapshot" button of current values button. The Automation transport also contains a slider to move the "play head". Loaded sounds which are not looped will start at the beginning of the file at "0" on the transport and the transport fader may be used to advance through these sounds as well as advance through the recorded fader settings.
 
-x) Slave to MMC. Slave the transport to incoming Midi Machine Control data. This has been tested with Ardour and Jack on Linux.
+- save auto / load auto. Save/load to/from a chosen directory.
+
+- Slave to MMC. Slave the transport to incoming Midi Machine Control data. This has been tested with Ardour and Jack on Linux.
 
 ACKNOWLEDGEMENTS
 
