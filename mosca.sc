@@ -695,6 +695,7 @@ GUI Parameters usable in SynthDefs
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
 				contr = Lag.kr(contr, 0.1);
+				//SendTrig.kr(Impulse.kr(1), 0, contr); // debug
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
@@ -3660,7 +3661,7 @@ GUI Parameters usable in SynthDefs
 			synt[i].set(\contr, num.value);
 
 				// TESTING
-				//			espacializador[i].set(\contr, num.value);
+				espacializador[i].set(\contr, num.value);
 
 				
 				this.setSynths(i, \contr, num.value);
