@@ -1940,7 +1940,7 @@ GUI Parameters usable in SynthDefs
 
 			// Note: ncanais refers to number of channels in the context of
 			// files on disk
-			// ncan is number of channels for streamed input!
+			// ncan is number of channels for hardware or supercollider input
 			// busini is the initial bus used for a particular stream
 			// If we have ncan = 4 and busini = 7, the stream will enter
 			// in buses 7, 8, 9 and 10.
@@ -2481,7 +2481,8 @@ GUI Parameters usable in SynthDefs
 		])
 		.action_({
 			//arg but;
-
+			var filenames;
+			//			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"w");
 			var title="Save: select automation dir", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
 			bounds = Rect(100,300,300,30);
@@ -2509,8 +2510,14 @@ GUI Parameters usable in SynthDefs
 				
 				controle.seek; // rewind to zero
 				controle.snapshot; // and take snapshot
-				("FILE IS " ++ textField.value).postln;
+				("FILE IS " ++ textField.value ++ "/filenames.txt").postln;
 				("mkdir -p" + textField.value).systemCmd;
+				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
+				nfontes.do { arg i;
+					if(tfield[i].value != "") {filenames.write(tfield[i].value ++ "\n")}
+					{filenames.write("NULL\n")};
+				};
+				filenames.close;
 				controle.save(textField.value);
 				lastAutomation = textField.value;
 
@@ -2533,6 +2540,7 @@ GUI Parameters usable in SynthDefs
 		])
 		.action_({
 			//arg but;
+			var filenames;
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
 			bounds = Rect(100,300,300,30);
@@ -2560,6 +2568,12 @@ GUI Parameters usable in SynthDefs
 				controle.load(textField.value);
 				controle.seek;
 				lastAutomation = textField.value;
+				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"r");
+				nfontes.do { arg i;
+					var line = filenames.getLine(1024);
+					if(line!="NULL"){tfield[i].valueAction = line};
+				};
+				filenames.close;
             };
             dwin.front;
 			
@@ -3466,10 +3480,11 @@ GUI Parameters usable in SynthDefs
 
 			
 			tfield[i].action = {arg path;
-				if (path != "") {
+				if (path.notNil || (path != "")) {
 					
 					sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
-						((buf.numFrames ) / buf.sampleRate).postln;
+						//((buf.numFrames ) / buf.sampleRate).postln;
+						"loaded file".postln;
 						//				(buf.sampleRate).postln;
 					});
 				}
@@ -3840,7 +3855,7 @@ GUI Parameters usable in SynthDefs
 			controle.dock(dbox[i], "diretividade_" ++ i);
 			controle.dock(cbox[i], "contraction_" ++ i);
 			
-			controle.dock(tfield[i], "filename_" ++ i);
+			//controle.dock(tfield[i], "filename_" ++ i);
 			controle.dock(dcheck[i], "doppler_" ++ i);			
 			controle.dock(lpcheck[i], "loop_" ++ i);
 			controle.dock(hwncheck[i], "hwin_" ++ i);

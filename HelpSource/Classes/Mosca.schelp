@@ -291,9 +291,7 @@ code::
 
 
 /*
-Please also read "USING MOSCA" above and before running:
-
-Create a project directory and in it create to more directories "rir" and "auto". Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings see the zip archive here: http://escuta.org/mosca 
+Please also read "USING MOSCA" above
 
 Make sure the server is stopped before running this block of example code for first time
 */
@@ -318,7 +316,9 @@ s.sync;
 MIDIIn.connect;
 s.sync;
 
-/*Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
+/*Create a project directory and in it create to more directories "rir" and "auto". Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings see the zip archive here: http://escuta.org/mosca 
+
+Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
 ~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
 	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
@@ -327,12 +327,8 @@ s.sync;
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
 //	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
 
-// Use RIR and send raw 2nd order ambi sginal to external decoder (channels 2-10)
+// Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
 //using no decoder and rawbus value of 2.
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2, raworder: 2);
-
-// Send to an external first order decoder
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
 //	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2, raworder: 1);
 
