@@ -1962,10 +1962,8 @@ GUI Parameters usable in SynthDefs
 						angle[i] = 0;
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
-						//{cnumbox.value = 1;}.defer;
-						cbox[i].valueAction = 1;
-						//connumbox.value = 1;
-						//cslider.value = 1;
+						cbox[i].value = 1;
+						clev[i] = 1;
 						
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
@@ -2012,7 +2010,8 @@ GUI Parameters usable in SynthDefs
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
 						angle[i] = pi/2;
-						cbox[i].valueAction = 1;
+						cbox[i].value = 1;
+						clev[i] = 1;
 						//						{angnumbox.value = pi/2;}.defer; 
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						//						{angslider.value = 0.5;}.defer;
@@ -2079,7 +2078,10 @@ GUI Parameters usable in SynthDefs
 							ncanais[i] = 4;
 							angle[i] = 0;
 							{angnumbox.value = 0;}.defer;
+							cbox[i].value = 0;
+							clev[i] = 0;
 							{angslider.value = 0;}.defer;
+							
 							// reverb for non-contracted (full b-format) component
 
 							// reverb for contracted (mono) component - and for rest too
@@ -2163,8 +2165,8 @@ GUI Parameters usable in SynthDefs
 					{ this.ncan[i] == 1 } {
 						"Mono!".postln;
 						
-						cbox[i].valueAction = 1;
-
+						cbox[i].value = 1;
+						clev[i] = 1;
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -2246,8 +2248,8 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
 						
-						cbox[i].valueAction = 1;
-
+						cbox[i].value = 1;
+						clev[i] = 1;
 
 						if(rv[i] == 1) {	
 
@@ -2329,8 +2331,10 @@ GUI Parameters usable in SynthDefs
 						"B-format ambisonic!!!".postln;
 						//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 						// reverb for non-contracted (full b-format) component
-
 						
+						cbox[i].value = 0;
+						clev[i] = 0;
+
 						if(rv[i] == 1) {
 
 							if(revGlobalSoa == nil && this.decoder.isNil && (this.raworder == 2)) {
@@ -3653,12 +3657,10 @@ GUI Parameters usable in SynthDefs
 			};
 
 			cbox[i].action = {arg num; 
-				//	num.value.postln;
-				//	"cbox!".postln;
-				synt[i].set(\contr, num.value);
+			synt[i].set(\contr, num.value);
 
 				// TESTING
-				espacializador[i].set(\contr, num.value);
+				//			espacializador[i].set(\contr, num.value);
 
 				
 				this.setSynths(i, \contr, num.value);
