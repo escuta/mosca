@@ -1965,7 +1965,11 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						
+						if(i == fatual) {
+							cslider.value = 1;
+							connumbox.value = 1;
+						};
+			
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -2013,6 +2017,11 @@ GUI Parameters usable in SynthDefs
 						angle[i] = pi/2;
 						cbox[i].value = 1;
 						clev[i] = 1;
+						if(i == fatual) {
+							cslider.value = 1;
+							connumbox.value = 1;
+						};
+
 						//						{angnumbox.value = pi/2;}.defer; 
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						//						{angslider.value = 0.5;}.defer;
@@ -2081,6 +2090,11 @@ GUI Parameters usable in SynthDefs
 							{angnumbox.value = 0;}.defer;
 							cbox[i].value = 0;
 							clev[i] = 0;
+							if(i == fatual) {
+								cslider.value = 0;
+								connumbox.value = 0;
+							};
+
 							{angslider.value = 0;}.defer;
 							
 							// reverb for non-contracted (full b-format) component
@@ -2168,6 +2182,11 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
+						if(i == fatual) {
+							cslider.value = 1;
+							connumbox.value = 1;
+						};
+
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -2251,6 +2270,10 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
+						if(i == fatual) {
+							cslider.value = 1;
+							connumbox.value = 1;
+						};
 
 						if(rv[i] == 1) {	
 
@@ -2335,6 +2358,10 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 0;
 						clev[i] = 0;
+						if(i == fatual) {
+							cslider.value = 0;
+							connumbox.value = 0;
+						};
 
 						if(rv[i] == 1) {
 
