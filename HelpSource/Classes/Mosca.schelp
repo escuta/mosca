@@ -341,7 +341,7 @@ s.sync;
 
 )
 
-// If you close the Mosca window, tidy up
+// If you close the Mosca window, tidy up the decoder and MIDI-in connection
 
 (
 MIDIIn.disconnect; 

@@ -2540,8 +2540,8 @@ GUI Parameters usable in SynthDefs
                 onSuccess.value(textField.value);
                 dwin.close;
 				
-				controle.seek; // rewind to zero
-				controle.snapshot; // and take snapshot
+				//controle.seek; // rewind to zero
+				//controle.snapshot; // and take snapshot
 				("FILE IS " ++ textField.value ++ "/filenames.txt").postln;
 				("mkdir -p" + textField.value).systemCmd;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
@@ -3070,8 +3070,8 @@ GUI Parameters usable in SynthDefs
 				arg path;
 
 				{tfield[fatual].valueAction = path;}.defer;
-				controle.seek;  // need to take an Automation snapshot at zero or we'll lose
-				controle.snapshot; // this filename on next rewind of transport
+				//controle.seek;  // need to take an Automation snapshot at zero or we'll lose
+				//controle.snapshot; // this filename on next rewind of transport
 				// perhaps we should resume prior transport position afterwards
 				
 
