@@ -32,10 +32,13 @@ Mosca {
 	<>triggerFunc, <>stopFunc,
 	<>scInBus,
 	<>width, <>halfwidth, <>scale,
+	<>insertFlag,
+	<>aFormatBusFoa, <>aFormatBusSoa, 
 	<>dur,
 	<>rawbus, <>raworder,
 	<>decoder,
-    <>delaytime, <>decaytime; // for allpass 
+    <>delaytime, <>decaytime; // for allpass
+
 
 	classvar server, rirW, rirX, rirY, rirZ,
 	rirFLU, rirFRD, rirBLD, rirBRU,
@@ -151,6 +154,30 @@ GUI Parameters usable in SynthDefs
 		this.nfontes.do { arg x;
 			this.scInBus[x] = Bus.audio(server, 4);
 		};
+		
+		this.insertFlag = Array.newClear(this.nfontes);
+		this.aFormatBusFoa = Array2D.new(2, this.nfontes);
+		this.aFormatBusSoa = Array2D.new(2, this.nfontes);
+		this.nfontes.do { arg x;
+			this.aFormatBusFoa[0, x] =  Bus.audio(server, 4);
+			server.sync;
+		};
+		this.nfontes.do { arg x;
+			this.aFormatBusFoa[1, x] =  Bus.audio(server, 4);
+			server.sync;
+		};
+		this.nfontes.do { arg x;
+			this.aFormatBusSoa[0, x] =  Bus.audio(server, 12);
+			server.sync;
+		};
+		this.nfontes.do { arg x;
+			this.aFormatBusSoa[1, x] =  Bus.audio(server, 12);
+			server.sync;
+		};
+		this.nfontes.do { arg x;
+			this.insertFlag[x] = 0;
+		};
+	
 		
 		// array of functions, 1 for each source (if defined), that will be launched on Automation's "play"
 		this.triggerFunc = Array.newClear(this.nfontes);
@@ -677,9 +704,13 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmbChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
 				dopon = 0, dopamnt = 0, sp, df,
-				glev = 0, llev = 0, contr=1;
+				glev = 0, llev = 0, contr=1,
+
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa, aFormatBusOutSoa, aFormatBusInSoa,
+				aFormatFoa, aFormatSoa, ambsigFoaProcessed, ambsigSoaProcessed;
+				
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
-				ambsinal, ambsinal1O,
+				ambsigSoa, ambsigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
 				//		globallev = 0.0001, locallev, gsig, fonte;
 				globallev, locallev, gsig, fonte,
@@ -755,21 +786,43 @@ GUI Parameters usable in SynthDefs
 				junto = Select.ar(sp, [junto, spread]);
 				//junto = diffuse;
 				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
-				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+				ambsigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 				
-				//ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				//ambsigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
-				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
+				ambsigFoa = HPF.ar(ambsigFoa, 20); // stops bass frequency blow outs by proximity
+				ambsigFoa = FoaTransform.ar(ambsigFoa, 'proximity', dis);
 
 				
-				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+				
+				ambsigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
+				
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambsigFoa, b2a);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambsigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
 
-				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
+				// flag switchable selector of a-format signal (from insert or not) 
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambsigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+				ambsigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				//ambsigFoa = ambsigFoaProcessed;
+				//ambsigSoa = ambsigSoaProcessed;
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambsigFoa = Select.ar(insertFlag, [ambsigFoa, ambsigFoaProcessed]);
+				ambsigSoa = Select.ar(insertFlag, [ambsigSoa, ambsigSoaProcessed]);
+				
+				espacAmbOutFunc.value(ambsigSoa, ambsigFoa, dec);			
 			}).add;
 
 			
@@ -1614,6 +1667,8 @@ GUI Parameters usable in SynthDefs
 		tfield = Array.newClear(this.nfontes);
 		
 		testado = Array.newClear(this.nfontes);
+
+		
 		
 		
 		this.nfontes.do { arg i;
@@ -2004,7 +2059,15 @@ GUI Parameters usable in SynthDefs
 										espacializador[i] = nil; synt[i] = nil});
 								
 								espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
-									\gbus, gbus, \dopon, doppler[i]], 
+									\gbus, gbus, 
+									
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 
