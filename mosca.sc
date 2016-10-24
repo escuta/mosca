@@ -38,7 +38,8 @@ Mosca {
 	<>rawbus, <>raworder,
 	<>decoder,
 	<>espacializador,
-    <>delaytime, <>decaytime; // for allpass
+    <>delaytime, <>decaytime, // for allpass
+	<>dummyFoaBus, <>dummySoaBus;
 
 
 	classvar server, rirW, rirX, rirY, rirZ,
@@ -159,6 +160,9 @@ GUI Parameters usable in SynthDefs
 		this.insertFlag = Array.newClear(this.nfontes);
 		this.aFormatBusFoa = Array2D.new(2, this.nfontes);
 		this.aFormatBusSoa = Array2D.new(2, this.nfontes);
+		this.dummyFoaBus = Bus.audio(server, 4); // dummies needed for unassigned inserts 
+		this.dummySoaBus = Bus.audio(server, 12);
+		
 		this.nfontes.do { arg x;
 			this.aFormatBusFoa[0, x] =  Bus.audio(server, 4);
 			server.sync;
@@ -617,14 +621,21 @@ GUI Parameters usable in SynthDefs
 				dopon = 0, dopamnt = 0,
 				glev = 0, llev = 0, contr = 1,
 				gbfbus,
-				sp = 0, df = 0;
+				sp = 0, df = 0,
+
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+
 				//var w, x, y, z, r, s, t, u, v,
-				var p, ambsinal, ambsinal1O,
+				var p, ambSigSoa, ambSigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
 				globallev, locallev, gsig, fonte,
 				intens,
 				omni, spread, diffuse,
 				soa_a12_sig;
+				
+
 				var lrev;
 				var grevganho = 0.04; // needs less gain
 				var ambSigRef = Ref(0);
@@ -669,7 +680,7 @@ GUI Parameters usable in SynthDefs
 				locallev = locallev  * Lag.kr(llev, 0.1);			
 				junto = p;
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambsinal = [w, x, y, z, r, s, t, u, v];
+				//				ambSigSoa = [w, x, y, z, r, s, t, u, v];
 				//ambSigRef.value = [0,0,0,0];				
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 
@@ -680,26 +691,43 @@ GUI Parameters usable in SynthDefs
 				junto = Select.ar(df, [omni, diffuse]);
 				junto = Select.ar(sp, [junto, spread]);
 				
-				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
 				
-				ambsinal1O	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+				ambSigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
-				//				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 
-				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
 
-				//Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
-
-				reverbOutFunc.value(soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev);
-				
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
-				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
-				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);			
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not) 
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+								
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+
+				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa, ambSigFoa, globallev, locallev);
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);			
 			}).add;
 
 			SynthDef.new("espacAmbChowning"++linear,  {
@@ -707,11 +735,12 @@ GUI Parameters usable in SynthDefs
 				dopon = 0, dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
 
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa, aFormatBusOutSoa, aFormatBusInSoa,
-				aFormatFoa, aFormatSoa, ambsigFoaProcessed, ambsigSoaProcessed;
+				insertFlag = 0, aFormatBusOutFoa=this.dummyFoaBus, aFormatBusInFoa=this.dummyFoaBus,
+				aFormatBusOutSoa=this.dummyFoaBus, aFormatBusInSoa=this.dummyFoaBus,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
 				
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
-				ambsigSoa, ambsigFoa,
+				ambSigSoa, ambSigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,
 				//w, x, y, z, r, s, t, u, v,
 				//		globallev = 0.0001, locallev, gsig, fonte;
@@ -788,43 +817,42 @@ GUI Parameters usable in SynthDefs
 				junto = Select.ar(sp, [junto, spread]);
 				//junto = diffuse;
 				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
-				ambsigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+				ambSigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 				
-				//ambsigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				//ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambsigFoa = HPF.ar(ambsigFoa, 20); // stops bass frequency blow outs by proximity
-				ambsigFoa = FoaTransform.ar(ambsigFoa, 'proximity', dis);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
 				
 				
-				ambsigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
 				
 				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambsigFoa, b2a);
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
 				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambsigSoa, soa_a12_decoder_matrix);
-				//Out.ar(aFormatBusOutSoa, aFormatSoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
 
 				// flag switchable selector of a-format signal (from insert or not) 
 				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
 				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
 
 				// convert back to b-format
-				ambsigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambsigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-				
-				
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambsigFoaProcessed); // debug
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+								
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambsigFoa = Select.ar(insertFlag, [ambsigFoa, ambsigFoaProcessed]);
-				ambsigSoa = Select.ar(insertFlag, [ambsigSoa, ambsigSoaProcessed]);
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
 				
-				espacAmbOutFunc.value(ambsigSoa, ambsigFoa, dec);			
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);			
 			}).add;
 
 			
@@ -836,7 +864,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmb2Chowning"++linear,  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
 				glev = 0, llev = 0.2;
-				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
 				globallev = 0.0004, locallev, gsig, fonte;
 				var lrev,
@@ -892,28 +920,28 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 				
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambsinal = [w, x, y, z, r, s, t, u, v]; 
+				//				ambSigSoa = [w, x, y, z, r, s, t, u, v]; 
 				
-				//	ambsinal1O = [w, x, y, z];
+				//	ambSigFoa = [w, x, y, z];
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
-				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
-				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
-				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
 				
 			}).add;
 
 			SynthDef.new("espacAmb2AFormat"++linear,  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
 				glev = 0, llev = 0.2, soaBus;
-				var w, x, y, z, r, s, t, u, v, p, ambsinal, ambsinal1O,
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
 				globallev = 0.0004, locallev, gsig, fonte;
 				var lrev, intens;
@@ -965,24 +993,24 @@ GUI Parameters usable in SynthDefs
 				junto = p ;
 				
 				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambsinal = [w, x, y, z, r, s, t, u, v];
+				//				ambSigSoa = [w, x, y, z, r, s, t, u, v];
 
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambsinal1O = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
-				ambsinal = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
 
 
-				Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
-				//				ambsinal1O = [w, x, y, z];
+				Out.ar(soaBus, (ambSigSoa*globallev) + (ambSigSoa*locallev));
+				//				ambSigFoa = [w, x, y, z];
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambsinal1O = HPF.ar(ambsinal1O, 20); // stops bass frequency blow outs by proximity
-				ambsinal1O = FoaTransform.ar(ambsinal1O, 'proximity', dis);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 				
-				espacAmbOutFunc.value(ambsinal, ambsinal1O, dec);
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
 				
 			}).add;
 
@@ -995,9 +1023,9 @@ GUI Parameters usable in SynthDefs
 				dopon = 0, dopamnt = 0,
 				sp, df,
 				glev = 0, llev = 0, contr=1;
-				var w, x, y, z, r, s, t, u, v, p, ambsinal,
-				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
+				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
 				junto, rd, dopplershift, azim, dis, 
 				junto1, azim1, 
 				junto2, azim2,
@@ -1071,18 +1099,18 @@ GUI Parameters usable in SynthDefs
 				//				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
 
 				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
-				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
+				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
 					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
 					soaSigLRef[8].value];
 
 				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
-				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
+				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
 					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
 					soaSigRRef[8].value];
 				
 				
-				//ambsinal1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-				//ambsinal2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
+				//ambSigSoa1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
+				//ambSigSoa2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
 
 				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
 				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
@@ -1099,24 +1127,24 @@ GUI Parameters usable in SynthDefs
 				junto2 = Select.ar(sp, [junto2, spread2]);
 
 				
-				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
+				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 
 				
-				ambsinal1plus2 = ambsinal1 + ambsinal2;
+				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
 
 
-				//Out.ar(soaBus, (ambsinal1plus2_1O*globallev) + (ambsinal1plus2_1O*locallev));
+				//Out.ar(soaBus, (ambSigFoa1plus2*globallev) + (ambSigFoa1plus2*locallev));
 
 				
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambsinal1plus2_1O = HPF.ar(ambsinal1plus2_1O, 20); // stops bass frequency blow outs by proximity
-				ambsinal1plus2_1O = FoaTransform.ar(ambsinal1plus2_1O, 'proximity', dis);
+				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
 
-				reverbOutFunc.value(soaBus, gbfbus, ambsinal1plus2, ambsinal1plus2_1O, globallev, locallev);
+				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa1plus2, ambSigFoa1plus2, globallev, locallev);
 
-				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
+				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
 				
 			}).add;
 
@@ -1127,7 +1155,7 @@ GUI Parameters usable in SynthDefs
 				sp, df;
 				var w, x, y, z, r, s, t, u, v, p, ambsinal,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambsinal1plus2_1O,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambSigFoa1plus2,
 				junto, rd, dopplershift, azim, dis, 
 				junto1, azim1, 
 				junto2, azim2,
@@ -1235,19 +1263,19 @@ GUI Parameters usable in SynthDefs
 				junto2 = Select.ar(df, [omni2, diffuse2]);
 				junto2 = Select.ar(sp, [junto2, spread2]);
 
-				ambsinal1plus2_1O = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
+				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 
-				//				ambsinal1plus2_1O = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
+				//				ambSigFoa1plus2 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
 				//					soaSigLRef[3].value] + [soaSigRRef[0].value, soaSigRRef[1].value,
 				//						soaSigRRef[2].value, soaSigRRef[3].value];
 				
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambsinal1plus2_1O = HPF.ar(ambsinal1plus2_1O, 20); // stops bass frequency blow outs by proximity
-				ambsinal1plus2_1O = FoaTransform.ar(ambsinal1plus2_1O, 'proximity', dis);
+				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
 
-				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambsinal1plus2_1O, dec);
+				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambSigFoa1plus2, dec);
 				
 			}).add;
 
@@ -2092,7 +2120,13 @@ GUI Parameters usable in SynthDefs
 
 								};
 								this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
-									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
+									\soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 						} { 
