@@ -712,7 +712,8 @@ GUI Parameters usable in SynthDefs
 				
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
 				ambsigSoa, ambsigFoa,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,  
+				junto, rd, dopplershift, azim, dis, xatras, yatras,
+				//w, x, y, z, r, s, t, u, v,
 				//		globallev = 0.0001, locallev, gsig, fonte;
 				globallev, locallev, gsig, fonte,
 				intens,
@@ -775,7 +776,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 
-
+				// do decond order encoding
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 
 				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
@@ -807,16 +808,18 @@ GUI Parameters usable in SynthDefs
 				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
 				aFormatSoa = AtkMatrixMix.ar(ambsigSoa, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
+				//Out.ar(aFormatBusOutSoa, aFormatSoa);
 
 				// flag switchable selector of a-format signal (from insert or not) 
 				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
 				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
 
 				// convert back to b-format
-				ambsigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+				ambsigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
 				ambsigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-
+				
+				
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambsigFoaProcessed); // debug
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
 				ambsigFoa = Select.ar(insertFlag, [ambsigFoa, ambsigFoaProcessed]);
 				ambsigSoa = Select.ar(insertFlag, [ambsigSoa, ambsigSoaProcessed]);
@@ -1504,7 +1507,7 @@ GUI Parameters usable in SynthDefs
 	getFoaInsertIn {
 		|source |
 		if (source > 0) {
-			var bus = this.aFormatBusFoa[0,source-1].index;
+			var bus = this.aFormatBusFoa[0,source-1];
 			this.insertFlag[source-1]=1;
 			this.espacializador[source-1].set(\insertFlag, 1);
 			^bus
@@ -1513,7 +1516,7 @@ GUI Parameters usable in SynthDefs
 	getFoaInsertOut {
 		|source |
 		if (source > 0) {
-			var bus = this.aFormatBusFoa[1,source-1].index;
+			var bus = this.aFormatBusFoa[1,source-1];
 			this.insertFlag[source-1]=1;
 			this.espacializador[source-1].set(\insertFlag, 1);
 			^bus
@@ -1522,7 +1525,7 @@ GUI Parameters usable in SynthDefs
 	getSoaInsertIn {
 		|source |
 		if (source > 0) {
-			var bus = this.aFormatBusSoa[0,source-1].index;
+			var bus = this.aFormatBusSoa[0,source-1];
 			this.insertFlag[source-1]=1;
 			this.espacializador[source-1].set(\insertFlag, 1);
 			^bus
@@ -1531,7 +1534,7 @@ GUI Parameters usable in SynthDefs
 	getSoaInsertOut {
 		|source |
 		if (source > 0) {
-			var bus = this.aFormatBusSoa[1,source-1].index;
+			var bus = this.aFormatBusSoa[1,source-1];
 			this.insertFlag[source-1]=1;
 			this.espacializador[source-1].set(\insertFlag, 1);
 			^bus
@@ -4071,6 +4074,10 @@ GUI Parameters usable in SynthDefs
 			controle.quit;
 			this.nfontes.do { arg x;
 				this.espacializador[x].free;
+				this.aFormatBusFoa[0,x].free;
+				this.aFormatBusFoa[1,x].free;
+				this.aFormatBusSoa[0,x].free;
+				this.aFormatBusSoa[1,x].free;
 				mbus[x].free;
 				sbus[x].free;
 				//	bfbus.[x].free;

@@ -307,16 +307,16 @@ ARGUMENT:: source
 The number of the source (starting with 1). See code example below.
 
 METHOD:: getSoaInsertOut
-Create a second order A-format insert (12 channel) for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling signal from the spatialiser. See code example below.
+Create a second order A-format insert (12 channel) for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling signal from the spatialiser. 
 
 ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
+The number of the source (starting with 1).
 
 METHOD:: getSoaInsertIn
-Create a second order A-format insert for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling the return signal to the spatialiser. See code example below.
+Create a second order A-format insert for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling the return signal to the spatialiser. 
 
 ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
+The number of the source (starting with 1). 
 
 
 
@@ -451,5 +451,19 @@ These simple sounds work best with some doppler set in GUI and some reverb.
 )
 
 
+/* Make an effects insert 
+In the GUI, play something in source #1. Filter it with a synth. Note that either the source or the filter may be launched first.
 
+*/
+
+SynthDef(\Filter, {|aformatIn, aformatOut|
+	var sig = In.ar(aformatOut, 4);
+	sig = RLPF.ar(sig, FSinOsc.kr(XLine.kr(0.7, 10, 20), 0, 3600, 4000), 0.9);
+	Out.ar(aformatIn, sig)
+}).add;
+
+y = Synth(\Filter, [\aformatIn, ~testMosca.getFoaInsertIn(1), \aformatOut, ~testMosca.getFoaInsertOut(1)], addAction: \addToTail);
+
+y.free; // free the filter
+~testMosca.releaseInsert(1) // return to sound with no filter
 ::
