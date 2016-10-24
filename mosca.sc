@@ -37,6 +37,7 @@ Mosca {
 	<>dur,
 	<>rawbus, <>raworder,
 	<>decoder,
+	<>espacializador,
     <>delaytime, <>decaytime; // for allpass
 
 
@@ -816,8 +817,6 @@ GUI Parameters usable in SynthDefs
 				ambsigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
 				ambsigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
 
-				//ambsigFoa = ambsigFoaProcessed;
-				//ambsigSoa = ambsigSoaProcessed;
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
 				ambsigFoa = Select.ar(insertFlag, [ambsigFoa, ambsigFoaProcessed]);
 				ambsigSoa = Select.ar(insertFlag, [ambsigSoa, ambsigSoaProcessed]);
@@ -1474,7 +1473,6 @@ GUI Parameters usable in SynthDefs
 		};
 	}
 
-	// for testing
 
 	getSynthRegistry { // selection of Mosca arguments for use in synths
 		| source |
@@ -1503,6 +1501,32 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
+	getFoaInsertIn {
+		|source |
+		if (source > 0) {
+			var bus = this.aFormatBusFoa[0,source-1].index;
+			this.insertFlag[source-1]=1;
+			this.espacializador[source-1].set(\insertFlag, 1);
+			^bus
+		}
+	}
+	getFoaInsertOut {
+		|source |
+		if (source > 0) {
+			var bus = this.aFormatBusFoa[1,source-1].index;
+			this.insertFlag[source-1]=1;
+			this.espacializador[source-1].set(\insertFlag, 1);
+			^bus
+		}
+	}
+	releaseInsert {
+		|source |
+		if (source > 0) {
+			this.insertFlag[source-1]=0;
+			this.espacializador[source-1].set(\insertFlag, 0);
+		}
+	}
+	
 	// These methods relate to control of synths when SW Input delected
 	// for source in GUI
 	
@@ -1537,7 +1561,7 @@ GUI Parameters usable in SynthDefs
 	gui {
 
 		//arg dur = 120;
-		var fonte, dist, espacializador, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
+		var fonte, dist, mbus, sbus, soaBus, ncanais, synt, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque,
 		lastAutomation = nil,
@@ -1575,7 +1599,7 @@ GUI Parameters usable in SynthDefs
 		rlev, dlev, clev, cslider, dplev, dpslider, cnumbox,
 		aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox, 
 		zSliderHeight = this.width * 2 / 3;
-		espacializador = Array.newClear(this.nfontes);
+		this.espacializador = Array.newClear(this.nfontes);
 		doppler = Array.newClear(this.nfontes); 
 		lp = Array.newClear(this.nfontes); 
 		sp = Array.newClear(this.nfontes); 
@@ -1939,9 +1963,9 @@ GUI Parameters usable in SynthDefs
 			this.nfontes.do { arg i;
 				//	updateSynthInArgs.value(i);
 				
-				if(espacializador[i] != nil) {
+				if(this.espacializador[i] != nil) {
 					("atualizando espacializador # " ++ i).postln;
-					espacializador[i].set(
+					this.espacializador[i].set(
 						//	\mx, num.value  ???
 						\dopon, doppler[i], // not needed...
 						\angle, angle[i],
@@ -2036,17 +2060,17 @@ GUI Parameters usable in SynthDefs
 									synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 										\level, level[i]], 
-										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});	
+										revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});	
 								} {
 									synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 										\level, level[i]], 
-										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});								
+										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});								
 
 								};
-								espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+								this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
 									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2055,10 +2079,10 @@ GUI Parameters usable in SynthDefs
 								synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 									\level, level[i]], revGlobalBF,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+									addAction: \addBefore).onFree({this.espacializador[i].free;
+										this.espacializador[i] = nil; synt[i] = nil});
 								
-								espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
+								this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
 									\gbus, gbus, 
 									
 									\insertFlag, this.insertFlag[i],
@@ -2107,17 +2131,17 @@ GUI Parameters usable in SynthDefs
 									synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 										\level, level[i]],
-										revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});
+										revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});
 								} {
 									synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 										\level, level[i]],
-										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});
+										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});
 								};
 								
-								espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+								this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
 									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2128,10 +2152,10 @@ GUI Parameters usable in SynthDefs
 								synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 									\level, level[i]], 
-									revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+										this.espacializador[i] = nil; synt[i] = nil});
 								
-								espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+								this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
 									\gbus, gbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2179,8 +2203,8 @@ GUI Parameters usable in SynthDefs
 											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 											\rate, 1, \tpos, tpos, \lp,
 											lp[i], \level, level[i], \dopon, doppler[i]], 
-											revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;
+											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil;
 												playingBF[i] = false});
 									} {
 										synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
@@ -2188,12 +2212,12 @@ GUI Parameters usable in SynthDefs
 											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 											\rate, 1, \tpos, tpos, \lp,
 											lp[i], \level, level[i], \dopon, doppler[i]], 
-											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;
+											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil;
 												playingBF[i] = false});					
 									};
 									
-									espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
+									this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
 										\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
 										synt[i], addAction: \addAfter);
 								};
@@ -2206,11 +2230,11 @@ GUI Parameters usable in SynthDefs
 										\rate, 1, \tpos, tpos, \lp,
 										lp[i], \level, level[i], \dopon, doppler[i]], 
 										//					~revGlobal, addAction: \addBefore);
-										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;
+										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil;
 											playingBF[i] = false});
 									
-									espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i], \gbus, gbus, 
+									this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i], \gbus, gbus, 
 										\dopon, doppler[i]], 
 										synt[i], addAction: \addAfter);
 								};
@@ -2262,33 +2286,33 @@ GUI Parameters usable in SynthDefs
 										synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 											this.busini[i],
 											\level, level[i]], revGlobalSoa,
-											addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil});
+											addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil});
 									} {
 										synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 											this.busini[i],
 											\level, level[i]], revGlobalBF,
-											addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil});
+											addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil});
 									};
 								} {
 									if(this.decoder.isNil && (this.raworder == 2)) {
 									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
 										\level, level[i]], revGlobalSoa,
-										addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});
 									} {
 									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
 										\level, level[i]], revGlobalBF,
-										addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});
 									};
 								};
 								
 								
-								espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+								this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
 									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2298,18 +2322,18 @@ GUI Parameters usable in SynthDefs
 								if (hwncheck[i].value) {
 									synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
 										\level, level[i]], revGlobalBF,
-										addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});
 								} {
 									synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
 										\level, level[i]], revGlobalBF,
-										addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil});
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil});
 								};
 								
 								
-								espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
+								this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
 									\gbus, gbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2353,32 +2377,32 @@ GUI Parameters usable in SynthDefs
 										synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
 											this.busini[i],
 											\level, level[i]], revGlobalSoa,
-											addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil});
+											addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil});
 									} {
 										synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
 											this.busini[i],
 											\level, level[i]], revGlobalBF,
-											addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil});							
+											addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil});							
 									};
 								} {
 									if(this.decoder.isNil && (this.raworder == 2)){
 										synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 											\busini, this.scInBus[i],
 											\level, level[i]], revGlobalSoa,
-											addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil});
+											addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil});
 									} {
 										synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 											\busini, this.scInBus[i],
 											\level, level[i]], revGlobalBF,
-											addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil});										
+											addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil});										
 									};
 								};
 								
-								espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i], \gbus, gbus,
+								this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i], \gbus, gbus,
 									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2388,17 +2412,17 @@ GUI Parameters usable in SynthDefs
 							if (hwncheck[i].value) {
 								synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
 									\level, level[i]], revGlobalBF,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+									addAction: \addBefore).onFree({this.espacializador[i].free;
+										this.espacializador[i] = nil; synt[i] = nil});
 							} {
 								synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 									\busini, this.scInBus[i],
 									\level, level[i]], revGlobalBF,
-									addAction: \addBefore).onFree({espacializador[i].free;
-										espacializador[i] = nil; synt[i] = nil});
+									addAction: \addBefore).onFree({this.espacializador[i].free;
+										this.espacializador[i] = nil; synt[i] = nil});
 							};
 							
-							espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+							this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
 								\gbus, gbus, \dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 
@@ -2441,15 +2465,15 @@ GUI Parameters usable in SynthDefs
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 											\dopon, doppler[i],
 											\busini, this.busini[i]], 
-											revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;});
+											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil;});
 									} {
 										synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 											mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 											level[i], \dopon, doppler[i],
 											\busini, this.scInBus[i] ], 
-											revGlobalSoa, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;});
+											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil;});
 									};
 								} {
 									if (hwncheck[i].value) {
@@ -2458,19 +2482,19 @@ GUI Parameters usable in SynthDefs
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 											\dopon, doppler[i],
 											\busini, this.busini[i]], 
-											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;});
+											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil;});
 									} {
 										synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 											mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 											level[i], \dopon, doppler[i],
 											\busini, this.scInBus[i] ], 
-											revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-												espacializador[i] = nil; synt[i] = nil;});
+											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+												this.espacializador[i] = nil; synt[i] = nil;});
 									};
 									
 									};
-								espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+								this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
 									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2483,19 +2507,19 @@ GUI Parameters usable in SynthDefs
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i], \dopon, doppler[i],
 										\busini, this.busini[i]], 
-										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;
+										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil;
 											playingBF[i] = false});
 								} {
 									synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i], \dopon, doppler[i],
 										\busini, this.scInBus[i] ], 
-										revGlobalBF, addAction: \addBefore).onFree({espacializador[i].free;
-											espacializador[i] = nil; synt[i] = nil;});
+										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; synt[i] = nil;});
 								};
 								
-								espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
+								this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
 									\gbus, gbus, \dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
@@ -2879,7 +2903,7 @@ GUI Parameters usable in SynthDefs
 		angnumbox.action = {arg num; 
 			{abox[fatual].valueAction = num.value;}.defer;
 			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)){
-				espacializador[fatual].set(\angle, num.value);
+				this.espacializador[fatual].set(\angle, num.value);
 				this.setSynths(fatual, \angle, num.value);
 				angle[fatual] = num.value;
 				("ângulo = " ++ num.value).postln; 
@@ -2894,8 +2918,8 @@ GUI Parameters usable in SynthDefs
 			{abox[fatual].valueAction = num.value * pi;}.defer;
 			if((ncanais[fatual]==2) || (this.ncan[fatual]==2)) {
 				{angnumbox.value = num.value * pi;}.defer;
-				//			espacializador[fatual].set(\angle, b.map(num.value));
-				espacializador[fatual].set(\angle, num.value * pi);
+				//			this.espacializador[fatual].set(\angle, b.map(num.value));
+				this.espacializador[fatual].set(\angle, num.value * pi);
 				this.setSynths(fatual, \angle, num.value * pi);
 				//			angle[fatual] = b.map(num.value);
 				angle[fatual] = num.value * pi;
@@ -2919,7 +2943,7 @@ GUI Parameters usable in SynthDefs
 		znumbox.action = {arg num; 
 			{zbox[fatual].valueAction = num.value;}.defer;
 			if(ncanais[fatual]==2){
-				espacializador[fatual].set(\elev, num.value);
+				this.espacializador[fatual].set(\elev, num.value);
 				this.setSynths(fatual, \elev, num.value);
 				zlev[fatual] = num.value;
 				("Z-Axis = " ++ num.value).postln; 
@@ -3124,7 +3148,7 @@ GUI Parameters usable in SynthDefs
 			//var filebuf, filebuf1, filebuf2;
 			but.value.postln;
 			synt[fatual].free; // error check
-			espacializador[fatual].free;
+			this.espacializador[fatual].free;
 			dopcheque.value = false; // coloque toggle no padrão
 			
 			
@@ -3275,12 +3299,12 @@ GUI Parameters usable in SynthDefs
 				if (but.value == true) {
 					//	"Aqui!!!".postln;
 					doppler[i] = 1;
-					espacializador[i].set(\dopon, 1);
+					this.espacializador[i].set(\dopon, 1);
 					synt[i].set(\dopon, 1);
 					this.setSynths(i, \dopon, 1);
 				}{
 					doppler[i] = 0;
-					espacializador[i].set(\dopon, 0);
+					this.espacializador[i].set(\dopon, 0);
 					synt[i].set(\dopon, 0);
 					this.setSynths(i, \dopon, 0);
 				};
@@ -3373,13 +3397,13 @@ GUI Parameters usable in SynthDefs
 					if(i==fatual){diffusecheck.value = false;};
 					sp[i] = 1;
 					df[i] = 0;
-					espacializador[i].set(\sp, 1);
-					espacializador[i].set(\df, 0);
+					this.espacializador[i].set(\sp, 1);
+					this.espacializador[i].set(\df, 0);
 					synt[i].set(\sp, 1);
 					this.setSynths(i, \ls, 1);
 				}{
 					sp[i] = 0;
-					espacializador[i].set(\sp, 0);
+					this.espacializador[i].set(\sp, 0);
 					synt[i].set(\sp, 0);
 					this.setSynths(i, \sp, 0);
 				};
@@ -3392,13 +3416,13 @@ GUI Parameters usable in SynthDefs
 					if(i==fatual){spreadcheck.value = false;};
 					df[i] = 1;
 					sp[i] = 0;
-					espacializador[i].set(\df, 1);
-					espacializador[i].set(\sp, 0);
+					this.espacializador[i].set(\df, 1);
+					this.espacializador[i].set(\sp, 0);
 					synt[i].set(\df, 1);
 					this.setSynths(i, \df, 1);
 				}{
 					df[i] = 0;
-					espacializador[i].set(\df, 0);
+					this.espacializador[i].set(\df, 0);
 					synt[i].set(\df, 0);
 					this.setSynths(i, \df, 0);
 				};
@@ -3593,8 +3617,8 @@ GUI Parameters usable in SynthDefs
 				xval[i] = num.value;
 				if (xval[i] > 1) {xval[i] = 1};
 				if (xval[i] < -1) {xval[i] = -1};
-				if(espacializador[i].notNil || playingBF[i]){
-					espacializador[i].set(\mx, xval[i]);
+				if(this.espacializador[i].notNil || playingBF[i]){
+					this.espacializador[i].set(\mx, xval[i]);
 					this.setSynths(i, \mx, xval[i]);
 					synt[i].set(\mx, xval[i]);
 					//xval[i].postln;
@@ -3609,8 +3633,8 @@ GUI Parameters usable in SynthDefs
 				if (yval[i] > 1) {yval[i] = 1};
 				if (yval[i] < -1) {yval[i] = -1};
 
-				if(espacializador[i].notNil || playingBF[i]){
-					espacializador[i].set(\my, yval[i]);
+				if(this.espacializador[i].notNil || playingBF[i]){
+					this.espacializador[i].set(\my, yval[i]);
 					this.setSynths(i, \my, yval[i]);
 					synt[i].set(\my, yval[i]);
 				};		
@@ -3618,7 +3642,7 @@ GUI Parameters usable in SynthDefs
 			};
 
 			zbox[i].action = {arg num;
-				espacializador[i].set(\mz, num.value);
+				this.espacializador[i].set(\mz, num.value);
 				//	zval[i] = num.value;
 				zval[i] = num.value / this.halfwidth;
 				if (zval[i] > 1) {zval[i] = 1};
@@ -3664,7 +3688,7 @@ GUI Parameters usable in SynthDefs
 				//	("Ângulo = " ++ num.value ++ " radianos").postln;
 				angle[i] = num.value;
 				if((ncanais[i]==2) || (this.ncan[i]==2)){
-					espacializador[i].set(\angle, num.value);
+					this.espacializador[i].set(\angle, num.value);
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
 				};
@@ -3695,7 +3719,7 @@ GUI Parameters usable in SynthDefs
 			lbox[i].value = 0;
 			
 			gbox[i].action = {arg num;
-				espacializador[i].set(\glev, num.value);
+				this.espacializador[i].set(\glev, num.value);
 				this.setSynths(i, \glev, num.value);
 
 				synt[i].set(\glev, num.value);
@@ -3709,7 +3733,7 @@ GUI Parameters usable in SynthDefs
 			
 			
 			lbox[i].action = {arg num;
-				espacializador[i].set(\llev, num.value);
+				this.espacializador[i].set(\llev, num.value);
 				this.setSynths(i, \llev, num.value);
 				synt[i].set(\llev, num.value);
 				llev[i] = num.value;
@@ -3751,7 +3775,7 @@ GUI Parameters usable in SynthDefs
 			synt[i].set(\contr, num.value);
 
 				// TESTING
-				espacializador[i].set(\contr, num.value);
+				this.espacializador[i].set(\contr, num.value);
 
 				
 				this.setSynths(i, \contr, num.value);
@@ -3768,7 +3792,7 @@ GUI Parameters usable in SynthDefs
 				synt[i].set(\dopamnt, num.value);
 				this.setSynths(i, \dopamnt, num.value);
 				// used for the others
-				espacializador[i].set(\dopamnt, num.value);
+				this.espacializador[i].set(\dopamnt, num.value);
 				dplev[i] = num.value;
 				if(i == fatual) 
 				{
@@ -3780,7 +3804,7 @@ GUI Parameters usable in SynthDefs
 
 			// CHECK THESE NEXT 2
 			ncanbox[i].action = {arg num;
-				espacializador[i].set(\mz, num.value);
+				this.espacializador[i].set(\mz, num.value);
 				this.setSynths(i, \mz, num.value);
 				synt[i].set(\mz, num.value);
 				this.ncan[i] = num.value;
@@ -3792,7 +3816,7 @@ GUI Parameters usable in SynthDefs
 				};
 			}; 
 			businibox[i].action = {arg num;
-				espacializador[i].set(\mz, num.value);
+				this.espacializador[i].set(\mz, num.value);
 				this.setSynths(i, \mz, num.value);
 				synt[i].set(\mz, num.value);
 				this.busini[i] = num.value;
@@ -3915,7 +3939,7 @@ GUI Parameters usable in SynthDefs
 				if (testado[i] == false) {
 					synt[i].free; // error check
 				};
-				//	espacializador[i].free;
+				//	this.espacializador[i].free;
 			};
 			isPlay = false;
 			/*			if(revGlobal.notNil){
@@ -4028,7 +4052,7 @@ GUI Parameters usable in SynthDefs
 		win.onClose_({ 
 			controle.quit;
 			this.nfontes.do { arg x;
-				espacializador[x].free;
+				this.espacializador[x].free;
 				mbus[x].free;
 				sbus[x].free;
 				//	bfbus.[x].free;
