@@ -235,6 +235,17 @@ private:: width
 private:: width = value
 private:: win
 private:: win = value
+private:: aFormatBusFoa
+private:: aFormatBusFoa = value
+private:: aFormatBusSoa
+private:: aFormatBusSoa = value
+private:: espacializador
+private:: espacializador = value
+private:: insertFlag
+private:: insertFlag = value
+private:: raworder
+private:: raworder = value
+private:: releaseInsert
 
 
 
@@ -283,6 +294,31 @@ The number of the source (starting with 1). See code example below.
 ARGUMENT:: function
 Function name. See code example below.
 
+METHOD:: getFoaInsertOut
+Create a first order A-format insert for a FOA source spatialised in the GUI. Return the bus number of the A-format bus channeling signal from the spatialiser. See code example below.
+
+ARGUMENT:: source
+The number of the source (starting with 1). See code example below.
+
+METHOD:: getFoaInsertIn
+Create a first order A-format insert for a FOA source spatialised in the GUI. Return the bus number of the A-format bus channeling the return signal to the spatialiser. See code example below.
+
+ARGUMENT:: source
+The number of the source (starting with 1). See code example below.
+
+METHOD:: getSoaInsertOut
+Create a second order A-format insert (12 channel) for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling signal from the spatialiser. See code example below.
+
+ARGUMENT:: source
+The number of the source (starting with 1). See code example below.
+
+METHOD:: getSoaInsertIn
+Create a second order A-format insert for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling the return signal to the spatialiser. See code example below.
+
+ARGUMENT:: source
+The number of the source (starting with 1). See code example below.
+
+
 
 EXAMPLES::
 
@@ -300,11 +336,11 @@ Make sure the server is stopped before running this block of example code for fi
 s = Server.local;
 s.quit;
 o = s.options;
-o.numAudioBusChannels = 1024;
+o.numAudioBusChannels = 2048;
 o.numInputBusChannels = 32;
 o.numOutputBusChannels = 11; // eg. 2 for stereo & 9 for 2nd order ambisonics
 o.memSize = 64 * 8192;
-o.numAudioBusChannels = 512;
+o.numAudioBusChannels = 1024;
 o.numWireBufs = 512;
 s.waitForBoot {
 

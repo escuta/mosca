@@ -1519,6 +1519,24 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+	getSoaInsertIn {
+		|source |
+		if (source > 0) {
+			var bus = this.aFormatBusSoa[0,source-1].index;
+			this.insertFlag[source-1]=1;
+			this.espacializador[source-1].set(\insertFlag, 1);
+			^bus
+		}
+	}
+	getSoaInsertOut {
+		|source |
+		if (source > 0) {
+			var bus = this.aFormatBusSoa[1,source-1].index;
+			this.insertFlag[source-1]=1;
+			this.espacializador[source-1].set(\insertFlag, 1);
+			^bus
+		}
+	}
 	releaseInsert {
 		|source |
 		if (source > 0) {
