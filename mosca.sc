@@ -160,8 +160,8 @@ GUI Parameters usable in SynthDefs
 		this.insertFlag = Array.newClear(this.nfontes);
 		this.aFormatBusFoa = Array2D.new(2, this.nfontes);
 		this.aFormatBusSoa = Array2D.new(2, this.nfontes);
-		this.dummyFoaBus = Bus.audio(server, 4); // dummies needed for unassigned inserts 
-		this.dummySoaBus = Bus.audio(server, 12);
+		//		this.dummyFoaBus = Bus.audio(server, 4); // dummies needed for unassigned inserts 
+		//		this.dummySoaBus = Bus.audio(server, 12);
 		
 		this.nfontes.do { arg x;
 			this.aFormatBusFoa[0, x] =  Bus.audio(server, 4);
@@ -735,8 +735,8 @@ GUI Parameters usable in SynthDefs
 				dopon = 0, dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
 
-				insertFlag = 0, aFormatBusOutFoa=this.dummyFoaBus, aFormatBusInFoa=this.dummyFoaBus,
-				aFormatBusOutSoa=this.dummyFoaBus, aFormatBusInSoa=this.dummyFoaBus,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa,
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
 				
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
@@ -1022,7 +1022,10 @@ GUI Parameters usable in SynthDefs
 				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0,
 				sp, df,
-				glev = 0, llev = 0, contr=1;
+				glev = 0, llev = 0, contr=1,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;				
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
@@ -1142,6 +1145,30 @@ GUI Parameters usable in SynthDefs
 				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
 
+
+
+								// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not) 
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+								
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
+				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
+
+
+				
 				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa1plus2, ambSigFoa1plus2, globallev, locallev);
 
 				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
@@ -1152,16 +1179,19 @@ GUI Parameters usable in SynthDefs
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopon = 0, dopamnt = 0, 
 				glev = 0, llev = 0, contr=1,
-				sp, df;
-				var w, x, y, z, r, s, t, u, v, p, ambsinal,
-				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambsinal1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambsinal2, ambsinal1plus2, ambSigFoa1plus2,
+				sp, df,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;			
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
+				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
 				junto, rd, dopplershift, azim, dis, 
 				junto1, azim1, 
 				junto2, azim2,
 				omni1, spread1, diffuse1,
 				omni2, spread2, diffuse2,
-				globallev = 0.0001, locallev, gsig, fonte;
+				globallev = 0.0001, locallev, gsig, fonte,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;	
 				var lrev,
 				intens;
 				var grevganho = 0.20;
@@ -1236,16 +1266,16 @@ GUI Parameters usable in SynthDefs
 
 				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 
-				ambsinal1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
+				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
 					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
 					soaSigLRef[8].value];
 
 				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
-				ambsinal2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
+				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
 					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
 					soaSigRRef[8].value];
 				
-				ambsinal1plus2 = ambsinal1 + ambsinal2;
+				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
 
 
 				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
@@ -1275,7 +1305,29 @@ GUI Parameters usable in SynthDefs
 				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
 
-				espacAmbEstereoOutFunc.value(ambsinal1plus2, ambSigFoa1plus2, dec);
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not) 
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+								
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
+				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
+
+				
+
+				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
 				
 			}).add;
 
@@ -2197,7 +2249,13 @@ GUI Parameters usable in SynthDefs
 								};
 								
 								this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
-									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
+									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 
@@ -2211,7 +2269,13 @@ GUI Parameters usable in SynthDefs
 										this.espacializador[i] = nil; synt[i] = nil});
 								
 								this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
-									\gbus, gbus, \dopon, doppler[i]], 
+									\gbus, gbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 							
@@ -2257,7 +2321,13 @@ GUI Parameters usable in SynthDefs
 											gbfbus, \outbus,
 											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 											\rate, 1, \tpos, tpos, \lp,
-											lp[i], \level, level[i], \dopon, doppler[i]], 
+											lp[i], \level, level[i],
+											\insertFlag, this.insertFlag[i],
+											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+											\dopon, doppler[i]], 
 											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 												this.espacializador[i] = nil; synt[i] = nil;
 												playingBF[i] = false});
@@ -2266,14 +2336,26 @@ GUI Parameters usable in SynthDefs
 											gbfbus, \outbus,
 											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 											\rate, 1, \tpos, tpos, \lp,
-											lp[i], \level, level[i], \dopon, doppler[i]], 
+											lp[i], \level, level[i],
+											\insertFlag, this.insertFlag[i],
+											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+											\dopon, doppler[i]], 
 											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
 												this.espacializador[i] = nil; synt[i] = nil;
 												playingBF[i] = false});					
 									};
 									
 									this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
-										\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
+										\gbus, gbus, \soaBus, soaBus,
+										\insertFlag, this.insertFlag[i],
+										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+										\dopon, doppler[i]], 
 										synt[i], addAction: \addAfter);
 								};
 							} {
@@ -2289,11 +2371,17 @@ GUI Parameters usable in SynthDefs
 											this.espacializador[i] = nil; synt[i] = nil;
 											playingBF[i] = false});
 									
-									this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i], \gbus, gbus, 
-										\dopon, doppler[i]], 
+									this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
+										[\inbus, mbus[i], \gbus, gbus, 
+											\insertFlag, this.insertFlag[i],
+											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+											\dopon, doppler[i]], 
 										synt[i], addAction: \addAfter);
 								};
-
+								
 
 							};
 							atualizarvariaveis.value;
@@ -2368,7 +2456,13 @@ GUI Parameters usable in SynthDefs
 								
 								
 								this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
-									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
+									\soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 							
@@ -2389,7 +2483,13 @@ GUI Parameters usable in SynthDefs
 								
 								
 								this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
-									\gbus, gbus, \dopon, doppler[i]], 
+									\gbus, gbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 
@@ -2458,7 +2558,13 @@ GUI Parameters usable in SynthDefs
 								};
 								
 								this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i], \gbus, gbus,
-									\soaBus, soaBus, \gbfbus, gbfbus, \dopon, doppler[i]], 
+									\soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 
@@ -2478,7 +2584,13 @@ GUI Parameters usable in SynthDefs
 							};
 							
 							this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
-								\gbus, gbus, \dopon, doppler[i]], 
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
 								synt[i], addAction: \addAfter);
 
 
@@ -2519,13 +2631,24 @@ GUI Parameters usable in SynthDefs
 											\outbus, mbus[i],
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 											\dopon, doppler[i],
+											\insertFlag, this.insertFlag[i],
+											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 											\busini, this.busini[i]], 
 											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 												this.espacializador[i] = nil; synt[i] = nil;});
 									} {
 										synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 											mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-											level[i], \dopon, doppler[i],
+											level[i],
+											\insertFlag, this.insertFlag[i],
+											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+											\dopon, doppler[i],
 											\busini, this.scInBus[i] ], 
 											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 												this.espacializador[i] = nil; synt[i] = nil;});
@@ -2535,6 +2658,11 @@ GUI Parameters usable in SynthDefs
 										synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 											\outbus, mbus[i],
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
+											\insertFlag, this.insertFlag[i],
+											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 											\dopon, doppler[i],
 											\busini, this.busini[i]], 
 											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
@@ -2550,7 +2678,13 @@ GUI Parameters usable in SynthDefs
 									
 									};
 								this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
-									\gbus, gbus, \soaBus, soaBus, \dopon, doppler[i]], 
+									\gbus, gbus, \soaBus, soaBus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 
@@ -2561,6 +2695,11 @@ GUI Parameters usable in SynthDefs
 									synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i], \dopon, doppler[i],
+										\insertFlag, this.insertFlag[i],
+										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.busini[i]], 
 										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; synt[i] = nil;
@@ -2569,13 +2708,24 @@ GUI Parameters usable in SynthDefs
 									synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i], \dopon, doppler[i],
+										\insertFlag, this.insertFlag[i],
+										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.scInBus[i] ], 
 										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; synt[i] = nil;});
 								};
 								
 								this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
-									\gbus, gbus, \dopon, doppler[i]], 
+									\gbus, gbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\dopon, doppler[i]], 
 									synt[i], addAction: \addAfter);
 							};
 							
