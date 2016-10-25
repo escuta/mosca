@@ -862,10 +862,13 @@ GUI Parameters usable in SynthDefs
 			
 			SynthDef.new("espacAmb2Chowning"++linear,  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-				glev = 0, llev = 0.2;
+				glev = 0, llev = 0.2,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
-				globallev = 0.0004, locallev, gsig, fonte;
+				globallev = 0.0004, locallev, gsig, fonte,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
 				var lrev,
 				intens;
 				var ambSigRef = Ref(0);
@@ -933,14 +936,40 @@ GUI Parameters usable in SynthDefs
 				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not) 
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+								
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+
+				
 				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
 				
 			}).add;
 
 			SynthDef.new("espacAmb2AFormat"++linear,  { 
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-				glev = 0, llev = 0.2, soaBus;
+				glev = 0, llev = 0.2, soaBus,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,  
 				globallev = 0.0004, locallev, gsig, fonte;
 				var lrev, intens;
@@ -1008,6 +1037,27 @@ GUI Parameters usable in SynthDefs
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
 				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not) 
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+								
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+				
 				
 				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
 				

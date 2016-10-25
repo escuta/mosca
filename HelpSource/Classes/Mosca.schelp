@@ -452,9 +452,9 @@ These simple sounds work best with some doppler set in GUI and some reverb.
 
 
 /* Make an effects insert 
-In the GUI, play something in source #1. Filter it with a synth. Note that either the source or the filter may be launched first.
+In the GUI, play something in source #1. Filter it with a synth. Note that the source and the filter may be launched in either order.
 
-Note - presently working only on sources derived from mono file input. The rest coming soon
+Note - presently in development
 */
 
 SynthDef(\Filter, {|aformatIn, aformatOut|
