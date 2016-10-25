@@ -14,6 +14,7 @@ Reverberation is performed either using a B-format tail room impulse response (R
 
 Mosca also has other features including a scalable Doppler Effect on moving sources, looping of sources loaded from file, adjustment of virtual loudspeaker angle of stereo sources and in the case of B-format sources: a rotation control, adjustment of "directivity" (see ATK documentation) and a control of "contraction", whereby the B-format signal may be crossfaded with its W component and which is spatialised as a 2nd order ambisonic signal.
 
+Additionally, Mosca supports methods for making "A-format inserts" on any source spatialised in the GUI. In this way, the user may write a filtering synth and apply it on the sound without disrupting the encoded spatial characteristics. Please see the code examples below for more information.
 
 USING MOSCA
 
