@@ -4352,7 +4352,7 @@ GUI Parameters usable in SynthDefs
 				sbus[x].free;
 				//	bfbus.[x].free;
 				sombuf[x].free;
-				this.syn[x].free;
+				this.synt[x].free;
 				this.scInBus[x].free;
 				//		kespac[x].stop;
 			};

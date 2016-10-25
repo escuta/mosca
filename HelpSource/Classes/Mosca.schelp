@@ -359,15 +359,15 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
-//	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
+	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
 
-// Use RIR and send raw 2nd order ambi sginal to outputs (channels 2-10)
-//using no decoder and rawbus value of 2.
+// Use RIR and send raw 1st order ambi sginal to outputs (channels 2-10)
+//using no decoder, a raworder of 1 and rawbus value of 2.
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
 //	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2, raworder: 1);
 
@@ -465,7 +465,7 @@ SynthDef(\Echo, {|aformatIn, aformatOut|
 	var sig, delayTime = 0.6;
         sig = In.ar(aformatOut, 4);
 	delayTime = 0.6;
-        sig = CombC.ar(sig, 2, delayTime, 6) + sig; 
+        sig = CombC.ar(sig*0.1, 2, delayTime, 6) + sig; 
 	Out.ar(aformatIn, sig)
 }).add;
 
@@ -475,4 +475,15 @@ y.free; // free the filter
 
 ~testMosca.releaseInsert(1) // return to sound with no filter
 
+// If you have an external decoder, try this with a 2nd order mono source (will use 12-channel A-format)
+
+SynthDef(\Filter, {|aformatIn, aformatOut|
+	var sig = In.ar(aformatOut, 12); 
+	sig = RLPF.ar(sig, FSinOsc.kr( 0.2, 0, 3600, 4000), 0.9);
+	Out.ar(aformatIn, sig)
+}).add;
+z = Synth(\Filter, [\aformatIn, ~testMosca.getSoaInsertIn(1), \aformatOut, ~testMosca.getSoaInsertOut(1)], addAction: \addToTail);
+
+z.free; // free the filter
+~testMosca.releaseInsert(1) // return to sound with no filter
 ::
