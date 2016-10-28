@@ -109,7 +109,7 @@ ARGUMENT:: dur
 Duration in seconds of automation transport.
 
 ARGUMENT:: rir
-B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has the same sample rate as your system.
+B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has the same sample rate as your system. If no RIR is passed to Mosca instance, Mosca will use a default allpass filter reverberation.
 
 ARGUMENT:: server
 Server used. Default is Server.default.
