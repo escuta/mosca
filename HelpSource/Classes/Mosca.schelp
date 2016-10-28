@@ -120,8 +120,11 @@ http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDe
 
 Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to the outputs for external decoding with, for example, AmbDec: http://kokkinizita.linuxaudio.org/linuxaudio/
 
-ARGUMENT:: rawbus
-Starting bus for raw ambisonic output. Useful for separating decoded and raw signals in patching set up.
+ARGUMENT:: rawbusfoa
+Starting bus for raw first order ambisonic output. Useful for separating decoded and raw signals in patching set up. First and second order ambisonic output may also be separated and sent to separate external decoders.
+
+ARGUMENT:: rawbussoa
+Starting bus for raw second order ambisonic output. Useful for separating decoded and raw signals in patching set up. First and second order ambisonic output may also be separated and sent to separate external decoders.
 
 ARGUMENT:: raworder
 Ambisonics order for raw output to external decoder. Default is 2. 1st order may be used with an extenal decoder to take advantage of ATK 1st order features such as proximity effect and frequency spreading (see "Contraction"above).
@@ -359,8 +362,8 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
