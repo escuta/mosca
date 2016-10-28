@@ -341,7 +341,7 @@ s.quit;
 o = s.options;
 o.numAudioBusChannels = 2048;
 o.numInputBusChannels = 32;
-o.numOutputBusChannels = 11; // eg. 2 for stereo & 9 for 2nd order ambisonics
+o.numOutputBusChannels = 15; // eg. 2 for stereo, 4 for 1st order ambisonics & 9 for 2nd order
 o.memSize = 64 * 8192;
 o.numAudioBusChannels = 1024;
 o.numWireBufs = 512;
@@ -359,8 +359,8 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 965, dur: 180, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 // Use allpass filter reverberation
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
@@ -369,7 +369,7 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 // Use RIR and send raw 1st order ambi sginal to outputs (channels 2-10)
 //using no decoder, a raworder of 1 and rawbus value of 2.
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbus: 2, raworder: 1);
+//	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
 
 
 s.sync;
@@ -465,7 +465,7 @@ SynthDef(\Echo, {|aformatIn, aformatOut|
 	var sig, delayTime = 0.6;
         sig = In.ar(aformatOut, 4);
 	delayTime = 0.6;
-        sig = CombC.ar(sig*0.1, 2, delayTime, 6) + sig; 
+        sig = CombC.ar(sig*0.5, 2, delayTime, 6) + sig; 
 	Out.ar(aformatIn, sig)
 }).add;
 

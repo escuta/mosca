@@ -35,7 +35,7 @@ Mosca {
 	<>insertFlag,
 	<>aFormatBusFoa, <>aFormatBusSoa, 
 	<>dur,
-	<>rawbus, <>raworder,
+	<>rawbusfoa, <>rawbussoa, <>raworder,
 	<>decoder,
 	<>espacializador, <>synt,
     <>delaytime, <>decaytime; // for allpass;
@@ -58,8 +58,8 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
-		server = Server.default, decoder = nil, rawbus = 0, raworder = 2;
-		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder, rawbus, raworder);
+		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2;
+		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder, rawbusfoa, rawbussoa, raworder);
 	}
 
 	*printSynthParams {
@@ -100,7 +100,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder, irawbus, iraworder;
+	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder, irawbusfoa, irawbussoa, iraworder;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -132,7 +132,8 @@ GUI Parameters usable in SynthDefs
 		this.halfwidth = this.width / 2;
 		this.scale = this.halfwidth; // for the moment at least
 		this.dur = idur;
-		this.rawbus = irawbus;
+		this.rawbusfoa = irawbusfoa;
+		this.rawbussoa = irawbussoa;
 		this.raworder = iraworder;
 		this.decoder = idecoder;
 		
@@ -209,29 +210,29 @@ GUI Parameters usable in SynthDefs
 		} {
 			if(raworder == 1) {
 				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-					Out.ar( this.rawbus, ambsinal1O); };
+					Out.ar( this.rawbusfoa, ambsinal1O); };
 				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-					Out.ar( this.rawbus, ambsinal1plus2_1O); };
+					Out.ar( this.rawbusfoa, ambsinal1plus2_1O); };
 				revGlobalAmbFunc = { |ambsinal, dec|
-					Out.ar( this.rawbus, ambsinal); };
+					Out.ar( this.rawbusfoa, ambsinal); };
 				
 				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-					Out.ar( this.rawbus, foaSig); };
+					Out.ar( this.rawbusfoa, foaSig); };
 				playBFormatOutFunc = { |player, dec|
-					Out.ar( this.rawbus, player); };
+					Out.ar( this.rawbusfoa, player); };
 				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
 					Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));	};
 			} {
 				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-					Out.ar( this.rawbus, ambsinal); };
+					Out.ar( this.rawbussoa, ambsinal); };
 				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-					Out.ar( this.rawbus, ambsinal1plus2); };
+					Out.ar( this.rawbussoa, ambsinal1plus2); };
 				revGlobalAmbFunc = { |ambsinal, dec|
-					Out.ar( this.rawbus, ambsinal); };
+					Out.ar( this.rawbusfoa, ambsinal); };
 				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-					Out.ar( this.rawbus, soaSig); };
+					Out.ar( this.rawbussoa, soaSig); };
 				playBFormatOutFunc = { |player, dec|
-					Out.ar( this.rawbus, player); };
+					Out.ar( this.rawbusfoa, player); };
 				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
 					Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));	};
 			}
