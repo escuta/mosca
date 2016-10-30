@@ -189,8 +189,6 @@ private:: nfontes
 private:: nfontes = value
 private:: offset
 private:: offset = value
-private:: rawbus
-private:: rawbus = value
 private:: revGlobal
 private:: revGlobal = value
 private:: revGlobalBF
@@ -252,6 +250,10 @@ private:: raworder = value
 private:: releaseInsert
 private:: synt
 private:: synt = value
+private:: rawbusfoa
+private:: rawbusfoa = value
+private:: rawbussoa
+private:: rawbussoa = value
 
 
 
