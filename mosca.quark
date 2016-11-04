@@ -1,6 +1,6 @@
 (
 	\name:    "Mosca",
-    	\path:    "mosca",
+    	\path:    "Mosca",
     	\summary: "GUI-assisted authoring of dynamic ambisonic sound fields",
     	\author:  "mott@escuta.org",
     	\url:     "http://github.com/escuta/mosca",
