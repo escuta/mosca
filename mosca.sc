@@ -1594,7 +1594,7 @@ GUI Parameters usable in SynthDefs
 		makeSynthDefPlayers.("HWBus", 1);
 		//("Bus is " ++ this.swinbus[0]).postln;
 
-		// Make SWBus In SynthDefs
+		// Make SCBus In SynthDefs
 
 		playMonoInFunc[2] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
@@ -1745,7 +1745,7 @@ GUI Parameters usable in SynthDefs
 		//arg dur = 120;
 		var fonte, dist, mbus, sbus, soaBus, ncanais, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
-		dopcheque,
+		dopcheque, autoloop, autoloopval=false,
 		lastAutomation = nil,
 		loopcheck, lpcheck, lp,
 		spreadcheck, spcheck, sp,
@@ -1963,7 +1963,6 @@ GUI Parameters usable in SynthDefs
 			["hide data", Color.white, Color.blue]
 		])
 		.action_({ arg but;
-			//	but.value.postln;
 			if(but.value == 1)
 			{wdados.front;}
 			{wdados.visible = false;};
@@ -1980,7 +1979,6 @@ GUI Parameters usable in SynthDefs
 			["hide aux", Color.white, Color.blue]
 		])
 		.action_({ arg but;
-			//	but.value.postln;
 			if(but.value == 1)
 			{waux.front;}
 			{waux.visible = false;};
@@ -2146,7 +2144,6 @@ GUI Parameters usable in SynthDefs
 				//	updateSynthInArgs.value(i);
 				
 				if(this.espacializador[i] != nil) {
-					("atualizando espacializador # " ++ i).postln;
 					this.espacializador[i].set(
 						//	\mx, num.value  ???
 						\dopon, doppler[i], // not needed...
@@ -2180,7 +2177,6 @@ GUI Parameters usable in SynthDefs
 						\df, df[i].value
 					);
 					
-					("x value = " ++ xbox[i].value).postln;
 					
 				};
 
@@ -2215,7 +2211,6 @@ GUI Parameters usable in SynthDefs
 				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 			};
 			
-			("tpos = " ++ tpos).postln;
 			if ((path != "") && (hwncheck[i].value.not || scncheck[i].value.not)) {
 				{	
 					
@@ -2370,7 +2365,6 @@ GUI Parameters usable in SynthDefs
 						
 					} {
 						if (sombuf[i].numChannels == 4) {
-							"B-format".postln;
 							playingBF[i] = true;
 							ncanais[i] = 4;
 							angle[i] = 0;
@@ -2495,7 +2489,6 @@ GUI Parameters usable in SynthDefs
 					var x;
 					x = case
 					{ this.ncan[i] == 1 } {
-						"Mono!".postln;
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
@@ -2591,7 +2584,6 @@ GUI Parameters usable in SynthDefs
 						
 					}
 					{ this.ncan[i] == 2 } {
-						"Stereo!".postln;
 						ncanais[i] = 0; // just in case!
 						angle[i] = pi/2;
 						{angnumbox.value = pi/2;}.defer;
@@ -2691,11 +2683,6 @@ GUI Parameters usable in SynthDefs
 						
 					}
 					{ this.ncan[i] == 4 } {
-						//"B-format!".postln;
-						
-						"B-format ambisonic!!!".postln;
-						//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-						// reverb for non-contracted (full b-format) component
 						
 						cbox[i].value = 0;
 						clev[i] = 0;
@@ -2849,21 +2836,14 @@ GUI Parameters usable in SynthDefs
 			["stop", Color.white, Color.red]
 		])
 		.action_({ arg but;
-			//	var testado = fatual;
-			//	but.value.postln;
 			{ if(isPlay.not) {
 				if(but.value == 1)
 				{
 					
 					runTrigger.value(fatual);
-					//	("FATUAL + " ++ fatual).postln;
-
-					//atualizarvariaveis.value;
 					tocar.value(fatual, 0);
-					//		~testado = fatual;
 					testado[fatual] = true;
-					
-					//win.drawFunc.value;	
+				
 				}
 				{
 					
@@ -2919,8 +2899,6 @@ GUI Parameters usable in SynthDefs
                 onSuccess.value(textField.value);
                 dwin.close;
 				
-				//controle.seek; // rewind to zero
-				//controle.snapshot; // and take snapshot
 				("FILE IS " ++ textField.value ++ "/filenames.txt").postln;
 				("mkdir -p" + textField.value).systemCmd;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
@@ -2935,9 +2913,6 @@ GUI Parameters usable in SynthDefs
             };
             dwin.front;
 
-			//			controle.seek;
-			//			controle.snapshot; // rewind to zero
-			//			controle.save(controle.presetDir);
 			
 			
 		});
@@ -2950,7 +2925,6 @@ GUI Parameters usable in SynthDefs
 			["load auto", Color.black, Color.white],
 		])
 		.action_({
-			//arg but;
 			var filenames;
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
@@ -3046,12 +3020,10 @@ GUI Parameters usable in SynthDefs
 			lslider.value = llev[fatual];
 			rslider.value = (rlev[fatual] + pi) / 2pi;
 			rnumbox.value = rlev[fatual];
-			rlev[fatual].postln;
 			dirslider.value = dlev[fatual] / (pi/2);
 			dirnumbox.value = dlev[fatual];
 			cslider.value = clev[fatual];
 			zslider.value = (zlev[fatual] + this.halfwidth) / this.width;
-			("Z-lev = " ++  zlev[fatual]).postln;
 			
 			dpslider.value = dplev[fatual];
 			connumbox.value = clev[fatual];
@@ -3088,37 +3060,31 @@ GUI Parameters usable in SynthDefs
 		
 		
 		dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
-			("Doppler is " ++ butt.value).postln;
 			{dcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		dopcheque.value = false;
 		
 		loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
-			("Loop is " ++ butt.value).postln;
 			{lpcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		loopcheck.value = false;
 
 		spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
-			("Spread is " ++ butt.value).postln;
 			{spcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		spreadcheck.value = false;
 		diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
-			("Diffuse is " ++ butt.value).postln;
 			{dfcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		diffusecheck.value = false;
 
 		
 		revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
-			("A-format rev is " ++ butt.value).postln;
 			{rvcheck[fatual].valueAction = butt.value;}.defer;
 		});
 		revcheck.value = false;
 
 		lincheck = CheckBox( win, Rect(184, 30, 180, 20), "Linear intensity").action_({ arg butt;
-			("Linear intensity is " ++ butt.value).postln;
 			{lncheck[fatual].valueAction = butt.value;}.defer;
 		});
 		lincheck.value = false;
@@ -3127,14 +3093,12 @@ GUI Parameters usable in SynthDefs
 		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ arg butt;
 			{hwncheck[fatual].valueAction = butt.value;}.defer;
 			if (hwInCheck.value && scInCheck.value) {
-				//scInCheck.value = false;
 			};
 		});
 
 		scInCheck = CheckBox( win, Rect(104, 30, 60, 20), "SC-in").action_({ arg butt;
 			{scncheck[fatual].valueAction = butt.value;}.defer;
 			if (scInCheck.value && hwInCheck.value) {
-				//hwInCheck.value = false;
 			};
 		});
 
@@ -3145,16 +3109,12 @@ GUI Parameters usable in SynthDefs
 		
 		
 		
-		//	~ncantexto = StaticText(~win, Rect(55, -10 + ~offset, 200, 20));
-		//	~ncantexto.string = "No. of chans. (HW & SC-in)";
 		textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
 		textbuf.string = "No. of chans. (HW & SC-in)";
 		ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
 		ncannumbox.value = 0;
 		ncannumbox.clipHi = 4;
 		ncannumbox.clipLo = 0;
-		//angnumbox.step_(0.1); 
-		//angnumbox.scroll_step=0.1;
 		ncannumbox.align = \center;
 		ncannumbox.action = {arg num;
 			
@@ -3170,10 +3130,7 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "Start Bus (HW-in)";
 		busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
 		busininumbox.value = 0;
-		//		busininumbox.clipHi = 31;
 		busininumbox.clipLo = 0;
-		//angnumbox.step_(0.1); 
-		//angnumbox.scroll_step=0.1;
 		busininumbox.align = \center;
 		busininumbox.action = {arg num; 
 			{businibox[fatual].valueAction = num.value;}.defer;
@@ -3198,7 +3155,6 @@ GUI Parameters usable in SynthDefs
 				this.espacializador[fatual].set(\angle, num.value);
 				this.setSynths(fatual, \angle, num.value);
 				angle[fatual] = num.value;
-				("ângulo = " ++ num.value).postln; 
 			}
 			{angnumbox.value = 0;};
 		};
@@ -3238,7 +3194,6 @@ GUI Parameters usable in SynthDefs
 				this.espacializador[fatual].set(\elev, num.value);
 				this.setSynths(fatual, \elev, num.value);
 				zlev[fatual] = num.value;
-				("Z-Axis = " ++ num.value).postln; 
 			}
 			{{znumbox.value = 0;}.defer;};
 		};
@@ -3272,19 +3227,12 @@ GUI Parameters usable in SynthDefs
 		volnumbox.action = {arg num; 
 			{vbox[fatual].valueAction = num.value;}.defer;
 			
-			//		this.synt[fatual].set(\level, num.value);
-			//		level[fatual] = num.value;
-			//		("level = " ++ num.value).postln; 
 		};
-		// stepsize?
 		volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
 		volslider.value = 0;
 		volslider.action = {arg num;
 			{vbox[fatual].valueAction = num.value;}.defer;
 			
-			//		volnumbox.value = num.value;
-			//		this.synt[fatual].set(\level, num.value);
-			//		level[fatual] = num.value;
 		};
 
 
@@ -3437,8 +3385,6 @@ GUI Parameters usable in SynthDefs
 			["load audio", Color.black, Color.white],
 		])
 		.action_({ arg but;
-			//var filebuf, filebuf1, filebuf2;
-			but.value.postln;
 			this.synt[fatual].free; // error check
 			this.espacializador[fatual].free;
 			dopcheque.value = false; // coloque toggle no padrão
@@ -3449,9 +3395,6 @@ GUI Parameters usable in SynthDefs
 				arg path;
 
 				{tfield[fatual].valueAction = path;}.defer;
-				//controle.seek;  // need to take an Automation snapshot at zero or we'll lose
-				//controle.snapshot; // this filename on next rewind of transport
-				// perhaps we should resume prior transport position afterwards
 				
 
 			}, 
@@ -3589,7 +3532,6 @@ GUI Parameters usable in SynthDefs
 			.action_({ arg but;
 				if(i==fatual){dopcheque.value = but.value;};
 				if (but.value == true) {
-					//	"Aqui!!!".postln;
 					doppler[i] = 1;
 					this.espacializador[i].set(\dopon, 1);
 					this.synt[i].set(\dopon, 1);
@@ -3606,7 +3548,6 @@ GUI Parameters usable in SynthDefs
 			.action_({ arg but;
 				if(i==fatual){loopcheck.value = but.value;};
 				if (but.value == true) {
-					//	"Aqui!!!".postln;
 					lp[i] = 1;
 					this.synt[i].set(\lp, 1);
 					this.setSynths(i, \lp, 1);
@@ -3623,7 +3564,6 @@ GUI Parameters usable in SynthDefs
 			.action_({ arg but;
 				if(i==fatual){revcheck.value = but.value;};
 				if (but.value == true) {
-					//	"Aqui!!!".postln;
 					rv[i] = 1;
 					//this.synt[i].set(\lp, 1);
 					this.setSynths(i, \rv, 1);
@@ -3670,13 +3610,10 @@ GUI Parameters usable in SynthDefs
 			.action_({ arg but;
 				if(i==fatual){lincheck.value = but.value;};
 				if (but.value == true) {
-					//	"Aqui!!!".postln;
 					ln[i] = "_linear";
-					//this.synt[i].set(\lp, 1);
 					this.setSynths(i, \ln, 1);
 				}{
 					ln[i] = "";
-					//this.synt[i].set(\lp, 0);
 					this.setSynths(i, \ln, 0);
 				};
 			});
@@ -3894,9 +3831,7 @@ GUI Parameters usable in SynthDefs
 				if (path.notNil || (path != "")) {
 					
 					sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
-						//((buf.numFrames ) / buf.sampleRate).postln;
 						"loaded file".postln;
-						//				(buf.sampleRate).postln;
 					});
 				}
 				
@@ -3913,7 +3848,6 @@ GUI Parameters usable in SynthDefs
 					this.espacializador[i].set(\mx, xval[i]);
 					this.setSynths(i, \mx, xval[i]);
 					this.synt[i].set(\mx, xval[i]);
-					//xval[i].postln;
 				};
 				
 				
@@ -3935,20 +3869,15 @@ GUI Parameters usable in SynthDefs
 
 			zbox[i].action = {arg num;
 				this.espacializador[i].set(\mz, num.value);
-				//	zval[i] = num.value;
 				zval[i] = num.value / this.halfwidth;
 				if (zval[i] > 1) {zval[i] = 1};
 				if (zval[i] < -1) {zval[i] = -1};
 				
 				this.setSynths(i, \mz, zval[i]);
-				//"fooooob".postln;
 				this.synt[i].set(\mz, zval[i]);
-				//synt[i].set(\elev, num.value);
 				zlev[i] = zval[i];
 				if(i == fatual) 
 				{
-					//var val = (this.halfwidth - (num.value * width)) * -1;
-					//					zslider.value = (num.value + this.halfwidth) / this.width;
 					zslider.value = (num.value + 1) / 2;
 					znumbox.value = num.value;
 				};
@@ -3977,7 +3906,6 @@ GUI Parameters usable in SynthDefs
 			
 			
 			abox[i].action = {arg num;
-				//	("Ângulo = " ++ num.value ++ " radianos").postln;
 				angle[i] = num.value;
 				if((ncanais[i]==2) || (this.ncan[i]==2)){
 					this.espacializador[i].set(\angle, num.value);
@@ -3995,7 +3923,6 @@ GUI Parameters usable in SynthDefs
 				this.synt[i].set(\level, num.value);
 				this.setSynths(i, \level, num.value);
 				level[i] = num.value;
-				//	("level = " ++ num.value).postln; 
 				if(i == fatual) 
 				{
 					volslider.value = num.value;
@@ -4051,7 +3978,6 @@ GUI Parameters usable in SynthDefs
 			};
 
 			dbox[i].action = {arg num; 
-				//	num.value.postln;
 				this.synt[i].set(\directang, num.value);
 				this.setSynths(i, \directang, num.value);
 				dlev[i] = num.value;
@@ -4170,12 +4096,15 @@ GUI Parameters usable in SynthDefs
 		controle.presetDir = prjDr ++ "/auto";
 		//controle.setMinTimeStep(2.0);
 		controle.onEnd = {
-			controle.stop;
-			"controle is stopped".postln;
+			//	controle.stop;
 			controle.seek;
-			this.nfontes.do { arg i;	
-				this.synt[i].free; // error check
-				
+			if(autoloopval) {
+				controle.play;	
+			};
+			this.nfontes.do { arg i;
+				if(this.synt[i].notNil) {
+					this.synt[i].free;
+				};
 			};
 		};
 		
@@ -4411,6 +4340,17 @@ GUI Parameters usable in SynthDefs
 			};
 			
 			//	dcheck[fatual].valueAction = butt.value;
+		});
+
+		autoloop = CheckBox( win, Rect(305, this.width - 40, 140, 20), "Loop").action_({ arg butt;
+			//("Doppler is " ++ butt.value).postln;
+			if(butt.value) {
+				"Looping transport".postln;
+				autoloopval = true;
+			} {
+				autoloopval = false;			
+			};
+			
 		});
 
 
