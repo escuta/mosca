@@ -24,7 +24,7 @@ Mosca {
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>waux, <>sprite, <>nfontes,
-	<>controle, <>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
+	<>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
 	<>aux1, <>aux2, <>aux3, <>aux4, <>aux5,  // aux slider values 
@@ -38,6 +38,8 @@ Mosca {
 	<>rawbusfoa, <>rawbussoa, <>raworder,
 	<>decoder,
 	<>espacializador, <>synt,
+	<>lastAutomation = nil,
+	<>tfield, 
     <>delaytime, <>decaytime; // for allpass;
 
 
@@ -1738,6 +1740,20 @@ GUI Parameters usable in SynthDefs
 			this.stopFunc[source-1] = nil;
 		}
 	}
+	// load automation data. Can be called after creation of Mosca instance
+	loadAutomation {
+		|path|
+		var filenames;
+		this.controle.load(path);
+		this.controle.seek; 
+		this.lastAutomation = path;
+		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
+				this.nfontes.do { arg i;
+					var line = filenames.getLine(1024);
+					if(line!="NULL"){this.tfield[i].valueAction = line};
+				};
+		filenames.close;
+	}
 
 
 	gui {
@@ -1746,7 +1762,7 @@ GUI Parameters usable in SynthDefs
 		var fonte, dist, mbus, sbus, soaBus, ncanais, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
 		dopcheque, autoloop, autoloopval=false,
-		lastAutomation = nil,
+		//lastAutomation = nil,
 		loopcheck, lpcheck, lp,
 		spreadcheck, spcheck, sp,
 		diffusecheck, dfcheck, df,
@@ -1770,7 +1786,7 @@ GUI Parameters usable in SynthDefs
 		a1but, a2but, a3but, a4but, a5but, // variable
 		a1check, a2check, a3check, a4check, a5check, // data windows representation of a1but etc (ie. as checkbox)
 		angslider, bsalvar, bcarregar, bdados, baux, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
-		gslider, gnumbox, lslider, lnumbox, tfield, dopflag = 0, btestar, tocar, isPlay = false, isRec,
+		gslider, gnumbox, lslider, lnumbox, dopflag = 0, btestar, tocar, isPlay = false, isRec,
 		atualizarvariaveis, updateSynthInArgs,
 		auxslider1, auxslider2, auxslider3, auxslider4, auxslider5, // aux sliders in control window
 		auxbutton1, auxbutton2, auxbutton3, auxbutton4, auxbutton5, // aux sliders in control window
@@ -1870,7 +1886,7 @@ GUI Parameters usable in SynthDefs
 		a4check = Array.newClear(this.nfontes); // aux - array of buttons in data window
 		a5check = Array.newClear(this.nfontes); // aux - array of buttons in data window
 
-		tfield = Array.newClear(this.nfontes);
+		this.tfield = Array.newClear(this.nfontes);
 		
 		testado = Array.newClear(this.nfontes);
 
@@ -2192,7 +2208,7 @@ GUI Parameters usable in SynthDefs
 		
 		tocar = {
 			arg i, tpos;
-			var path = tfield[i].value;
+			var path = this.tfield[i].value;
 
 			
 
@@ -2877,12 +2893,12 @@ GUI Parameters usable in SynthDefs
 			var title="Save: select automation dir", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
 			bounds = Rect(100,300,300,30);
-			if(prjDr.isNil && lastAutomation.isNil) {
+			if(prjDr.isNil && this.lastAutomation.isNil) {
 				preset = "HOME".getenv ++ "/auto/"; } {
-					if (lastAutomation.isNil) {
+					if (this.lastAutomation.isNil) {
 						preset = prjDr ++ "/auto/";
 					} {
-						preset = lastAutomation;
+						preset = this.lastAutomation;
 					};
 				};
 			dwin = GUI.window.new(title, bounds);
@@ -2903,12 +2919,12 @@ GUI Parameters usable in SynthDefs
 				("mkdir -p" + textField.value).systemCmd;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
 				nfontes.do { arg i;
-					if(tfield[i].value != "") {filenames.write(tfield[i].value ++ "\n")}
+					if(this.tfield[i].value != "") {filenames.write(this.tfield[i].value ++ "\n")}
 					{filenames.write("NULL\n")};
 				};
 				filenames.close;
 				controle.save(textField.value);
-				lastAutomation = textField.value;
+				this.lastAutomation = textField.value;
 
             };
             dwin.front;
@@ -2929,12 +2945,12 @@ GUI Parameters usable in SynthDefs
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
 			bounds = Rect(100,300,300,30);
-			if(prjDr.isNil && lastAutomation.isNil) {
+			if(prjDr.isNil && this.lastAutomation.isNil) {
 				preset = "HOME".getenv ++ "/auto/"; } {
-					if(lastAutomation.isNil) {
+					if(this.lastAutomation.isNil) {
 						preset = prjDr ++ "/auto/";
 					} {
-						preset = lastAutomation;
+						preset = this.lastAutomation;
 					};
 				};
 			dwin = GUI.window.new(title, bounds);
@@ -2952,11 +2968,11 @@ GUI Parameters usable in SynthDefs
                 dwin.close;
 				controle.load(textField.value);
 				controle.seek;
-				lastAutomation = textField.value;
+				this.lastAutomation = textField.value;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"r");
 				nfontes.do { arg i;
 					var line = filenames.getLine(1024);
-					if(line!="NULL"){tfield[i].valueAction = line};
+					if(line!="NULL"){this.tfield[i].valueAction = line};
 				};
 				filenames.close;
             };
@@ -3394,13 +3410,13 @@ GUI Parameters usable in SynthDefs
 			Dialog.openPanel({ 
 				arg path;
 
-				{tfield[fatual].valueAction = path;}.defer;
+				{this.tfield[fatual].valueAction = path;}.defer;
 				
 
 			}, 
 				{
 					"cancelled".postln;
-					{tfield[fatual].value = "";}.defer;
+					{this.tfield[fatual].value = "";}.defer;
 					
 				}
 			);	
@@ -3750,7 +3766,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 
-			tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
+			this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
 
 			
@@ -3773,7 +3789,7 @@ GUI Parameters usable in SynthDefs
 			a4box[i].font = Font(Font.defaultSansFace, 9);
 			a5box[i].font = Font(Font.defaultSansFace, 9);
 
-			tfield[i].font = Font(Font.defaultSansFace, 9);
+			this.tfield[i].font = Font(Font.defaultSansFace, 9);
 			
 			xbox[i].decimals = 4;
 			ybox[i].decimals = 4;
@@ -3827,7 +3843,7 @@ GUI Parameters usable in SynthDefs
 			}; 
 
 			
-			tfield[i].action = {arg path;
+			this.tfield[i].action = {arg path;
 				if (path.notNil || (path != "")) {
 					
 					sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
@@ -4123,7 +4139,7 @@ GUI Parameters usable in SynthDefs
 				if(testado[i].not) {
 					{runTrigger.value(i);}.defer;
 				};
-				{loaded = tfield[i].value;}.defer;
+				{loaded = this.tfield[i].value;}.defer;
 				looped = lp[i];
 				if(lp[i] != 1){
 					{tocar.value(i, startTime);}.defer;
@@ -4193,7 +4209,7 @@ GUI Parameters usable in SynthDefs
 			controle.dock(dbox[i], "diretividade_" ++ i);
 			controle.dock(cbox[i], "contraction_" ++ i);
 			
-			//controle.dock(tfield[i], "filename_" ++ i);
+			//controle.dock(this.tfield[i], "filename_" ++ i);
 			controle.dock(dcheck[i], "doppler_" ++ i);			
 			controle.dock(lpcheck[i], "loop_" ++ i);
 			controle.dock(hwncheck[i], "hwin_" ++ i);
