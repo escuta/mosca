@@ -40,6 +40,8 @@ Mosca {
 	<>espacializador, <>synt,
 	<>lastAutomation = nil,
 	<>tfield, 
+	<>autoloopval=false,
+	<>autoloop,
     <>delaytime, <>decaytime; // for allpass;
 
 
@@ -1755,13 +1757,22 @@ GUI Parameters usable in SynthDefs
 		filenames.close;
 	}
 
+	playAutomation {
+		this.controle.play;
+	}
+	playAutomationLooped {
+		//this.autoloopval = true;
+		this.autoloop.valueAction = true;
+		this.controle.play;
+	}
+
 
 	gui {
 
 		//arg dur = 120;
 		var fonte, dist, mbus, sbus, soaBus, ncanais, fatual = 0, 
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bnodes, sombuf, funcs, 
-		dopcheque, autoloop, autoloopval=false,
+		dopcheque,  
 		//lastAutomation = nil,
 		loopcheck, lpcheck, lp,
 		spreadcheck, spcheck, sp,
@@ -4114,7 +4125,7 @@ GUI Parameters usable in SynthDefs
 		controle.onEnd = {
 			//	controle.stop;
 			controle.seek;
-			if(autoloopval) {
+			if(this.autoloopval) {
 				controle.play;	
 			};
 			this.nfontes.do { arg i;
@@ -4358,13 +4369,13 @@ GUI Parameters usable in SynthDefs
 			//	dcheck[fatual].valueAction = butt.value;
 		});
 
-		autoloop = CheckBox( win, Rect(305, this.width - 40, 140, 20), "Loop").action_({ arg butt;
+		this.autoloop = CheckBox( win, Rect(305, this.width - 40, 140, 20), "Loop").action_({ arg butt;
 			//("Doppler is " ++ butt.value).postln;
 			if(butt.value) {
 				"Looping transport".postln;
-				autoloopval = true;
+				this.autoloopval = true;
 			} {
-				autoloopval = false;			
+				this.autoloopval = false;			
 			};
 			
 		});
