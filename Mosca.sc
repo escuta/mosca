@@ -17,7 +17,7 @@
 */
 
 
-Moscanova {
+Mosca {
    	var <>myTestVar;
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
@@ -41,6 +41,7 @@ Moscanova {
 	<>rawbusfoa, <>rawbussoa, <>raworder,
 	<>decoder,
 	<>serport,
+	<>offsetheading,
 	<>espacializador, <>synt,
 	<>lastAutomation = nil,
 	<>tfield, 
@@ -78,9 +79,9 @@ Moscanova {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
 		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
-		serport = nil, recchans = 2, recbus = 0;
+		serport = nil, offsetheading = 0, recchans = 2, recbus = 0;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder,
-			rawbusfoa, rawbussoa, raworder, serport, recchans, recbus);
+			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus);
 	}
 
 	
@@ -124,7 +125,7 @@ GUI Parameters usable in SynthDefs
 	}
 
 	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder,
-		irawbusfoa, irawbussoa, iraworder, iserport,
+		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
 		irecchans, irecbus;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
@@ -161,8 +162,10 @@ GUI Parameters usable in SynthDefs
 		this.raworder = iraworder;
 		this.decoder = idecoder;
 		this.serport = iserport;
+		this.offsetheading = ioffsetheading;
 		this.recchans = irecchans;
 		this.recbus = irecbus;
+
 
 		if (this.serport.notNil) {
 
@@ -209,7 +212,7 @@ GUI Parameters usable in SynthDefs
 				1.wait; 
 			}; 
 		});
-		this.headingOffset = 0;
+		this.headingOffset = this.offsetheading;
 
 		this.mark1 = Array.newClear(4);
 		this.mark2 = Array.newClear(4);
@@ -2108,6 +2111,10 @@ GUI Parameters usable in SynthDefs
 		this.streamdisk = Array.newClear(this.nfontes);	
 		
 		testado = Array.newClear(this.nfontes);
+
+		//this.offsetHeading(this.offsetheading);
+		//("headingoffset variable = " ++ this.offsetheading).postln;
+
 
 		
 		// for the moment - this regulates file playing synths

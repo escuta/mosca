@@ -16,6 +16,8 @@ Mosca also has other features including a scalable Doppler Effect on moving sour
 
 Additionally, Mosca supports methods for making "A-format inserts" on any source spatialised in the GUI. In this way, the user may write a filtering synth and apply it to the sound without disrupting the encoded spatial characteristics. Please see the code examples below for more information.
 
+Mosca now has headtracking implemented using the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. See below for more information.
+
 USING MOSCA
 
 Please ensure that SuperCollider is installed with plugins from: https://github.com/supercollider/sc3-plugins
@@ -83,6 +85,24 @@ NOTES ON GUI COMPONENTS
 
 - Loop. Loop the transport.
 
+- Orientation (when used with Arduino 9-axes Motion Shield headtracking device (see below). The values are for heading, roll and pitch and are in degrees radians.
+
+SERIAL DEVICES / HEAD TRACKING
+
+The Arduino and 9-Axes Motion Shield should be placed on top of the headphones with the USB socket of the Arduino directed to the left of the user.
+
+To access a serial devices by a persistent name on Linux, first get information about an attached device with a line such as:
+
+udevadm info -a -p  $(udevadm info -q path -n /dev/ttyACM0)
+
+Then create a file /etc/udev/rules.d/10-local.rules and add contents such as the following (edit this line and above to your needs):
+
+ACTION=="add", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", MODE:="0666", SYMLINK+="head_tracker"
+
+To load this without rebooting, type: sudo udevadm control --reload-rules
+
+Then disconnect and reconnect your device. In the above example it can be accessed at /dev/head_tracker for example.
+
 ACKNOWLEDGEMENTS
 
 Many thanks to Joseph Anderson, Neels Hofmeyr and members of the SuperCollider list for their assistance and valuable suggestions.
@@ -123,13 +143,25 @@ http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDe
 Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to the outputs for external decoding with, for example, AmbDec: http://kokkinizita.linuxaudio.org/linuxaudio/
 
 ARGUMENT:: rawbusfoa
-Starting bus for raw first order ambisonic output. First and second order ambisonic output may be separated from each other (to enable use of different external decoders) and from channels dedicated to decoder output. 
+Starting bus for raw first order ambisonic output. First and second order ambisonic output may be separated from each other (to enable use of different external decoders) and from channels dedicated to decoder output. Default is zero.
 
 ARGUMENT:: rawbussoa
-Starting bus for raw second order ambisonic output. First and second order ambisonic output may be separated from each other (to enable use of different external decoders) and from channels dedicated to decoder output.
+Starting bus for raw second order ambisonic output. First and second order ambisonic output may be separated from each other (to enable use of different external decoders) and from channels dedicated to decoder output. Default is zero.
 
 ARGUMENT:: raworder
 Ambisonics order for raw output to external decoder. Default is 2. 1st order may be used with an extenal decoder to take advantage of ATK 1st order features such as proximity effect and frequency spreading (see "Contraction"above).
+
+ARGUMENT:: serport
+Name of serial port to receive headtracking data. Eg. "/dev/ttyACM0". For use with a binaural decoder. Default is nil.
+
+ARGUMENT:: offsetheading
+Value in degrees radians to offset heading value of the connected Arduino 9-axes Motion Shield. Default is 0. This may be used to adjust for the "magnetic declination" of your local region, calibrating the shield to true north. It may also be used to rotate North to the direction of your computer monitor. Eg. If when you are facing the monitor and the offsetheading is set to the default 0, you see a heading value (bottom-right of window) of 2.6, set the value to -2.6. The heading value will now be set to zero when you face the monitor.
+
+ARGUMENT:: recchans
+Number of channels for recording audio output to disk. Default is 2;
+
+ARGUMENT:: recbus
+Starting bus for recording audio output to disk. Default is 0. Note: this argument may only be set in SC 3.9;
 
 returns:: New instance.
 
@@ -256,14 +288,6 @@ private:: rawbusfoa
 private:: rawbusfoa = value
 private:: rawbussoa
 private:: rawbussoa = value
-private:: autoloop
-private:: autoloop = value
-private:: autoloopval
-private:: autoloopval = value
-private:: lastAutomation
-private:: lastAutomation = value
-private:: tfield
-private:: tfield = value
 
 
 
@@ -364,19 +388,22 @@ Make sure the server is stopped before running this block of example code for fi
 s = Server.local;
 s.quit;
 o = s.options;
-o.numAudioBusChannels = 2048;
+//o.numAudioBusChannels = 2048;
 o.numInputBusChannels = 32;
 o.numOutputBusChannels = 15; // eg. 2 for stereo, 4 for 1st order ambisonics & 9 for 2nd order
 o.memSize = 64 * 8192;
-o.numAudioBusChannels = 1024;
+o.numAudioBusChannels = 2048;
 o.numWireBufs = 512;
 s.waitForBoot {
 
 // Add a SC internal decoder (1st order only)
 // See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
 //~decoder = FoaDecoderKernel.newUHJ;
-~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
 s.sync;
+~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
+//5.wait;
+s.sync;
+
 MIDIIn.connect;
 s.sync;
 
@@ -384,8 +411,19 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-	   width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+// with headtracking (should only be used with binaural decoder)
+
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/botanica", nsources: 32, width: 665, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: 0, recchans: 2, recbus: 0);
+
+
+// without headtracking
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+
+// without headtracking but with map
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
+//	   width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder,
+//	   mappath: "/home/iain/projects/ambisonics/botanicaproject/map/casarotated.png");
 
 // Use allpass filter reverberation
 //~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
@@ -401,11 +439,10 @@ s.sync;
 
 ~testMosca.gui;
 
+//~testMosca.offsetHeading(0.38);
 };
 
 )
-
-// If you close the Mosca window, tidy up the decoder and MIDI-in connection
 
 (
 MIDIIn.disconnect; 
