@@ -14,9 +14,9 @@ Reverberation is performed either using a B-format tail room impulse response (R
 
 Mosca also has other features including a scalable Doppler Effect on moving sources, looping of sources loaded from file, adjustment of virtual loudspeaker angle of stereo sources and in the case of B-format sources: a rotation control, adjustment of "directivity" (see ATK documentation) and a control of "contraction", whereby the B-format signal may be crossfaded with its W component and which is spatialised as a 2nd order ambisonic signal.
 
-Additionally, Mosca supports methods for making "A-format inserts" on any source spatialised in the GUI. In this way, the user may write a filtering synth and apply it to the sound without disrupting the encoded spatial characteristics. Please see the code examples below for more information.
+Mosca supports methods for making "A-format inserts" on any source spatialised in the GUI. In this way, the user may write a filtering synth and apply it to the sound without disrupting the encoded spatial characteristics. Please see the code examples below for more information.
 
-Mosca now has headtracking implemented using the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. See below for more information.
+Additionally, Mosca implements headtracking with the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. See below for more information.
 
 USING MOSCA
 
@@ -89,7 +89,7 @@ NOTES ON GUI COMPONENTS
 
 SERIAL DEVICES / HEAD TRACKING
 
-The Arduino and 9-Axes Motion Shield should be placed on top of the headphones with the USB socket of the Arduino directed to the left of the user.
+The Arduino and 9-Axes Motion Shield should be placed on top of the headphones with the USB socket of the Arduino directed to the left of the user. In this orientation the USB cable can run down left-hand side of headphones together with audio lead. Use the files in the directory arduinotracker in the git sources to configure the Arduino and shield.
 
 To access a serial devices by a persistent name on Linux, first get information about an attached device with a line such as:
 
@@ -288,6 +288,83 @@ private:: rawbusfoa
 private:: rawbusfoa = value
 private:: rawbussoa
 private:: rawbussoa = value
+
+private:: autoloop
+private:: autoloop = value
+private:: autoloopval
+private:: autoloopval = value
+private:: binMasterBus
+private:: binMasterBus = value
+private:: blips
+private:: globFOATransform
+private:: globFOATransform = value
+private:: globTBus
+private:: globTBus = value
+private:: headingOffset
+private:: headingOffset = value
+private:: headingnumbox
+private:: headingnumbox = value
+private:: kroutine
+private:: kroutine = value
+private:: lastAutomation
+private:: lastAutomation = value
+private:: mark1
+private:: mark1 = value
+private:: mark2
+private:: mark2 = value
+private:: matchTByte
+private:: offsetHeading
+
+private:: offsetheading
+private:: offsetheading = value
+private:: pitchnumbox
+private:: pitchnumbox = value
+private:: playingBF
+private:: playingBF = value
+private:: procTracker
+private:: recbus
+private:: recbus = value
+private:: recchans
+private:: recchans = value
+private:: rollnumbox
+private:: rollnumbox = value
+private:: serialKeepItUp
+private:: serport
+private:: serport = value
+private:: streambuf
+private:: streambuf = value
+private:: streamdisk
+private:: streamdisk = value
+private:: streamrate
+private:: streamrate = value
+private:: tfield
+private:: tfield = value
+private:: track2arr
+private:: track2arr = value
+private:: track2arr2
+private:: track2arr2 = value
+private:: track2i
+private:: track2i = value
+private:: trackPort
+private:: trackPort = value
+private:: trackarr
+private:: trackarr = value
+private:: trackarr2
+private:: trackarr2 = value
+private:: trackerRoutine
+private:: tracki
+private:: tracki = value
+private:: troutine
+private:: troutine = value
+private:: watcher
+private:: watcher = value
+private:: xval
+private:: xval = value
+private:: yval
+private:: yval = value
+private:: zval
+private:: zval = value
+
 
 
 
