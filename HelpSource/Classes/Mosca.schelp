@@ -256,6 +256,14 @@ private:: rawbusfoa
 private:: rawbusfoa = value
 private:: rawbussoa
 private:: rawbussoa = value
+private:: autoloop
+private:: autoloop = value
+private:: autoloopval
+private:: autoloopval = value
+private:: lastAutomation
+private:: lastAutomation = value
+private:: tfield
+private:: tfield = value
 
 
 
