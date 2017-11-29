@@ -16,7 +16,7 @@ Mosca also has other features including a scalable Doppler Effect on moving sour
 
 Mosca supports methods for making "A-format inserts" on any source spatialised in the GUI. In this way, the user may write a filtering synth and apply it to the sound without disrupting the encoded spatial characteristics. Please see the code examples below for more information.
 
-Additionally, Mosca implements headtracking with the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. See below for more information.
+Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. See below for more information.
 
 USING MOSCA
 
@@ -57,6 +57,10 @@ NOTES ON GUI COMPONENTS
 
 - audition. Use this button to audition a given source. Note that the transport also plays and cues sounds, "audition" should only be used to test sounds with the interface.
 
+- record audio. Records audio as wav file to the project directory defined by the "projDir" class method. The number of channels recorded and the starting bus are defined by the "recchans" and "recbus" class methods respectively (see below).
+
+- blips. Check this box to include audible blips at the begining of the recording. This may be useful when post synchronising the recorded audio with footage taken on a video camera.
+
 - Level. Adjust playback level of source.
 
 - Doppler amount. See b) above.
@@ -89,13 +93,13 @@ NOTES ON GUI COMPONENTS
 
 SERIAL DEVICES / HEAD TRACKING
 
-The Arduino and 9-Axes Motion Shield should be placed on top of the headphones with the USB socket of the Arduino directed to the left of the user. In this orientation the USB cable can run down left-hand side of headphones together with audio lead. Use the files in the directory arduinotracker in the git sources to configure the Arduino and shield.
+The Arduino and 9-Axes Motion Shield and supporting Arduino board such as the Uno (tested) should be placed on top of the headphones with the USB socket of the Arduino directed to the left of the user. In this orientation the USB cable can run down left-hand side of headphones together with audio lead. Use the Arduino project files in the directory "arduinoHeadTrack" in the git sources to configure the Arduino and shield. See https://www.arduino.cc for more information on the Arduino.
 
-To access a serial devices by a persistent name on Linux, first get information about an attached device with a line such as:
+When using Mosca with a head-tracker, it is useful to access the serial device with a persistant name. To do this on Debian/Ubuntu Linux, first get information about an attached device with a line such as:
 
 udevadm info -a -p  $(udevadm info -q path -n /dev/ttyACM0)
 
-Then create a file /etc/udev/rules.d/10-local.rules and add contents such as the following (edit this line and above to your needs):
+Search for the block of data that contains reference to the Arduino and take note of the values for idVendor and idProduct. Then create a file /etc/udev/rules.d/10-local.rules and add contents such as the following (edit this line and above to your needs):
 
 ACTION=="add", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", MODE:="0666", SYMLINK+="head_tracker"
 
@@ -155,7 +159,7 @@ ARGUMENT:: serport
 Name of serial port to receive headtracking data. Eg. "/dev/ttyACM0". For use with a binaural decoder. Default is nil.
 
 ARGUMENT:: offsetheading
-Value in degrees radians to offset heading value of the connected Arduino 9-axes Motion Shield. Default is 0. This may be used to adjust for the "magnetic declination" of your local region, calibrating the shield to true north. It may also be used to rotate North to the direction of your computer monitor. Eg. If when you are facing the monitor and the offsetheading is set to the default 0, you see a heading value (bottom-right of window) of 2.6, set the value to -2.6. The heading value will now be set to zero when you face the monitor.
+Value in degrees radians to offset heading value of the connected Arduino 9-axes Motion Shield. Default is 0. This may be used to adjust for the "magnetic declination" of your local region, calibrating the shield to true north (see: https://en.wikipedia.org/wiki/Magnetic_declination and http://www.magnetic-declination.com/). It may also be used to rotate North to the direction of your computer monitor. Eg. If when you are facing the monitor and the offsetheading is set to the default 0, you see a heading value (bottom-right of window) of 2.6, set the value to -2.6. The heading value will now be set to zero when you face the monitor.
 
 ARGUMENT:: recchans
 Number of channels for recording audio output to disk. Default is 2;
@@ -488,34 +492,31 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
+// without headtracking with rir supplied in the zip file mentioned above.
+
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+
+
 // with headtracking (should only be used with binaural decoder)
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/botanica", nsources: 32, width: 665, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: 0, recchans: 2, recbus: 0);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/botanica", nsources: 32, width: 665, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: 0, recchans: 2, recbus: 0);
 
-
-// without headtracking
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
-
-// without headtracking but with map
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder,
-//	   mappath: "/home/iain/projects/ambisonics/botanicaproject/map/casarotated.png");
 
 // Use allpass filter reverberation
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11,
-//	   width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
+
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11, width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
 
 // Use RIR and send raw 1st order ambi sginal to outputs (channels 2-10)
 //using no decoder, a raworder of 1 and rawbus value of 2.
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12,
-//	   width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
+
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
 
 
 s.sync;
 
 ~testMosca.gui;
 
+// use the following to experiment with heading adjustments 
 //~testMosca.offsetHeading(0.38);
 };
 

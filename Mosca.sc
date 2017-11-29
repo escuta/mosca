@@ -18,7 +18,7 @@
 
 
 Mosca {
-   	var <>myTestVar;
+	var <>myTestVar;
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
@@ -52,7 +52,7 @@ Mosca {
     <>delaytime, <>decaytime, // for allpass;
 	// head tracking
 	<>trackarr, <>trackarr2, <>tracki, <>trackPort,
-	<>track2arr, <>track2arr2, <>track2i,
+	//<>track2arr, <>track2arr2, <>track2i,
 	<>headingnumbox, <>rollnumbox, <>pitchnumbox,
 	<>headingOffset,
 	<>troutine, <>kroutine, <>watcher,
@@ -171,13 +171,14 @@ GUI Parameters usable in SynthDefs
 
 			SerialPort.devicePattern = this.serport; // needed in serKeepItUp routine - see below
 			this.trackPort = SerialPort(this.serport, 115200, crtscts: true);
-			this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, nil,
-				nil, nil, nil, nil, nil, nil, nil, 255];  //protocol 
-			this.trackarr2= trackarr.copy; 
+			//this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
+			//	nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol 
+			this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];  //protocol 
+			this.trackarr2= this.trackarr.copy; 
 			this.tracki= 0;
-			this.track2arr= [247, 248, 249, 250, nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol 
-			this.track2arr2= trackarr.copy; 
-			this.track2i= 0;
+			//this.track2arr= [247, 248, 249, 250, nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol 
+			//this.track2arr2= trackarr.copy; 
+			//this.track2i= 0;
 
 
 			this.trackPort.doneAction = {
@@ -1733,7 +1734,8 @@ GUI Parameters usable in SynthDefs
 		}).play;
 	}
 	
-	procTracker  {|heading, roll, pitch, lat, lon|
+	//	procTracker  {|heading, roll, pitch, lat, lon|
+	procTracker  {|heading, roll, pitch|
 		var h, r, p;
 		//lattemp, lontemp, newOX, newOY;
 		h = (heading / 100) - pi;
@@ -1771,6 +1773,7 @@ GUI Parameters usable in SynthDefs
 	}
 
 	matchTByte {|byte|  // match incoming headtracker data
+		
         if(this.trackarr[this.tracki].isNil or:{this.trackarr[this.tracki]==byte}, { 
 			this.trackarr2[this.tracki]= byte; 
 			this.tracki= this.tracki+1; 
@@ -1779,9 +1782,10 @@ GUI Parameters usable in SynthDefs
 				//				this.trackarr2[6]<<8+this.trackarr2[7], this.trackarr2[8]<<8+this.trackarr2[9],
 				this.procTracker(
 					(this.trackarr2[5]<<8)+this.trackarr2[4],
-					(this.trackarr2[7]<<8)+this.trackarr2[6], (this.trackarr2[9]<<8)+this.trackarr2[8],
-					(this.trackarr2[13]<<24) + (this.trackarr2[12]<<16) + (this.trackarr2[11]<<8) + this.trackarr2[10],
-					(this.trackarr2[17]<<24) + (this.trackarr2[16]<<16) + (this.trackarr2[15]<<8) + this.trackarr2[14]
+					(this.trackarr2[7]<<8)+this.trackarr2[6], (this.trackarr2[9]<<8)+this.trackarr2[8]
+					//,
+					//(this.trackarr2[13]<<24) + (this.trackarr2[12]<<16) + (this.trackarr2[11]<<8) + this.trackarr2[10],
+					//(this.trackarr2[17]<<24) + (this.trackarr2[16]<<16) + (this.trackarr2[15]<<8) + this.trackarr2[14]
 				); 
 				this.tracki= 0;
 			}); 
@@ -1793,7 +1797,8 @@ GUI Parameters usable in SynthDefs
 	
 
 	trackerRoutine {Routine.new({
-		inf.do{ 
+		inf.do{
+			//this.trackPort.read.postln;
 			this.matchTByte(this.trackPort.read); 
 		}; 
 	})}

@@ -11,7 +11,6 @@ struct message_t
 
 
 message_t message;
-static const uint32_t GPSBaud = 9600;
 
 NAxisMotion mySensor;
 unsigned long lastStreamTime = 0;     // the last streamed time stamp
@@ -58,25 +57,33 @@ void loop()
     }
     rollf = rollf * PI / 180; // convert to radians
 
+//Serial.print("Roll = ");
+//Serial.println(rollf);
     float pitchf = mySensor.readEulerPitch() * -1;
     if (pitchf > 180) {
       pitchf = -180 + (pitchf - 180);
     }
     pitchf = pitchf * PI / 180; // convert to radians
+    
+//Serial.print("Pitch(roll) = ");
+//Serial.println(pitchf);
 
-    // note pitch and roll are swapped below because z axis of device is rotated by 90 degrees
-   // on phones 
+
+    // note that pitch and roll are swapped below because z axis of 
+   // device is rotated by 90 degrees on phones 
     
     message.heading = (headingf + PI) * 100;
     message.pitch = (rollf    + PI) * 100; 
     message.roll = (pitchf   + PI) * 100;
     
+   // /*
     Serial.write(251); 
     Serial.write(252); 
     Serial.write(253); 
     Serial.write(254);
     Serial.write( (uint8_t *) &message, sizeof(message) );
-    Serial.write(255);    
+    Serial.write(255);  
+//  */  
 
   }
 }
