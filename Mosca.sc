@@ -2126,11 +2126,13 @@ GUI Parameters usable in SynthDefs
 		this.watcher = Routine.new({
 			inf.do({
 				0.1.wait;
-				//"Watching".postln;
+				
 				this.nfontes.do({
 					arg i;
 					{
-						if ((this.tfield[i].value != "")) {
+						//("scn = " ++ scn[i]).postln;
+						if ((this.tfield[i].value != "") || ((scn[i] > 0) && (this.ncan[i]>0))
+							|| (hwncheck[i].value && (this.ncan[i]>0)) ) {
 							var source = Point.new;  // should use cartesian but it's giving problems
 							//source.set(this.xval[i] + this.xoffset[i], this.yval[i] + this.yoffset[i]);
 							source.set(this.xval[i], this.yval[i]);
@@ -2138,6 +2140,8 @@ GUI Parameters usable in SynthDefs
 							//("distance " ++ i ++ " = " ++ source.rho).postln;
 							if (source.rho > 1.2) {
 								if(this.synt[i].isPlaying) {
+									//this.synthRegistry[i].free;
+									runStop.value(fatual); // to kill SC input synths
 									this.espacializador[i].free; // just in case...
 									this.synt[i].free;
 									this.synt[i] = nil;
@@ -2146,6 +2150,10 @@ GUI Parameters usable in SynthDefs
 							} {
 								if(this.synt[i].isPlaying.not && (isPlay || testado[i])) {
 									//("Loop is: " ++ lp[i]).postln;
+									//this.triggerFunc[i].value; // play SC input synth
+
+									runTrigger.value(i);
+
 									if(lp[i] == 0) {
 										tocar.value(i, controle.now, force: true);
 									} {   // could remake this a random start point in future
@@ -2525,7 +2533,8 @@ GUI Parameters usable in SynthDefs
 		tocar = {
 			arg i, tpos, force = false;
 			var path = this.tfield[i].value, stdur;
-			
+
+			"TOCAR".postln;
 			
 
 			
@@ -3470,18 +3479,23 @@ GUI Parameters usable in SynthDefs
 				if(but.value == 1)
 				{
 					
+					                  //testado[fatual] = true;
+					//runTrigger.value(fatual); - watcher does this now
+					//tocar.value(fatual, 0); // needed only by SC input
+					//- and probably by HW - causes duplicates with file
+					// as file playback is handled by the "watcher" routine
+                                      "really curious!".postln;
 					testado[fatual] = true;
-					runTrigger.value(fatual);
-					tocar.value(fatual, 0);
 					
 				}
 				{
 					
-					testado[fatual] = false;
+					//testado[fatual] = false;
 					runStop.value(fatual);
 					this.synt[fatual].free;
 					this.synt[fatual] = nil;
-					
+					testado[fatual] = false;
+					"stopping!".postln;
 					
 				};
 			} {

@@ -4,7 +4,7 @@ categories:: Ambisonics
 related:: http://www.ambisonictoolkit.net
 
 DESCRIPTION::
-Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. The class makes extensive use of the Ambisonic Toolkit (ATK, see: http://www.ambisonictoolkit.net/) by Joseph Anderson and the Automation quark (https://github.com/neeels/Automation) by Neels Hofmeyr.
+Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. The class makes extensive use of the Ambisonic Toolkit ( ATK, see: http://www.ambisonictoolkit.net/ ) by Joseph Anderson and the Automation quark ( https://github.com/neeels/Automation/ ) by Neels Hofmeyr.
 
 Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from hardware inputs (physical or from other applications such a DAW via Jack) or from SuperCollider's own synths. In the case of synth input, synths are associated by the user with a particular source in the GUI and registered in a synth registry. In this way, they are spatialised by the GUI and also receive data from the GUI pertaining to the source (eg. x, y and z coordinates or auxiliary fader data). Sound fields may be decoded using a variety of built in 1st order ambisonic SuperCollider decoders (including binaural) or with external 2nd order decoders such as Ambdec in Linux. Mosca has its own transport provided by the Automation quark for recording and playback of source data. This may be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack.
 
@@ -57,7 +57,7 @@ NOTES ON GUI COMPONENTS
 
 - audition. Use this button to audition a given source. Note that the transport also plays and cues sounds, "audition" should only be used to test sounds with the interface.
 
-- record audio. Records audio as wav file to the project directory defined by the "projDir" class method. The number of channels recorded and the starting bus are defined by the "recchans" and "recbus" class methods respectively (see below).
+- record audio. Records audio as a wav file to the project directory defined by the "projDir" class method. The number of channels recorded and the starting bus are defined by the "recchans" and "recbus" class methods respectively (see below).
 
 - blips. Check this box to include audible blips at the begining of the recording. This may be useful when post synchronising the recorded audio with footage taken on a video camera.
 
@@ -113,9 +113,9 @@ Many thanks to Joseph Anderson, Neels Hofmeyr and members of the SuperCollider l
 
 REFERENCES
 
-ANDERSON, Joseph. Authoring complex Ambisonic soundfields: An artists tips & tricks. . In: DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby, UK: 2011.
+ANDERSON, Joseph. Authoring complex Ambisonic soundfields: An artist's tips & tricks. . In: DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby, UK: 2011.
 
-CHOWNING, John M. The Simulation of Moving Sound Sources. Computer Music Journal, v. 1, n. 3, p. 4852, 1977. 
+CHOWNING, John M. The Simulation of Moving Sound Sources. Computer Music Journal, v. 1, n. 3, p. 48-52, 1977. 
 
 CLASSMETHODS::
 
@@ -499,7 +499,7 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 
 // with headtracking (should only be used with binaural decoder)
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/botanica", nsources: 32, width: 665, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: 0, recchans: 2, recbus: 0);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 32, width: 665, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: 0, recchans: 2, recbus: 0);
 
 
 // Use allpass filter reverberation
