@@ -3558,7 +3558,26 @@ GUI Parameters usable in SynthDefs
 			//			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"w");
 			var title="Save: select automation dir", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
+			
+
+			////// Changes
+
+			/*	var dopplerf = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
+			var loopedf = File((prjDr ++ "/auto/looped.txt").standardizePath,"w");
+			var aformatrevf = File((prjDr ++ "/auto/aformatrev.txt").standardizePath,"w");
+			var hwinf = File((prjDr ++ "/auto/hwin.txt").standardizePath,"w");
+			var scinf = File((prjDr ++ "/auto/scin.txt").standardizePath,"w");
+			var linearf = File((prjDr ++ "/auto/linear.txt").standardizePath,"w");
+			var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
+			var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
+			*/
+			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef;
+
+			//////////////
+
+
 			bounds = Rect(100,300,300,30);
+			
 			if(prjDr.isNil && this.lastAutomation.isNil) {
 				preset = "HOME".getenv ++ "/auto/"; } {
 					if (this.lastAutomation.isNil) {
@@ -3584,11 +3603,52 @@ GUI Parameters usable in SynthDefs
 				("FILE IS " ++ textField.value ++ "/filenames.txt").postln;
 				("mkdir -p" + textField.value).systemCmd;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
+
+				dopplerf = File((textField.value ++ "/doppler.txt").standardizePath,"w");
+				loopedf = File((textField.value ++ "/looped.txt").standardizePath,"w");
+				aformatrevf = File((textField.value ++ "/aformatrev.txt").standardizePath,"w");
+				hwinf = File((textField.value ++ "/hwin.txt").standardizePath,"w");
+				scinf = File((textField.value ++ "/scin.txt").standardizePath,"w");
+				linearf = File((textField.value ++ "/linear.txt").standardizePath,"w");
+				spreadf = File((textField.value ++ "/spread.txt").standardizePath,"w");
+				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"w");
+
+
 				nfontes.do { arg i;
-					if(this.tfield[i].value != "") {filenames.write(this.tfield[i].value ++ "\n")}
-					{filenames.write("NULL\n")};
+					if(this.tfield[i].value != "") {
+						filenames.write(this.tfield[i].value ++ "\n")
+					} {
+						filenames.write("NULL\n")
+					};
+
+
+					dopplerf.write(dcheck[i].value.asString ++ "\n");
+					loopedf.write(lpcheck[i].value.asString ++ "\n");
+					aformatrevf.write(rvcheck[i].value.asString ++ "\n");
+					hwinf.write(hwncheck[i].value.asString ++ "\n");
+					scinf.write(scncheck[i].value.asString ++ "\n");
+					linearf.write(lncheck[i].value.asString ++ "\n");
+					spreadf.write(spcheck[i].value.asString ++ "\n");
+					diffusef.write(dfcheck[i].value.asString ++ "\n");
+
+					
 				};
 				filenames.close;
+
+				////////
+
+				dopplerf.close;
+				loopedf.close;
+				aformatrevf.close;
+				hwinf.close;
+				scinf.close;
+				linearf.close;
+				spreadf.close;
+				diffusef.close;
+				
+				///////
+
+				
 				controle.save(textField.value);
 				this.lastAutomation = textField.value;
 
