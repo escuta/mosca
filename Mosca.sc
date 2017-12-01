@@ -2228,7 +2228,7 @@ GUI Parameters usable in SynthDefs
 							if (source.rho > 1.2) {
 								if(this.synt[i].isPlaying) {
 									//this.synthRegistry[i].free;
-									runStop.value(fatual); // to kill SC input synths
+									runStop.value(i); // to kill SC input synths
 									this.espacializador[i].free; // just in case...
 									this.synt[i].free;
 									this.synt[i] = nil;
@@ -4361,7 +4361,7 @@ dopcheque.value = false; // coloque toggle no padrão
 Dialog.openPanel(
 controle.stopRecording;
 controle.stop;
-controle.seek;
+//controle.seek;
 
 
 { 
