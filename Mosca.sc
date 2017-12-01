@@ -1949,11 +1949,18 @@ GUI Parameters usable in SynthDefs
 		this.controle.seek; 
 		this.lastAutomation = path;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
+
+
 		this.nfontes.do { arg i;
 			var line = filenames.getLine(1024);
 			if(line!="NULL"){this.tfield[i].valueAction = line};
+
+
+			
 		};
 		filenames.close;
+
+
 	}
 
 	playAutomation {
@@ -3571,7 +3578,7 @@ GUI Parameters usable in SynthDefs
 			var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
 			var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
 			*/
-			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef;
+			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif;
 
 			//////////////
 
@@ -3612,6 +3619,8 @@ GUI Parameters usable in SynthDefs
 				linearf = File((textField.value ++ "/linear.txt").standardizePath,"w");
 				spreadf = File((textField.value ++ "/spread.txt").standardizePath,"w");
 				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"w");
+				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"w");
+				businif = File((textField.value ++ "/busini.txt").standardizePath,"w");
 
 
 				nfontes.do { arg i;
@@ -3630,7 +3639,10 @@ GUI Parameters usable in SynthDefs
 					linearf.write(lncheck[i].value.asString ++ "\n");
 					spreadf.write(spcheck[i].value.asString ++ "\n");
 					diffusef.write(dfcheck[i].value.asString ++ "\n");
-
+					ncanf.write(ncanbox[i].value.asString ++ "\n");
+					businif.write(businibox[i].value.asString ++ "\n");
+					
+					// REMEMBER AUX? 
 					
 				};
 				filenames.close;
@@ -3645,6 +3657,8 @@ GUI Parameters usable in SynthDefs
 				linearf.close;
 				spreadf.close;
 				diffusef.close;
+				ncanf.close;
+				businif.close;
 				
 				///////
 
@@ -3670,6 +3684,8 @@ GUI Parameters usable in SynthDefs
 			var filenames;
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
+			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif;
+
 			bounds = Rect(100,300,300,30);
 			if(prjDr.isNil && this.lastAutomation.isNil) {
 				preset = "HOME".getenv ++ "/auto/"; } {
@@ -3696,6 +3712,19 @@ GUI Parameters usable in SynthDefs
 				controle.seek;
 				this.lastAutomation = textField.value;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"r");
+
+				dopplerf = File((textField.value ++ "/doppler.txt").standardizePath,"r");
+				loopedf = File((textField.value ++ "/looped.txt").standardizePath,"r");
+				aformatrevf = File((textField.value ++ "/aformatrev.txt").standardizePath,"r");
+				hwinf = File((textField.value ++ "/hwin.txt").standardizePath,"r");
+				scinf = File((textField.value ++ "/scin.txt").standardizePath,"r");
+				linearf = File((textField.value ++ "/linear.txt").standardizePath,"r");
+				spreadf = File((textField.value ++ "/spread.txt").standardizePath,"r");
+				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"r");
+				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"r");
+				businif = File((textField.value ++ "/busini.txt").standardizePath,"r");
+
+				
 				{	("BEFORE ACTION - stream = " ++ stcheck[0].value).postln;}.defer;
 				
 				
@@ -3703,7 +3732,67 @@ GUI Parameters usable in SynthDefs
 					var line = filenames.getLine(1024);
 					if(line!="NULL"){this.tfield[i].value = line};
 				};
+				nfontes.do { arg i;
+					var line = dopplerf.getLine(1024);
+					dcheck[i].valueAction = line;
+				};
+
+				nfontes.do { arg i;
+					var line = loopedf.getLine(1024);
+					lpcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = aformatrevf.getLine(1024);
+					rvcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = hwinf.getLine(1024);
+					hwncheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = scinf.getLine(1024);
+					scncheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = linearf.getLine(1024);
+					lncheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = spreadf.getLine(1024);
+					spcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = diffusef.getLine(1024);
+					dfcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = diffusef.getLine(1024);
+					dfcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = ncanf.getLine(1024);
+					ncanbox[i].valueAction = line.asFloat;
+				};
+				nfontes.do { arg i;
+					var line = businif.getLine(1024);
+					businibox[i].valueAction = line.asFloat;
+				};
+
+
+				
 				filenames.close;
+
+				dopplerf.close;
+				loopedf.close;
+				aformatrevf.close;
+				hwinf.close;
+				scinf.close;
+				linearf.close;
+				spreadf.close;
+				diffusef.close;
+				ncanf.close;
+				businif.close;
+
 				
 				
 				// delay necessary here because streamdisks take some time to register after controle.load
@@ -5057,7 +5146,8 @@ controle.dock(rbox[i], "rotation_" ++ i);
 controle.dock(dbox[i], "diretividade_" ++ i);
 controle.dock(cbox[i], "contraction_" ++ i);
 
-//controle.dock(this.tfield[i], "filename_" ++ i);
+// automation change
+/*
 controle.dock(dcheck[i], "doppler_" ++ i);			
 controle.dock(lpcheck[i], "loop_" ++ i);
 controle.dock(hwncheck[i], "hwin_" ++ i);
@@ -5068,7 +5158,7 @@ controle.dock(rvcheck[i], "rev_" ++ i);
 controle.dock(lncheck[i], "linear_" ++ i);
 controle.dock(spcheck[i], "spread_" ++ i);
 controle.dock(dfcheck[i], "diffuse_" ++ i);
-
+*/
 controle.dock(a1box[i], "aux1_" ++ i);
 controle.dock(a2box[i], "aux2_" ++ i);
 controle.dock(a3box[i], "aux3_" ++ i);
