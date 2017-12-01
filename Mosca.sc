@@ -37,6 +37,7 @@ Mosca {
 	<>insertFlag,
 	<>aFormatBusFoa, <>aFormatBusSoa, 
 	<>dur,
+	<>firstTime,
 	<>playingBF,
 	<>rawbusfoa, <>rawbussoa, <>raworder,
 	<>decoder,
@@ -168,6 +169,7 @@ GUI Parameters usable in SynthDefs
 		this.recbus = irecbus;
 
 
+
 		if (this.serport.notNil) {
 
 			SerialPort.devicePattern = this.serport; // needed in serKeepItUp routine - see below
@@ -214,6 +216,7 @@ GUI Parameters usable in SynthDefs
 				1.wait; 
 			}; 
 		});
+		
 		this.headingOffset = this.offsetheading;
 
 		this.mark1 = Array.newClear(4);
@@ -230,6 +233,7 @@ GUI Parameters usable in SynthDefs
 
 		this.streambuf = Array.newClear(this.nfontes);
 		this.streamrate = Array.newClear(this.nfontes);
+	
 
 		o = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
@@ -1622,6 +1626,7 @@ GUI Parameters usable in SynthDefs
 		
 		playMonoInFunc[0] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate; // Note it needs all the variables
+			
 			spos = tpos * BufSampleRate.kr(bufnum);
 			scaledRate = rate * BufRateScale.kr(bufnum);
 			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
@@ -2199,6 +2204,9 @@ GUI Parameters usable in SynthDefs
 
 		stcheck = Array.newClear(this.nfontes); // aux - array of buttons in data window
 
+		this.firstTime = Array.newClear(this.nfontes);
+
+
 		this.tfield = Array.newClear(this.nfontes);	
 		this.streamdisk = Array.newClear(this.nfontes);	
 		
@@ -2225,31 +2233,34 @@ GUI Parameters usable in SynthDefs
 							source.set(this.xval[i], this.yval[i]);
 							//("testado = " ++ testado[i]).postln;
 							//("distance " ++ i ++ " = " ++ source.rho).postln;
-							if (source.rho > 1.2) {
-								if(this.synt[i].isPlaying) {
-									//this.synthRegistry[i].free;
-									runStop.value(i); // to kill SC input synths
-									this.espacializador[i].free; // just in case...
-									this.synt[i].free;
-									this.synt[i] = nil;
-									this.espacializador[i] = nil;
-								};
-							} {
-								if(this.synt[i].isPlaying.not && (isPlay || testado[i])) {
-									//("Loop is: " ++ lp[i]).postln;
-									//this.triggerFunc[i].value; // play SC input synth
-
-									runTrigger.value(i);
-
-									if(lp[i] == 0) {
-										tocar.value(i, controle.now, force: true);
-									} {   // could remake this a random start point in future
-										tocar.value(i, 1, force: true);
+								if (source.rho > 1.2) {
+									this.firstTime[i] = true;
+									if(this.synt[i].isPlaying) {
+										//this.synthRegistry[i].free;
+										runStop.value(i); // to kill SC input synths
+										this.espacializador[i].free; // just in case...
+										this.synt[i].free;
+										this.synt[i] = nil;
+										this.espacializador[i] = nil;
 									};
+								} {
+									if(this.synt[i].isPlaying.not && (isPlay || testado[i])
+										&& (this.firstTime[i] || (this.tfield[i].value == ""))) {
+											("HELLO _ Loop is: " ++ lp[i]).postln;
+											//this.triggerFunc[i].value; // play SC input synth
+											this.firstTime[i] = false;
+											runTrigger.value(i);
+											
+											if(lp[i] == 0) {
+												//tocar.value(i, controle.now, force: true);
+												tocar.value(i, 1, force: true);
+											} {   // could remake this a random start point in future
+												tocar.value(i, 1, force: true);
+											};
+										};
+									
 								};
-
 							};
-						};
 					}.defer;
 				});
 			});
@@ -2287,6 +2298,7 @@ GUI Parameters usable in SynthDefs
 			sprite[i, 1] = -20;
 			testado[i] = false;
 			this.playingBF[i] = false;
+			this.firstTime[i] = true;
 		};
 		
 		
@@ -3565,7 +3577,7 @@ GUI Parameters usable in SynthDefs
 			{ if(isPlay.not) {
 				if(but.value == 1)
 				{
-					
+					this.firstTime[fatual] = true;
 					                  //testado[fatual] = true;
 					//runTrigger.value(fatual); - watcher does this now
 					//tocar.value(fatual, 0); // needed only by SC input
@@ -5171,6 +5183,11 @@ this.synt[i].free;
 controle.onPlay = {
 
 	var startTime;
+	this.nfontes.do { arg i;
+		this.firstTime[i]=true;
+//("HERE = " ++ this.firstTime[i]).postln;
+};
+
 	//	runTriggers.value;
 	if(controle.now < 0)
 	{
@@ -5180,6 +5197,9 @@ controle.onPlay = {
 		startTime = controle.now
 	};
 	isPlay = true;
+
+
+
 	//runTriggers.value;
 };
 
