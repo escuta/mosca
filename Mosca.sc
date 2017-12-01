@@ -42,6 +42,7 @@ Mosca {
 	<>decoder,
 	<>serport,
 	<>offsetheading,
+	<>dcheck, <>lpcheck, <>rvcheck, <>hwncheck, <>scncheck, <>lncheck, <>spcheck, <>dfcheck, <>ncanbox, <>businibox,
 	<>espacializador, <>synt,
 	<>lastAutomation = nil,
 	<>tfield, 
@@ -1945,23 +1946,87 @@ GUI Parameters usable in SynthDefs
 	loadAutomation {
 		|path|
 		var filenames;
+		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif;
 		this.controle.load(path);
-		this.controle.seek; 
+		//this.controle.seek; 
 		this.lastAutomation = path;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
 
-
+		dopplerf = File((path ++ "/doppler.txt").standardizePath,"r");
+		loopedf = File((path ++ "/looped.txt").standardizePath,"r");
+		aformatrevf = File((path ++ "/aformatrev.txt").standardizePath,"r");
+		hwinf = File((path ++ "/hwin.txt").standardizePath,"r");
+		scinf = File((path ++ "/scin.txt").standardizePath,"r");
+		linearf = File((path ++ "/linear.txt").standardizePath,"r");
+		spreadf = File((path ++ "/spread.txt").standardizePath,"r");
+		diffusef = File((path ++ "/diffuse.txt").standardizePath,"r");
+		ncanf = File((path ++ "/ncan.txt").standardizePath,"r");
+		businif = File((path ++ "/busini.txt").standardizePath,"r");
+		
 		this.nfontes.do { arg i;
 			var line = filenames.getLine(1024);
 			if(line!="NULL"){this.tfield[i].valueAction = line};
-
-
-			
 		};
+				nfontes.do { arg i;
+					var line = dopplerf.getLine(1024);
+					this.dcheck[i].valueAction = line;
+				};
+
+				nfontes.do { arg i;
+					var line = loopedf.getLine(1024);
+					this.lpcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = aformatrevf.getLine(1024);
+					this.rvcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = hwinf.getLine(1024);
+					this.hwncheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = scinf.getLine(1024);
+					this.scncheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = linearf.getLine(1024);
+					this.lncheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = spreadf.getLine(1024);
+					this.spcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = diffusef.getLine(1024);
+					this.dfcheck[i].valueAction = line;
+				};
+				nfontes.do { arg i;
+					var line = ncanf.getLine(1024);
+					this.ncanbox[i].valueAction = line.asFloat;
+				};
+				nfontes.do { arg i;
+					var line = businif.getLine(1024);
+					this.businibox[i].valueAction = line.asFloat;
+				};
+
+		
 		filenames.close;
 
-
+		dopplerf.close;
+		loopedf.close;
+		aformatrevf.close;
+		hwinf.close;
+		scinf.close;
+		linearf.close;
+		spreadf.close;
+		diffusef.close;
+		ncanf.close;
+		businif.close;
+		
 	}
+
+
+	
 
 	playAutomation {
 		this.controle.play;
@@ -1980,17 +2045,31 @@ GUI Parameters usable in SynthDefs
 		itensdemenu, gbus, gbfbus, azimuth, event, brec, bplay, bload, bstream, bnodes, sombuf, funcs, 
 		dopcheque,
 		//lastAutomation = nil,
-		loopcheck, lpcheck, lp,
-		spreadcheck, spcheck, sp,
-		diffusecheck, dfcheck, df,
-		revcheck, rvcheck, rv,
-		lincheck, lncheck, ln,
-		hwInCheck, hwncheck, hwn, scInCheck, scncheck, scn,
+		loopcheck,
+		//lpcheck,
+		lp,
+		spreadcheck,
+		//spcheck,
+		sp,
+		diffusecheck,
+		//dfcheck,
+		df,
+		revcheck,
+		//rvcheck,
+		rv,
+		lincheck,
+		//lncheck,
+		ln,
+		hwInCheck,
+		//hwncheck,
+		hwn, scInCheck,
+		//scncheck,
+		scn,
 		dopcheque2, doppler, angle, level, glev, 
 		llev, angnumbox, volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
-		ncanbox, businibox,
+		//ncanbox, businibox,
 		mouseButton, dragStartScreen,
 		novoplot,
 		runTriggers, runStops, runTrigger, runStop,
@@ -2000,7 +2079,8 @@ GUI Parameters usable in SynthDefs
 		a1but, a2but, a3but, a4but, a5but, // variable
 		a1check, a2check, a3check, a4check, a5check, // data windows representation of a1but etc (ie. as checkbox)
 		stcheck, // check box for streamed from disk audio
-		angslider, bsalvar, bcarregar, bsnap, bdados, baux, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox, dcheck,
+		angslider, bsalvar, bcarregar, bsnap, bdados, baux, xbox, ybox, abox, vbox, gbox, lbox, dbox, dpbox,
+		//dcheck,
 		oxbox, oybox, ozbox,
 		lastx, lasty, lastz,
 		gslider, gnumbox, lslider, lnumbox, dopflag = 0, btestar, brecaudio,
@@ -2069,8 +2149,8 @@ GUI Parameters usable in SynthDefs
 		dplev = Array.newClear(this.nfontes); 
 		clev = Array.newClear(this.nfontes); 
 
-		ncanbox = Array.newClear(this.nfontes); 
-		businibox = Array.newClear(this.nfontes); 
+		this.ncanbox = Array.newClear(this.nfontes); 
+		this.businibox = Array.newClear(this.nfontes); 
 		this.playingBF = Array.newClear(this.nfontes); 
 		
 		
@@ -2085,20 +2165,20 @@ GUI Parameters usable in SynthDefs
 		lastz = Array.newClear(this.nfontes); 
 		abox = Array.newClear(this.nfontes); // ângulo
 		vbox = Array.newClear(this.nfontes);  // level
-		dcheck = Array.newClear(this.nfontes);  // Doppler check
+		this.dcheck = Array.newClear(this.nfontes);  // Doppler check
 		gbox = Array.newClear(this.nfontes); // reverberação global
 		lbox = Array.newClear(this.nfontes); // reverberação local
 		rbox = Array.newClear(this.nfontes); // rotação de b-format
 		dbox = Array.newClear(this.nfontes); // diretividade de b-format
 		cbox = Array.newClear(this.nfontes); // contrair b-format
 		dpbox = Array.newClear(this.nfontes); // dop amount
-		lpcheck = Array.newClear(this.nfontes); // loop
-		spcheck = Array.newClear(this.nfontes); // spread
-		dfcheck = Array.newClear(this.nfontes); // diffuse
-		rvcheck = Array.newClear(this.nfontes); // diffuse reverb
-		lncheck = Array.newClear(this.nfontes); // linear intensity
-		hwncheck = Array.newClear(this.nfontes); // hardware-in check
-		scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
+		this.lpcheck = Array.newClear(this.nfontes); // loop
+		this.spcheck = Array.newClear(this.nfontes); // spread
+		this.dfcheck = Array.newClear(this.nfontes); // diffuse
+		this.rvcheck = Array.newClear(this.nfontes); // diffuse reverb
+		this.lncheck = Array.newClear(this.nfontes); // linear intensity
+		this.hwncheck = Array.newClear(this.nfontes); // hardware-in check
+		this.scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
 		a1box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
 		a2box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
 		a3box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
@@ -2139,7 +2219,7 @@ GUI Parameters usable in SynthDefs
 					{
 						//("scn = " ++ scn[i]).postln;
 						if ((this.tfield[i].value != "") || ((scn[i] > 0) && (this.ncan[i]>0))
-							|| (hwncheck[i].value && (this.ncan[i]>0)) ) {
+							|| (this.hwncheck[i].value && (this.ncan[i]>0)) ) {
 							var source = Point.new;  // should use cartesian but it's giving problems
 							//source.set(this.xval[i] + this.xoffset[i], this.yval[i] + this.yoffset[i]);
 							source.set(this.xval[i], this.yval[i]);
@@ -2586,7 +2666,7 @@ GUI Parameters usable in SynthDefs
 
 			/// STREAM FROM DISK
 
-			if ((path != "") && hwncheck[i].value.not && scncheck[i].value.not && this.streamdisk[i]) {
+			if ((path != "") && this.hwncheck[i].value.not && this.scncheck[i].value.not && this.streamdisk[i]) {
 				var x;
 				"Content Streamed from disk".postln;
 				if (testado[i].not || force) { // if source is testing don't relaunch synths
@@ -2855,7 +2935,7 @@ GUI Parameters usable in SynthDefs
 			/// END STREAM FROM DISK
 
 			// check this logic - what should override what?
-			if ((path != "") && (hwncheck[i].value.not || scncheck[i].value.not) && this.streamdisk[i].not) {
+			if ((path != "") && (this.hwncheck[i].value.not || this.scncheck[i].value.not) && this.streamdisk[i].not) {
 				{	
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
@@ -3128,7 +3208,7 @@ GUI Parameters usable in SynthDefs
 				}.defer;	
 			} {
 				
-				if ((scncheck[i].value) || (hwncheck[i])) {
+				if ((this.scncheck[i].value) || (this.hwncheck[i])) {
 					var x;
 					x = case
 					{ this.ncan[i] == 1 } {
@@ -3147,7 +3227,7 @@ GUI Parameters usable in SynthDefs
 							};
 							
 							if (testado[i].not || force) {
-								if (hwncheck[i].value) {
+								if (this.hwncheck[i].value) {
 									if(this.decoder.isNil && (this.raworder == 2)) {
 										this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 											this.busini[i],
@@ -3191,7 +3271,7 @@ GUI Parameters usable in SynthDefs
 							
 						} {
 							if (testado[i].not || force) {
-								if (hwncheck[i].value) {
+								if (this.hwncheck[i].value) {
 									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
 										\level, level[i]], revGlobalBF,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
@@ -3249,7 +3329,7 @@ GUI Parameters usable in SynthDefs
 									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 										revGlobalBF, addAction:\addBefore);
 								};
-								if (hwncheck[i].value) {
+								if (this.hwncheck[i].value) {
 
 									if(this.decoder.isNil && (this.raworder == 2)){
 										this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
@@ -3293,7 +3373,7 @@ GUI Parameters usable in SynthDefs
 
 
 						} {
-							if (hwncheck[i].value) {
+							if (this.hwncheck[i].value) {
 								this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
 									\level, level[i]], revGlobalBF,
 									addAction: \addBefore).onFree({this.espacializador[i].free;
@@ -3345,7 +3425,7 @@ GUI Parameters usable in SynthDefs
 							
 							if (testado[i].not || force) {
 								if(this.decoder.isNil && (this.raworder == 2)) {
-									if (hwncheck[i].value) {
+									if (this.hwncheck[i].value) {
 										this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 											\outbus, mbus[i],
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
@@ -3373,7 +3453,7 @@ GUI Parameters usable in SynthDefs
 												this.espacializador[i] = nil; this.synt[i] = nil;});
 									};
 								} {
-									if (hwncheck[i].value) {
+									if (this.hwncheck[i].value) {
 										this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 											\outbus, mbus[i],
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
@@ -3410,7 +3490,7 @@ GUI Parameters usable in SynthDefs
 						} {
 
 							if (testado[i].not || force) {
-								if (hwncheck[i].value) {
+								if (this.hwncheck[i].value) {
 									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i], \dopon, doppler[i],
@@ -3631,16 +3711,16 @@ GUI Parameters usable in SynthDefs
 					};
 
 
-					dopplerf.write(dcheck[i].value.asString ++ "\n");
-					loopedf.write(lpcheck[i].value.asString ++ "\n");
-					aformatrevf.write(rvcheck[i].value.asString ++ "\n");
-					hwinf.write(hwncheck[i].value.asString ++ "\n");
-					scinf.write(scncheck[i].value.asString ++ "\n");
-					linearf.write(lncheck[i].value.asString ++ "\n");
-					spreadf.write(spcheck[i].value.asString ++ "\n");
-					diffusef.write(dfcheck[i].value.asString ++ "\n");
-					ncanf.write(ncanbox[i].value.asString ++ "\n");
-					businif.write(businibox[i].value.asString ++ "\n");
+					dopplerf.write(this.dcheck[i].value.asString ++ "\n");
+					loopedf.write(this.lpcheck[i].value.asString ++ "\n");
+					aformatrevf.write(this.rvcheck[i].value.asString ++ "\n");
+					hwinf.write(this.hwncheck[i].value.asString ++ "\n");
+					scinf.write(this.scncheck[i].value.asString ++ "\n");
+					linearf.write(this.lncheck[i].value.asString ++ "\n");
+					spreadf.write(this.spcheck[i].value.asString ++ "\n");
+					diffusef.write(this.dfcheck[i].value.asString ++ "\n");
+					ncanf.write(this.ncanbox[i].value.asString ++ "\n");
+					businif.write(this.businibox[i].value.asString ++ "\n");
 					
 					// REMEMBER AUX? 
 					
@@ -3709,7 +3789,7 @@ GUI Parameters usable in SynthDefs
                 onSuccess.value(textField.value);
                 dwin.close;
 				controle.load(textField.value);
-				controle.seek;
+				//controle.seek;
 				this.lastAutomation = textField.value;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"r");
 
@@ -3734,48 +3814,48 @@ GUI Parameters usable in SynthDefs
 				};
 				nfontes.do { arg i;
 					var line = dopplerf.getLine(1024);
-					dcheck[i].valueAction = line;
+					this.dcheck[i].valueAction = line;
 				};
 
 				nfontes.do { arg i;
 					var line = loopedf.getLine(1024);
-					lpcheck[i].valueAction = line;
+					this.lpcheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = aformatrevf.getLine(1024);
-					rvcheck[i].valueAction = line;
+					this.rvcheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = hwinf.getLine(1024);
-					hwncheck[i].valueAction = line;
+					this.hwncheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = scinf.getLine(1024);
-					scncheck[i].valueAction = line;
+					this.scncheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = linearf.getLine(1024);
-					lncheck[i].valueAction = line;
+					this.lncheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = spreadf.getLine(1024);
-					spcheck[i].valueAction = line;
+					this.spcheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = diffusef.getLine(1024);
-					dfcheck[i].valueAction = line;
+					this.dfcheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = diffusef.getLine(1024);
-					dfcheck[i].valueAction = line;
+					this.dfcheck[i].valueAction = line;
 				};
 				nfontes.do { arg i;
 					var line = ncanf.getLine(1024);
-					ncanbox[i].valueAction = line.asFloat;
+					this.ncanbox[i].valueAction = line.asFloat;
 				};
 				nfontes.do { arg i;
 					var line = businif.getLine(1024);
-					businibox[i].valueAction = line.asFloat;
+					this.businibox[i].valueAction = line.asFloat;
 				};
 
 
@@ -3923,44 +4003,44 @@ offset = 60;
 
 
 dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
-	{dcheck[fatual].valueAction = butt.value;}.defer;
+	{this.dcheck[fatual].valueAction = butt.value;}.defer;
 });
 dopcheque.value = false;
 
 loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
-	{lpcheck[fatual].valueAction = butt.value;}.defer;
+	{this.lpcheck[fatual].valueAction = butt.value;}.defer;
 });
 loopcheck.value = false;
 
 spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
-	{spcheck[fatual].valueAction = butt.value;}.defer;
+	{this.spcheck[fatual].valueAction = butt.value;}.defer;
 });
 spreadcheck.value = false;
 diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
-	{dfcheck[fatual].valueAction = butt.value;}.defer;
+	{this.dfcheck[fatual].valueAction = butt.value;}.defer;
 });
 diffusecheck.value = false;
 
 
 revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
-	{rvcheck[fatual].valueAction = butt.value;}.defer;
+	{this.rvcheck[fatual].valueAction = butt.value;}.defer;
 });
 revcheck.value = false;
 
 lincheck = CheckBox( win, Rect(184, 30, 180, 20), "Linear intensity").action_({ arg butt;
-	{lncheck[fatual].valueAction = butt.value;}.defer;
+	{this.lncheck[fatual].valueAction = butt.value;}.defer;
 });
 lincheck.value = false;
 
 
 hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ arg butt;
-	{hwncheck[fatual].valueAction = butt.value;}.defer;
+	{this.hwncheck[fatual].valueAction = butt.value;}.defer;
 if (hwInCheck.value && scInCheck.value) {
 };
 });
 
 scInCheck = CheckBox( win, Rect(104, 30, 60, 20), "SC-in").action_({ arg butt;
-	{scncheck[fatual].valueAction = butt.value;}.defer;
+	{this.scncheck[fatual].valueAction = butt.value;}.defer;
 if (scInCheck.value && hwInCheck.value) {
 };
 });
@@ -3982,7 +4062,7 @@ ncannumbox.align = \center;
 ncannumbox.action = {arg num;
 	
 	
-	{ncanbox[fatual].valueAction = num.value;}.defer;
+	{this.ncanbox[fatual].valueAction = num.value;}.defer;
 this.ncan[fatual] = num.value;
 
 };
@@ -3996,7 +4076,7 @@ busininumbox.value = 0;
 busininumbox.clipLo = 0;
 busininumbox.align = \center;
 busininumbox.action = {arg num; 
-	{businibox[fatual].valueAction = num.value;}.defer;
+	{this.businibox[fatual].valueAction = num.value;}.defer;
 this.busini[fatual] = num.value;
 };
 
@@ -4477,7 +4557,7 @@ this.nfontes.do { arg i;
 textbuf.font = Font(Font.defaultSansFace, 9);
 textbuf.string = (i+1).asString;
 
-dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20))
+this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){dopcheque.value = but.value;};
 if (but.value == true) {
@@ -4493,7 +4573,7 @@ if (but.value == true) {
 };
 });
 
-lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20))
+this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){loopcheck.value = but.value;};
 if (but.value == true) {
@@ -4509,7 +4589,7 @@ if (but.value == true) {
 
 
 
-rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20))
+this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){revcheck.value = but.value;};
 if (but.value == true) {
@@ -4524,11 +4604,11 @@ if (but.value == true) {
 });
 
 
-hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20))
+this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){hwInCheck.value = but.value;};
 if (but.value == true) {
-	scncheck[i].value = false;
+	this.scncheck[i].value = false;
 	if(i==fatual){scInCheck.value = false;};
 	hwn[i] = 1;
 	scn[i] = 0;
@@ -4539,11 +4619,11 @@ if (but.value == true) {
 };
 });
 
-scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20))
+this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){scInCheck.value = but.value;};
 if (but.value == true) {
-	hwncheck[i].value = false;
+	this.hwncheck[i].value = false;
 	if(i==fatual){hwInCheck.value = false;};
 	scn[i] = 1;
 	hwn[i] = 0;
@@ -4555,7 +4635,7 @@ if (but.value == true) {
 });
 
 
-lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20))
+this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){lincheck.value = but.value;};
 if (but.value == true) {
@@ -4567,11 +4647,11 @@ if (but.value == true) {
 };
 });
 
-spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20))
+this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){spreadcheck.value = but.value;};
 if (but.value == true) {
-	dfcheck[i].value = false;
+	this.dfcheck[i].value = false;
 	if(i==fatual){diffusecheck.value = false;};
 	sp[i] = 1;
 	df[i] = 0;
@@ -4586,11 +4666,11 @@ if (but.value == true) {
 	this.setSynths(i, \sp, 0);
 };
 });
-dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20))
+this.dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20))
 .action_({ arg but;
 if(i==fatual){diffusecheck.value = but.value;};
 if (but.value == true) {
-	spcheck[i].value = false;
+	this.spcheck[i].value = false;
 	if(i==fatual){spreadcheck.value = false;};
 	df[i] = 1;
 	sp[i] = 0;
@@ -4608,8 +4688,8 @@ if (but.value == true) {
 
 
 
-ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
-businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
+this.ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
+this.businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
 
 xbox[i] = NumberBox(wdados, Rect(200, 40 + (i*20), 33, 20));
 ybox[i] = NumberBox(wdados, Rect(233, 40+ (i*20), 33, 20));
@@ -4720,8 +4800,8 @@ if (but.value == true) {
 });
 
 
-ncanbox[i].font = Font(Font.defaultSansFace, 9);
-businibox[i].font = Font(Font.defaultSansFace, 9);
+this.ncanbox[i].font = Font(Font.defaultSansFace, 9);
+this.businibox[i].font = Font(Font.defaultSansFace, 9);
 xbox[i].font = Font(Font.defaultSansFace, 9);
 ybox[i].font = Font(Font.defaultSansFace, 9);
 zbox[i].font = Font(Font.defaultSansFace, 9);
@@ -4863,7 +4943,7 @@ znumbox.value = num.value;
 
 
 
-dcheck[i].value = 0;
+this.dcheck[i].value = 0;
 
 abox[i].clipHi = pi;
 abox[i].clipLo = 0;
@@ -5000,7 +5080,7 @@ dopnumbox.value = num.value;
 
 
 // CHECK THESE NEXT 2
-ncanbox[i].action = {arg num;
+this.ncanbox[i].action = {arg num;
 	this.espacializador[i].set(\mz, num.value);
 this.setSynths(i, \mz, num.value);
 this.synt[i].set(\mz, num.value);
@@ -5012,7 +5092,7 @@ if(i == fatual )
 ncannumbox.value = num.value;
 };
 }; 
-businibox[i].action = {arg num;
+this.businibox[i].action = {arg num;
 	this.espacializador[i].set(\mz, num.value);
 this.setSynths(i, \mz, num.value);
 this.synt[i].set(\mz, num.value);
