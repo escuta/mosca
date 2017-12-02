@@ -3920,8 +3920,12 @@ bsnap = Button(win, Rect(170, this.width - 40, 25, 20))
 	["[ô]", Color.black, Color.white],
 ])
 .action_({ arg but;
-	controle.seek; // go to 0.0
-	controle.snapshot;  // only take snapshot at 0.0 		
+	if(controle.now>0) {
+controle.seek; // go to 0.0
+"Transport must be at zero seconds. Please try again.".postln;
+} {
+controle.snapshot;  // only take snapshot at 0.0
+}
 	
 });
 
@@ -5206,19 +5210,20 @@ controle.onPlay = {
 
 controle.onSeek = {
 	var wasplaying = isPlay;
-		("isPlay = " ++ isPlay).postln;
+	//("isPlay = " ++ isPlay).postln;
 	
 	//runStops.value;
 	if(isPlay == true) {
 		this.nfontes.do { arg i;	
         this.synt[i].free; // error check
         };
-    };
-    controle.stop;
+     controle.stop;
+  };
+    
      if(wasplaying) {
 		 //isPlay = true;
 		 "we are here".postln;
-		 {controle.play}.defer(0.3); //delay necessary
+		 {controle.play}.defer(0.3); //delay necessary. may need more?
 	 };
 };
 
