@@ -2217,7 +2217,7 @@ GUI Parameters usable in SynthDefs
 
 
 		
-		// for the moment - this regulates file playing synths
+		// this regulates file playing synths
 		this.watcher = Routine.new({
 			inf.do({
 				0.1.wait;
@@ -5144,16 +5144,16 @@ updateSynthInArgs.value(source);
 
 runStops = {
 	this.nfontes.do({
-arg i;
-if(testado[i].not) {
-	if(this.stopFunc[i].notNil) {
-		this.stopFunc[i].value;
-	}
-}
+    arg i;
+    if(testado[i].not) {
+		if(this.stopFunc[i].notNil) {
+			this.stopFunc[i].value;
+		}
+	} 
 })
 };
 
-runStop = {
+runStop = { 
 	arg source;
 	if(this.stopFunc[source].notNil) {
 		this.stopFunc[source].value;
@@ -5205,12 +5205,21 @@ controle.onPlay = {
 
 
 controle.onSeek = {
-	//	("onSeek = " ++ ~controle.now).postln;
+	var wasplaying = isPlay;
+		("isPlay = " ++ isPlay).postln;
+	
+	//runStops.value;
 	if(isPlay == true) {
 		this.nfontes.do { arg i;	
-this.synt[i].free; // error check
-};
-};
+        this.synt[i].free; // error check
+        };
+    };
+    controle.stop;
+     if(wasplaying) {
+		 //isPlay = true;
+		 "we are here".postln;
+		 {controle.play}.defer(0.3); //delay necessary
+	 };
 };
 
 controle.onStop = {
@@ -5219,8 +5228,8 @@ controle.onStop = {
 		// if sound is currently being "tested", don't switch off on stop
 		// leave that for user
 		if (testado[i] == false) {
-this.synt[i].free; // error check
-};
+           this.synt[i].free; // error check
+        };
 //	this.espacializador[i].free;
 };
 isPlay = false;
