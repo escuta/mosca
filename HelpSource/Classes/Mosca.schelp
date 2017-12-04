@@ -368,8 +368,28 @@ private:: yval
 private:: yval = value
 private:: zval
 private:: zval = value
-
-
+private:: businibox
+private:: businibox = value
+private:: dcheck
+private:: dcheck = value
+private:: dfcheck
+private:: dfcheck = value
+private:: firstTime
+private:: firstTime = value
+private:: hwncheck
+private:: hwncheck = value
+private:: lncheck
+private:: lncheck = value
+private:: lpcheck
+private:: lpcheck = value
+private:: ncanbox
+private:: ncanbox = value
+private:: rvcheck
+private:: rvcheck = value
+private:: scncheck
+private:: scncheck = value
+private:: spcheck
+private:: spcheck = value
 
 
 METHOD:: gui
@@ -494,12 +514,12 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 
 // without headtracking with rir supplied in the zip file mentioned above.
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 
 // with headtracking (should only be used with binaural decoder)
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 32, width: 665, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: 0, recchans: 2, recbus: 0);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 32, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
 
 
 // Use allpass filter reverberation
