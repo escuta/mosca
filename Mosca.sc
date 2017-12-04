@@ -571,13 +571,14 @@ GUI Parameters usable in SynthDefs
 				)
 			}).add;
 
-			
-			SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-				var sig = In.ar(globtbus, 4);
-				sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
-					Lag.kr(pitch, 0.01));
-				Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-			}).add;
+			if (this.serport.notNil) {
+				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+					var sig = In.ar(globtbus, 4);
+					sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
+						Lag.kr(pitch, 0.01));
+					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+				}).add;
+			};
 			
 
 			SynthDef.new("revGlobalAmb",  { arg gbus;
@@ -2670,12 +2671,13 @@ GUI Parameters usable in SynthDefs
 				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 			};
 
-			
-			if(globFOATransform.isNil){
-				this.globFOATransform = Synth.new(\globFOATransformSynth, [\globtbus, this.globTBus, \heading, 0,
-					\roll, 0, \pitch, 0], addAction:\addToTail);
+			if (this.serport.notNil) {
+				if(globFOATransform.isNil){
+					this.globFOATransform = Synth.new(\globFOATransformSynth, [\globtbus, this.globTBus,
+						\heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
+				};
 			};
-
+			
 			/// STREAM FROM DISK
 
 			if ((path != "") && this.hwncheck[i].value.not && this.scncheck[i].value.not && this.streamdisk[i]) {
@@ -4172,6 +4174,8 @@ zslider.action = {arg num;
 
 ////////////////////////////// Orientation //////////////
 
+if (this.serport.notNil) {
+	
 this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
 this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
 this.pitchnumbox = NumberBox(win, Rect(this.width - 45, this.width - 25, 40, 20));
@@ -4195,6 +4199,7 @@ textbuf.string = "P:";
 textbuf = StaticText(win, Rect(this.width - 45, this.width - 85, 90, 20));
 textbuf.string = "Orient.";
 
+};
 
 
 ////////////////////////////////////////////////////////////
@@ -5412,8 +5417,11 @@ revGlobalBF.free;
 if(revGlobalSoa.notNil){
 revGlobalSoa.free;
 };
+
+if (this.serport.notNil) {
 if(this.globFOATransform.notNil){
 this.globFOATransform.free
+};
 };
 
 wdados.close;
