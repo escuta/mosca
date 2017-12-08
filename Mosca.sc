@@ -44,12 +44,12 @@ AutomationGuiProxy {
 
 AutomationGuiProxy2 {
 	var <>val, <>function, <>action;
-	*new { arg val, action;
-		^super.new.initAutomationProxy(val, action);
+	*new { arg val;
+		^super.new.initAutomationProxy(val);
 	}
 	initAutomationProxy { arg ival, iaction;
 		this.val = ival;
-		action = iaction;
+		//action = iaction;
 	}
 	value {
 		^this.val;
