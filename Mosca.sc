@@ -16,6 +16,35 @@
 	my be downloaded here: http://escuta.org/mosca
 */
 
+AutomationProxy {
+	var <>val, <>function;
+
+	*new { arg val = nil;
+		^super.new.initAutomationProxy(val);
+	}
+	initAutomationProxy { arg ival;
+		this.val = ival;
+
+	}
+	value {
+		^this.val;
+	}
+	value_ { arg value;
+		this.val = value;
+	}
+	valueAction_ { arg value;
+		this.val = value;
+		this.function.value(value);
+	}
+	action_ { arg func;
+		this.function = func;
+	}
+	action {
+		this.function.value(this.val);
+	}
+
+}
+
 
 Mosca {
 	var <>myTestVar;
