@@ -16,15 +16,13 @@
 	my be downloaded here: http://escuta.org/mosca
 */
 
-AutomationProxy {
+AutomationGuiProxy {
 	var <>val, <>function;
-
-	*new { arg val = nil;
+	*new { arg val;
 		^super.new.initAutomationProxy(val);
 	}
 	initAutomationProxy { arg ival;
 		this.val = ival;
-
 	}
 	value {
 		^this.val;
@@ -42,8 +40,39 @@ AutomationProxy {
 	action {
 		this.function.value(this.val);
 	}
-
 }
+
+AutomationGuiProxy2 {
+	var <>val, <>function, <>action;
+	*new { arg val, action;
+		^super.new.initAutomationProxy(val, action);
+	}
+	initAutomationProxy { arg ival, iaction;
+		this.val = ival;
+		action = iaction;
+	}
+	value {
+		^this.val;
+	}
+	value_ { arg value;
+		this.val = value;
+	}
+
+	doAction { action.value(this.val)
+	}
+	valueAction_ { |val| this.value_(val).doAction
+	}
+
+	/*	action_ { arg func;
+		this.function = func;
+	}
+	action {
+		this.function.value(this.val); 
+	
+		} */
+}
+
+
 
 
 Mosca {
