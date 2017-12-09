@@ -42,6 +42,158 @@ AutomationGuiProxy {
 	}
 }
 
+AutomationGuiProxy8 : QView {
+	var <>val, <>function;
+	*new { arg val;
+		^super.new.initAutomationProxy(val);
+	}
+	initAutomationProxy { arg ival;
+		this.val = ival;
+	}
+	value {
+		^this.val;
+	}
+	value_ { arg value;
+		this.val = value;
+	}
+	valueAction_ { arg value;
+		this.val = value;
+		this.function.value(value);
+	}
+	action_ { arg func;
+		this.function = func;
+	}
+	action {
+		this.function;
+	}
+	doAction { action.value(this.val)
+	}
+
+}
+
+
+AutomationGuiProxy4 {
+	var <>val, <>function;
+	*new { arg val;
+		^super.new.initAutomationProxy(val);
+	}
+	initAutomationProxy { arg ival;
+		this.val = ival;
+	}
+	value {
+		^this.val;
+	}
+	value_ { arg value;
+		this.val = value;
+	}
+	doAction { this.function.value(this.val)
+	}
+	valueAction_ { |val| this.value_(val).doAction
+	}
+
+
+	
+	/*	valueAction_ { arg value;
+		this.val = value;
+		this.function.value(value);
+		} */
+	action_ { arg func;
+		this.function = func;
+	}
+	action { 
+		this.function.value(this.val);
+	}
+	
+}
+
+
+AutomationGuiProxy3 {
+	var <>val, <>function, <>action, <>absoluteBounds;
+	*new { arg val;
+		^super.new.initAutomationProxy(val);
+	}
+	initAutomationProxy { arg ival;
+		this.val = ival;
+		
+		//		this.absoluteBounds = [0, 0,0,0];
+		//action = iaction;
+	}
+	value {
+		^this.val;
+	}
+	value_ { arg value;
+		this.val = value;
+	}
+	left { arg value;
+		
+		
+	}
+
+	doAction { action.value(this.val)
+	}
+	valueAction_ { |val| this.value_(val).doAction
+	}
+}
+
+AutomationGuiProxy9 : QView {
+	var <>val, <>function, <>action, <>absoluteBounds;
+	*new { arg val;
+		^super.new.initAutomationProxy(val);
+	}
+	initAutomationProxy { arg ival;
+		this.val = ival;
+		
+		//		this.absoluteBounds = [0, 0,0,0];
+		//action = iaction;
+	}
+	value {
+		^this.val;
+	}
+	value_ { arg value;
+		this.val = value;
+	}
+	left { arg value;
+		
+		
+	}
+
+	doAction { this.action.value(this.val)
+	}
+	valueAction_ { |val| this.value_(val).doAction
+	}
+}
+
+AutomationGuiProxy7  {
+	var <>val, <>function, <>action;
+	*new { arg val;
+		^super.new.initAutomationProxy(val);
+	}
+	initAutomationProxy { arg ival;
+		this.val = ival;
+		
+		//		this.absoluteBounds = [0, 0,0,0];
+		//action = iaction;
+	}
+	value {
+		^this.val;
+	}
+	value_ { arg value;
+		this.val = value;
+	}
+	left { arg value;
+		
+		
+	}
+
+	doAction { action.value(this.val)
+	}
+	valueAction_ { |val| this.value_(val).doAction
+	}
+}
+
+
+
+
 AutomationGuiProxy2 {
 	var <>val, <>function, <>action;
 	*new { arg val;
@@ -62,6 +214,11 @@ AutomationGuiProxy2 {
 	}
 	valueAction_ { |val| this.value_(val).doAction
 	}
+	//		valueAction_ { arg value;
+	//		this.val = value;
+	//		this.function.value(value);
+	//	}
+
 
 	/*	action_ { arg func;
 		this.function = func;
