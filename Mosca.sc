@@ -136,7 +136,7 @@ AutomationGuiProxy3 {
 }
 
 AutomationGuiProxy9 : QView {
-	var <>val, <>function, <>action, <>absoluteBounds;
+	var <>val, <>function, <>action;
 	*new { arg val;
 		^super.new.initAutomationProxy(val);
 	}
@@ -152,9 +152,19 @@ AutomationGuiProxy9 : QView {
 	value_ { arg value;
 		this.val = value;
 	}
-	left { arg value;
-		
-		
+	mapToGlobal { arg point;
+		_QWidget_MapToGlobal
+		^this.primitiveFailed;
+	}
+	absoluteBounds {
+		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ) );
+	}
+	bounds {
+		^this.getProperty(\geometry)
+	}
+
+	bounds_ { arg rect;
+		this.setProperty(\geometry, rect.asRect )
 	}
 
 	doAction { this.action.value(this.val)
