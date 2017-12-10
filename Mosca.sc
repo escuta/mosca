@@ -119,7 +119,7 @@ Mosca {
 	<>zboxProxy, <>yboxProxy, <>xboxProxy,
 	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy, <>a1boxProxy,
 	<>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
-	<>stcheckProxy,
+	//<>stcheckProxy,
 
 	<>guiflag; 
 
@@ -329,7 +329,7 @@ GUI Parameters usable in SynthDefs
 		a3boxProxy = Array.newClear(this.nfontes); 
 		a4boxProxy = Array.newClear(this.nfontes); 
 		a5boxProxy = Array.newClear(this.nfontes); 
-		stcheckProxy = Array.newClear(this.nfontes); 
+		//stcheckProxy = Array.newClear(this.nfontes); 
 
 		this.nfontes.do { arg x;
 			rboxProxy[x] = AutomationGuiProxy.new(0.0);  
@@ -353,7 +353,7 @@ GUI Parameters usable in SynthDefs
 			a3boxProxy[x] = AutomationGuiProxy.new(0.0);  
 			a4boxProxy[x] = AutomationGuiProxy.new(0.0);  
 			a5boxProxy[x] = AutomationGuiProxy.new(0.0);  
-			stcheckProxy[x] = AutomationGuiProxy.new(0.0);  
+			//stcheckProxy[x] = AutomationGuiProxy.new(0.0);  
 			
 		};
 
@@ -2101,10 +2101,11 @@ GUI Parameters usable in SynthDefs
 	loadAutomation {
 		|path|
 		var filenames;
-		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif;
+		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
 		this.controle.load(path);
 		//this.controle.seek; 
 		this.lastAutomation = path;
+		"2HHHHHHHHHHHHHHHHHHHEEEEEEEEEEEEEERRRRRRRRRRREEEEEEEEE".postln;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
 
 		dopplerf = File((path ++ "/doppler.txt").standardizePath,"r");
@@ -2117,6 +2118,7 @@ GUI Parameters usable in SynthDefs
 		diffusef = File((path ++ "/diffuse.txt").standardizePath,"r");
 		ncanf = File((path ++ "/ncan.txt").standardizePath,"r");
 		businif = File((path ++ "/busini.txt").standardizePath,"r");
+		stcheckf = File((path ++ "/stcheck.txt").standardizePath,"r");
 		
 		this.nfontes.do { arg i;
 			var line = filenames.getLine(1024);
@@ -2163,6 +2165,11 @@ GUI Parameters usable in SynthDefs
 					var line = businif.getLine(1024);
 					this.businibox[i].valueAction = line.asFloat;
 				};
+				nfontes.do { arg i;
+					var line = stcheckf.getLine(1024);
+					this.stcheck[i].valueAction = line;
+					("LINE = " ++ line).postln;
+				};
 
 		
 		filenames.close;
@@ -2177,6 +2184,7 @@ GUI Parameters usable in SynthDefs
 		diffusef.close;
 		ncanf.close;
 		businif.close;
+		stcheckf.close;
 		
 	}
 
@@ -4769,7 +4777,7 @@ GUI Parameters usable in SynthDefs
 			var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
 			var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
 			*/
-			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif;
+			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
 
 			//////////////
 
@@ -4812,6 +4820,7 @@ GUI Parameters usable in SynthDefs
 				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"w");
 				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"w");
 				businif = File((textField.value ++ "/busini.txt").standardizePath,"w");
+				stcheckf = File((textField.value ++ "/stcheck.txt").standardizePath,"w");
 
 
 				nfontes.do { arg i;
@@ -4832,6 +4841,7 @@ GUI Parameters usable in SynthDefs
 					diffusef.write(this.dfcheck[i].value.asString ++ "\n");
 					ncanf.write(this.ncanbox[i].value.asString ++ "\n");
 					businif.write(this.businibox[i].value.asString ++ "\n");
+					stcheckf.write(this.stcheck[i].value.asString ++ "\n");
 					
 					// REMEMBER AUX? 
 					
@@ -4850,6 +4860,7 @@ GUI Parameters usable in SynthDefs
 				diffusef.close;
 				ncanf.close;
 				businif.close;
+				stcheckf.close;
 				
 				///////
 
@@ -4875,7 +4886,7 @@ GUI Parameters usable in SynthDefs
 			var filenames;
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
-			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif;
+			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
 
 			bounds = Rect(100,300,300,30);
 			if(prjDr.isNil && this.lastAutomation.isNil) {
@@ -4914,6 +4925,7 @@ GUI Parameters usable in SynthDefs
 				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"r");
 				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"r");
 				businif = File((textField.value ++ "/busini.txt").standardizePath,"r");
+				stcheckf = File((textField.value ++ "/stcheck.txt").standardizePath,"r");
 
 				
 				{	("BEFORE ACTION - stream = " ++ stcheck[0].value).postln;}.defer;
@@ -4926,11 +4938,13 @@ GUI Parameters usable in SynthDefs
 				nfontes.do { arg i;
 					var line = dopplerf.getLine(1024);
 					this.dcheck[i].valueAction = line;
+					// doppler[i] 0 or 1
 				};
 
 				nfontes.do { arg i;
 					var line = loopedf.getLine(1024);
 					this.lpcheck[i].valueAction = line;
+					//lp[i] 0 or 1
 				};
 				nfontes.do { arg i;
 					var line = aformatrevf.getLine(1024);
@@ -4968,6 +4982,10 @@ GUI Parameters usable in SynthDefs
 					var line = businif.getLine(1024);
 					this.businibox[i].valueAction = line.asFloat;
 				};
+				nfontes.do { arg i;
+					var line = stcheckf.getLine(1024);
+					this.stcheck[i].valueAction = line;
+				};
 
 
 				
@@ -4983,6 +5001,7 @@ GUI Parameters usable in SynthDefs
 				diffusef.close;
 				ncanf.close;
 				businif.close;
+				stcheckf.close;
 
 				
 				
@@ -5783,9 +5802,223 @@ gnumbox.value = num.value;
 }; 
 
 
+lboxProxy[i].action = {arg num;
+	this.espacializador[i].set(\llev, num.value);
+this.setSynths(i, \llev, num.value);
+this.synt[i].set(\llev, num.value);
+llev[i] = num.value;
+if(i == fatual) 
+{
+lslider.value = num.value;
+lnumbox.value = num.value;
+};
+     if (guiflag) {
+        lbox[i].value = num.value;
+     };
+}; 
+
+rboxProxy[i].action = {arg num; 
+
+	this.synt[i].set(\rotAngle, num.value);
+this.setSynths(i, \rotAngle, num.value);
+rlev[i] = num.value;
+if(i == fatual) 
+{
+//num.value * 6.28 - pi;
+rslider.value = (num.value + pi) / 2pi;
+rnumbox.value = num.value;
+};
+     if (guiflag) {
+        rbox[i].value = num.value;
+     };
+};
+
+dboxProxy[i].action = {arg num; 
+	this.synt[i].set(\directang, num.value);
+this.setSynths(i, \directang, num.value);
+dlev[i] = num.value;
+if(i == fatual) 
+{
+//num.value * pi/2;
+dirslider.value = num.value / (pi/2);
+dirnumbox.value = num.value;
+};
+     if (guiflag) {
+        dbox[i].value = num.value;
+     };
+};
+
+cboxProxy[i].action = {arg num; 
+	this.synt[i].set(\contr, num.value);
+// TESTING
+this.espacializador[i].set(\contr, num.value);
+this.setSynths(i, \contr, num.value);
+clev[i] = num.value;
+if(i == fatual) 
+{
+cslider.value = num.value;
+connumbox.value = num.value;
+};
+     if (guiflag) {
+        cbox[i].value = num.value;
+     };
+};
+
+dpboxProxy[i].action = {arg num;
+	// used for b-format amb/bin only
+	this.synt[i].set(\dopamnt, num.value);
+this.setSynths(i, \dopamnt, num.value);
+// used for the others
+this.espacializador[i].set(\dopamnt, num.value);
+dplev[i] = num.value;
+if(i == fatual) 
+{
+dpslider.value = num.value;
+dopnumbox.value = num.value;
+};
+     if (guiflag) {
+        dpbox[i].value = num.value;
+     };
+};
+
+a1boxProxy[i].action = {arg num;
+	this.setSynths(i, \aux1, num.value);
+aux1[i] = num.value;
+if(i == fatual) 
+{
+auxslider1.value = num.value;
+aux1numbox.value = num.value;
+};
+     if (guiflag) {
+        a1box[i].value = num.value;
+     };
+}; 
+
+a2boxProxy[i].action = {arg num;
+	this.setSynths(i, \aux2, num.value);
+aux2[i] = num.value;
+if(i == fatual) 
+{
+auxslider2.value = num.value;
+aux2numbox.value = num.value;
+};
+     if (guiflag) {
+        a2box[i].value = num.value;
+     };
+}; 
+
+a3boxProxy[i].action = {arg num;
+	this.setSynths(i, \aux3, num.value);
+aux3[i] = num.value;
+if(i == fatual) 
+{
+auxslider3.value = num.value;
+aux3numbox.value = num.value;
+};
+     if (guiflag) {
+        a3box[i].value = num.value;
+     };
+}; 
+
+a4boxProxy[i].action = {arg num;
+	this.setSynths(i, \aux4, num.value);
+aux4[i] = num.value;
+if(i == fatual) 
+{
+auxslider4.value = num.value;
+aux4numbox.value = num.value;
+};
+     if (guiflag) {
+        a4box[i].value = num.value;
+     };
+}; 
+
+a5boxProxy[i].action = {arg num;
+	this.setSynths(i, \aux5, num.value);
+aux5[i] = num.value;
+if(i == fatual) 
+{
+auxslider5.value = num.value;
+aux5numbox.value = num.value;
+};
+     if (guiflag) {
+        a5box[i].value = num.value;
+     };
+}; 
+
+a1checkProxy[i].action = { arg but;
+
+if (but.value == true) {
+	a1but[i] = 1;
+	this.setSynths(i, \a1check, 1);
+}{
+	a1but[i] = 0;
+	this.setSynths(i, \a1check, 0);
+};
+};
+
+a2checkProxy[i].action = { arg but;
+
+if (but.value == true) {
+	a2but[i] = 1;
+	this.setSynths(i, \a2check, 1);
+}{
+	a2but[i] = 0;
+	this.setSynths(i, \a2check, 0);
+};
+};
 
 
-	
+a3checkProxy[i].action = { arg but;
+
+if (but.value == true) {
+	a3but[i] = 1;
+	this.setSynths(i, \a3check, 1);
+}{
+	a3but[i] = 0;	
+	this.setSynths(i, \a3check, 0);
+};
+};
+
+
+
+a4checkProxy[i].action = { arg but;
+
+if (but.value == true) {
+	a4but[i] = 1;
+	this.setSynths(i, \a4check, 1);
+}{
+	a4but[i] = 0;
+	this.setSynths(i, \a4check, 0);
+};
+};
+
+
+a5checkProxy[i].action = { arg but;
+
+if (but.value == true) {
+	a5but[i] = 1;
+	this.setSynths(i, \a5check, 1);
+}{
+	a5but[i] = 0;
+	this.setSynths(i, \a5check, 0);
+};
+};
+
+// this should be a once only!! 
+/*
+stcheckProxy[i].action = { arg but;
+if (but.value == true) {
+	this.streamdisk[i] = true;
+	//	this.setSynths(i, \a5check, 1);
+}{
+	this.streamdisk[i] = false;
+	//	a5but[i] = 0;
+	//	this.setSynths(i, \a5check, 0);
+};
+};
+*/
+
     controle.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
 	controle.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
 	controle.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
@@ -5807,7 +6040,7 @@ gnumbox.value = num.value;
 	controle.dock(this.a3checkProxy[i], "aux3checkProxy_" ++ i);
 	controle.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
 	controle.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
-	controle.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
+//controle.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
 };
 
 
@@ -5989,78 +6222,45 @@ a4box[i].clipLo = 0;
 a5box[i].clipHi = 1;
 a5box[i].clipLo = 0;
 
-a1check[i] = CheckBox.new( wdados, Rect(725, 40 + (i*20), 40, 20))
-.action_({ arg but;
-
-if (but.value == true) {
-	a1but[i] = 1;
-	this.setSynths(i, \a1check, 1);
-}{
-	a1but[i] = 0;
-	this.setSynths(i, \a1check, 0);
+a1check[i] = CheckBox.new( wdados, Rect(725, 40 + (i*20), 40, 20));
+a1check[i].action = { arg but;
+this.a1checkProxy[i].valueAction = but.value;
 };
-});
-a2check[i] = CheckBox.new( wdados, Rect(740, 40 + (i*20), 40, 20))
-.action_({ arg but;
 
-if (but.value == true) {
-	a2but[i] = 1;
-	this.setSynths(i, \a2check, 1);
-}{
-	a2but[i] = 0;
-	this.setSynths(i, \a2check, 0);
-};
-});
-a3check[i] = CheckBox.new( wdados, Rect(755, 40 + (i*20), 40, 20))
-.action_({ arg but;
 
-if (but.value == true) {
-	a3but[i] = 1;
-	this.setSynths(i, \a3check, 1);
-}{
-	a3but[i] = 0;	
-	this.setSynths(i, \a3check, 0);
-};
-});
-a4check[i] = CheckBox.new( wdados, Rect(770, 40 + (i*20), 40, 20))
-.action_({ arg but;
 
-if (but.value == true) {
-	a4but[i] = 1;
-	this.setSynths(i, \a4check, 1);
-}{
-	a4but[i] = 0;
-	this.setSynths(i, \a4check, 0);
+a2check[i] = CheckBox.new( wdados, Rect(740, 40 + (i*20), 40, 20));
+a2check[i].action = { arg but;
+	this.a2checkProxy[i].valueAction = but.value;
 };
-});
-a5check[i] = CheckBox.new( wdados, Rect(785, 40 + (i*20), 40, 20))
-.action_({ arg but;
 
-if (but.value == true) {
-	a5but[i] = 1;
-	this.setSynths(i, \a5check, 1);
-}{
-	a5but[i] = 0;
-	this.setSynths(i, \a5check, 0);
+
+a3check[i] = CheckBox.new( wdados, Rect(755, 40 + (i*20), 40, 20));
+a3check[i].action = { arg but;
+	this.a3checkProxy[i].valueAction = but.value;
 };
-});
+
+
+a4check[i] = CheckBox.new( wdados, Rect(770, 40 + (i*20), 40, 20));
+a4check[i].action = { arg but;
+	this.a4checkProxy[i].valueAction = but.value;
+};
+
+
+a5check[i] = CheckBox.new( wdados, Rect(785, 40 + (i*20), 40, 20));
+a5check[i].action = { arg but;
+	this.a5checkProxy[i].valueAction = but.value;
+};
+
 
 
 this.tfield[i] = TextField(wdados, Rect(800, 40+ (i*20), 125, 20));
 //			this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
-stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20))
-.action_({ arg but;
-
-if (but.value == true) {
-	this.streamdisk[i] = true;
-	//	this.setSynths(i, \a5check, 1);
-}{
-	this.streamdisk[i] = false;
-	//	a5but[i] = 0;
-	//	this.setSynths(i, \a5check, 0);
-};
-});
+stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
+//stcheck[i].action = { arg but;
+//	this.stcheckProxy[i].valueAction = but.value;
+//};
 
 
 this.ncanbox[i].font = Font(Font.defaultSansFace, 9);
@@ -6098,50 +6298,27 @@ ozbox[i].decimals = 0;
 
 
 a1box[i].action = {arg num;
-	this.setSynths(i, \aux1, num.value);
-aux1[i] = num.value;
-if(i == fatual) 
-{
-auxslider1.value = num.value;
-aux1numbox.value = num.value;
-};
+	this.a1boxProxy[i].valueAction = num.value;
 }; 
+
+
 a2box[i].action = {arg num;
-	this.setSynths(i, \aux2, num.value);
-aux2[i] = num.value;
-if(i == fatual) 
-{
-auxslider2.value = num.value;
-aux2numbox.value = num.value;
-};
+	this.a2boxProxy[i].valueAction = num.value;
 }; 
+
+
 a3box[i].action = {arg num;
-	this.setSynths(i, \aux3, num.value);
-aux3[i] = num.value;
-if(i == fatual) 
-{
-auxslider3.value = num.value;
-aux3numbox.value = num.value;
-};
+	this.a3boxProxy[i].valueAction = num.value;
 }; 
+
 a4box[i].action = {arg num;
-	this.setSynths(i, \aux4, num.value);
-aux4[i] = num.value;
-if(i == fatual) 
-{
-auxslider4.value = num.value;
-aux4numbox.value = num.value;
-};
+	this.a4boxProxy[i].valueAction = num.value;
 }; 
+
 a5box[i].action = {arg num;
-	this.setSynths(i, \aux5, num.value);
-aux5[i] = num.value;
-if(i == fatual) 
-{
-auxslider5.value = num.value;
-aux5numbox.value = num.value;
-};
+	this.a5boxProxy[i].valueAction = num.value;
 }; 
+
 
 
 this.tfield[i].action = {arg path;
@@ -6232,74 +6409,35 @@ gbox[i].action = {arg num;
 
 
 lbox[i].action = {arg num;
-	this.espacializador[i].set(\llev, num.value);
-this.setSynths(i, \llev, num.value);
-this.synt[i].set(\llev, num.value);
-llev[i] = num.value;
-if(i == fatual) 
-{
-lslider.value = num.value;
-lnumbox.value = num.value;
-};
+	this.lboxProxy[i].valueAction = num.value;
 }; 
 
 
-rbox[i].action = {arg num; 
 
-	this.synt[i].set(\rotAngle, num.value);
-this.setSynths(i, \rotAngle, num.value);
-rlev[i] = num.value;
-if(i == fatual) 
-{
-//num.value * 6.28 - pi;
-rslider.value = (num.value + pi) / 2pi;
-rnumbox.value = num.value;
+rbox[i].action = {arg num; 
+	this.rboxProxy[i].valueAction = num.value;
 };
-};
+
+
+
 
 dbox[i].action = {arg num; 
-	this.synt[i].set(\directang, num.value);
-this.setSynths(i, \directang, num.value);
-dlev[i] = num.value;
-if(i == fatual) 
-{
-//num.value * pi/2;
-dirslider.value = num.value / (pi/2);
-dirnumbox.value = num.value;
+	this.dboxProxy[i].valueAction = num.value;
 };
-};
+
 
 cbox[i].action = {arg num; 
-	this.synt[i].set(\contr, num.value);
-
-// TESTING
-this.espacializador[i].set(\contr, num.value);
-
-
-this.setSynths(i, \contr, num.value);
-clev[i] = num.value;
-if(i == fatual) 
-{
-cslider.value = num.value;
-connumbox.value = num.value;
+	this.cboxProxy[i].valueAction = num.value;
 };
-};
+
+
+
 
 dpbox[i].action = {arg num;
-	// used for b-format amb/bin only
-	this.synt[i].set(\dopamnt, num.value);
-this.setSynths(i, \dopamnt, num.value);
-// used for the others
-this.espacializador[i].set(\dopamnt, num.value);
-dplev[i] = num.value;
-if(i == fatual) 
-{
-dpslider.value = num.value;
-dopnumbox.value = num.value;
-};
+	this.dpboxProxy[i].valueAction = num.value;
 };
 
-
+// LEAVE
 // CHECK THESE NEXT 2
 this.ncanbox[i].action = {arg num;
 	this.espacializador[i].set(\mz, num.value);
@@ -6312,7 +6450,8 @@ if(i == fatual )
 //	ncanslider.value = num.value;
 ncannumbox.value = num.value;
 };
-}; 
+};
+
 this.businibox[i].action = {arg num;
 	this.espacializador[i].set(\mz, num.value);
 this.setSynths(i, \mz, num.value);
@@ -6464,29 +6603,29 @@ this.nfontes.do { arg i;
 
 
 	//controle.dock(vbox[i], "level_" ++ i);
-controle.dock(dpbox[i], "dopamt_" ++ i);
+	//controle.dock(dpbox[i], "dopamt_" ++ i);
 
 //controle.dock(abox[i], "angle_" ++ i);
 //controle.dock(gbox[i], "revglobal_" ++ i);
-controle.dock(lbox[i], "revlocal_" ++ i);
-controle.dock(rbox[i], "rotation_" ++ i);
-controle.dock(dbox[i], "diretividade_" ++ i);
-controle.dock(cbox[i], "contraction_" ++ i);
+//controle.dock(lbox[i], "revlocal_" ++ i);
+//controle.dock(rbox[i], "rotation_" ++ i);
+//controle.dock(dbox[i], "diretividade_" ++ i);
+//controle.dock(cbox[i], "contraction_" ++ i);
 
 
-controle.dock(a1box[i], "aux1_" ++ i);
-controle.dock(a2box[i], "aux2_" ++ i);
-controle.dock(a3box[i], "aux3_" ++ i);
-controle.dock(a4box[i], "aux4_" ++ i);
-controle.dock(a5box[i], "aux5_" ++ i);
+	//controle.dock(a1box[i], "aux1_" ++ i);
+	//controle.dock(a2box[i], "aux2_" ++ i);
+	//controle.dock(a3box[i], "aux3_" ++ i);
+	//controle.dock(a4box[i], "aux4_" ++ i);
+	//controle.dock(a5box[i], "aux5_" ++ i);
 
-controle.dock(a1check[i], "aux1check_" ++ i);
-controle.dock(a2check[i], "aux2check_" ++ i);
-controle.dock(a3check[i], "aux3check_" ++ i);
-controle.dock(a4check[i], "aux4check_" ++ i);
-controle.dock(a5check[i], "aux5check_" ++ i);
+	//controle.dock(a1check[i], "aux1check_" ++ i);
+	//controle.dock(a2check[i], "aux2check_" ++ i);
+	//controle.dock(a3check[i], "aux3check_" ++ i);
+	//controle.dock(a4check[i], "aux4check_" ++ i);
+	//controle.dock(a5check[i], "aux5check_" ++ i);
 
-controle.dock(stcheck[i], "stcheck_" ++ i);
+	//controle.dock(stcheck[i], "stcheck_" ++ i);
 
 
 
