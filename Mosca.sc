@@ -115,7 +115,7 @@ Mosca {
 
 	// NEW PROXY VARIABLES /////////////
 
-	<>rboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy, <>dboxProxy, <>dpboxProxy,
+	<>rboxProxy, <>cboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy, <>dboxProxy, <>dpboxProxy,
 	<>zboxProxy, <>yboxProxy, <>xboxProxy,
 	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy, <>a1boxProxy,
 	<>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
@@ -290,9 +290,26 @@ GUI Parameters usable in SynthDefs
 		this.headingOffset = this.offsetheading;
 
 
-		////////// ADDED NEW ARRAYS and other proxy stuff  //////////////////
+
+
+
+
+
+
+		this.mark1 = Array.newClear(4);
+		this.mark2 = Array.newClear(4);
+		
+		this.nfontes = nsources;
+
+
+
+				////////// ADDED NEW ARRAYS and other proxy stuff  //////////////////
+
+		// these proxies behave like GUI elements. They eneable
+		// the use of Automation without a GUI
 
 		rboxProxy = Array.newClear(this.nfontes); 
+		cboxProxy = Array.newClear(this.nfontes); 
 		aboxProxy = Array.newClear(this.nfontes); 
 		vboxProxy = Array.newClear(this.nfontes); 
 		gboxProxy = Array.newClear(this.nfontes); 
@@ -316,6 +333,7 @@ GUI Parameters usable in SynthDefs
 
 		this.nfontes.do { arg x;
 			rboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			cboxProxy[x] = AutomationGuiProxy.new(0.0);  
 			aboxProxy[x] = AutomationGuiProxy.new(0.0);  
 			vboxProxy[x] = AutomationGuiProxy.new(0.0);  
 			gboxProxy[x] = AutomationGuiProxy.new(0.0);  
@@ -345,14 +363,8 @@ GUI Parameters usable in SynthDefs
 
 		///////////////////////////////
 
-
-
-
-
-		this.mark1 = Array.newClear(4);
-		this.mark2 = Array.newClear(4);
 		
-		this.nfontes = nsources;
+		
 		playMonoInFunc = Array.newClear(4); // one for File, Stereo, BFormat, Stream - streamed file;
 		playStereoInFunc = Array.newClear(4);
 		playBFormatInFunc = Array.newClear(4);
@@ -5658,11 +5670,32 @@ textbuf.font = Font(Font.defaultSansFace, 9);
 textbuf.string = "St";
 
 ////////////// DOCK PROXIES /////////////
-/*
+
 this.nfontes.do { arg i;
 	controle.dock(xboxProxy[i], "x_axisProxy_" ++ i);
+	controle.dock(yboxProxy[i], "y_axisProxy_" ++ i);
+	controle.dock(zboxProxy[i], "z_axisProxy_" ++ i);
+	controle.dock(vboxProxy[i], "levelProxy_" ++ i);
+	controle.dock(dpboxProxy[i], "dopamtProxy_" ++ i);
+	controle.dock(aboxProxy[i], "angleProxy_" ++ i);
+	controle.dock(gboxProxy[i], "revglobalProxy_" ++ i);
+	controle.dock(lboxProxy[i], "revlocalProxy_" ++ i);
+	controle.dock(rboxProxy[i], "rotationProxy_" ++ i);
+	controle.dock(dboxProxy[i], "directivityProxy_" ++ i);
+	controle.dock(cboxProxy[i], "contractionProxy_" ++ i);
+	controle.dock(a1boxProxy[i], "aux1Proxy_" ++ i);
+	controle.dock(a2boxProxy[i], "aux2Proxy_" ++ i);
+	controle.dock(a3boxProxy[i], "aux3Proxy_" ++ i);
+	controle.dock(a4boxProxy[i], "aux4Proxy_" ++ i);
+	controle.dock(a5boxProxy[i], "aux5Proxy_" ++ i);
+	controle.dock(a1checkProxy[i], "aux1checkProxy_" ++ i);
+	controle.dock(a2checkProxy[i], "aux2checkProxy_" ++ i);
+	controle.dock(a3checkProxy[i], "aux3checkProxy_" ++ i);
+	controle.dock(a4checkProxy[i], "aux4checkProxy_" ++ i);
+	controle.dock(a5checkProxy[i], "aux5checkProxy_" ++ i);
+	controle.dock(stcheckProxy[i], "stcheckProxy_" ++ i);
 };
-*/
+
 
 //////////////////////////////////////////
 
@@ -6023,7 +6056,8 @@ this.synt[i].set(\mx, this.xval[i]);
 };
 
 
-/*
+//("AAAAAAA xboxProxy = " ++ this.xboxProxy[i]).postln;
+
 xboxProxy[i].action = {arg num;
 	this.xval[i] = num.value;
 sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
@@ -6034,7 +6068,7 @@ this.setSynths(i, \mx, this.xval[i]);
 this.synt[i].set(\mx, this.xval[i]);
 };
 };
-*/
+
 
 
 ybox[i].action = {arg num;
