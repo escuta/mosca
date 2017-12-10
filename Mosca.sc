@@ -5001,7 +5001,7 @@ dwin.front;
 });
 
 
-
+/*
 bsnap = Button(win, Rect(170, this.width - 40, 25, 20))
 .states_([
 	["[ô]", Color.black, Color.white],
@@ -5016,7 +5016,7 @@ bsnap = Button(win, Rect(170, this.width - 40, 25, 20))
     }
 	
 });
-
+*/
 
 
 this.win.drawFunc = {
