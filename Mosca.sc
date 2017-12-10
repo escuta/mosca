@@ -107,10 +107,25 @@ Mosca {
 	<>fatual = 0,
 	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus,
 	<>doppler, <>level, <>lp, <>rv, <>ln, <>angslider, <>connumbox, <>cslider,
-	<>xbox, <>ybox, <>sombuf, <>sbus, <>updatesourcevariables, <>soaBus, <>mbus;
-
-
+	<>xbox, <>ybox, <>sombuf, <>sbus, <>updatesourcevariables, <>soaBus, <>mbus,
+	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
+	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box, <>a4box, <>a5box,
+	<>stcheck,	
 	/////////////////////////////////////////////////////////
+
+	// NEW PROXY VARIABLES /////////////
+
+	<>rboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy, <>dboxProxy, <>dpboxProxy,
+	<>zboxProxy, <>yboxProxy, <>xboxProxy,
+	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy, <>a1boxProxy,
+	<>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
+	<>stcheckProxy,
+
+	<>guiflag; 
+
+
+	/////////////////////////////////////////
+	
 
 
 
@@ -135,9 +150,9 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
 		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
-		serport = nil, offsetheading = 0, recchans = 2, recbus = 0;
+		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder,
-			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus);
+			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag);
 	}
 
 	
@@ -182,7 +197,7 @@ GUI Parameters usable in SynthDefs
 
 	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder,
 		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
-		irecchans, irecbus;
+		irecchans, irecbus, iguiflag;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -221,6 +236,7 @@ GUI Parameters usable in SynthDefs
 		this.offsetheading = ioffsetheading;
 		this.recchans = irecchans;
 		this.recbus = irecbus;
+		this.guiflag = iguiflag;
 
 
 
@@ -272,6 +288,66 @@ GUI Parameters usable in SynthDefs
 		});
 		
 		this.headingOffset = this.offsetheading;
+
+
+		////////// ADDED NEW ARRAYS and other proxy stuff  //////////////////
+
+		rboxProxy = Array.newClear(this.nfontes); 
+		aboxProxy = Array.newClear(this.nfontes); 
+		vboxProxy = Array.newClear(this.nfontes); 
+		gboxProxy = Array.newClear(this.nfontes); 
+		lboxProxy = Array.newClear(this.nfontes); 
+		dboxProxy = Array.newClear(this.nfontes); 
+		dpboxProxy = Array.newClear(this.nfontes);   
+		zboxProxy = Array.newClear(this.nfontes); 
+		yboxProxy = Array.newClear(this.nfontes); 
+		xboxProxy = Array.newClear(this.nfontes); 
+		a1checkProxy = Array.newClear(this.nfontes); 
+		a2checkProxy = Array.newClear(this.nfontes); 
+		a3checkProxy = Array.newClear(this.nfontes); 
+		a4checkProxy = Array.newClear(this.nfontes); 
+		a5checkProxy = Array.newClear(this.nfontes); 
+		a1boxProxy = Array.newClear(this.nfontes); 
+		a2boxProxy = Array.newClear(this.nfontes); 
+		a3boxProxy = Array.newClear(this.nfontes); 
+		a4boxProxy = Array.newClear(this.nfontes); 
+		a5boxProxy = Array.newClear(this.nfontes); 
+		stcheckProxy = Array.newClear(this.nfontes); 
+
+		this.nfontes.do { arg x;
+			rboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			aboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			vboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			gboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			lboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			dboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			dpboxProxy[x] = AutomationGuiProxy.new(0.0);    
+			zboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			yboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			xboxProxy[x] = AutomationGuiProxy.new(0.0);  
+			a1checkProxy[x] = AutomationGuiProxy.new(0.0);  
+			a2checkProxy[x] = AutomationGuiProxy.new(0.0);  
+			a3checkProxy[x] = AutomationGuiProxy.new(0.0);  
+			a4checkProxy[x] = AutomationGuiProxy.new(0.0);  
+			a5checkProxy[x] = AutomationGuiProxy.new(0.0);  
+			a1boxProxy[x] = AutomationGuiProxy.new(0.0);  
+			a2boxProxy[x] = AutomationGuiProxy.new(0.0);  
+			a3boxProxy[x] = AutomationGuiProxy.new(0.0);  
+			a4boxProxy[x] = AutomationGuiProxy.new(0.0);  
+			a5boxProxy[x] = AutomationGuiProxy.new(0.0);  
+			stcheckProxy[x] = AutomationGuiProxy.new(0.0);  
+			
+		};
+
+		
+		~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: true,
+			minTimeStep: 0.001);
+
+		///////////////////////////////
+
+
+
+
 
 		this.mark1 = Array.newClear(4);
 		this.mark2 = Array.newClear(4);
@@ -1781,7 +1857,14 @@ GUI Parameters usable in SynthDefs
 		
 		//////// END SYNTHDEFS ///////////////
 
-		
+		//// LAUNCH GUI 
+
+		if(guiflag) {
+			this.gui;
+		};
+
+
+		///////////////
 
 	} // end initMosca
 
@@ -3078,11 +3161,11 @@ GUI Parameters usable in SynthDefs
 		runTriggers, runStops, runTrigger, runStop,
 		
 		dopnumbox, volslider, dirnumbox, dirslider, conslider, 
-		a1box, a2box, a3box, a4box, a5box, 
+		
 		a1but, a2but, a3but, a4but, a5but, // variable
-		a1check, a2check, a3check, a4check, a5check, // data windows representation of a1but etc (ie. as checkbox)
-		stcheck, // check box for streamed from disk audio
-		bsalvar, bcarregar, bsnap, bdados, baux, abox, vbox, gbox, lbox, dbox, dpbox,
+		 // data windows representation of a1but etc (ie. as checkbox)
+		 // check box for streamed from disk audio
+		bsalvar, bcarregar, bsnap, bdados, baux, 
 		//dcheck,
 		oxbox, oybox, ozbox,
 		lastx, lasty, lastz,
@@ -3095,8 +3178,8 @@ GUI Parameters usable in SynthDefs
 		auxslider1, auxslider2, auxslider3, auxslider4, auxslider5, // aux sliders in control window
 		auxbutton1, auxbutton2, auxbutton3, auxbutton4, auxbutton5, // aux sliders in control window
 		
-		rnumbox, rslider, rbox, 
-		znumbox, zslider, zbox, zlev, // z-axis
+		rnumbox, rslider, 
+		znumbox, zslider, zlev, // z-axis
 		bmark1, bmark2,
 		
 		rlev, dlev, dplev, dpslider, cnumbox,
@@ -3211,6 +3294,8 @@ GUI Parameters usable in SynthDefs
 		
 		testado = Array.newClear(this.nfontes);
 
+
+		
 		//this.offsetHeading(this.offsetheading);
 		//("headingoffset variable = " ++ this.offsetheading).postln;
 
@@ -5572,6 +5657,15 @@ textbuf = StaticText(wdados, Rect(925, 20, 50, 20));
 textbuf.font = Font(Font.defaultSansFace, 9);
 textbuf.string = "St";
 
+////////////// DOCK PROXIES /////////////
+/*
+this.nfontes.do { arg i;
+	controle.dock(xboxProxy[i], "x_axisProxy_" ++ i);
+};
+*/
+
+//////////////////////////////////////////
+
 
 this.nfontes.do { arg i;
 
@@ -5914,7 +6008,7 @@ sombuf[i] = Buffer.read(server, path.value, action: {arg buf;
 };
 
 };
-//// EDIT HERE
+//// PROXY ACTIONS /////////
 
 xbox[i].action = {arg num;
 	//	lastx[i] = num.value;
@@ -5926,8 +6020,23 @@ this.espacializador[i].set(\mx, this.xval[i]);
 this.setSynths(i, \mx, this.xval[i]);
 this.synt[i].set(\mx, this.xval[i]);
 };
-
 };
+
+
+/*
+xboxProxy[i].action = {arg num;
+	this.xval[i] = num.value;
+sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
+novoplot.value(num.value, ybox[i], i, this.nfontes);
+if(this.espacializador[i].notNil || this.playingBF[i]) {
+this.espacializador[i].set(\mx, this.xval[i]);
+this.setSynths(i, \mx, this.xval[i]);
+this.synt[i].set(\mx, this.xval[i]);
+};
+};
+*/
+
+
 ybox[i].action = {arg num;
 	this.yval[i] = num.value;
 sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
@@ -6172,9 +6281,16 @@ runStop = {
 
 
 //controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
-~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: false,
+/*~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: false,
 	minTimeStep: 0.001).front(win,
 		Rect(10, this.width - 80, 400, 22));
+*/
+//~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: false,
+//	minTimeStep: 0.001);
+controle.front(win,
+		Rect(10, this.width - 80, 400, 22));
+
+
 controle.presetDir = prjDr ++ "/auto";
 //controle.setMinTimeStep(2.0);
 controle.onEnd = {
@@ -6267,19 +6383,7 @@ controle.dock(rbox[i], "rotation_" ++ i);
 controle.dock(dbox[i], "diretividade_" ++ i);
 controle.dock(cbox[i], "contraction_" ++ i);
 
-// automation change
-/*
-controle.dock(dcheck[i], "doppler_" ++ i);			
-controle.dock(lpcheck[i], "loop_" ++ i);
-controle.dock(hwncheck[i], "hwin_" ++ i);
-controle.dock(ncanbox[i], "numchannels_" ++ i);
-controle.dock(businibox[i], "busini_" ++ i);
-controle.dock(scncheck[i], "scin_" ++ i);
-controle.dock(rvcheck[i], "rev_" ++ i);
-controle.dock(lncheck[i], "linear_" ++ i);
-controle.dock(spcheck[i], "spread_" ++ i);
-controle.dock(dfcheck[i], "diffuse_" ++ i);
-*/
+
 controle.dock(a1box[i], "aux1_" ++ i);
 controle.dock(a2box[i], "aux2_" ++ i);
 controle.dock(a3box[i], "aux3_" ++ i);
