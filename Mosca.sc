@@ -5671,29 +5671,143 @@ textbuf.string = "St";
 
 ////////////// DOCK PROXIES /////////////
 
+
+// this should be done after the actions are assigned
+
+
 this.nfontes.do { arg i;
-	controle.dock(xboxProxy[i], "x_axisProxy_" ++ i);
-	controle.dock(yboxProxy[i], "y_axisProxy_" ++ i);
-	controle.dock(zboxProxy[i], "z_axisProxy_" ++ i);
-	controle.dock(vboxProxy[i], "levelProxy_" ++ i);
-	controle.dock(dpboxProxy[i], "dopamtProxy_" ++ i);
-	controle.dock(aboxProxy[i], "angleProxy_" ++ i);
-	controle.dock(gboxProxy[i], "revglobalProxy_" ++ i);
-	controle.dock(lboxProxy[i], "revlocalProxy_" ++ i);
-	controle.dock(rboxProxy[i], "rotationProxy_" ++ i);
-	controle.dock(dboxProxy[i], "directivityProxy_" ++ i);
-	controle.dock(cboxProxy[i], "contractionProxy_" ++ i);
-	controle.dock(a1boxProxy[i], "aux1Proxy_" ++ i);
-	controle.dock(a2boxProxy[i], "aux2Proxy_" ++ i);
-	controle.dock(a3boxProxy[i], "aux3Proxy_" ++ i);
-	controle.dock(a4boxProxy[i], "aux4Proxy_" ++ i);
-	controle.dock(a5boxProxy[i], "aux5Proxy_" ++ i);
-	controle.dock(a1checkProxy[i], "aux1checkProxy_" ++ i);
-	controle.dock(a2checkProxy[i], "aux2checkProxy_" ++ i);
-	controle.dock(a3checkProxy[i], "aux3checkProxy_" ++ i);
-	controle.dock(a4checkProxy[i], "aux4checkProxy_" ++ i);
-	controle.dock(a5checkProxy[i], "aux5checkProxy_" ++ i);
-	controle.dock(stcheckProxy[i], "stcheckProxy_" ++ i);
+
+
+
+//("AAAAAAA xboxProxy = " ++ this.xboxProxy[i]).postln;
+
+this.xboxProxy[i].action = {arg num;
+	//("Num = " ++ num.value).postln;
+	this.xval[i] = num.value;
+sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
+novoplot.value(num.value, ybox[i], i, this.nfontes);
+if(this.espacializador[i].notNil || this.playingBF[i]) {
+this.espacializador[i].set(\mx, this.xval[i]);
+this.setSynths(i, \mx, this.xval[i]);
+this.synt[i].set(\mx, this.xval[i]);
+};
+if (guiflag) {
+this.xbox[i].value = num.value;
+};
+
+};
+
+this.yboxProxy[i].action = {arg num;
+	this.yval[i] = num.value;
+sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
+
+if(this.espacializador[i].notNil || this.playingBF[i]){
+
+this.espacializador[i].set(\my, this.yval[i]);
+this.setSynths(i, \my, this.yval[i]);
+this.synt[i].set(\my, this.yval[i]);
+};
+    if (guiflag) {
+        ybox[i].value = num.value;
+    };
+
+//{oybox[i].valueAction = this.origin.y;}.defer;
+};
+
+this.zboxProxy[i].action = {arg num;
+	lastz[i] = num.value;
+this.espacializador[i].set(\mz, num.value);
+this.zval[i] = num.value;
+if (this.zval[i] > 1) {this.zval[i] = 1};
+if (this.zval[i] < -1) {this.zval[i] = -1};
+
+this.setSynths(i, \mz, this.zval[i]);
+this.synt[i].set(\mz, this.zval[i]);
+zlev[i] = this.zval[i];
+if(i == fatual) 
+{
+zslider.value = (num.value + 1) / 2;
+znumbox.value = num.value;
+};
+    if (guiflag) {
+        zbox[i].value = num.value;
+    };
+};
+
+this.aboxProxy[i].action = {arg num;
+	angle[i] = num.value;
+if((ncanais[i]==2) || (this.ncan[i]==2)){
+this.espacializador[i].set(\angle, num.value);
+this.setSynths(i, \angle, num.value);
+angle[i] = num.value;
+};
+if(i == fatual) 
+{
+angnumbox.value = num.value;
+angslider.value = num.value / pi;
+};
+    if (guiflag) {
+        abox[i].value = num.value;
+    };
+}; 
+
+vboxProxy[i].action = {arg num;
+	this.synt[i].set(\level, num.value);
+this.setSynths(i, \level, num.value);
+level[i] = num.value;
+if(i == fatual) 
+{
+volslider.value = num.value;
+volnumbox.value = num.value;
+};
+     if (guiflag) {
+        vbox[i].value = num.value;
+     };
+
+};
+
+gboxProxy[i].action = {arg num;
+	this.espacializador[i].set(\glev, num.value);
+this.setSynths(i, \glev, num.value);
+
+this.synt[i].set(\glev, num.value);
+glev[i] = num.value;
+if(i == fatual) 
+{
+gslider.value = num.value;
+gnumbox.value = num.value;
+};
+     if (guiflag) {
+        gbox[i].value = num.value;
+     };
+}; 
+
+
+
+
+	
+    controle.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
+	controle.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
+	controle.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
+	controle.dock(this.vboxProxy[i], "levelProxy_" ++ i);
+	controle.dock(this.dpboxProxy[i], "dopamtProxy_" ++ i);
+	controle.dock(this.aboxProxy[i], "angleProxy_" ++ i);
+	controle.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
+	controle.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
+	controle.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
+	controle.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
+	controle.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
+	controle.dock(this.a1boxProxy[i], "aux1Proxy_" ++ i);
+	controle.dock(this.a2boxProxy[i], "aux2Proxy_" ++ i);
+	controle.dock(this.a3boxProxy[i], "aux3Proxy_" ++ i);
+	controle.dock(this.a4boxProxy[i], "aux4Proxy_" ++ i);
+	controle.dock(this.a5boxProxy[i], "aux5Proxy_" ++ i);
+	controle.dock(this.a1checkProxy[i], "aux1checkProxy_" ++ i);
+	controle.dock(this.a2checkProxy[i], "aux2checkProxy_" ++ i);
+	controle.dock(this.a3checkProxy[i], "aux3checkProxy_" ++ i);
+	controle.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
+	controle.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
+	controle.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
 };
 
 
@@ -6043,66 +6157,21 @@ sombuf[i] = Buffer.read(server, path.value, action: {arg buf;
 };
 //// PROXY ACTIONS /////////
 
-xbox[i].action = {arg num;
-	//	lastx[i] = num.value;
-	this.xval[i] = num.value;
-sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
-novoplot.value(num.value, ybox[i], i, this.nfontes);
-if(this.espacializador[i].notNil || this.playingBF[i]) {
-this.espacializador[i].set(\mx, this.xval[i]);
-this.setSynths(i, \mx, this.xval[i]);
-this.synt[i].set(\mx, this.xval[i]);
-};
-};
+// gradually pinching these and putting up above
 
-
-//("AAAAAAA xboxProxy = " ++ this.xboxProxy[i]).postln;
-
-xboxProxy[i].action = {arg num;
-	this.xval[i] = num.value;
-sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
-novoplot.value(num.value, ybox[i], i, this.nfontes);
-if(this.espacializador[i].notNil || this.playingBF[i]) {
-this.espacializador[i].set(\mx, this.xval[i]);
-this.setSynths(i, \mx, this.xval[i]);
-this.synt[i].set(\mx, this.xval[i]);
+	this.xbox[i].action = {arg num;
+		
+		this.xboxProxy[i].valueAction = num.value;
 };
-};
-
 
 
 ybox[i].action = {arg num;
-	this.yval[i] = num.value;
-sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
-
-if(this.espacializador[i].notNil || this.playingBF[i]){
-
-this.espacializador[i].set(\my, this.yval[i]);
-this.setSynths(i, \my, this.yval[i]);
-this.synt[i].set(\my, this.yval[i]);
-};		
-//{oybox[i].valueAction = this.origin.y;}.defer;
+	this.yboxProxy[i].valueAction = num.value;
 };
+
 
 zbox[i].action = {arg num;
-	lastz[i] = num.value;
-this.espacializador[i].set(\mz, num.value);
-//(num.value).postln;
-// this wrong
-//this.zval[i] = num.value / this.halfwidth;
-// should be
-this.zval[i] = num.value;
-if (this.zval[i] > 1) {this.zval[i] = 1};
-if (this.zval[i] < -1) {this.zval[i] = -1};
-
-this.setSynths(i, \mz, this.zval[i]);
-this.synt[i].set(\mz, this.zval[i]);
-zlev[i] = this.zval[i];
-if(i == fatual) 
-{
-zslider.value = (num.value + 1) / 2;
-znumbox.value = num.value;
-};
+	this.zboxProxy[i].valueAction = num.value;
 };
 
 
@@ -6130,7 +6199,8 @@ lbox[i].step = 0.01;
 
 
 abox[i].action = {arg num;
-	angle[i] = num.value;
+	this.aboxProxy[i].valueAction = num.value;
+	/*	angle[i] = num.value;
 if((ncanais[i]==2) || (this.ncan[i]==2)){
 this.espacializador[i].set(\angle, num.value);
 this.setSynths(i, \angle, num.value);
@@ -6140,19 +6210,13 @@ if(i == fatual)
 {
 angnumbox.value = num.value;
 angslider.value = num.value / pi;
+*/
 };
 
-}; 
 vbox[i].action = {arg num;
-	this.synt[i].set(\level, num.value);
-this.setSynths(i, \level, num.value);
-level[i] = num.value;
-if(i == fatual) 
-{
-volslider.value = num.value;
-volnumbox.value = num.value;
-};
+	this.vboxProxy[i].valueAction = num.value;
 }; 
+
 
 
 
@@ -6162,17 +6226,9 @@ gbox[i].value = 0;
 lbox[i].value = 0;
 
 gbox[i].action = {arg num;
-	this.espacializador[i].set(\glev, num.value);
-this.setSynths(i, \glev, num.value);
-
-this.synt[i].set(\glev, num.value);
-glev[i] = num.value;
-if(i == fatual) 
-{
-gslider.value = num.value;
-gnumbox.value = num.value;
-};
+	this.gboxProxy[i].valueAction = num.value;
 }; 
+
 
 
 lbox[i].action = {arg num;
@@ -6398,20 +6454,20 @@ isPlay = false;
 
 };
 
-
+///////////////// PROXY WILL REMOVE THIS //////////////
 
 this.nfontes.do { arg i;
-	controle.dock(xbox[i], "x_axis_" ++ i);
-controle.dock(ybox[i], "y_axis_" ++ i);
-controle.dock(zbox[i], "z_axis_" ++ i);
+	//	controle.dock(xbox[i], "x_axis_" ++ i);
+	//controle.dock(ybox[i], "y_axis_" ++ i);
+	//controle.dock(zbox[i], "z_axis_" ++ i);
 
 
 
-controle.dock(vbox[i], "level_" ++ i);
+	//controle.dock(vbox[i], "level_" ++ i);
 controle.dock(dpbox[i], "dopamt_" ++ i);
 
-controle.dock(abox[i], "angle_" ++ i);
-controle.dock(gbox[i], "revglobal_" ++ i);
+//controle.dock(abox[i], "angle_" ++ i);
+//controle.dock(gbox[i], "revglobal_" ++ i);
 controle.dock(lbox[i], "revlocal_" ++ i);
 controle.dock(rbox[i], "rotation_" ++ i);
 controle.dock(dbox[i], "diretividade_" ++ i);
@@ -6435,6 +6491,8 @@ controle.dock(stcheck[i], "stcheck_" ++ i);
 
 
 };
+
+//////////////////////////////////////////
 
 /*
 	~myview = UserView.new(win,win.view.bounds);
