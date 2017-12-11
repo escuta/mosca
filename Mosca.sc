@@ -110,7 +110,18 @@ Mosca {
 	<>xbox, <>ybox, <>sombuf, <>sbus, <>updatesourcevariables, <>soaBus, <>mbus,
 	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
 	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box, <>a4box, <>a5box,
-	<>stcheck,	
+	<>stcheck,
+
+
+	<>novoplot, <>lastx, <>lasty, <>lastz, <>zlev, <>znumbox, <>zslider,
+	<>volslider, <>volnumbox, <>glev, <>gslider, <>gnumbox, <>lslider,
+	<>lnumbox, <>llev, <>rnumbox, <>rslider, <>rlev, <>dlev,
+	<>dirnumbox, <>dirslider, <>dplev, <>dpslider, <>dopnumbox,
+	<>auxslider1, <>auxslider2, <>auxslider3, <>auxslider4, <>auxslider5,
+	<>auxbutton1, <>auxbutton2, <>auxbutton3, <>auxbutton4, <>auxbutton5,
+	<>aux1numbox, <>aux2numbox, <>aux3numbox, <>aux4numbox, <>aux5numbox,
+	<>a1but, <>a2but, <>a3but, <>a4but, <>a5but,
+	
 	/////////////////////////////////////////////////////////
 
 	// NEW PROXY VARIABLES /////////////
@@ -119,14 +130,17 @@ Mosca {
 	<>zboxProxy, <>yboxProxy, <>xboxProxy,
 	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy, <>a1boxProxy,
 	<>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
-	//<>stcheckProxy,
+
+	<>stcheckProxy, <>tfieldProxy, <>dcheckProxy, <>lpcheckProxy, <>rvcheckProxy, <>hwncheckProxy,
+	<>scncheckProxy, <>dfcheckProxy,
+	<>lncheckProxy, <>spcheckProxy, <>dfcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
 	<>guiflag; 
 
 
 	/////////////////////////////////////////
 	
-
+	
 
 
 
@@ -329,7 +343,20 @@ GUI Parameters usable in SynthDefs
 		a3boxProxy = Array.newClear(this.nfontes); 
 		a4boxProxy = Array.newClear(this.nfontes); 
 		a5boxProxy = Array.newClear(this.nfontes); 
-		//stcheckProxy = Array.newClear(this.nfontes); 
+
+		tfieldProxy = Array.newClear(this.nfontes); 
+		dcheckProxy = Array.newClear(this.nfontes); 
+		lpcheckProxy = Array.newClear(this.nfontes); 
+		rvcheckProxy = Array.newClear(this.nfontes); 
+		hwncheckProxy = Array.newClear(this.nfontes); 
+		scncheckProxy = Array.newClear(this.nfontes); 
+		dfcheckProxy = Array.newClear(this.nfontes); 
+		lncheckProxy = Array.newClear(this.nfontes); 
+		spcheckProxy = Array.newClear(this.nfontes); 
+		dfcheckProxy = Array.newClear(this.nfontes); 
+		ncanboxProxy = Array.newClear(this.nfontes); 
+		businiboxProxy = Array.newClear(this.nfontes); 
+		stcheckProxy = Array.newClear(this.nfontes); 
 
 		this.nfontes.do { arg x;
 			rboxProxy[x] = AutomationGuiProxy.new(0.0);  
@@ -353,13 +380,384 @@ GUI Parameters usable in SynthDefs
 			a3boxProxy[x] = AutomationGuiProxy.new(0.0);  
 			a4boxProxy[x] = AutomationGuiProxy.new(0.0);  
 			a5boxProxy[x] = AutomationGuiProxy.new(0.0);  
-			//stcheckProxy[x] = AutomationGuiProxy.new(0.0);  
+
+			tfieldProxy[x] = AutomationGuiProxy.new(""); 
+			dcheckProxy[x] = AutomationGuiProxy.new(0); 
+			lpcheckProxy[x] = AutomationGuiProxy.new(0); 
+			rvcheckProxy[x] = AutomationGuiProxy.new(0); 
+			hwncheckProxy[x] = AutomationGuiProxy.new(0); 
+			scncheckProxy[x] = AutomationGuiProxy.new(0); 
+			dfcheckProxy[x] = AutomationGuiProxy.new(0); 
+			lncheckProxy[x] = AutomationGuiProxy.new(0); 
+			spcheckProxy[x] = AutomationGuiProxy.new(0); 
+			dfcheckProxy[x] = AutomationGuiProxy.new(0); 
+			ncanboxProxy[x] = AutomationGuiProxy.new(0); 
+			businiboxProxy[x] = AutomationGuiProxy.new(0); 
+			stcheckProxy[x] = AutomationGuiProxy.new(0); 
+			
 			
 		};
 
 		
 		~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
+
+		
+		////////////// DOCK PROXIES /////////////
+
+
+		// this should be done after the actions are assigned
+		
+		
+		this.nfontes.do { arg i;
+			
+			
+			
+			//("AAAAAAA xboxProxy = " ++ this.xboxProxy[i]).postln;
+			
+			this.xboxProxy[i].action = {arg num;
+				//("Num = " ++ num.value).postln;
+				this.xval[i] = num.value;
+				sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
+				novoplot.value(num.value, ybox[i], i, this.nfontes);
+				if(this.espacializador[i].notNil || this.playingBF[i]) {
+					this.espacializador[i].set(\mx, this.xval[i]);
+					this.setSynths(i, \mx, this.xval[i]);
+					this.synt[i].set(\mx, this.xval[i]);
+				};
+				if (guiflag) {
+					this.xbox[i].value = num.value;
+				};
+				
+			};
+			
+			this.yboxProxy[i].action = {arg num;
+				this.yval[i] = num.value;
+				sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
+				
+				if(this.espacializador[i].notNil || this.playingBF[i]){
+					
+					this.espacializador[i].set(\my, this.yval[i]);
+					this.setSynths(i, \my, this.yval[i]);
+					this.synt[i].set(\my, this.yval[i]);
+				};
+				if (guiflag) {
+					ybox[i].value = num.value;
+				};
+				
+				//{oybox[i].valueAction = this.origin.y;}.defer;
+			};
+			
+			this.zboxProxy[i].action = {arg num;
+				lastz[i] = num.value;
+				this.espacializador[i].set(\mz, num.value);
+				this.zval[i] = num.value;
+				if (this.zval[i] > 1) {this.zval[i] = 1};
+				if (this.zval[i] < -1) {this.zval[i] = -1};
+				
+				this.setSynths(i, \mz, this.zval[i]);
+				this.synt[i].set(\mz, this.zval[i]);
+				zlev[i] = this.zval[i];
+				if(i == fatual) 
+				{
+					zslider.value = (num.value + 1) / 2;
+					znumbox.value = num.value;
+				};
+				if (guiflag) {
+					zbox[i].value = num.value;
+				};
+			};
+			
+			this.aboxProxy[i].action = {arg num;
+				angle[i] = num.value;
+				if((ncanais[i]==2) || (this.ncan[i]==2)){
+					this.espacializador[i].set(\angle, num.value);
+					this.setSynths(i, \angle, num.value);
+					angle[i] = num.value;
+				};
+				if(i == fatual) 
+				{
+					angnumbox.value = num.value;
+					angslider.value = num.value / pi;
+				};
+				if (guiflag) {
+					abox[i].value = num.value;
+				};
+			}; 
+			
+			vboxProxy[i].action = {arg num;
+				this.synt[i].set(\level, num.value);
+				this.setSynths(i, \level, num.value);
+				level[i] = num.value;
+				if(i == fatual) 
+				{
+					volslider.value = num.value;
+					volnumbox.value = num.value;
+				};
+				if (guiflag) {
+					vbox[i].value = num.value;
+				};
+				
+			};
+			
+			gboxProxy[i].action = {arg num;
+				this.espacializador[i].set(\glev, num.value);
+				this.setSynths(i, \glev, num.value);
+				
+				this.synt[i].set(\glev, num.value);
+				glev[i] = num.value;
+				if(i == fatual) 
+				{
+					gslider.value = num.value;
+					gnumbox.value = num.value;
+				};
+				if (guiflag) {
+					gbox[i].value = num.value;
+				};
+			}; 
+			
+			
+			lboxProxy[i].action = {arg num;
+				this.espacializador[i].set(\llev, num.value);
+				this.setSynths(i, \llev, num.value);
+				this.synt[i].set(\llev, num.value);
+				llev[i] = num.value;
+				if(i == fatual) 
+				{
+					lslider.value = num.value;
+					lnumbox.value = num.value;
+				};
+				if (guiflag) {
+					lbox[i].value = num.value;
+				};
+			}; 
+			
+			rboxProxy[i].action = {arg num; 
+				
+				this.synt[i].set(\rotAngle, num.value);
+				this.setSynths(i, \rotAngle, num.value);
+				rlev[i] = num.value;
+				if(i == fatual) 
+				{
+					//num.value * 6.28 - pi;
+					rslider.value = (num.value + pi) / 2pi;
+					rnumbox.value = num.value;
+				};
+				if (guiflag) {
+					rbox[i].value = num.value;
+				};
+			};
+			
+			dboxProxy[i].action = {arg num; 
+				this.synt[i].set(\directang, num.value);
+				this.setSynths(i, \directang, num.value);
+				dlev[i] = num.value;
+				if(i == fatual) 
+				{
+					//num.value * pi/2;
+					dirslider.value = num.value / (pi/2);
+					dirnumbox.value = num.value;
+				};
+				if (guiflag) {
+					dbox[i].value = num.value;
+				};
+			};
+			
+			cboxProxy[i].action = {arg num; 
+				this.synt[i].set(\contr, num.value);
+				// TESTING
+				this.espacializador[i].set(\contr, num.value);
+				this.setSynths(i, \contr, num.value);
+				clev[i] = num.value;
+				if(i == fatual) 
+				{
+					cslider.value = num.value;
+					connumbox.value = num.value;
+				};
+				if (guiflag) {
+					cbox[i].value = num.value;
+				};
+			};
+			
+			dpboxProxy[i].action = {arg num;
+				// used for b-format amb/bin only
+				this.synt[i].set(\dopamnt, num.value);
+				this.setSynths(i, \dopamnt, num.value);
+				// used for the others
+				this.espacializador[i].set(\dopamnt, num.value);
+				dplev[i] = num.value;
+				if(i == fatual) 
+				{
+					dpslider.value = num.value;
+					dopnumbox.value = num.value;
+				};
+				if (guiflag) {
+					dpbox[i].value = num.value;
+				};
+			};
+
+			a1boxProxy[i].action = {arg num;
+				this.setSynths(i, \aux1, num.value);
+				aux1[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider1.value = num.value;
+					aux1numbox.value = num.value;
+				};
+				if (guiflag) {
+					a1box[i].value = num.value;
+				};
+			}; 
+
+			a2boxProxy[i].action = {arg num;
+				this.setSynths(i, \aux2, num.value);
+				aux2[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider2.value = num.value;
+					aux2numbox.value = num.value;
+				};
+				if (guiflag) {
+					a2box[i].value = num.value;
+				};
+			}; 
+
+			a3boxProxy[i].action = {arg num;
+				this.setSynths(i, \aux3, num.value);
+				aux3[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider3.value = num.value;
+					aux3numbox.value = num.value;
+				};
+				if (guiflag) {
+					a3box[i].value = num.value;
+				};
+			}; 
+
+			a4boxProxy[i].action = {arg num;
+				this.setSynths(i, \aux4, num.value);
+				aux4[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider4.value = num.value;
+					aux4numbox.value = num.value;
+				};
+				if (guiflag) {
+					a4box[i].value = num.value;
+				};
+			}; 
+
+			a5boxProxy[i].action = {arg num;
+				this.setSynths(i, \aux5, num.value);
+				aux5[i] = num.value;
+				if(i == fatual) 
+				{
+					auxslider5.value = num.value;
+					aux5numbox.value = num.value;
+				};
+				if (guiflag) {
+					a5box[i].value = num.value;
+				};
+			}; 
+
+			a1checkProxy[i].action = { arg but;
+
+				if (but.value == true) {
+					this.a1but[i] = 1;
+					this.setSynths(i, \a1check, 1);
+				}{
+					this.a1but[i] = 0;
+					this.setSynths(i, \a1check, 0);
+				};
+			};
+
+			a2checkProxy[i].action = { arg but;
+
+				if (but.value == true) {
+					a2but[i] = 1;
+					this.setSynths(i, \a2check, 1);
+				}{
+					a2but[i] = 0;
+					this.setSynths(i, \a2check, 0);
+				};
+			};
+
+
+			a3checkProxy[i].action = { arg but;
+
+				if (but.value == true) {
+					a3but[i] = 1;
+					this.setSynths(i, \a3check, 1);
+				}{
+					a3but[i] = 0;	
+					this.setSynths(i, \a3check, 0);
+				};
+			};
+
+
+
+			a4checkProxy[i].action = { arg but;
+
+				if (but.value == true) {
+					a4but[i] = 1;
+					this.setSynths(i, \a4check, 1);
+				}{
+					a4but[i] = 0;
+					this.setSynths(i, \a4check, 0);
+				};
+			};
+
+
+			a5checkProxy[i].action = { arg but;
+
+				if (but.value == true) {
+					a5but[i] = 1;
+					this.setSynths(i, \a5check, 1);
+				}{
+					a5but[i] = 0;
+					this.setSynths(i, \a5check, 0);
+				};
+			};
+
+			// this should be a once only!! 
+			/*
+				stcheckProxy[i].action = { arg but;
+				if (but.value == true) {
+				this.streamdisk[i] = true;
+				//	this.setSynths(i, \a5check, 1);
+				}{
+				this.streamdisk[i] = false;
+				//	a5but[i] = 0;
+				//	this.setSynths(i, \a5check, 0);
+				};
+				};
+			*/
+
+			controle.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
+			controle.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
+			controle.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
+			controle.dock(this.vboxProxy[i], "levelProxy_" ++ i);
+			controle.dock(this.dpboxProxy[i], "dopamtProxy_" ++ i);
+			controle.dock(this.aboxProxy[i], "angleProxy_" ++ i);
+			controle.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
+			controle.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
+			controle.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
+			controle.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
+			controle.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
+			controle.dock(this.a1boxProxy[i], "aux1Proxy_" ++ i);
+			controle.dock(this.a2boxProxy[i], "aux2Proxy_" ++ i);
+			controle.dock(this.a3boxProxy[i], "aux3Proxy_" ++ i);
+			controle.dock(this.a4boxProxy[i], "aux4Proxy_" ++ i);
+			controle.dock(this.a5boxProxy[i], "aux5Proxy_" ++ i);
+			controle.dock(this.a1checkProxy[i], "aux1checkProxy_" ++ i);
+			controle.dock(this.a2checkProxy[i], "aux2checkProxy_" ++ i);
+			controle.dock(this.a3checkProxy[i], "aux3checkProxy_" ++ i);
+			controle.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
+			controle.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
+			//controle.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
+		};
+
 
 		///////////////////////////////
 
@@ -3171,39 +3569,50 @@ GUI Parameters usable in SynthDefs
 		hwn, scInCheck,
 		//scncheck,
 		scn,
-		dopcheque2, glev, 
-		llev, volnumbox,
+		dopcheque2,
+		//glev, 
+		//llev,
+		//volnumbox,
 		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
 		//ncanbox, businibox,
 		mouseButton, dragStartScreen,
-		novoplot,
+		//novoplot,
 		runTriggers, runStops, runTrigger, runStop,
 		
-		dopnumbox, volslider, dirnumbox, dirslider, conslider, 
+		//dopnumbox,
+		//volslider,
+		//dirnumbox, dirslider,
+		conslider, 
 		
-		a1but, a2but, a3but, a4but, a5but, // variable
+		//a1but, a2but, a3but, a4but, a5but, // variable
 		 // data windows representation of a1but etc (ie. as checkbox)
 		 // check box for streamed from disk audio
 		bsalvar, bcarregar, bsnap, bdados, baux, 
 		//dcheck,
 		oxbox, oybox, ozbox,
-		lastx, lasty, lastz,
-		gslider, gnumbox, lslider, lnumbox, dopflag = 0, btestar, brecaudio,
+		//lastx, lasty, lastz,
+		//gslider,
+		//gnumbox, lslider, lnumbox,
+		dopflag = 0, btestar, brecaudio,
 		blipcheck,
 		//tocar,
 		isPlay = false, isRec,
 		atualizarvariaveis, updateSynthInArgs,
 		
-		auxslider1, auxslider2, auxslider3, auxslider4, auxslider5, // aux sliders in control window
-		auxbutton1, auxbutton2, auxbutton3, auxbutton4, auxbutton5, // aux sliders in control window
+		//auxslider1, auxslider2, auxslider3, auxslider4, auxslider5, // aux sliders in control window
+		//auxbutton1, auxbutton2, auxbutton3, auxbutton4, auxbutton5, // aux sliders in control window
 		
-		rnumbox, rslider, 
-		znumbox, zslider, zlev, // z-axis
+		//rnumbox, rslider, 
+		//znumbox, zslider,
+		//zlev, // z-axis
 		bmark1, bmark2,
 		
-		rlev, dlev, dplev, dpslider, cnumbox,
-		aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox, 
+		//rlev,
+		//dlev,
+		//dplev, dpslider,
+		cnumbox,
+		//aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox, 
 		zSliderHeight = this.width * 2 / 3;
 		dragStartScreen = Point.new;
 		//dragStartMap = Point.new;
@@ -3230,11 +3639,11 @@ GUI Parameters usable in SynthDefs
 		this.aux4 = Array.newClear(this.nfontes);
 		this.aux5 = Array.newClear(this.nfontes);
 
-		a1but = Array.newClear(this.nfontes);
-		a2but = Array.newClear(this.nfontes);
-		a3but = Array.newClear(this.nfontes);
-		a4but = Array.newClear(this.nfontes);
-		a5but = Array.newClear(this.nfontes);
+		this.a1but = Array.newClear(this.nfontes);
+		this.a2but = Array.newClear(this.nfontes);
+		this.a3but = Array.newClear(this.nfontes);
+		this.a4but = Array.newClear(this.nfontes);
+		this.a5but = Array.newClear(this.nfontes);
 
 		sombuf = Array.newClear(this.nfontes); 
 		xval = Array.fill(this.nfontes, 100000); 
@@ -3292,11 +3701,11 @@ GUI Parameters usable in SynthDefs
 		a4box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
 		a5box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
 
-		a1but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a2but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a3but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a4but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a5but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a1but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a2but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a3but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a4but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a5but = Array.newClear(this.nfontes); // aux - array of buttons in data window
 
 		a1check = Array.newClear(this.nfontes); // aux - array of buttons in data window
 		a2check = Array.newClear(this.nfontes); // aux - array of buttons in data window
@@ -3623,11 +4032,11 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \aux4, aux4[source]);
 				this.setSynths(source, \aux5, aux5[source]);
 
-				this.setSynths(source, \a1check, a1but[source]);
-				this.setSynths(source, \a2check, a2but[source]);
-				this.setSynths(source, \a3check, a3but[source]);
-				this.setSynths(source, \a4check, a4but[source]);
-				this.setSynths(source, \a5check, a5but[source]);
+				this.setSynths(source, \a1check, this.a1but[source]);
+				this.setSynths(source, \a2check, this.a2but[source]);
+				this.setSynths(source, \a3check, this.a3but[source]);
+				this.setSynths(source, \a4check, this.a4but[source]);
+				this.setSynths(source, \a5check, this.a5but[source]);
 
 				
 			}.fork;
@@ -4949,6 +5358,7 @@ GUI Parameters usable in SynthDefs
 				nfontes.do { arg i;
 					var line = aformatrevf.getLine(1024);
 					this.rvcheck[i].valueAction = line;
+					//rv[i] 0 or 1
 				};
 				nfontes.do { arg i;
 					var line = hwinf.getLine(1024);
@@ -5688,363 +6098,8 @@ textbuf = StaticText(wdados, Rect(925, 20, 50, 20));
 textbuf.font = Font(Font.defaultSansFace, 9);
 textbuf.string = "St";
 
-////////////// DOCK PROXIES /////////////
 
 
-// this should be done after the actions are assigned
-
-
-this.nfontes.do { arg i;
-
-
-
-//("AAAAAAA xboxProxy = " ++ this.xboxProxy[i]).postln;
-
-this.xboxProxy[i].action = {arg num;
-	//("Num = " ++ num.value).postln;
-	this.xval[i] = num.value;
-sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
-novoplot.value(num.value, ybox[i], i, this.nfontes);
-if(this.espacializador[i].notNil || this.playingBF[i]) {
-this.espacializador[i].set(\mx, this.xval[i]);
-this.setSynths(i, \mx, this.xval[i]);
-this.synt[i].set(\mx, this.xval[i]);
-};
-if (guiflag) {
-this.xbox[i].value = num.value;
-};
-
-};
-
-this.yboxProxy[i].action = {arg num;
-	this.yval[i] = num.value;
-sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
-
-if(this.espacializador[i].notNil || this.playingBF[i]){
-
-this.espacializador[i].set(\my, this.yval[i]);
-this.setSynths(i, \my, this.yval[i]);
-this.synt[i].set(\my, this.yval[i]);
-};
-    if (guiflag) {
-        ybox[i].value = num.value;
-    };
-
-//{oybox[i].valueAction = this.origin.y;}.defer;
-};
-
-this.zboxProxy[i].action = {arg num;
-	lastz[i] = num.value;
-this.espacializador[i].set(\mz, num.value);
-this.zval[i] = num.value;
-if (this.zval[i] > 1) {this.zval[i] = 1};
-if (this.zval[i] < -1) {this.zval[i] = -1};
-
-this.setSynths(i, \mz, this.zval[i]);
-this.synt[i].set(\mz, this.zval[i]);
-zlev[i] = this.zval[i];
-if(i == fatual) 
-{
-zslider.value = (num.value + 1) / 2;
-znumbox.value = num.value;
-};
-    if (guiflag) {
-        zbox[i].value = num.value;
-    };
-};
-
-this.aboxProxy[i].action = {arg num;
-	angle[i] = num.value;
-if((ncanais[i]==2) || (this.ncan[i]==2)){
-this.espacializador[i].set(\angle, num.value);
-this.setSynths(i, \angle, num.value);
-angle[i] = num.value;
-};
-if(i == fatual) 
-{
-angnumbox.value = num.value;
-angslider.value = num.value / pi;
-};
-    if (guiflag) {
-        abox[i].value = num.value;
-    };
-}; 
-
-vboxProxy[i].action = {arg num;
-	this.synt[i].set(\level, num.value);
-this.setSynths(i, \level, num.value);
-level[i] = num.value;
-if(i == fatual) 
-{
-volslider.value = num.value;
-volnumbox.value = num.value;
-};
-     if (guiflag) {
-        vbox[i].value = num.value;
-     };
-
-};
-
-gboxProxy[i].action = {arg num;
-	this.espacializador[i].set(\glev, num.value);
-this.setSynths(i, \glev, num.value);
-
-this.synt[i].set(\glev, num.value);
-glev[i] = num.value;
-if(i == fatual) 
-{
-gslider.value = num.value;
-gnumbox.value = num.value;
-};
-     if (guiflag) {
-        gbox[i].value = num.value;
-     };
-}; 
-
-
-lboxProxy[i].action = {arg num;
-	this.espacializador[i].set(\llev, num.value);
-this.setSynths(i, \llev, num.value);
-this.synt[i].set(\llev, num.value);
-llev[i] = num.value;
-if(i == fatual) 
-{
-lslider.value = num.value;
-lnumbox.value = num.value;
-};
-     if (guiflag) {
-        lbox[i].value = num.value;
-     };
-}; 
-
-rboxProxy[i].action = {arg num; 
-
-	this.synt[i].set(\rotAngle, num.value);
-this.setSynths(i, \rotAngle, num.value);
-rlev[i] = num.value;
-if(i == fatual) 
-{
-//num.value * 6.28 - pi;
-rslider.value = (num.value + pi) / 2pi;
-rnumbox.value = num.value;
-};
-     if (guiflag) {
-        rbox[i].value = num.value;
-     };
-};
-
-dboxProxy[i].action = {arg num; 
-	this.synt[i].set(\directang, num.value);
-this.setSynths(i, \directang, num.value);
-dlev[i] = num.value;
-if(i == fatual) 
-{
-//num.value * pi/2;
-dirslider.value = num.value / (pi/2);
-dirnumbox.value = num.value;
-};
-     if (guiflag) {
-        dbox[i].value = num.value;
-     };
-};
-
-cboxProxy[i].action = {arg num; 
-	this.synt[i].set(\contr, num.value);
-// TESTING
-this.espacializador[i].set(\contr, num.value);
-this.setSynths(i, \contr, num.value);
-clev[i] = num.value;
-if(i == fatual) 
-{
-cslider.value = num.value;
-connumbox.value = num.value;
-};
-     if (guiflag) {
-        cbox[i].value = num.value;
-     };
-};
-
-dpboxProxy[i].action = {arg num;
-	// used for b-format amb/bin only
-	this.synt[i].set(\dopamnt, num.value);
-this.setSynths(i, \dopamnt, num.value);
-// used for the others
-this.espacializador[i].set(\dopamnt, num.value);
-dplev[i] = num.value;
-if(i == fatual) 
-{
-dpslider.value = num.value;
-dopnumbox.value = num.value;
-};
-     if (guiflag) {
-        dpbox[i].value = num.value;
-     };
-};
-
-a1boxProxy[i].action = {arg num;
-	this.setSynths(i, \aux1, num.value);
-aux1[i] = num.value;
-if(i == fatual) 
-{
-auxslider1.value = num.value;
-aux1numbox.value = num.value;
-};
-     if (guiflag) {
-        a1box[i].value = num.value;
-     };
-}; 
-
-a2boxProxy[i].action = {arg num;
-	this.setSynths(i, \aux2, num.value);
-aux2[i] = num.value;
-if(i == fatual) 
-{
-auxslider2.value = num.value;
-aux2numbox.value = num.value;
-};
-     if (guiflag) {
-        a2box[i].value = num.value;
-     };
-}; 
-
-a3boxProxy[i].action = {arg num;
-	this.setSynths(i, \aux3, num.value);
-aux3[i] = num.value;
-if(i == fatual) 
-{
-auxslider3.value = num.value;
-aux3numbox.value = num.value;
-};
-     if (guiflag) {
-        a3box[i].value = num.value;
-     };
-}; 
-
-a4boxProxy[i].action = {arg num;
-	this.setSynths(i, \aux4, num.value);
-aux4[i] = num.value;
-if(i == fatual) 
-{
-auxslider4.value = num.value;
-aux4numbox.value = num.value;
-};
-     if (guiflag) {
-        a4box[i].value = num.value;
-     };
-}; 
-
-a5boxProxy[i].action = {arg num;
-	this.setSynths(i, \aux5, num.value);
-aux5[i] = num.value;
-if(i == fatual) 
-{
-auxslider5.value = num.value;
-aux5numbox.value = num.value;
-};
-     if (guiflag) {
-        a5box[i].value = num.value;
-     };
-}; 
-
-a1checkProxy[i].action = { arg but;
-
-if (but.value == true) {
-	a1but[i] = 1;
-	this.setSynths(i, \a1check, 1);
-}{
-	a1but[i] = 0;
-	this.setSynths(i, \a1check, 0);
-};
-};
-
-a2checkProxy[i].action = { arg but;
-
-if (but.value == true) {
-	a2but[i] = 1;
-	this.setSynths(i, \a2check, 1);
-}{
-	a2but[i] = 0;
-	this.setSynths(i, \a2check, 0);
-};
-};
-
-
-a3checkProxy[i].action = { arg but;
-
-if (but.value == true) {
-	a3but[i] = 1;
-	this.setSynths(i, \a3check, 1);
-}{
-	a3but[i] = 0;	
-	this.setSynths(i, \a3check, 0);
-};
-};
-
-
-
-a4checkProxy[i].action = { arg but;
-
-if (but.value == true) {
-	a4but[i] = 1;
-	this.setSynths(i, \a4check, 1);
-}{
-	a4but[i] = 0;
-	this.setSynths(i, \a4check, 0);
-};
-};
-
-
-a5checkProxy[i].action = { arg but;
-
-if (but.value == true) {
-	a5but[i] = 1;
-	this.setSynths(i, \a5check, 1);
-}{
-	a5but[i] = 0;
-	this.setSynths(i, \a5check, 0);
-};
-};
-
-// this should be a once only!! 
-/*
-stcheckProxy[i].action = { arg but;
-if (but.value == true) {
-	this.streamdisk[i] = true;
-	//	this.setSynths(i, \a5check, 1);
-}{
-	this.streamdisk[i] = false;
-	//	a5but[i] = 0;
-	//	this.setSynths(i, \a5check, 0);
-};
-};
-*/
-
-    controle.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
-	controle.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
-	controle.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
-	controle.dock(this.vboxProxy[i], "levelProxy_" ++ i);
-	controle.dock(this.dpboxProxy[i], "dopamtProxy_" ++ i);
-	controle.dock(this.aboxProxy[i], "angleProxy_" ++ i);
-	controle.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
-	controle.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
-	controle.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
-	controle.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
-	controle.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
-	controle.dock(this.a1boxProxy[i], "aux1Proxy_" ++ i);
-	controle.dock(this.a2boxProxy[i], "aux2Proxy_" ++ i);
-	controle.dock(this.a3boxProxy[i], "aux3Proxy_" ++ i);
-	controle.dock(this.a4boxProxy[i], "aux4Proxy_" ++ i);
-	controle.dock(this.a5boxProxy[i], "aux5Proxy_" ++ i);
-	controle.dock(this.a1checkProxy[i], "aux1checkProxy_" ++ i);
-	controle.dock(this.a2checkProxy[i], "aux2checkProxy_" ++ i);
-	controle.dock(this.a3checkProxy[i], "aux3checkProxy_" ++ i);
-	controle.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
-	controle.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
-//controle.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
-};
-
-
-//////////////////////////////////////////
 
 
 this.nfontes.do { arg i;
@@ -6053,8 +6108,9 @@ this.nfontes.do { arg i;
 textbuf.font = Font(Font.defaultSansFace, 9);
 textbuf.string = (i+1).asString;
 
-this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20));
+
+this.dcheck[i].action_({ arg but;
 if(i==fatual){dopcheque.value = but.value;};
 if (but.value == true) {
 	doppler[i] = 1;
@@ -6069,8 +6125,9 @@ if (but.value == true) {
 };
 });
 
-this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20));
+
+this.lpcheck[i].action_({ arg but;
 if(i==fatual){loopcheck.value = but.value;};
 if (but.value == true) {
 	lp[i] = 1;
@@ -6085,8 +6142,9 @@ if (but.value == true) {
 
 
 
-this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20));
+
+this.rvcheck[i].action_({ arg but;
 if(i==fatual){revcheck.value = but.value;};
 if (but.value == true) {
 	rv[i] = 1;
@@ -6100,8 +6158,9 @@ if (but.value == true) {
 });
 
 
-this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20));
+
+this.hwncheck[i].action_({ arg but;
 if(i==fatual){hwInCheck.value = but.value;};
 if (but.value == true) {
 	this.scncheck[i].value = false;
@@ -6115,8 +6174,9 @@ if (but.value == true) {
 };
 });
 
-this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
+
+this.scncheck[i].action_({ arg but;
 if(i==fatual){scInCheck.value = but.value;};
 if (but.value == true) {
 	this.hwncheck[i].value = false;
@@ -6131,8 +6191,9 @@ if (but.value == true) {
 });
 
 
-this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
+
+this.lncheck[i].action_({ arg but;
 if(i==fatual){lincheck.value = but.value;};
 if (but.value == true) {
 	ln[i] = "_linear";
@@ -6143,8 +6204,9 @@ if (but.value == true) {
 };
 });
 
-this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20));
+
+this.spcheck[i].action_({ arg but;
 if(i==fatual){spreadcheck.value = but.value;};
 if (but.value == true) {
 	this.dfcheck[i].value = false;
@@ -6162,8 +6224,9 @@ if (but.value == true) {
 	this.setSynths(i, \sp, 0);
 };
 });
-this.dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20))
-.action_({ arg but;
+this.dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20));
+
+this.dfcheck[i].action_({ arg but;
 if(i==fatual){diffusecheck.value = but.value;};
 if (but.value == true) {
 	this.spcheck[i].value = false;
@@ -6182,7 +6245,7 @@ if (but.value == true) {
 };
 });
 
-
+/////////////////////////////////////////////////////////////////
 
 this.ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
 this.businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
