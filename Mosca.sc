@@ -370,11 +370,11 @@ GUI Parameters usable in SynthDefs
 			zboxProxy[x] = AutomationGuiProxy.new(0.0);  
 			yboxProxy[x] = AutomationGuiProxy.new(0.0);  
 			xboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			a1checkProxy[x] = AutomationGuiProxy.new(0.0);  
-			a2checkProxy[x] = AutomationGuiProxy.new(0.0);  
-			a3checkProxy[x] = AutomationGuiProxy.new(0.0);  
-			a4checkProxy[x] = AutomationGuiProxy.new(0.0);  
-			a5checkProxy[x] = AutomationGuiProxy.new(0.0);  
+			a1checkProxy[x] = AutomationGuiProxy.new(false);  
+			a2checkProxy[x] = AutomationGuiProxy.new(false);  
+			a3checkProxy[x] = AutomationGuiProxy.new(false);  
+			a4checkProxy[x] = AutomationGuiProxy.new(false);  
+			a5checkProxy[x] = AutomationGuiProxy.new(false);  
 			a1boxProxy[x] = AutomationGuiProxy.new(0.0);  
 			a2boxProxy[x] = AutomationGuiProxy.new(0.0);  
 			a3boxProxy[x] = AutomationGuiProxy.new(0.0);  
@@ -605,7 +605,7 @@ GUI Parameters usable in SynthDefs
 					aux1numbox.value = num.value;
 				};
 				if (guiflag) {
-					a1box[i].value = num.value;
+					this.a1box[i].value = num.value;
 				};
 			}; 
 
@@ -618,7 +618,7 @@ GUI Parameters usable in SynthDefs
 					aux2numbox.value = num.value;
 				};
 				if (guiflag) {
-					a2box[i].value = num.value;
+					this.a2box[i].value = num.value;
 				};
 			}; 
 
@@ -631,7 +631,7 @@ GUI Parameters usable in SynthDefs
 					aux3numbox.value = num.value;
 				};
 				if (guiflag) {
-					a3box[i].value = num.value;
+					this.a3box[i].value = num.value;
 				};
 			}; 
 
@@ -644,7 +644,7 @@ GUI Parameters usable in SynthDefs
 					aux4numbox.value = num.value;
 				};
 				if (guiflag) {
-					a4box[i].value = num.value;
+					this.a4box[i].value = num.value;
 				};
 			}; 
 
@@ -657,7 +657,7 @@ GUI Parameters usable in SynthDefs
 					aux5numbox.value = num.value;
 				};
 				if (guiflag) {
-					a5box[i].value = num.value;
+					this.a5box[i].value = num.value;
 				};
 			}; 
 
@@ -670,6 +670,11 @@ GUI Parameters usable in SynthDefs
 					this.a1but[i] = 0;
 					this.setSynths(i, \a1check, 0);
 				};
+				"WWOOOOOOOOOOOOOOOOOOOOOOOOOh".postln;
+				if (guiflag) {
+					
+					this.a1check[i].value = but.value;
+				};
 			};
 
 			a2checkProxy[i].action = { arg but;
@@ -680,6 +685,9 @@ GUI Parameters usable in SynthDefs
 				}{
 					a2but[i] = 0;
 					this.setSynths(i, \a2check, 0);
+				};
+				if (guiflag) {
+					this.a2check[i].value = but.value;
 				};
 			};
 
@@ -692,6 +700,9 @@ GUI Parameters usable in SynthDefs
 				}{
 					a3but[i] = 0;	
 					this.setSynths(i, \a3check, 0);
+				};
+				if (guiflag) {
+					this.a3check[i].value = but.value;
 				};
 			};
 
@@ -706,6 +717,9 @@ GUI Parameters usable in SynthDefs
 					a4but[i] = 0;
 					this.setSynths(i, \a4check, 0);
 				};
+				if (guiflag) {
+					this.a4check[i].value = but.value;
+				};
 			};
 
 
@@ -717,6 +731,9 @@ GUI Parameters usable in SynthDefs
 				}{
 					a5but[i] = 0;
 					this.setSynths(i, \a5check, 0);
+				};
+				if (guiflag) {
+					this.a5check[i].value = but.value;
 				};
 			};
 
