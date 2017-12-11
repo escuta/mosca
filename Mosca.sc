@@ -121,6 +121,10 @@ Mosca {
 	<>auxbutton1, <>auxbutton2, <>auxbutton3, <>auxbutton4, <>auxbutton5,
 	<>aux1numbox, <>aux2numbox, <>aux3numbox, <>aux4numbox, <>aux5numbox,
 	<>a1but, <>a2but, <>a3but, <>a4but, <>a5but,
+
+	<>dopcheque, <>loopcheck, <>revcheck, <>hwInCheck,
+	<>hwn, <>scInCheck, <>scn, <>lincheck, <>spreadcheck,
+	<>diffusecheck, <>sp, <>df,
 	
 	/////////////////////////////////////////////////////////
 
@@ -133,7 +137,7 @@ Mosca {
 
 	<>stcheckProxy, <>tfieldProxy, <>dcheckProxy, <>lpcheckProxy, <>rvcheckProxy, <>hwncheckProxy,
 	<>scncheckProxy, <>dfcheckProxy,
-	<>lncheckProxy, <>spcheckProxy, <>dfcheckProxy, <>ncanboxProxy, <>businiboxProxy,
+	<>lncheckProxy, <>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
 	<>guiflag; 
 
@@ -353,7 +357,6 @@ GUI Parameters usable in SynthDefs
 		dfcheckProxy = Array.newClear(this.nfontes); 
 		lncheckProxy = Array.newClear(this.nfontes); 
 		spcheckProxy = Array.newClear(this.nfontes); 
-		dfcheckProxy = Array.newClear(this.nfontes); 
 		ncanboxProxy = Array.newClear(this.nfontes); 
 		businiboxProxy = Array.newClear(this.nfontes); 
 		stcheckProxy = Array.newClear(this.nfontes); 
@@ -390,7 +393,6 @@ GUI Parameters usable in SynthDefs
 			dfcheckProxy[x] = AutomationGuiProxy.new(0); 
 			lncheckProxy[x] = AutomationGuiProxy.new(0); 
 			spcheckProxy[x] = AutomationGuiProxy.new(0); 
-			dfcheckProxy[x] = AutomationGuiProxy.new(0); 
 			ncanboxProxy[x] = AutomationGuiProxy.new(0); 
 			businiboxProxy[x] = AutomationGuiProxy.new(0); 
 			stcheckProxy[x] = AutomationGuiProxy.new(0); 
@@ -750,6 +752,151 @@ GUI Parameters usable in SynthDefs
 				};
 				};
 			*/
+
+			this.dcheckProxy[i].action_({ arg but;
+				if(i==fatual){dopcheque.value = but.value;};
+				if (but.value == true) {
+					doppler[i] = 1;
+					this.espacializador[i].set(\dopon, 1);
+					this.synt[i].set(\dopon, 1);
+					this.setSynths(i, \dopon, 1);
+				}{
+					doppler[i] = 0;
+					this.espacializador[i].set(\dopon, 0);
+					this.synt[i].set(\dopon, 0);
+					this.setSynths(i, \dopon, 0);
+				};
+				if (guiflag) {
+					this.dcheck[i].value = but.value;
+				};
+			});
+
+			this.lpcheckProxy[i].action_({ arg but;
+				if(i==fatual){loopcheck.value = but.value;};
+				if (but.value == true) {
+					lp[i] = 1;
+					this.synt[i].set(\lp, 1);
+					this.setSynths(i, \lp, 1);
+				}{
+					lp[i] = 0;
+					this.synt[i].set(\lp, 0);
+					this.setSynths(i, \lp, 0);
+				};
+				if (guiflag) {
+					this.lpcheck[i].value = but.value;
+				};
+			});
+
+			this.rvcheckProxy[i].action_({ arg but;
+				if(i==fatual){revcheck.value = but.value;};
+				if (but.value == true) {
+					rv[i] = 1;
+					//this.synt[i].set(\lp, 1);
+					this.setSynths(i, \rv, 1);
+				}{
+					rv[i] = 0;
+					//this.synt[i].set(\lp, 0);
+					this.setSynths(i, \rv, 0);
+				};
+				if (guiflag) {
+					this.rvcheck[i].value = but.value;
+				};
+			});
+			
+			this.hwncheckProxy[i].action_({ arg but;
+				if(i==fatual){hwInCheck.value = but.value;};
+				if (but.value == true) {
+					this.scncheck[i].value = false;
+					if(i==fatual){scInCheck.value = false;};
+					hwn[i] = 1;
+					scn[i] = 0;
+					this.synt[i].set(\hwn, 1);
+				}{
+					hwn[i] = 0;
+					this.synt[i].set(\hwn, 0);
+				};
+				if (guiflag) {
+					this.hwncheck[i].value = but.value;
+				};
+			});
+
+			this.scncheckProxy[i].action_({ arg but;
+				if(i==fatual){scInCheck.value = but.value;};
+				if (but.value == true) {
+					this.hwncheck[i].value = false;
+					if(i==fatual){hwInCheck.value = false;};
+					scn[i] = 1;
+					hwn[i] = 0;
+					this.synt[i].set(\scn, 1);
+				}{
+					scn[i] = 0;
+					this.synt[i].set(\scn, 0);
+				};
+				if (guiflag) {
+					this.scncheck[i].value = but.value;
+				};
+			});
+
+			this.lncheckProxy[i].action_({ arg but;
+				if(i==fatual){lincheck.value = but.value;};
+				if (but.value == true) {
+					ln[i] = "_linear";
+					this.setSynths(i, \ln, 1);
+				}{
+					ln[i] = "";
+					this.setSynths(i, \ln, 0);
+				};
+				if (guiflag) {
+					this.lncheck[i].value = but.value;
+				};
+			});
+
+			this.spcheckProxy[i].action_({ arg but;
+				if(i==fatual){spreadcheck.value = but.value;};
+				if (but.value == true) {
+					this.dfcheck[i].value = false;
+					if(i==fatual){diffusecheck.value = false;};
+					sp[i] = 1;
+					df[i] = 0;
+					this.espacializador[i].set(\sp, 1);
+					this.espacializador[i].set(\df, 0);
+					this.synt[i].set(\sp, 1);
+					this.setSynths(i, \ls, 1);
+				}{
+					sp[i] = 0;
+					this.espacializador[i].set(\sp, 0);
+					this.synt[i].set(\sp, 0);
+					this.setSynths(i, \sp, 0);
+				};
+				if (guiflag) {
+					this.spcheck[i].value = but.value;
+				};
+			});
+
+			this.dfcheckProxy[i].action_({ arg but;
+				if(i==fatual){diffusecheck.value = but.value;};
+				if (but.value == true) {
+					this.spcheck[i].value = false;
+					if(i==fatual){spreadcheck.value = false;};
+					df[i] = 1;
+					sp[i] = 0;
+					this.espacializador[i].set(\df, 1);
+					this.espacializador[i].set(\sp, 0);
+					this.synt[i].set(\df, 1);
+					this.setSynths(i, \df, 1);
+				}{
+					df[i] = 0;
+					this.espacializador[i].set(\df, 0);
+					this.synt[i].set(\df, 0);
+					this.setSynths(i, \df, 0);
+				};
+				if (guiflag) {
+					this.dfcheck[i].value = but.value;
+				};
+			});
+
+
+
 
 			controle.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
 			controle.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
@@ -3564,28 +3711,28 @@ GUI Parameters usable in SynthDefs
 		itensdemenu,
 		//gbus, gbfbus,
 		azimuth, event, brec, bplay, bload, bstream, bnodes, funcs, 
-		dopcheque,
+		//	,
 		//lastAutomation = nil,
-		loopcheck,
+		//	loopcheck,
 		//lpcheck,
 		
-		spreadcheck,
+		//spreadcheck,
 		//spcheck,
-		sp,
-		diffusecheck,
+		//sp,
+		//diffusecheck,
 		//dfcheck,
-		df,
-		revcheck,
+		//df,
+		//revcheck,
 		//rvcheck,
 		
-		lincheck,
+		//lincheck,
 		//lncheck,
 		
-		hwInCheck,
+		//hwInCheck,
 		//hwncheck,
-		hwn, scInCheck,
+		//hwn, scInCheck,
 		//scncheck,
-		scn,
+		//scn,
 		dopcheque2,
 		//glev, 
 		//llev,
@@ -6129,32 +6276,14 @@ this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20));
 
 this.dcheck[i].action_({ arg but;
 if(i==fatual){dopcheque.value = but.value;};
-if (but.value == true) {
-	doppler[i] = 1;
-	this.espacializador[i].set(\dopon, 1);
-	this.synt[i].set(\dopon, 1);
-	this.setSynths(i, \dopon, 1);
-}{
-	doppler[i] = 0;
-	this.espacializador[i].set(\dopon, 0);
-	this.synt[i].set(\dopon, 0);
-	this.setSynths(i, \dopon, 0);
-};
+this.dcheckProxy[i].valueAction = but.value;
 });
+
 
 this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20));
 
 this.lpcheck[i].action_({ arg but;
-if(i==fatual){loopcheck.value = but.value;};
-if (but.value == true) {
-	lp[i] = 1;
-	this.synt[i].set(\lp, 1);
-	this.setSynths(i, \lp, 1);
-}{
-	lp[i] = 0;
-	this.synt[i].set(\lp, 0);
-	this.setSynths(i, \lp, 0);
-};
+this.lpcheckProxy[i].valueAction = but.value;
 });
 
 
@@ -6162,105 +6291,50 @@ if (but.value == true) {
 this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20));
 
 this.rvcheck[i].action_({ arg but;
-if(i==fatual){revcheck.value = but.value;};
-if (but.value == true) {
-	rv[i] = 1;
-	//this.synt[i].set(\lp, 1);
-	this.setSynths(i, \rv, 1);
-}{
-	rv[i] = 0;
-	//this.synt[i].set(\lp, 0);
-	this.setSynths(i, \rv, 0);
-};
+this.lpcheckProxy[i].valueAction = but.value;
 });
+
 
 
 this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20));
 
 this.hwncheck[i].action_({ arg but;
-if(i==fatual){hwInCheck.value = but.value;};
-if (but.value == true) {
-	this.scncheck[i].value = false;
-	if(i==fatual){scInCheck.value = false;};
-	hwn[i] = 1;
-	scn[i] = 0;
-	this.synt[i].set(\hwn, 1);
-}{
-	hwn[i] = 0;
-	this.synt[i].set(\hwn, 0);
-};
+this.hwncheckProxy[i].valueAction = but.value;
 });
+
 
 this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
 
 this.scncheck[i].action_({ arg but;
-if(i==fatual){scInCheck.value = but.value;};
-if (but.value == true) {
-	this.hwncheck[i].value = false;
-	if(i==fatual){hwInCheck.value = false;};
-	scn[i] = 1;
-	hwn[i] = 0;
-	this.synt[i].set(\scn, 1);
-}{
-	scn[i] = 0;
-	this.synt[i].set(\scn, 0);
-};
+this.scncheckProxy[i].valueAction = but.value;
 });
+
 
 
 this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
 
 this.lncheck[i].action_({ arg but;
-if(i==fatual){lincheck.value = but.value;};
-if (but.value == true) {
-	ln[i] = "_linear";
-	this.setSynths(i, \ln, 1);
-}{
-	ln[i] = "";
-	this.setSynths(i, \ln, 0);
-};
+this.lncheckProxy[i].valueAction = but.value;
 });
+
 
 this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20));
 
 this.spcheck[i].action_({ arg but;
-if(i==fatual){spreadcheck.value = but.value;};
-if (but.value == true) {
-	this.dfcheck[i].value = false;
-	if(i==fatual){diffusecheck.value = false;};
-	sp[i] = 1;
-	df[i] = 0;
-	this.espacializador[i].set(\sp, 1);
-	this.espacializador[i].set(\df, 0);
-	this.synt[i].set(\sp, 1);
-	this.setSynths(i, \ls, 1);
-}{
-	sp[i] = 0;
-	this.espacializador[i].set(\sp, 0);
-	this.synt[i].set(\sp, 0);
-	this.setSynths(i, \sp, 0);
-};
+this.spcheckProxy[i].valueAction = but.value;
 });
+
+
+
+
+
 this.dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20));
 
 this.dfcheck[i].action_({ arg but;
-if(i==fatual){diffusecheck.value = but.value;};
-if (but.value == true) {
-	this.spcheck[i].value = false;
-	if(i==fatual){spreadcheck.value = false;};
-	df[i] = 1;
-	sp[i] = 0;
-	this.espacializador[i].set(\df, 1);
-	this.espacializador[i].set(\sp, 0);
-	this.synt[i].set(\df, 1);
-	this.setSynths(i, \df, 1);
-}{
-	df[i] = 0;
-	this.espacializador[i].set(\df, 0);
-	this.synt[i].set(\df, 0);
-	this.setSynths(i, \df, 0);
-};
+this.dfcheckProxy[i].valueAction = but.value;
 });
+
+
 
 /////////////////////////////////////////////////////////////////
 
