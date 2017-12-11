@@ -124,7 +124,7 @@ Mosca {
 
 	<>dopcheque, <>loopcheck, <>revcheck, <>hwInCheck,
 	<>hwn, <>scInCheck, <>scn, <>lincheck, <>spreadcheck,
-	<>diffusecheck, <>sp, <>df,
+	<>diffusecheck, <>sp, <>df, <>ncannumbox, <>busininumbox,
 	
 	/////////////////////////////////////////////////////////
 
@@ -894,6 +894,39 @@ GUI Parameters usable in SynthDefs
 					this.dfcheck[i].value = but.value;
 				};
 			});
+
+			this.ncanboxProxy[i].action = {arg num;
+				this.espacializador[i].set(\mz, num.value);
+				this.setSynths(i, \mz, num.value);
+				this.synt[i].set(\mz, num.value);
+				this.ncan[i] = num.value;
+				if(i == fatual )
+				{
+					//var val = (this.halfwidth - (num.value * width)) * -1;
+					//	ncanslider.value = num.value;
+					ncannumbox.value = num.value;
+				};
+				if (guiflag) {
+					this.ncanbox[i].value = num.value;
+				};
+			};
+
+			this.businiboxProxy[i].action = {arg num;
+				this.espacializador[i].set(\mz, num.value);
+				this.setSynths(i, \mz, num.value);
+				this.synt[i].set(\mz, num.value);
+				this.busini[i] = num.value;
+				if(i == fatual) 
+				{
+					//var val = (this.halfwidth - (num.value * width)) * -1;
+					//	ncanslider.value = num.value;
+					busininumbox.value = num.value;
+				};
+				if (guiflag) {
+					this.businibox[i].value = num.value;
+				};
+			}; 
+
 
 
 
@@ -3737,7 +3770,7 @@ GUI Parameters usable in SynthDefs
 		//glev, 
 		//llev,
 		//volnumbox,
-		ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
+		//ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
 		//ncanbox, businibox,
 		mouseButton, dragStartScreen,
@@ -6591,33 +6624,17 @@ dpbox[i].action = {arg num;
 	this.dpboxProxy[i].valueAction = num.value;
 };
 
-// LEAVE
-// CHECK THESE NEXT 2
+
 this.ncanbox[i].action = {arg num;
-	this.espacializador[i].set(\mz, num.value);
-this.setSynths(i, \mz, num.value);
-this.synt[i].set(\mz, num.value);
-this.ncan[i] = num.value;
-if(i == fatual )
-{
-//var val = (this.halfwidth - (num.value * width)) * -1;
-//	ncanslider.value = num.value;
-ncannumbox.value = num.value;
-};
+	this.ncanboxProxy[i].valueAction = num.value;
 };
 
+
 this.businibox[i].action = {arg num;
-	this.espacializador[i].set(\mz, num.value);
-this.setSynths(i, \mz, num.value);
-this.synt[i].set(\mz, num.value);
-this.busini[i] = num.value;
-if(i == fatual) 
-{
-//var val = (this.halfwidth - (num.value * width)) * -1;
-//	ncanslider.value = num.value;
-busininumbox.value = num.value;
-};
+	this.businiboxProxy[i].valueAction = num.value;
 }; 
+
+
 
 
 };
