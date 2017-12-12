@@ -3136,13 +3136,16 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 			/// END STREAM FROM DISK
-
+		
 			// check this logic - what should override what?
-			if ((path != "") && (this.hwncheckProxy[i].value.not || this.scncheckProxy[i].value.not) && this.streamdisk[i].not) {
-				{	
+		if ((path != "") && (this.hwncheckProxy[i].value.not || this.scncheckProxy[i].value.not) && this.streamdisk[i].not) {
+			
+			//{	
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
-					{ncanais[i] = 1;
+			{
+				"Am I mono?".postln;
+				ncanais[i] = 1;
 						angle[i] = 0;
 						if (guiflag) {
 							{angnumbox.value = 0;}.defer;
@@ -3415,7 +3418,7 @@ GUI Parameters usable in SynthDefs
 					
 					
 					//				}.defer;	
-				};	
+					//};	
 			} {
 				
 				if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
@@ -3968,7 +3971,7 @@ GUI Parameters usable in SynthDefs
 					{
 						//("scn = " ++ scn[i]).postln;
 						if ((this.tfieldProxy[i].value != "") || ((scn[i] > 0) && (this.ncan[i]>0))
-							|| (this.hwncheck[i].value && (this.ncan[i]>0)) ) {
+							|| (this.hwncheckProxy[i].value && (this.ncan[i]>0)) ) {
 							var source = Point.new;  // should use cartesian but it's giving problems
 							//source.set(this.xval[i] + this.xoffset[i], this.yval[i] + this.yoffset[i]);
 							source.set(this.xval[i], this.yval[i]);
