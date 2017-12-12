@@ -4121,7 +4121,119 @@ GUI Parameters usable in SynthDefs
 			
 		}
 	
+	loadNonAutomationData { arg path;
+		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf,
+		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
+
+		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
+
+		dopplerf = File((path ++ "/doppler.txt").standardizePath,"r");
+		loopedf = File((path ++ "/looped.txt").standardizePath,"r");
+		aformatrevf = File((path ++ "/aformatrev.txt").standardizePath,"r");
+		hwinf = File((path ++ "/hwin.txt").standardizePath,"r");
+		scinf = File((path ++ "/scin.txt").standardizePath,"r");
+		linearf = File((path ++ "/linear.txt").standardizePath,"r");
+		spreadf = File((path ++ "/spread.txt").standardizePath,"r");
+		diffusef = File((path ++ "/diffuse.txt").standardizePath,"r");
+		ncanf = File((path ++ "/ncan.txt").standardizePath,"r");
+		businif = File((path ++ "/busini.txt").standardizePath,"r");
+		stcheckf = File((path ++ "/stcheck.txt").standardizePath,"r");
+
 		
+		{	("BEFORE ACTION - stream = " ++ stcheck[0].value).postln;}.defer;
+		
+		
+		nfontes.do { arg i;
+			var line = filenames.getLine(1024);
+			if(line!="NULL"){this.tfieldProxy[i].valueAction = line};
+		};
+		nfontes.do { arg i;
+			var line = dopplerf.getLine(1024);
+			this.dcheckProxy[i].valueAction = line;
+			// doppler[i] 0 or 1
+		};
+
+		nfontes.do { arg i;
+			var line = loopedf.getLine(1024);
+			this.lpcheckProxy[i].valueAction = line;
+			//lp[i] 0 or 1
+		};
+		nfontes.do { arg i;
+			var line = aformatrevf.getLine(1024);
+			this.rvcheckProxy[i].valueAction = line;
+			//rv[i] 0 or 1
+		};
+		nfontes.do { arg i;
+			var line = hwinf.getLine(1024);
+			this.hwncheckProxy[i].valueAction = line;
+		};
+		nfontes.do { arg i;
+			var line = scinf.getLine(1024);
+			this.scncheckProxy[i].valueAction = line;
+		};
+		nfontes.do { arg i;
+			var line = linearf.getLine(1024);
+			this.lncheckProxy[i].valueAction = line;
+		};
+		nfontes.do { arg i;
+			var line = spreadf.getLine(1024);
+			this.spcheckProxy[i].valueAction = line;
+		};
+		nfontes.do { arg i;
+			var line = diffusef.getLine(1024);
+			this.dfcheckProxy[i].valueAction = line;
+		};
+		nfontes.do { arg i;
+			var line = ncanf.getLine(1024);
+			this.ncanboxProxy[i].valueAction = line.asFloat;
+		};
+		nfontes.do { arg i;
+			var line = businif.getLine(1024);
+			this.businiboxProxy[i].valueAction = line.asFloat;
+		};
+		nfontes.do { arg i;
+			var line = stcheckf.getLine(1024);
+			this.stcheckProxy[i].valueAction = line;
+		};
+
+
+		
+		filenames.close;
+
+		dopplerf.close;
+		loopedf.close;
+		aformatrevf.close;
+		hwinf.close;
+		scinf.close;
+		linearf.close;
+		spreadf.close;
+		diffusef.close;
+		ncanf.close;
+		businif.close;
+		stcheckf.close;
+
+		
+		
+		// delay necessary here because streamdisks take some time to register after controle.load
+		Routine {
+			{
+			}.defer;
+			1.wait;
+			nfontes.do { arg i;
+				{
+					var path = this.tfieldProxy[i].value;
+					if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
+						i.postln;
+						path.postln;
+						sombuf[i] = Buffer.read(server, path, action: {arg buf; 
+							"Loaded file".postln;
+						});
+					};
+				}.defer;
+			};
+		}.play;
+
+	}
 
 	gui {
 
@@ -4611,7 +4723,7 @@ GUI Parameters usable in SynthDefs
 			["load auto", Color.black, Color.white],
 		])
 		.action_({
-			var filenames;
+			//var filenames;
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
 			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
@@ -4641,119 +4753,10 @@ GUI Parameters usable in SynthDefs
 				controle.load(textField.value);
 				//controle.seek;
 				this.lastAutomation = textField.value;
-				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"r");
 
-				dopplerf = File((textField.value ++ "/doppler.txt").standardizePath,"r");
-				loopedf = File((textField.value ++ "/looped.txt").standardizePath,"r");
-				aformatrevf = File((textField.value ++ "/aformatrev.txt").standardizePath,"r");
-				hwinf = File((textField.value ++ "/hwin.txt").standardizePath,"r");
-				scinf = File((textField.value ++ "/scin.txt").standardizePath,"r");
-				linearf = File((textField.value ++ "/linear.txt").standardizePath,"r");
-				spreadf = File((textField.value ++ "/spread.txt").standardizePath,"r");
-				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"r");
-				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"r");
-				businif = File((textField.value ++ "/busini.txt").standardizePath,"r");
-				stcheckf = File((textField.value ++ "/stcheck.txt").standardizePath,"r");
-
-				
-				{	("BEFORE ACTION - stream = " ++ stcheck[0].value).postln;}.defer;
-				
-				
-				nfontes.do { arg i;
-					var line = filenames.getLine(1024);
-					if(line!="NULL"){this.tfieldProxy[i].valueAction = line};
-				};
-				nfontes.do { arg i;
-					var line = dopplerf.getLine(1024);
-					this.dcheck[i].valueAction = line;
-					// doppler[i] 0 or 1
-				};
-
-				nfontes.do { arg i;
-					var line = loopedf.getLine(1024);
-					this.lpcheck[i].valueAction = line;
-					//lp[i] 0 or 1
-				};
-				nfontes.do { arg i;
-					var line = aformatrevf.getLine(1024);
-					this.rvcheck[i].valueAction = line;
-					//rv[i] 0 or 1
-				};
-				nfontes.do { arg i;
-					var line = hwinf.getLine(1024);
-					this.hwncheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = scinf.getLine(1024);
-					this.scncheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = linearf.getLine(1024);
-					this.lncheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = spreadf.getLine(1024);
-					this.spcheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = diffusef.getLine(1024);
-					this.dfcheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = diffusef.getLine(1024);
-					this.dfcheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = ncanf.getLine(1024);
-					this.ncanbox[i].valueAction = line.asFloat;
-				};
-				nfontes.do { arg i;
-					var line = businif.getLine(1024);
-					this.businibox[i].valueAction = line.asFloat;
-				};
-				nfontes.do { arg i;
-					var line = stcheckf.getLine(1024);
-					this.stcheck[i].valueAction = line;
-				};
-
-
-				
-				filenames.close;
-
-				dopplerf.close;
-				loopedf.close;
-				aformatrevf.close;
-				hwinf.close;
-				scinf.close;
-				linearf.close;
-				spreadf.close;
-				diffusef.close;
-				ncanf.close;
-				businif.close;
-				stcheckf.close;
-
-				
-				
-				// delay necessary here because streamdisks take some time to register after controle.load
-				Routine {
-					{
-					}.defer;
-					1.wait;
-					nfontes.do { arg i;
-						{
-							var path = this.tfieldProxy[i].value;
-							if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
-								i.postln;
-								path.postln;
-								sombuf[i] = Buffer.read(server, path, action: {arg buf; 
-									"Loaded file".postln;
-								});
-							};
-						}.defer;
-					};
-				}.play;
-};
-dwin.front;
+				loadNonAutomationData(textField.value);
+			};
+			dwin.front;
 
 
 
