@@ -828,7 +828,7 @@ GUI Parameters usable in SynthDefs
 					this.a1but[i] = 0;
 					this.setSynths(i, \a1check, 0);
 				};
-				"WWOOOOOOOOOOOOOOOOOOOOOOOOOh".postln;
+				
 				if (guiflag) {
 					
 					this.a1check[i].value = but.value;
@@ -910,7 +910,7 @@ GUI Parameters usable in SynthDefs
 			
 
 			this.dcheckProxy[i].action_({ arg but;
-				if(i==currentsource){dopcheque.value = but.value;};
+				if((i==currentsource) && guiflag){dopcheque.value = but.value;};
 				if (but.value == true) {
 					doppler[i] = 1;
 					this.espacializador[i].set(\dopon, 1);
@@ -928,7 +928,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.lpcheckProxy[i].action_({ arg but;
-				if(i==currentsource){loopcheck.value = but.value;};
+				if((i==currentsource) && guiflag){loopcheck.value = but.value;};
 				if (but.value == true) {
 					lp[i] = 1;
 					this.synt[i].set(\lp, 1);
@@ -944,7 +944,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.rvcheckProxy[i].action_({ arg but;
-				if(i==currentsource){revcheck.value = but.value;};
+				if((i==currentsource) && guiflag){revcheck.value = but.value;};
 				if (but.value == true) {
 					rv[i] = 1;
 					//this.synt[i].set(\lp, 1);
@@ -958,29 +958,31 @@ GUI Parameters usable in SynthDefs
 					this.rvcheck[i].value = but.value;
 				};
 			});
-			
+			/// testing
 			this.hwncheckProxy[i].action_({ arg but;
-				if(i==currentsource){hwInCheck.value = but.value;};
+				if((i==currentsource) && guiflag) {
+					//	hwInCheck.value = but.value;
+				};
 				if (but.value == true) {
-					this.scncheck[i].value = false;
-					if(i==currentsource){scInCheck.value = false;};
-					hwn[i] = 1;
-					scn[i] = 0;
-					this.synt[i].set(\hwn, 1);
+					//this.scncheck[i].value = false;
+					//if((i==currentsource) && guiflag){scInCheck.value = false;};
+					//hwn[i] = 1;
+					//scn[i] = 0;
+					//this.synt[i].set(\hwn, 1);
 				}{
-					hwn[i] = 0;
-					this.synt[i].set(\hwn, 0);
+					//hwn[i] = 0;
+					//this.synt[i].set(\hwn, 0);
 				};
 				if (guiflag) {
-					this.hwncheck[i].value = but.value;
+					//this.hwncheck[i].value = but.value;
 				};
 			});
 
 			this.scncheckProxy[i].action_({ arg but;
-				if(i==currentsource){scInCheck.value = but.value;};
+				if((i==currentsource) && guiflag){scInCheck.value = but.value;};
 				if (but.value == true) {
 					this.hwncheck[i].value = false;
-					if(i==currentsource){hwInCheck.value = false;};
+					if((i==currentsource) && guiflag){hwInCheck.value = false;};
 					scn[i] = 1;
 					hwn[i] = 0;
 					this.synt[i].set(\scn, 1);
@@ -994,7 +996,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.lncheckProxy[i].action_({ arg but;
-				if(i==currentsource){lincheck.value = but.value;};
+				if((i==currentsource) && guiflag){lincheck.value = but.value;};
 				if (but.value == true) {
 					ln[i] = "_linear";
 					this.setSynths(i, \ln, 1);
@@ -1008,10 +1010,10 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.spcheckProxy[i].action_({ arg but;
-				if(i==currentsource){spreadcheck.value = but.value;};
+				if((i==currentsource) && guiflag){spreadcheck.value = but.value;};
 				if (but.value == true) {
 					this.dfcheck[i].value = false;
-					if(i==currentsource){diffusecheck.value = false;};
+					if((i==currentsource) && guiflag){diffusecheck.value = false;};
 					sp[i] = 1;
 					df[i] = 0;
 					this.espacializador[i].set(\sp, 1);
@@ -1030,10 +1032,10 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.dfcheckProxy[i].action_({ arg but;
-				if(i==currentsource){diffusecheck.value = but.value;};
+				if((i==currentsource) && guiflag){diffusecheck.value = but.value;};
 				if (but.value == true) {
 					this.spcheck[i].value = false;
-					if(i==currentsource){spreadcheck.value = false;};
+					if((i==currentsource) && guiflag){spreadcheck.value = false;};
 					df[i] = 1;
 					sp[i] = 0;
 					this.espacializador[i].set(\df, 1);
@@ -4124,7 +4126,7 @@ GUI Parameters usable in SynthDefs
 	loadNonAutomationData { arg path;
 		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf,
 		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
-
+("THE PATH IS " ++ path ++ "/filenames.txt").postln;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
 
 		dopplerf = File((path ++ "/doppler.txt").standardizePath,"r");
@@ -4140,7 +4142,7 @@ GUI Parameters usable in SynthDefs
 		stcheckf = File((path ++ "/stcheck.txt").standardizePath,"r");
 
 		
-		{	("BEFORE ACTION - stream = " ++ stcheck[0].value).postln;}.defer;
+		//{	("BEFORE ACTION - stream = " ++ stcheckProxy[0].value).postln;}.defer;
 		
 		
 		nfontes.do { arg i;
@@ -4158,27 +4160,38 @@ GUI Parameters usable in SynthDefs
 			this.lpcheckProxy[i].valueAction = line;
 			//lp[i] 0 or 1
 		};
+		
 		nfontes.do { arg i;
 			var line = aformatrevf.getLine(1024);
 			this.rvcheckProxy[i].valueAction = line;
 			//rv[i] 0 or 1
 		};
+		
+		//		nfontes.do { arg i;
+		//	var line = hwinf.getLine(1024);
+		//	this.hwncheckProxy[i].valueAction = line;
+		//};
 		nfontes.do { arg i;
 			var line = hwinf.getLine(1024);
-			this.hwncheckProxy[i].valueAction = line;
+			//("line = " ++ line).postln;
+			//this.hwncheckProxy[i].valueAction = line;
 		};
+		
+		
 		nfontes.do { arg i;
 			var line = scinf.getLine(1024);
 			this.scncheckProxy[i].valueAction = line;
-		};
+			}; 
 		nfontes.do { arg i;
 			var line = linearf.getLine(1024);
 			this.lncheckProxy[i].valueAction = line;
 		};
+		
 		nfontes.do { arg i;
 			var line = spreadf.getLine(1024);
 			this.spcheckProxy[i].valueAction = line;
 		};
+		
 		nfontes.do { arg i;
 			var line = diffusef.getLine(1024);
 			this.dfcheckProxy[i].valueAction = line;
@@ -4187,16 +4200,18 @@ GUI Parameters usable in SynthDefs
 			var line = ncanf.getLine(1024);
 			this.ncanboxProxy[i].valueAction = line.asFloat;
 		};
+		
 		nfontes.do { arg i;
 			var line = businif.getLine(1024);
 			this.businiboxProxy[i].valueAction = line.asFloat;
 		};
+		
 		nfontes.do { arg i;
 			var line = stcheckf.getLine(1024);
 			this.stcheckProxy[i].valueAction = line;
 		};
-
-
+		
+		
 		
 		filenames.close;
 
@@ -4212,25 +4227,26 @@ GUI Parameters usable in SynthDefs
 		businif.close;
 		stcheckf.close;
 
-		
-		
+		"RARARARARAR".postln;
+				
 		// delay necessary here because streamdisks take some time to register after controle.load
 		Routine {
-			{
+			
+			3.wait;
+			this.nfontes.do { arg i;
+				
+				var newpath = this.tfieldProxy[i].value;
+				("NEWPATH = " ++ newpath).postln;
+				server.sync;
+				if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
+					i.postln;
+					newpath.postln;
+					this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf; 
+						"Loaded file".postln;
+					});
+				};
+				
 			}.defer;
-			1.wait;
-			nfontes.do { arg i;
-				{
-					var path = this.tfieldProxy[i].value;
-					if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
-						i.postln;
-						path.postln;
-						sombuf[i] = Buffer.read(server, path, action: {arg buf; 
-							"Loaded file".postln;
-						});
-					};
-				}.defer;
-			};
 		}.play;
 
 	}
@@ -4741,7 +4757,7 @@ GUI Parameters usable in SynthDefs
             dwin.onClose = {
                 if (success.not){
                     onFailure.value(textField.value);
-					"Aborted load".postln;
+					"Aborted load!".postln;
                 };
             };
             textField = GUI.textField.new(dwin, Rect(0,0,bounds.width,bounds.height));
@@ -4753,8 +4769,8 @@ GUI Parameters usable in SynthDefs
 				controle.load(textField.value);
 				//controle.seek;
 				this.lastAutomation = textField.value;
-
-				loadNonAutomationData(textField.value);
+				this.loadNonAutomationData(textField.value);
+				
 			};
 			dwin.front;
 
@@ -5433,7 +5449,7 @@ textbuf.string = (i+1).asString;
 this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20));
 
 this.dcheck[i].action_({ arg but;
-if(i==currentsource){dopcheque.value = but.value;};
+if((i==currentsource) && guiflag){dopcheque.value = but.value;};
 this.dcheckProxy[i].valueAction = but.value;
 });
 
