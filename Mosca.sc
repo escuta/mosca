@@ -3665,7 +3665,7 @@ GUI Parameters usable in SynthDefs
 												this.espacializador[i] = nil; this.synt[i] = nil;});
 									};
 								} {
-									if (this.hwncheck[i].value) {
+									if (this.hwncheckProxy[i].value) {
 										this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 											\outbus, mbus[i],
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
@@ -3702,7 +3702,7 @@ GUI Parameters usable in SynthDefs
 						} {
 
 							if (testado[i].not || force) {
-								if (this.hwncheck[i].value) {
+								if (this.hwncheckProxy[i].value) {
 									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i], \dopon, doppler[i],
