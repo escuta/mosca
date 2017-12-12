@@ -2948,14 +2948,16 @@ GUI Parameters usable in SynthDefs
 					{ this.streambuf[i].numChannels == 2} {
 						"2 channel".postln;
 						angle[i] = pi/2;
-						cbox[i].value = 1;
+						cboxProxy[i].valueAction = 1;
 						clev[i] = 1;
 						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
-						};						
-						{angnumbox.value = 1.05;}.defer; // 60 degrees
-						{angslider.value = 0.33;}.defer;
+						};
+						if (guiflag) {
+							{angnumbox.value = 1.05;}.defer; // 60 degrees
+							{angslider.value = 0.33;}.defer;
+						};
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								
