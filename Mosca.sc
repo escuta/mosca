@@ -3295,15 +3295,18 @@ GUI Parameters usable in SynthDefs
 							this.playingBF[i] = true;
 							ncanais[i] = 4;
 							angle[i] = 0;
-							{angnumbox.value = 0;}.defer;
-							cbox[i].value = 0;
+							if (guiflag) {
+								{angnumbox.value = 0;}.defer;
+							};
+							cboxProxy[i].valueAction = 0;
 							clev[i] = 0;
 							if((i == currentsource) && guiflag) {
 								cslider.value = 0;
 								connumbox.value = 0;
 							};
-
-							{angslider.value = 0;}.defer;
+							if (guiflag) {
+								{angslider.value = 0;}.defer;
+							};
 							
 							// reverb for non-contracted (full b-format) component
 
@@ -3402,14 +3405,17 @@ GUI Parameters usable in SynthDefs
 						};
 					};  }; 
 					if(controle.doRecord == false){
-						{	xbox[i].valueAction = xbox[i].value;
-							ybox[i].valueAction = ybox[i].value;
-						}.defer;
+						if (guiflag) {
+							{	xboxProxy[i].valueAction = xbox[i].value;
+								yboxProxy[i].valueAction = ybox[i].value;
+							}.defer;
+						};
 					};
 					
 					
-					//	}); 
-				}.defer;	
+					
+					//				}.defer;	
+				};	
 			} {
 				
 				if ((this.scncheck[i].value) || (this.hwncheck[i])) {
