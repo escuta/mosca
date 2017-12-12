@@ -385,17 +385,17 @@ GUI Parameters usable in SynthDefs
 			a5boxProxy[x] = AutomationGuiProxy.new(0.0);  
 
 			tfieldProxy[x] = AutomationGuiProxy.new(""); 
-			dcheckProxy[x] = AutomationGuiProxy.new(0); 
-			lpcheckProxy[x] = AutomationGuiProxy.new(0); 
-			rvcheckProxy[x] = AutomationGuiProxy.new(0); 
-			hwncheckProxy[x] = AutomationGuiProxy.new(0); 
-			scncheckProxy[x] = AutomationGuiProxy.new(0); 
-			dfcheckProxy[x] = AutomationGuiProxy.new(0); 
-			lncheckProxy[x] = AutomationGuiProxy.new(0); 
-			spcheckProxy[x] = AutomationGuiProxy.new(0); 
+			dcheckProxy[x] = AutomationGuiProxy.new(false); 
+			lpcheckProxy[x] = AutomationGuiProxy.new(false); 
+			rvcheckProxy[x] = AutomationGuiProxy.new(false); 
+			hwncheckProxy[x] = AutomationGuiProxy.new(false); 
+			scncheckProxy[x] = AutomationGuiProxy.new(false); 
+			dfcheckProxy[x] = AutomationGuiProxy.new(false); 
+			lncheckProxy[x] = AutomationGuiProxy.new(false); 
+			spcheckProxy[x] = AutomationGuiProxy.new(false); 
 			ncanboxProxy[x] = AutomationGuiProxy.new(0); 
 			businiboxProxy[x] = AutomationGuiProxy.new(0); 
-			stcheckProxy[x] = AutomationGuiProxy.new(0); 
+			stcheckProxy[x] = AutomationGuiProxy.new(false); 
 			
 			
 		};
@@ -2862,18 +2862,20 @@ GUI Parameters usable in SynthDefs
 		
 		/// STREAM FROM DISK
 
-			if ((path != "") && this.hwncheck[i].value.not && this.scncheck[i].value.not && this.streamdisk[i]) {
+			if ((path != "") && this.hwncheckProxy[i].value.not && this.scncheckProxy[i].value.not && this.streamdisk[i]) {
 				var x;
 				"Content Streamed from disk".postln;
 				if (testado[i].not || force) { // if source is testing don't relaunch synths
 					x = case
 					{ this.streambuf[i].numChannels == 1} {
 						"1 channel".postln;
-						{angnumbox.value = 0;}.defer;
-						{angslider.value = 0;}.defer;
-						cbox[i].value = 1;
+						if (guiflag) {
+							{angnumbox.value = 0;}.defer;
+							{angslider.value = 0;}.defer;
+						};
+						cboxProxy[i].valueAction = 1;
 						clev[i] = 1;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -2948,7 +2950,7 @@ GUI Parameters usable in SynthDefs
 						angle[i] = pi/2;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};						
@@ -3028,7 +3030,7 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 0;}.defer;
 						cbox[i].value = 0;
 						clev[i] = 0;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 0;
 							connumbox.value = 0;
 						};
@@ -3141,7 +3143,7 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3210,7 +3212,7 @@ GUI Parameters usable in SynthDefs
 						angle[i] = pi/2;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3290,7 +3292,7 @@ GUI Parameters usable in SynthDefs
 							{angnumbox.value = 0;}.defer;
 							cbox[i].value = 0;
 							clev[i] = 0;
-							if(i == currentsource) {
+							if((i == currentsource) && guiflag) {
 								cslider.value = 0;
 								connumbox.value = 0;
 							};
@@ -3411,7 +3413,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3511,7 +3513,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3607,7 +3609,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 0;
 						clev[i] = 0;
-						if(i == currentsource) {
+						if((i == currentsource) && guiflag) {
 							cslider.value = 0;
 							connumbox.value = 0;
 						};
