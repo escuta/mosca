@@ -3029,15 +3029,18 @@ GUI Parameters usable in SynthDefs
 						this.playingBF[i] = true;
 						ncanais[i] = 4;
 						angle[i] = 0;
-						{angnumbox.value = 0;}.defer;
-						cbox[i].value = 0;
+						if (guiflag) {
+							{angnumbox.value = 0;}.defer;
+						};
+						cboxProxy[i].valueAction = 0;
 						clev[i] = 0;
 						if((i == currentsource) && guiflag) {
 							cslider.value = 0;
 							connumbox.value = 0;
 						};
-						
-						{angslider.value = 0;}.defer;
+						if (guiflag) {
+							{angslider.value = 0;}.defer;
+						};
 
 						if(rv[i] == 1) {
 
@@ -3135,15 +3138,17 @@ GUI Parameters usable in SynthDefs
 			/// END STREAM FROM DISK
 
 			// check this logic - what should override what?
-			if ((path != "") && (this.hwncheck[i].value.not || this.scncheck[i].value.not) && this.streamdisk[i].not) {
+			if ((path != "") && (this.hwncheckProxy[i].value.not || this.scncheckProxy[i].value.not) && this.streamdisk[i].not) {
 				{	
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
 					{ncanais[i] = 1;
 						angle[i] = 0;
-						{angnumbox.value = 0;}.defer;
-						{angslider.value = 0;}.defer;
-						cbox[i].value = 1;
+						if (guiflag) {
+							{angnumbox.value = 0;}.defer;
+							{angslider.value = 0;}.defer;
+						};
+						cboxProxy[i].valueAction = 1;
 						clev[i] = 1;
 						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
@@ -3212,17 +3217,16 @@ GUI Parameters usable in SynthDefs
 					}
 					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
 						angle[i] = pi/2;
-						cbox[i].value = 1;
+						cboxProxy[i].valueAction = 1;
 						clev[i] = 1;
 						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
-
-						//						{angnumbox.value = pi/2;}.defer; 
-						{angnumbox.value = 1.05;}.defer; // 60 degrees
-						//						{angslider.value = 0.5;}.defer;
-						{angslider.value = 0.33;}.defer;
+						if (guiflag) {
+							{angnumbox.value = 1.05;}.defer; // 60 degrees
+							{angslider.value = 0.33;}.defer;
+						};
 						if(rv[i] == 1) {
 							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								
