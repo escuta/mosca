@@ -16,7 +16,7 @@ Mosca also has other features including a scalable Doppler Effect on moving sour
 
 Mosca supports methods for making "A-format inserts" on any source spatialised in the GUI. In this way, the user may write a filtering synth and apply it to the sound without disrupting the encoded spatial characteristics. Please see the code examples below for more information.
 
-Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. See below for more information.
+Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. Mosca may also run GUI-free and has a mechanism for coded control of the interface. See below for more information.
 
 USING MOSCA
 
@@ -90,6 +90,77 @@ NOTES ON GUI COMPONENTS
 - Loop. Loop the transport.
 
 - Orientation (when used with Arduino 9-axes Motion Shield headtracking device (see below). The values are for heading, roll and pitch and are in degrees radians.
+
+CODED CONTROL OF MOSCA
+
+The GUI does not control internal variables directly, but rather via proxies of the class AutomationGuiProxy. This enables Mosca to run with or without a GUI as it is the proxies that save and read Automation data to and from disk and not the GUI elements themselves. Ordinarily the user does not need to know about this technical detail, however the proxies serve another useful purpose, they can be used for coded control of Mosca, with or without an active GUI. Proxies objects behave like GUI elements in that they have a value and an assigned function that when called upon, acts on that variable. So for example, if we wish to get the current x-position for a particular source we may use: myMoscaInstanceName.xboxProxy[i].value, where i is the number of the source with the index starting at zero. We may use the method valueAction to set the value of a proxy and have its value propagated through the system. So for example, if we wish to change the position of the x-coordenate for source 2 to 0.5, we use: myMoscaInstanceName.xboxProxy[1].valueAction = 0.5. The following is a list of available proxies:
+
+xboxProxy - x-coord (-1 - 1)
+
+yboxProxy - y-coord (-1 - 1)
+
+zboxProxy - z-coord (-1 - 1)
+
+dcheckProxy - Doppler checkbox (flag))
+
+lpcheckProxy - loop checkbox (flag)
+
+rvcheckProxy - A-format reverb checkbox (flag)
+
+hwncheckProxy - Hardware-in checkbox (flag)
+
+scncheckProxy - SuperCollider-in checkbox (flag)
+
+lncheckProxy - linear intensity (flag)
+
+ncanboxProxy - number of channels (1,2 or 4)
+
+businiboxProxy - start bus (0 - n)
+
+vboxProxy - level (0 - 1)
+
+dpboxProxy - Doppler amount (0 - 1)
+
+gboxProxy - close reverb (0 -1)
+
+lboxProxy - distant reverb (0 -1)
+
+cboxProxy - contraction (0 -1)
+
+spcheckProxy - spread checkbox (flag)
+
+dfcheckProxy - diffuse checkbox (flag)
+
+aboxProxy - angle (0 - 3.14rad)
+
+rboxProxy - rotation (-3.14 - 3.14rad)
+
+dboxProxy - Directivity angle (0 - 1.57rad)
+
+a1checkProxy - auxiliary 1 button (flag)
+
+a2checkProxy - auxiliary 2 button (flag)
+
+a3checkProxy - auxiliary 3 button (flag)
+
+a4checkProxy - auxiliary 4 button (flag)
+
+a5checkProxy - auxiliary 5 button (flag)
+
+a1boxProxy - auxiliary 1 level (0-1)
+
+a2boxProxy - auxiliary 2 level (0-1)
+
+a3boxProxy - auxiliary 3 level (0-1)
+
+a4boxProxy - auxiliary 4 level (0-1)
+
+a5boxProxy - auxiliary 5 level (0-1)
+
+stcheckProxy - stream check (data window) (flag)
+
+tfieldProxy - file path (data window) (path)
+
 
 SERIAL DEVICES / HEAD TRACKING
 
@@ -519,7 +590,7 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 
 // with headtracking (should only be used with binaural decoder)
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0, moscagui: true);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
 
 
 // Use allpass filter reverberation

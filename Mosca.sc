@@ -2301,7 +2301,7 @@ GUI Parameters usable in SynthDefs
 					intens = Select.kr(intens < 0, [intens, 0]);
 					intens = intens / 4;
 					//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
-					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // diretividade ("tamanho")
+					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
 					
 
 					prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
@@ -2692,6 +2692,8 @@ GUI Parameters usable in SynthDefs
 			this.stopFunc[source-1] = nil;
 		}
 	}
+
+	/*
 	// load automation data. Can be called after creation of Mosca instance
 	loadAutomation {
 		|path|
@@ -2782,6 +2784,7 @@ GUI Parameters usable in SynthDefs
 		stcheckf.close;
 		
 	}
+	*/
 
 
 	
