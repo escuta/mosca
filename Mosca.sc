@@ -112,6 +112,8 @@ Mosca {
 	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box, <>a4box, <>a5box,
 	<>stcheck,
 
+	<>oxbox, <>oybox, <>ozbox, <>funcs, 
+
 
 	<>novoplot, <>lastx, <>lasty, <>lastz, <>zlev, <>znumbox, <>zslider,
 	<>volslider, <>volnumbox, <>glev, <>gslider, <>gnumbox, <>lslider,
@@ -319,12 +321,157 @@ GUI Parameters usable in SynthDefs
 		
 		this.nfontes = nsources;
 
+		///////////////////// DECLARATIONS FROM gui /////////////////////
 
+
+				this.espacializador = Array.newClear(this.nfontes);
+		doppler = Array.newClear(this.nfontes); 
+		lp = Array.newClear(this.nfontes); 
+		sp = Array.newClear(this.nfontes); 
+		df = Array.newClear(this.nfontes); 
+		rv = Array.newClear(this.nfontes); 
+		ln = Array.newClear(this.nfontes); 
+		hwn = Array.newClear(this.nfontes); 
+		scn = Array.newClear(this.nfontes); 
+		mbus = Array.newClear(this.nfontes); 
+		sbus = Array.newClear(this.nfontes); 
+		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
+		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
+		// note that ncan refers to # of channels in streamed sources.
+		// ncanais is related to sources read from file
+		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
+		this.aux1 = Array.newClear(this.nfontes);
+		this.aux2 = Array.newClear(this.nfontes);
+		this.aux3 = Array.newClear(this.nfontes);
+		this.aux4 = Array.newClear(this.nfontes);
+		this.aux5 = Array.newClear(this.nfontes);
+
+		this.a1but = Array.newClear(this.nfontes);
+		this.a2but = Array.newClear(this.nfontes);
+		this.a3but = Array.newClear(this.nfontes);
+		this.a4but = Array.newClear(this.nfontes);
+		this.a5but = Array.newClear(this.nfontes);
+
+		sombuf = Array.newClear(this.nfontes); 
+		//		xoffset = Array.fill(this.nfontes, 0); 
+		//		yoffset = Array.fill(this.nfontes, 0);
+		this.synt = Array.newClear(this.nfontes);
+		sprite = Array2D.new(this.nfontes, 2);
+		funcs = Array.newClear(this.nfontes);
+		angle = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
+		zlev = Array.newClear(this.nfontes); 
+		level = Array.newClear(this.nfontes); 
+		//	doplev = Array.newClear(this.nfontes); 
+		glev = Array.newClear(this.nfontes); 
+		llev = Array.newClear(this.nfontes); 
+		rlev = Array.newClear(this.nfontes); 
+		dlev = Array.newClear(this.nfontes); 
+		dplev = Array.newClear(this.nfontes); 
+		clev = Array.newClear(this.nfontes); 
+
+		this.ncanbox = Array.newClear(this.nfontes); 
+		this.businibox = Array.newClear(this.nfontes); 
+		this.playingBF = Array.newClear(this.nfontes); 
+		
+		
+		oxbox = Array.newClear(this.nfontes); 
+		oybox = Array.newClear(this.nfontes); 
+		ozbox = Array.newClear(this.nfontes); 
+		xbox = Array.newClear(this.nfontes); 
+		zbox = Array.newClear(this.nfontes); 
+		ybox = Array.newClear(this.nfontes); 
+		lastx = Array.newClear(this.nfontes); 
+		lasty = Array.newClear(this.nfontes); 
+		lastz = Array.newClear(this.nfontes); 
+		abox = Array.newClear(this.nfontes); // ângulo
+		vbox = Array.newClear(this.nfontes);  // level
+		this.dcheck = Array.newClear(this.nfontes);  // Doppler check
+		gbox = Array.newClear(this.nfontes); // reverberação global
+		lbox = Array.newClear(this.nfontes); // reverberação local
+		rbox = Array.newClear(this.nfontes); // rotação de b-format
+		dbox = Array.newClear(this.nfontes); // diretividade de b-format
+		cbox = Array.newClear(this.nfontes); // contrair b-format
+		dpbox = Array.newClear(this.nfontes); // dop amount
+		this.lpcheck = Array.newClear(this.nfontes); // loop
+		this.spcheck = Array.newClear(this.nfontes); // spread
+		this.dfcheck = Array.newClear(this.nfontes); // diffuse
+		this.rvcheck = Array.newClear(this.nfontes); // diffuse reverb
+		this.lncheck = Array.newClear(this.nfontes); // linear intensity
+		this.hwncheck = Array.newClear(this.nfontes); // hardware-in check
+		this.scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
+		a1box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
+		a2box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
+		a3box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
+		a4box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
+		a5box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
+
+		this.a1but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a2but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a3but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a4but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		this.a5but = Array.newClear(this.nfontes); // aux - array of buttons in data window
+
+		a1check = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		a2check = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		a3check = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		a4check = Array.newClear(this.nfontes); // aux - array of buttons in data window
+		a5check = Array.newClear(this.nfontes); // aux - array of buttons in data window
+
+		stcheck = Array.newClear(this.nfontes); // aux - array of buttons in data window
+
+		this.firstTime = Array.newClear(this.nfontes);
+
+
+		this.tfield = Array.newClear(this.nfontes);	
+		this.streamdisk = Array.newClear(this.nfontes);	
+		
+		testado = Array.newClear(this.nfontes);
+
+				this.nfontes.do { arg i;
+			doppler[i] = 0;
+			angle[i] = 0;
+			level[i] = 0;
+			glev[i] = 0;
+			llev[i] = 0;
+			lp[i] = 0;
+			sp[i] = 0;
+			df[i] = 0;
+			rv[i] = 0;
+			ln[i] = "";
+			hwn[i] = 0;
+			scn[i] = 0;
+			rlev[i] = 0;
+			dlev[i] = 0;
+			clev[i] = 0;
+			zlev[i] = 0;
+			dplev[i] = 0;
+
+			aux1[i] = 0;
+			aux2[i] = 0;
+			aux3[i] = 0;
+			aux4[i] = 0;
+			aux5[i] = 0;
+			this.streamdisk[i] = false;
+			this.ncan[i] = 0;
+			this.busini[i] = 0;
+			sprite[i, 0] = -20;
+			sprite[i, 1] = -20;
+			testado[i] = false;
+			this.playingBF[i] = false;
+			this.firstTime[i] = true;
+		};
+
+		////////////////////////////////////////////////
 
 				////////// ADDED NEW ARRAYS and other proxy stuff  //////////////////
 
 		// these proxies behave like GUI elements. They eneable
 		// the use of Automation without a GUI
+		
+		xval = Array.fill(this.nfontes, 100000); 
+		yval = Array.fill(this.nfontes, 100000); 
+		zval = Array.fill(this.nfontes, 0); 
+
 
 		rboxProxy = Array.newClear(this.nfontes); 
 		cboxProxy = Array.newClear(this.nfontes); 
@@ -420,8 +567,10 @@ GUI Parameters usable in SynthDefs
 			this.xboxProxy[i].action = {arg num;
 				//("Num = " ++ num.value).postln;
 				this.xval[i] = num.value;
-				sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
-				novoplot.value(num.value, ybox[i], i, this.nfontes);
+				if (guiflag) {
+					sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
+					novoplot.value(num.value, ybox[i], i, this.nfontes);
+				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
 					this.espacializador[i].set(\mx, this.xval[i]);
 					this.setSynths(i, \mx, this.xval[i]);
@@ -435,7 +584,9 @@ GUI Parameters usable in SynthDefs
 			
 			this.yboxProxy[i].action = {arg num;
 				this.yval[i] = num.value;
-				sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
+				if (guiflag) {
+					sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
+				};
 				
 				if(this.espacializador[i].notNil || this.playingBF[i]){
 					
@@ -460,7 +611,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \mz, this.zval[i]);
 				this.synt[i].set(\mz, this.zval[i]);
 				zlev[i] = this.zval[i];
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					zslider.value = (num.value + 1) / 2;
 					znumbox.value = num.value;
@@ -477,7 +628,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
 				};
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					angnumbox.value = num.value;
 					angslider.value = num.value / pi;
@@ -491,7 +642,7 @@ GUI Parameters usable in SynthDefs
 				this.synt[i].set(\level, num.value);
 				this.setSynths(i, \level, num.value);
 				level[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					volslider.value = num.value;
 					volnumbox.value = num.value;
@@ -508,7 +659,7 @@ GUI Parameters usable in SynthDefs
 				
 				this.synt[i].set(\glev, num.value);
 				glev[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					gslider.value = num.value;
 					gnumbox.value = num.value;
@@ -524,7 +675,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \llev, num.value);
 				this.synt[i].set(\llev, num.value);
 				llev[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					lslider.value = num.value;
 					lnumbox.value = num.value;
@@ -539,7 +690,7 @@ GUI Parameters usable in SynthDefs
 				this.synt[i].set(\rotAngle, num.value);
 				this.setSynths(i, \rotAngle, num.value);
 				rlev[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					//num.value * 6.28 - pi;
 					rslider.value = (num.value + pi) / 2pi;
@@ -554,7 +705,7 @@ GUI Parameters usable in SynthDefs
 				this.synt[i].set(\directang, num.value);
 				this.setSynths(i, \directang, num.value);
 				dlev[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					//num.value * pi/2;
 					dirslider.value = num.value / (pi/2);
@@ -571,7 +722,7 @@ GUI Parameters usable in SynthDefs
 				this.espacializador[i].set(\contr, num.value);
 				this.setSynths(i, \contr, num.value);
 				clev[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					cslider.value = num.value;
 					connumbox.value = num.value;
@@ -588,7 +739,7 @@ GUI Parameters usable in SynthDefs
 				// used for the others
 				this.espacializador[i].set(\dopamnt, num.value);
 				dplev[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					dpslider.value = num.value;
 					dopnumbox.value = num.value;
@@ -601,7 +752,7 @@ GUI Parameters usable in SynthDefs
 			a1boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux1, num.value);
 				aux1[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					auxslider1.value = num.value;
 					aux1numbox.value = num.value;
@@ -614,7 +765,7 @@ GUI Parameters usable in SynthDefs
 			a2boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux2, num.value);
 				aux2[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					auxslider2.value = num.value;
 					aux2numbox.value = num.value;
@@ -627,7 +778,7 @@ GUI Parameters usable in SynthDefs
 			a3boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux3, num.value);
 				aux3[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					auxslider3.value = num.value;
 					aux3numbox.value = num.value;
@@ -640,7 +791,7 @@ GUI Parameters usable in SynthDefs
 			a4boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux4, num.value);
 				aux4[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					auxslider4.value = num.value;
 					aux4numbox.value = num.value;
@@ -653,7 +804,7 @@ GUI Parameters usable in SynthDefs
 			a5boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux5, num.value);
 				aux5[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					auxslider5.value = num.value;
 					aux5numbox.value = num.value;
@@ -900,7 +1051,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \mz, num.value);
 				this.synt[i].set(\mz, num.value);
 				this.ncan[i] = num.value;
-				if(i == currentsource )
+				if((i == currentsource) && guiflag )
 				{
 					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
@@ -916,7 +1067,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \mz, num.value);
 				this.synt[i].set(\mz, num.value);
 				this.busini[i] = num.value;
-				if(i == currentsource) 
+				if((i == currentsource) && guiflag) 
 				{
 					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
@@ -3144,7 +3295,7 @@ GUI Parameters usable in SynthDefs
 					
 					if (sombuf[i].numChannels == 1)  // arquivo mono
 			{
-				"Am I mono?".postln;
+				//"Am I mono?".postln;
 				ncanais[i] = 1;
 						angle[i] = 0;
 						if (guiflag) {
@@ -3777,7 +3928,8 @@ GUI Parameters usable in SynthDefs
 		var fonte, dist,  
 		itensdemenu,
 		//gbus, gbfbus,
-		azimuth, event, brec, bplay, bload, bstream, bnodes, funcs, 
+		azimuth, event, brec, bplay, bload, bstream, bnodes,
+		//funcs, 
 		//	,
 		//lastAutomation = nil,
 		//	loopcheck,
@@ -3821,7 +3973,7 @@ GUI Parameters usable in SynthDefs
 		 // check box for streamed from disk audio
 		bsalvar, bcarregar, bsnap, bdados, baux, 
 		//dcheck,
-		oxbox, oybox, ozbox,
+		//
 		//lastx, lasty, lastz,
 		//gslider,
 		//gnumbox, lslider, lnumbox,
@@ -3847,114 +3999,13 @@ GUI Parameters usable in SynthDefs
 		zSliderHeight = this.width * 2 / 3;
 		dragStartScreen = Point.new;
 		//dragStartMap = Point.new;
-		this.espacializador = Array.newClear(this.nfontes);
-		doppler = Array.newClear(this.nfontes); 
-		lp = Array.newClear(this.nfontes); 
-		sp = Array.newClear(this.nfontes); 
-		df = Array.newClear(this.nfontes); 
-		rv = Array.newClear(this.nfontes); 
-		ln = Array.newClear(this.nfontes); 
-		hwn = Array.newClear(this.nfontes); 
-		scn = Array.newClear(this.nfontes); 
-		mbus = Array.newClear(this.nfontes); 
-		sbus = Array.newClear(this.nfontes); 
-		//soaBus = Array.newClear(this.nfontes); 
-		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
-		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
-		// note that ncan refers to # of channels in streamed sources.
-		// ncanais is related to sources read from file
-		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
-		this.aux1 = Array.newClear(this.nfontes);
-		this.aux2 = Array.newClear(this.nfontes);
-		this.aux3 = Array.newClear(this.nfontes);
-		this.aux4 = Array.newClear(this.nfontes);
-		this.aux5 = Array.newClear(this.nfontes);
 
-		this.a1but = Array.newClear(this.nfontes);
-		this.a2but = Array.newClear(this.nfontes);
-		this.a3but = Array.newClear(this.nfontes);
-		this.a4but = Array.newClear(this.nfontes);
-		this.a5but = Array.newClear(this.nfontes);
 
-		sombuf = Array.newClear(this.nfontes); 
-		xval = Array.fill(this.nfontes, 100000); 
-		yval = Array.fill(this.nfontes, 100000); 
-		zval = Array.fill(this.nfontes, 0); 
-		//		xoffset = Array.fill(this.nfontes, 0); 
-		//		yoffset = Array.fill(this.nfontes, 0);
-		this.synt = Array.newClear(this.nfontes);
-		sprite = Array2D.new(this.nfontes, 2);
-		funcs = Array.newClear(this.nfontes);
-		angle = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
-		zlev = Array.newClear(this.nfontes); 
-		level = Array.newClear(this.nfontes); 
-		//	doplev = Array.newClear(this.nfontes); 
-		glev = Array.newClear(this.nfontes); 
-		llev = Array.newClear(this.nfontes); 
-		rlev = Array.newClear(this.nfontes); 
-		dlev = Array.newClear(this.nfontes); 
-		dplev = Array.newClear(this.nfontes); 
-		clev = Array.newClear(this.nfontes); 
+		//////// Huge lot declarations removed //////////
 
-		this.ncanbox = Array.newClear(this.nfontes); 
-		this.businibox = Array.newClear(this.nfontes); 
-		this.playingBF = Array.newClear(this.nfontes); 
+
+		////////////////////////////////////////////////
 		
-		
-		oxbox = Array.newClear(this.nfontes); 
-		oybox = Array.newClear(this.nfontes); 
-		ozbox = Array.newClear(this.nfontes); 
-		xbox = Array.newClear(this.nfontes); 
-		zbox = Array.newClear(this.nfontes); 
-		ybox = Array.newClear(this.nfontes); 
-		lastx = Array.newClear(this.nfontes); 
-		lasty = Array.newClear(this.nfontes); 
-		lastz = Array.newClear(this.nfontes); 
-		abox = Array.newClear(this.nfontes); // ângulo
-		vbox = Array.newClear(this.nfontes);  // level
-		this.dcheck = Array.newClear(this.nfontes);  // Doppler check
-		gbox = Array.newClear(this.nfontes); // reverberação global
-		lbox = Array.newClear(this.nfontes); // reverberação local
-		rbox = Array.newClear(this.nfontes); // rotação de b-format
-		dbox = Array.newClear(this.nfontes); // diretividade de b-format
-		cbox = Array.newClear(this.nfontes); // contrair b-format
-		dpbox = Array.newClear(this.nfontes); // dop amount
-		this.lpcheck = Array.newClear(this.nfontes); // loop
-		this.spcheck = Array.newClear(this.nfontes); // spread
-		this.dfcheck = Array.newClear(this.nfontes); // diffuse
-		this.rvcheck = Array.newClear(this.nfontes); // diffuse reverb
-		this.lncheck = Array.newClear(this.nfontes); // linear intensity
-		this.hwncheck = Array.newClear(this.nfontes); // hardware-in check
-		this.scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
-		a1box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
-		a2box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
-		a3box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
-		a4box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
-		a5box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
-
-		this.a1but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		this.a2but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		this.a3but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		this.a4but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		this.a5but = Array.newClear(this.nfontes); // aux - array of buttons in data window
-
-		a1check = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a2check = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a3check = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a4check = Array.newClear(this.nfontes); // aux - array of buttons in data window
-		a5check = Array.newClear(this.nfontes); // aux - array of buttons in data window
-
-		stcheck = Array.newClear(this.nfontes); // aux - array of buttons in data window
-
-		this.firstTime = Array.newClear(this.nfontes);
-
-
-		this.tfield = Array.newClear(this.nfontes);	
-		this.streamdisk = Array.newClear(this.nfontes);	
-		
-		testado = Array.newClear(this.nfontes);
-
-
 		
 		//this.offsetHeading(this.offsetheading);
 		//("headingoffset variable = " ++ this.offsetheading).postln;
@@ -4013,39 +4064,6 @@ GUI Parameters usable in SynthDefs
 		});
 		
 		
-		this.nfontes.do { arg i;
-			doppler[i] = 0;
-			angle[i] = 0;
-			level[i] = 0;
-			glev[i] = 0;
-			llev[i] = 0;
-			lp[i] = 0;
-			sp[i] = 0;
-			df[i] = 0;
-			rv[i] = 0;
-			ln[i] = "";
-			hwn[i] = 0;
-			scn[i] = 0;
-			rlev[i] = 0;
-			dlev[i] = 0;
-			clev[i] = 0;
-			zlev[i] = 0;
-			dplev[i] = 0;
-
-			aux1[i] = 0;
-			aux2[i] = 0;
-			aux3[i] = 0;
-			aux4[i] = 0;
-			aux5[i] = 0;
-			this.streamdisk[i] = false;
-			this.ncan[i] = 0;
-			this.busini[i] = 0;
-			sprite[i, 0] = -20;
-			sprite[i, 1] = -20;
-			testado[i] = false;
-			this.playingBF[i] = false;
-			this.firstTime[i] = true;
-		};
 		
 		
 		// Note there is an extreme amount repetition occurring here. See the calling function. fix
