@@ -3418,12 +3418,12 @@ GUI Parameters usable in SynthDefs
 				};	
 			} {
 				
-				if ((this.scncheck[i].value) || (this.hwncheck[i])) {
+				if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
 					var x;
 					x = case
 					{ this.ncan[i] == 1 } {
 						
-						cbox[i].value = 1;
+						cboxProxy[i].valueAction = 1;
 						clev[i] = 1;
 						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
@@ -3437,7 +3437,7 @@ GUI Parameters usable in SynthDefs
 							};
 							
 							if (testado[i].not || force) {
-								if (this.hwncheck[i].value) {
+								if (this.hwncheckProxy[i].value) {
 									if(this.decoder.isNil && (this.raworder == 2)) {
 										this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 											this.busini[i],
@@ -3481,7 +3481,7 @@ GUI Parameters usable in SynthDefs
 							
 						} {
 							if (testado[i].not || force) {
-								if (this.hwncheck[i].value) {
+								if (this.hwncheckProxy[i].value) {
 									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
 										\level, level[i]], revGlobalBF,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
@@ -3520,10 +3520,12 @@ GUI Parameters usable in SynthDefs
 					{ this.ncan[i] == 2 } {
 						ncanais[i] = 0; // just in case!
 						angle[i] = pi/2;
-						{angnumbox.value = pi/2;}.defer;
-						{angslider.value = 0.5;}.defer;
+						if (guiflag) {
+							{angnumbox.value = pi/2;}.defer;
+							{angslider.value = 0.5;}.defer;
+						};
 						
-						cbox[i].value = 1;
+						cboxProxy[i].valueAction = 1;
 						clev[i] = 1;
 						if((i == currentsource) && guiflag) {
 							cslider.value = 1;
@@ -3539,7 +3541,7 @@ GUI Parameters usable in SynthDefs
 									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 										revGlobalBF, addAction:\addBefore);
 								};
-								if (this.hwncheck[i].value) {
+								if (this.hwncheckProxy[i].value) {
 
 									if(this.decoder.isNil && (this.raworder == 2)){
 										this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
@@ -3583,7 +3585,7 @@ GUI Parameters usable in SynthDefs
 
 
 						} {
-							if (this.hwncheck[i].value) {
+							if (this.hwncheckProxy[i].value) {
 								this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
 									\level, level[i]], revGlobalBF,
 									addAction: \addBefore).onFree({this.espacializador[i].free;
@@ -3619,7 +3621,7 @@ GUI Parameters usable in SynthDefs
 					}
 					{ this.ncan[i] == 4 } {
 						
-						cbox[i].value = 0;
+						cboxProxy[i].valueAction = 0;
 						clev[i] = 0;
 						if((i == currentsource) && guiflag) {
 							cslider.value = 0;
@@ -3635,7 +3637,7 @@ GUI Parameters usable in SynthDefs
 							
 							if (testado[i].not || force) {
 								if(this.decoder.isNil && (this.raworder == 2)) {
-									if (this.hwncheck[i].value) {
+									if (this.hwncheckProxy[i].value) {
 										this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 											\outbus, mbus[i],
 											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
