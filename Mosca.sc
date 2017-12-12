@@ -928,6 +928,18 @@ GUI Parameters usable in SynthDefs
 			}; 
 
 
+			this.tfieldProxy[i].action = {arg path;
+				if ( (path.notNil || (path != "")) && this.streamdisk[i].not ) {
+					sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
+						"Loaded file".postln;
+					});
+				} {
+					"To stream file".postln;
+				};
+				if (guiflag) {
+					this.tfield[i].value = path.value;
+				};
+			};
 
 
 
@@ -2802,7 +2814,7 @@ GUI Parameters usable in SynthDefs
 		
 	newtocar {
 		arg i, tpos, force = false;
-		var path = this.tfield[i].value, stdur;
+		var path = this.tfieldProxy[i].value, stdur;
 		
 		"NEW TOCAR".postln;
 		
@@ -3939,7 +3951,7 @@ GUI Parameters usable in SynthDefs
 					arg i;
 					{
 						//("scn = " ++ scn[i]).postln;
-						if ((this.tfield[i].value != "") || ((scn[i] > 0) && (this.ncan[i]>0))
+						if ((this.tfieldProxy[i].value != "") || ((scn[i] > 0) && (this.ncan[i]>0))
 							|| (this.hwncheck[i].value && (this.ncan[i]>0)) ) {
 							var source = Point.new;  // should use cartesian but it's giving problems
 							//source.set(this.xval[i] + this.xoffset[i], this.yval[i] + this.yoffset[i]);
@@ -3958,7 +3970,7 @@ GUI Parameters usable in SynthDefs
 									};
 								} {
 									if(this.synt[i].isPlaying.not && (isPlay || testado[i])
-										&& (this.firstTime[i] || (this.tfield[i].value == ""))) {
+										&& (this.firstTime[i] || (this.tfieldProxy[i].value == ""))) {
 											("HELLO _ Loop is: " ++ lp[i]).postln;
 											//this.triggerFunc[i].value; // play SC input synth
 											this.firstTime[i] = false;
@@ -5433,8 +5445,8 @@ GUI Parameters usable in SynthDefs
 
 
 				nfontes.do { arg i;
-					if(this.tfield[i].value != "") {
-						filenames.write(this.tfield[i].value ++ "\n")
+					if(this.tfieldProxy[i].value != "") {
+						filenames.write(this.tfieldProxy[i].value ++ "\n")
 					} {
 						filenames.write("NULL\n")
 					};
@@ -5542,7 +5554,7 @@ GUI Parameters usable in SynthDefs
 				
 				nfontes.do { arg i;
 					var line = filenames.getLine(1024);
-					if(line!="NULL"){this.tfield[i].value = line};
+					if(line!="NULL"){this.tfieldProxy[i].valueAction = line};
 				};
 				nfontes.do { arg i;
 					var line = dopplerf.getLine(1024);
@@ -5622,8 +5634,8 @@ GUI Parameters usable in SynthDefs
 					1.wait;
 					nfontes.do { arg i;
 						{
-							var path = this.tfield[i].value;
-							if (this.streamdisk[i].not && (this.tfield[i].value != "")) {
+							var path = this.tfieldProxy[i].value;
+							if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
 								i.postln;
 								path.postln;
 								sombuf[i] = Buffer.read(server, path, action: {arg buf; 
@@ -6117,7 +6129,7 @@ controle.stop;
 	
 	{
 		this.streamdisk[fatual] = false;
-		this.tfield[fatual].valueAction = path;}.defer;
+		this.tfieldProxy[fatual].valueAction = path;}.defer;
 	stcheck[fatual].valueAction = false;
 
 	
@@ -6127,7 +6139,7 @@ controle.stop;
 {
 	this.streamdisk[fatual] = false;
 	"cancelled".postln;
-	{this.tfield[fatual].value = "";}.defer;
+	{this.tfieldProxy[fatual].value = "";}.defer;
 	stcheck[fatual].valueAction = false;
 }				
 );
@@ -6153,14 +6165,14 @@ controle.seek;
 	
 	{
 		this.streamdisk[fatual] = true;
-		this.tfield[fatual].valueAction = path;}.defer;
+		this.tfieldProxy[fatual].valueAction = path;}.defer;
 	stcheck[fatual].valueAction = true;
 	
 }, 
 {
 	"cancelled".postln;
 	this.streamdisk[fatual] = false;
-	{this.tfield[fatual].value = "";}.defer;
+	{this.tfieldProxy[fatual].value = "";}.defer;
 	stcheck[fatual].valueAction = false;
 }
 
@@ -6514,16 +6526,12 @@ a5box[i].action = {arg num;
 
 
 this.tfield[i].action = {arg path;
-	if ( (path.notNil || (path != "")) && this.streamdisk[i].not ) {
-//{stcheck[i].value.postln}.defer;
-sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
-	"Loaded file".postln;
-});
-} {
-"To stream file".postln;
+	this.tfieldProxy[i].valueAction = path.value;
 };
 
-};
+
+
+
 //// PROXY ACTIONS /////////
 
 // gradually pinching these and putting up above
