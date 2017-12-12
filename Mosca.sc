@@ -4205,7 +4205,7 @@ GUI Parameters usable in SynthDefs
         nfontes.do { arg i;
 			var line = hwinf.getLine(1024);
 			//("line = " ++ line).postln;
-			this.hwncheckProxy[i].valueAction = line.asBoolean; // why, why, why is this asBoolean necessary!
+			this.hwncheckProxy[i].valueAction = line.booleanValue; // why, why, why is this asBoolean necessary!
 		};
 
 
@@ -4234,7 +4234,7 @@ GUI Parameters usable in SynthDefs
 		// delay necessary here because streamdisks take some time to register after controle.load
 		Routine {
 			
-			10.wait;
+			1.wait;
 			this.nfontes.do { arg i;
 				
 				var newpath = this.tfieldProxy[i].value;
@@ -4250,6 +4250,7 @@ GUI Parameters usable in SynthDefs
 				
 			};
 		}.play;
+         this.watcher.play;
 
 	}
 
