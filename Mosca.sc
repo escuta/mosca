@@ -739,19 +739,19 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			// this should be a once only!! 
-			/*
-				stcheckProxy[i].action = { arg but;
+			
+			
+			stcheckProxy[i].action = { arg but;
 				if (but.value == true) {
-				this.streamdisk[i] = true;
-				//	this.setSynths(i, \a5check, 1);
+					this.streamdisk[i] = true;
 				}{
-				this.streamdisk[i] = false;
-				//	a5but[i] = 0;
-				//	this.setSynths(i, \a5check, 0);
+					this.streamdisk[i] = false;
 				};
+				if (guiflag) {
+					this.stcheck[i].value = but.value;
 				};
-			*/
+			};
+			
 
 			this.dcheckProxy[i].action_({ arg but;
 				if(i==fatual){dopcheque.value = but.value;};
@@ -6313,11 +6313,13 @@ this.dcheckProxy[i].valueAction = but.value;
 });
 
 
+
 this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20));
 
 this.lpcheck[i].action_({ arg but;
 this.lpcheckProxy[i].valueAction = but.value;
 });
+
 
 
 
@@ -6445,9 +6447,9 @@ this.tfield[i] = TextField(wdados, Rect(800, 40+ (i*20), 125, 20));
 //			this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
 stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
-//stcheck[i].action = { arg but;
-//	this.stcheckProxy[i].valueAction = but.value;
-//};
+stcheck[i].action = { arg but;
+	this.stcheckProxy[i].valueAction = but.value;
+};
 
 
 this.ncanbox[i].font = Font(Font.defaultSansFace, 9);
