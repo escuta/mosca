@@ -104,7 +104,7 @@ Mosca {
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	<>currentsource = 0,
+	<>currentsource,
 	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus,
 	<>doppler, <>level, <>lp, <>rv, <>ln, <>angslider, <>connumbox, <>cslider,
 	<>xbox, <>ybox, <>sombuf, <>sbus, <>updatesourcevariables, <>soaBus, <>mbus,
@@ -263,7 +263,7 @@ GUI Parameters usable in SynthDefs
 		this.recbus = irecbus;
 		this.guiflag = iguiflag;
 
-
+		this.currentsource = 0;
 
 		if (this.serport.notNil) {
 
@@ -536,11 +536,12 @@ GUI Parameters usable in SynthDefs
 			a4boxProxy[x] = AutomationGuiProxy.new(0.0);  
 			a5boxProxy[x] = AutomationGuiProxy.new(0.0);  
 
+			hwncheckProxy[x] = AutomationGuiProxy.new(false); 
+
 			tfieldProxy[x] = AutomationGuiProxy.new(""); 
 			dcheckProxy[x] = AutomationGuiProxy.new(false); 
 			lpcheckProxy[x] = AutomationGuiProxy.new(false); 
 			rvcheckProxy[x] = AutomationGuiProxy.new(false); 
-			hwncheckProxy[x] = AutomationGuiProxy.new(false); 
 			scncheckProxy[x] = AutomationGuiProxy.new(false); 
 			dfcheckProxy[x] = AutomationGuiProxy.new(false); 
 			lncheckProxy[x] = AutomationGuiProxy.new(false); 
@@ -959,24 +960,25 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 			/// testing
-			this.hwncheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag) {
-					//	hwInCheck.value = but.value;
+			this.hwncheckProxy[i].action = { arg but;
+				if((i==this.currentsource)) {
+					"I am in here".postln;
+					hwInCheck.value = but.value;
 				};
 				if (but.value == true) {
-					//this.scncheck[i].value = false;
-					//if((i==currentsource) && guiflag){scInCheck.value = false;};
-					//hwn[i] = 1;
-					//scn[i] = 0;
-					//this.synt[i].set(\hwn, 1);
+					this.scncheck[i].value = false;
+					if((i==currentsource) && guiflag){scInCheck.value = false;};
+					hwn[i] = 1;
+					scn[i] = 0;
+					this.synt[i].set(\hwn, 1);
 				}{
-					//hwn[i] = 0;
-					//this.synt[i].set(\hwn, 0);
+					hwn[i] = 0;
+					this.synt[i].set(\hwn, 0);
 				};
-				if (guiflag) {
-					//this.hwncheck[i].value = but.value;
+				if (this.guiflag) {
+					this.hwncheck[i].value = but.value;
 				};
-			});
+			};
 
 			this.scncheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){scInCheck.value = but.value;};
@@ -4167,21 +4169,6 @@ GUI Parameters usable in SynthDefs
 			//rv[i] 0 or 1
 		};
 		
-		//		nfontes.do { arg i;
-		//	var line = hwinf.getLine(1024);
-		//	this.hwncheckProxy[i].valueAction = line;
-		//};
-		nfontes.do { arg i;
-			var line = hwinf.getLine(1024);
-			//("line = " ++ line).postln;
-			//this.hwncheckProxy[i].valueAction = line;
-		};
-		
-		
-		nfontes.do { arg i;
-			var line = scinf.getLine(1024);
-			this.scncheckProxy[i].valueAction = line;
-			}; 
 		nfontes.do { arg i;
 			var line = linearf.getLine(1024);
 			this.lncheckProxy[i].valueAction = line;
@@ -4211,7 +4198,22 @@ GUI Parameters usable in SynthDefs
 			this.stcheckProxy[i].valueAction = line;
 		};
 		
-		
+//		nfontes.do { arg i;
+//	var line = hwinf.getLine(1024);
+//	this.hwncheckProxy[i].valueAction = line;
+// };
+        nfontes.do { arg i;
+			var line = hwinf.getLine(1024);
+			//("line = " ++ line).postln;
+			this.hwncheckProxy[i].valueAction = line.asBoolean; // why, why, why is this asBoolean necessary!
+		};
+
+
+          nfontes.do { arg i;
+			var line = scinf.getLine(1024);
+			this.scncheckProxy[i].value = line;
+			}; 
+
 		
 		filenames.close;
 
@@ -4232,7 +4234,7 @@ GUI Parameters usable in SynthDefs
 		// delay necessary here because streamdisks take some time to register after controle.load
 		Routine {
 			
-			3.wait;
+			10.wait;
 			this.nfontes.do { arg i;
 				
 				var newpath = this.tfieldProxy[i].value;
@@ -4246,7 +4248,7 @@ GUI Parameters usable in SynthDefs
 					});
 				};
 				
-			}.defer;
+			};
 		}.play;
 
 	}
