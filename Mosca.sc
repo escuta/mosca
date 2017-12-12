@@ -104,7 +104,7 @@ Mosca {
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	<>fatual = 0,
+	<>currentsource = 0,
 	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus,
 	<>doppler, <>level, <>lp, <>rv, <>ln, <>angslider, <>connumbox, <>cslider,
 	<>xbox, <>ybox, <>sombuf, <>sbus, <>updatesourcevariables, <>soaBus, <>mbus,
@@ -460,7 +460,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \mz, this.zval[i]);
 				this.synt[i].set(\mz, this.zval[i]);
 				zlev[i] = this.zval[i];
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					zslider.value = (num.value + 1) / 2;
 					znumbox.value = num.value;
@@ -477,7 +477,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
 				};
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					angnumbox.value = num.value;
 					angslider.value = num.value / pi;
@@ -491,7 +491,7 @@ GUI Parameters usable in SynthDefs
 				this.synt[i].set(\level, num.value);
 				this.setSynths(i, \level, num.value);
 				level[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					volslider.value = num.value;
 					volnumbox.value = num.value;
@@ -508,7 +508,7 @@ GUI Parameters usable in SynthDefs
 				
 				this.synt[i].set(\glev, num.value);
 				glev[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					gslider.value = num.value;
 					gnumbox.value = num.value;
@@ -524,7 +524,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \llev, num.value);
 				this.synt[i].set(\llev, num.value);
 				llev[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					lslider.value = num.value;
 					lnumbox.value = num.value;
@@ -539,7 +539,7 @@ GUI Parameters usable in SynthDefs
 				this.synt[i].set(\rotAngle, num.value);
 				this.setSynths(i, \rotAngle, num.value);
 				rlev[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					//num.value * 6.28 - pi;
 					rslider.value = (num.value + pi) / 2pi;
@@ -554,7 +554,7 @@ GUI Parameters usable in SynthDefs
 				this.synt[i].set(\directang, num.value);
 				this.setSynths(i, \directang, num.value);
 				dlev[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					//num.value * pi/2;
 					dirslider.value = num.value / (pi/2);
@@ -571,7 +571,7 @@ GUI Parameters usable in SynthDefs
 				this.espacializador[i].set(\contr, num.value);
 				this.setSynths(i, \contr, num.value);
 				clev[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					cslider.value = num.value;
 					connumbox.value = num.value;
@@ -588,7 +588,7 @@ GUI Parameters usable in SynthDefs
 				// used for the others
 				this.espacializador[i].set(\dopamnt, num.value);
 				dplev[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					dpslider.value = num.value;
 					dopnumbox.value = num.value;
@@ -601,7 +601,7 @@ GUI Parameters usable in SynthDefs
 			a1boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux1, num.value);
 				aux1[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					auxslider1.value = num.value;
 					aux1numbox.value = num.value;
@@ -614,7 +614,7 @@ GUI Parameters usable in SynthDefs
 			a2boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux2, num.value);
 				aux2[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					auxslider2.value = num.value;
 					aux2numbox.value = num.value;
@@ -627,7 +627,7 @@ GUI Parameters usable in SynthDefs
 			a3boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux3, num.value);
 				aux3[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					auxslider3.value = num.value;
 					aux3numbox.value = num.value;
@@ -640,7 +640,7 @@ GUI Parameters usable in SynthDefs
 			a4boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux4, num.value);
 				aux4[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					auxslider4.value = num.value;
 					aux4numbox.value = num.value;
@@ -653,7 +653,7 @@ GUI Parameters usable in SynthDefs
 			a5boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux5, num.value);
 				aux5[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					auxslider5.value = num.value;
 					aux5numbox.value = num.value;
@@ -754,7 +754,7 @@ GUI Parameters usable in SynthDefs
 			
 
 			this.dcheckProxy[i].action_({ arg but;
-				if(i==fatual){dopcheque.value = but.value;};
+				if(i==currentsource){dopcheque.value = but.value;};
 				if (but.value == true) {
 					doppler[i] = 1;
 					this.espacializador[i].set(\dopon, 1);
@@ -772,7 +772,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.lpcheckProxy[i].action_({ arg but;
-				if(i==fatual){loopcheck.value = but.value;};
+				if(i==currentsource){loopcheck.value = but.value;};
 				if (but.value == true) {
 					lp[i] = 1;
 					this.synt[i].set(\lp, 1);
@@ -788,7 +788,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.rvcheckProxy[i].action_({ arg but;
-				if(i==fatual){revcheck.value = but.value;};
+				if(i==currentsource){revcheck.value = but.value;};
 				if (but.value == true) {
 					rv[i] = 1;
 					//this.synt[i].set(\lp, 1);
@@ -804,10 +804,10 @@ GUI Parameters usable in SynthDefs
 			});
 			
 			this.hwncheckProxy[i].action_({ arg but;
-				if(i==fatual){hwInCheck.value = but.value;};
+				if(i==currentsource){hwInCheck.value = but.value;};
 				if (but.value == true) {
 					this.scncheck[i].value = false;
-					if(i==fatual){scInCheck.value = false;};
+					if(i==currentsource){scInCheck.value = false;};
 					hwn[i] = 1;
 					scn[i] = 0;
 					this.synt[i].set(\hwn, 1);
@@ -821,10 +821,10 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.scncheckProxy[i].action_({ arg but;
-				if(i==fatual){scInCheck.value = but.value;};
+				if(i==currentsource){scInCheck.value = but.value;};
 				if (but.value == true) {
 					this.hwncheck[i].value = false;
-					if(i==fatual){hwInCheck.value = false;};
+					if(i==currentsource){hwInCheck.value = false;};
 					scn[i] = 1;
 					hwn[i] = 0;
 					this.synt[i].set(\scn, 1);
@@ -838,7 +838,7 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.lncheckProxy[i].action_({ arg but;
-				if(i==fatual){lincheck.value = but.value;};
+				if(i==currentsource){lincheck.value = but.value;};
 				if (but.value == true) {
 					ln[i] = "_linear";
 					this.setSynths(i, \ln, 1);
@@ -852,10 +852,10 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.spcheckProxy[i].action_({ arg but;
-				if(i==fatual){spreadcheck.value = but.value;};
+				if(i==currentsource){spreadcheck.value = but.value;};
 				if (but.value == true) {
 					this.dfcheck[i].value = false;
-					if(i==fatual){diffusecheck.value = false;};
+					if(i==currentsource){diffusecheck.value = false;};
 					sp[i] = 1;
 					df[i] = 0;
 					this.espacializador[i].set(\sp, 1);
@@ -874,10 +874,10 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.dfcheckProxy[i].action_({ arg but;
-				if(i==fatual){diffusecheck.value = but.value;};
+				if(i==currentsource){diffusecheck.value = but.value;};
 				if (but.value == true) {
 					this.spcheck[i].value = false;
-					if(i==fatual){spreadcheck.value = false;};
+					if(i==currentsource){spreadcheck.value = false;};
 					df[i] = 1;
 					sp[i] = 0;
 					this.espacializador[i].set(\df, 1);
@@ -900,7 +900,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \mz, num.value);
 				this.synt[i].set(\mz, num.value);
 				this.ncan[i] = num.value;
-				if(i == fatual )
+				if(i == currentsource )
 				{
 					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
@@ -916,7 +916,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \mz, num.value);
 				this.synt[i].set(\mz, num.value);
 				this.busini[i] = num.value;
-				if(i == fatual) 
+				if(i == currentsource) 
 				{
 					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
@@ -2873,7 +2873,7 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -2948,7 +2948,7 @@ GUI Parameters usable in SynthDefs
 						angle[i] = pi/2;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};						
@@ -3028,7 +3028,7 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 0;}.defer;
 						cbox[i].value = 0;
 						clev[i] = 0;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 0;
 							connumbox.value = 0;
 						};
@@ -3141,7 +3141,7 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3210,7 +3210,7 @@ GUI Parameters usable in SynthDefs
 						angle[i] = pi/2;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3290,7 +3290,7 @@ GUI Parameters usable in SynthDefs
 							{angnumbox.value = 0;}.defer;
 							cbox[i].value = 0;
 							clev[i] = 0;
-							if(i == fatual) {
+							if(i == currentsource) {
 								cslider.value = 0;
 								connumbox.value = 0;
 							};
@@ -3411,7 +3411,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3511,7 +3511,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -3607,7 +3607,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 0;
 						clev[i] = 0;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 0;
 							connumbox.value = 0;
 						};
@@ -4106,11 +4106,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a1check[fatual].valueAction = 1;
+			a1check[currentsource].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a1check[fatual].valueAction = 0;
+			a1check[currentsource].valueAction = 0;
 		});
 
 		auxbutton2 = Button(waux, Rect(80, 210, 20, 20))
@@ -4119,11 +4119,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a2check[fatual].valueAction = 1;
+			a2check[currentsource].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a2check[fatual].valueAction = 0;
+			a2check[currentsource].valueAction = 0;
 		});
 		auxbutton3 = Button(waux, Rect(120, 210, 20, 20))
 		.states_([
@@ -4131,11 +4131,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a3check[fatual].valueAction = 1;
+			a3check[currentsource].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a3check[fatual].valueAction = 0;
+			a3check[currentsource].valueAction = 0;
 		});
 		auxbutton4 = Button(waux, Rect(160, 210, 20, 20))
 		.states_([
@@ -4143,11 +4143,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a4check[fatual].valueAction = 1;
+			a4check[currentsource].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a4check[fatual].valueAction = 0;
+			a4check[currentsource].valueAction = 0;
 		});
 		auxbutton5 = Button(waux, Rect(200, 210, 20, 20))
 		.states_([
@@ -4155,11 +4155,11 @@ GUI Parameters usable in SynthDefs
 		])
 		.mouseDownAction_({
 			//a = {EnvGen.kr(Env.adsr, doneAction:2) * SinOsc.ar(440, 0, 0.4)}.play;
-			a5check[fatual].valueAction = 1;
+			a5check[currentsource].valueAction = 1;
 		})
 		.action_({ arg butt, mod;
 			//a.release(0.3);
-			a5check[fatual].valueAction = 0;
+			a5check[currentsource].valueAction = 0;
 		});
 
 
@@ -4189,29 +4189,29 @@ GUI Parameters usable in SynthDefs
 
 
 		aux1numbox.action = {arg num;
-			a1box[fatual].valueAction = num.value;
-			//this.aux1[fatual] = num.value;
+			a1box[currentsource].valueAction = num.value;
+			//this.aux1[currentsource] = num.value;
 			auxslider1.value = num.value;
 		};
 
 		auxslider1.action = {arg num;
-			a1box[fatual].valueAction = num.value;
+			a1box[currentsource].valueAction = num.value;
 			aux1numbox.value = num.value;
 		};
 		auxslider2.action = {arg num;
-			a2box[fatual].valueAction = num.value;
+			a2box[currentsource].valueAction = num.value;
 			aux2numbox.value = num.value;
 		};
 		auxslider3.action = {arg num;
-			a3box[fatual].valueAction = num.value;
+			a3box[currentsource].valueAction = num.value;
 			aux3numbox.value = num.value;
 		};
 		auxslider4.action = {arg num;
-			a4box[fatual].valueAction = num.value;
+			a4box[currentsource].valueAction = num.value;
 			aux4numbox.value = num.value;
 		};
 		auxslider5.action = {arg num;
-			a5box[fatual].valueAction = num.value;
+			a5box[currentsource].valueAction = num.value;
 			aux5numbox.value = num.value;
 		};
 
@@ -4417,7 +4417,7 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -4492,7 +4492,7 @@ GUI Parameters usable in SynthDefs
 						angle[i] = pi/2;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};						
@@ -4572,7 +4572,7 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 0;}.defer;
 						cbox[i].value = 0;
 						clev[i] = 0;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 0;
 							connumbox.value = 0;
 						};
@@ -4685,7 +4685,7 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -4754,7 +4754,7 @@ GUI Parameters usable in SynthDefs
 						angle[i] = pi/2;
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -4834,7 +4834,7 @@ GUI Parameters usable in SynthDefs
 							{angnumbox.value = 0;}.defer;
 							cbox[i].value = 0;
 							clev[i] = 0;
-							if(i == fatual) {
+							if(i == currentsource) {
 								cslider.value = 0;
 								connumbox.value = 0;
 							};
@@ -4955,7 +4955,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -5055,7 +5055,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 1;
 						clev[i] = 1;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 1;
 							connumbox.value = 1;
 						};
@@ -5151,7 +5151,7 @@ GUI Parameters usable in SynthDefs
 						
 						cbox[i].value = 0;
 						clev[i] = 0;
-						if(i == fatual) {
+						if(i == currentsource) {
 							cslider.value = 0;
 							connumbox.value = 0;
 						};
@@ -5305,23 +5305,23 @@ GUI Parameters usable in SynthDefs
 			{ if(isPlay.not) {
 				if(but.value == 1)
 				{
-					this.firstTime[fatual] = true;
-					                  //testado[fatual] = true;
-					//runTrigger.value(fatual); - watcher does this now
-					//tocar.value(fatual, 0); // needed only by SC input
+					this.firstTime[currentsource] = true;
+					                  //testado[currentsource] = true;
+					//runTrigger.value(currentsource); - watcher does this now
+					//tocar.value(currentsource, 0); // needed only by SC input
 					//- and probably by HW - causes duplicates with file
 					// as file playback is handled by the "watcher" routine
                                       "really curious!".postln;
-					testado[fatual] = true;
+					testado[currentsource] = true;
 					
 				}
 				{
 					
-					//testado[fatual] = false;
-					runStop.value(fatual);
-					this.synt[fatual].free;
-					this.synt[fatual] = nil;
-					testado[fatual] = false;
+					//testado[currentsource] = false;
+					runStop.value(currentsource);
+					this.synt[currentsource].free;
+					this.synt[currentsource] = nil;
+					testado[currentsource] = false;
 					"stopping!".postln;
 					
 				};
@@ -5695,56 +5695,56 @@ this.nfontes.do { arg i;
 m = PopUpMenu(win,Rect(10,10,90,20));
 m.items = itensdemenu; 
 m.action = { arg menu;
-	fatual = menu.value;
+	currentsource = menu.value;
 	
-	if(doppler[fatual] == 1){dopcheque.value = true}{dopcheque.value = false};
-if(lp[fatual] == 1){loopcheck.value = true}{loopcheck.value = false};
+	if(doppler[currentsource] == 1){dopcheque.value = true}{dopcheque.value = false};
+if(lp[currentsource] == 1){loopcheck.value = true}{loopcheck.value = false};
 
-if(sp[fatual] == 1){spreadcheck.value = true}{spreadcheck.value = false};
-if(df[fatual] == 1){diffusecheck.value = true}{diffusecheck.value = false};
+if(sp[currentsource] == 1){spreadcheck.value = true}{spreadcheck.value = false};
+if(df[currentsource] == 1){diffusecheck.value = true}{diffusecheck.value = false};
 
-if(rv[fatual] == 1){revcheck.value = true}{revcheck.value = false};
-if(ln[fatual] == "_linear"){lincheck.value = true}{lincheck.value = false};
+if(rv[currentsource] == 1){revcheck.value = true}{revcheck.value = false};
+if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
 
-if(hwn[fatual] == 1){hwInCheck.value = true}{hwInCheck.value = false};
-if(scn[fatual] == 1){scInCheck.value = true}{scInCheck.value = false};
+if(hwn[currentsource] == 1){hwInCheck.value = true}{hwInCheck.value = false};
+if(scn[currentsource] == 1){scInCheck.value = true}{scInCheck.value = false};
 
-angnumbox.value = angle[fatual];
-angslider.value = angle[fatual] / pi;
-volnumbox.value = level[fatual];
-dopnumbox.value = dplev[fatual];
-volslider.value = level[fatual];
-gnumbox.value = glev[fatual];
-gslider.value = glev[fatual];
-lnumbox.value = llev[fatual];
-lslider.value = llev[fatual];
-rslider.value = (rlev[fatual] + pi) / 2pi;
-rnumbox.value = rlev[fatual];
-dirslider.value = dlev[fatual] / (pi/2);
-dirnumbox.value = dlev[fatual];
-cslider.value = clev[fatual];
-zslider.value = (zlev[fatual] + this.halfwidth) / this.width;
+angnumbox.value = angle[currentsource];
+angslider.value = angle[currentsource] / pi;
+volnumbox.value = level[currentsource];
+dopnumbox.value = dplev[currentsource];
+volslider.value = level[currentsource];
+gnumbox.value = glev[currentsource];
+gslider.value = glev[currentsource];
+lnumbox.value = llev[currentsource];
+lslider.value = llev[currentsource];
+rslider.value = (rlev[currentsource] + pi) / 2pi;
+rnumbox.value = rlev[currentsource];
+dirslider.value = dlev[currentsource] / (pi/2);
+dirnumbox.value = dlev[currentsource];
+cslider.value = clev[currentsource];
+zslider.value = (zlev[currentsource] + this.halfwidth) / this.width;
 
-dpslider.value = dplev[fatual];
-connumbox.value = clev[fatual];
+dpslider.value = dplev[currentsource];
+connumbox.value = clev[currentsource];
 
-ncannumbox.value = this.ncan[fatual];
-busininumbox.value = this.busini[fatual];
+ncannumbox.value = this.ncan[currentsource];
+busininumbox.value = this.busini[currentsource];
 
-auxslider1.value = this.aux1[fatual];
-aux1numbox.value = this.aux1[fatual];
-auxslider2.value = this.aux2[fatual];
-aux2numbox.value = this.aux2[fatual];
-auxslider3.value = this.aux3[fatual];
-aux3numbox.value = this.aux3[fatual];
-auxslider4.value = this.aux4[fatual];
-aux4numbox.value = this.aux4[fatual];
-auxslider5.value = this.aux5[fatual];
-aux5numbox.value = this.aux5[fatual];
+auxslider1.value = this.aux1[currentsource];
+aux1numbox.value = this.aux1[currentsource];
+auxslider2.value = this.aux2[currentsource];
+aux2numbox.value = this.aux2[currentsource];
+auxslider3.value = this.aux3[currentsource];
+aux3numbox.value = this.aux3[currentsource];
+auxslider4.value = this.aux4[currentsource];
+aux4numbox.value = this.aux4[currentsource];
+auxslider5.value = this.aux5[currentsource];
+aux5numbox.value = this.aux5[currentsource];
 
-if(testado[fatual]) {  // don't change button if we are playing via automation
+if(testado[currentsource]) {  // don't change button if we are playing via automation
 	// only if it is being played/streamed manually
-	if (this.synt[fatual] == nil){
+	if (this.synt[currentsource] == nil){
 btestar.value = 0;
 } {
 btestar.value = 1;
@@ -5760,44 +5760,44 @@ offset = 60;
 
 
 dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
-	{this.dcheck[fatual].valueAction = butt.value;}.defer;
+	{this.dcheck[currentsource].valueAction = butt.value;}.defer;
 });
 dopcheque.value = false;
 
 loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
-	{this.lpcheck[fatual].valueAction = butt.value;}.defer;
+	{this.lpcheck[currentsource].valueAction = butt.value;}.defer;
 });
 loopcheck.value = false;
 
 spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
-	{this.spcheck[fatual].valueAction = butt.value;}.defer;
+	{this.spcheck[currentsource].valueAction = butt.value;}.defer;
 });
 spreadcheck.value = false;
 diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
-	{this.dfcheck[fatual].valueAction = butt.value;}.defer;
+	{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
 });
 diffusecheck.value = false;
 
 
 revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
-	{this.rvcheck[fatual].valueAction = butt.value;}.defer;
+	{this.rvcheck[currentsource].valueAction = butt.value;}.defer;
 });
 revcheck.value = false;
 
 lincheck = CheckBox( win, Rect(184, 30, 180, 20), "Linear intensity").action_({ arg butt;
-	{this.lncheck[fatual].valueAction = butt.value;}.defer;
+	{this.lncheck[currentsource].valueAction = butt.value;}.defer;
 });
 lincheck.value = false;
 
 
 hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ arg butt;
-	{this.hwncheck[fatual].valueAction = butt.value;}.defer;
+	{this.hwncheck[currentsource].valueAction = butt.value;}.defer;
 if (hwInCheck.value && scInCheck.value) {
 };
 });
 
 scInCheck = CheckBox( win, Rect(104, 30, 60, 20), "SC-in").action_({ arg butt;
-	{this.scncheck[fatual].valueAction = butt.value;}.defer;
+	{this.scncheck[currentsource].valueAction = butt.value;}.defer;
 if (scInCheck.value && hwInCheck.value) {
 };
 });
@@ -5819,8 +5819,8 @@ ncannumbox.align = \center;
 ncannumbox.action = {arg num;
 	
 	
-	{this.ncanbox[fatual].valueAction = num.value;}.defer;
-this.ncan[fatual] = num.value;
+	{this.ncanbox[currentsource].valueAction = num.value;}.defer;
+this.ncan[currentsource] = num.value;
 
 };
 
@@ -5833,8 +5833,8 @@ busininumbox.value = 0;
 busininumbox.clipLo = 0;
 busininumbox.align = \center;
 busininumbox.action = {arg num; 
-	{this.businibox[fatual].valueAction = num.value;}.defer;
-this.busini[fatual] = num.value;
+	{this.businibox[currentsource].valueAction = num.value;}.defer;
+this.busini[currentsource] = num.value;
 };
 
 
@@ -5850,11 +5850,11 @@ angnumbox.step_(0.1);
 angnumbox.scroll_step=0.1;
 angnumbox.align = \center;
 angnumbox.action = {arg num; 
-	{abox[fatual].valueAction = num.value;}.defer;
-if((ncanais[fatual]==2) || (this.ncan[fatual]==2)){
-	this.espacializador[fatual].set(\angle, num.value);
-this.setSynths(fatual, \angle, num.value);
-angle[fatual] = num.value;
+	{abox[currentsource].valueAction = num.value;}.defer;
+if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)){
+	this.espacializador[currentsource].set(\angle, num.value);
+this.setSynths(currentsource, \angle, num.value);
+angle[currentsource] = num.value;
 }
 {angnumbox.value = 0;};
 };
@@ -5863,14 +5863,14 @@ angslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
 //	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 
 angslider.action = {arg num;
-	{abox[fatual].valueAction = num.value * pi;}.defer;
-if((ncanais[fatual]==2) || (this.ncan[fatual]==2)) {
+	{abox[currentsource].valueAction = num.value * pi;}.defer;
+if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)) {
 	{angnumbox.value = num.value * pi;}.defer;
-//			this.espacializador[fatual].set(\angle, b.map(num.value));
-this.espacializador[fatual].set(\angle, num.value * pi);
-this.setSynths(fatual, \angle, num.value * pi);
-//			angle[fatual] = b.map(num.value);
-angle[fatual] = num.value * pi;
+//			this.espacializador[currentsource].set(\angle, b.map(num.value));
+this.espacializador[currentsource].set(\angle, num.value * pi);
+this.setSynths(currentsource, \angle, num.value * pi);
+//			angle[currentsource] = b.map(num.value);
+angle[currentsource] = num.value * pi;
 }{{angnumbox.value = num.value * pi;}.defer;};
 };
 
@@ -5889,11 +5889,11 @@ znumbox.step_(0.1);
 znumbox.scroll_step=0.1;
 znumbox.align = \center;
 znumbox.action = {arg num; 
-	{zbox[fatual].valueAction = num.value;}.defer;
-if(ncanais[fatual]==2)   {
-	this.espacializador[fatual].set(\elev, num.value);
-this.setSynths(fatual, \elev, num.value);
-zlev[fatual] = num.value;
+	{zbox[currentsource].valueAction = num.value;}.defer;
+if(ncanais[currentsource]==2)   {
+	this.espacializador[currentsource].set(\elev, num.value);
+this.setSynths(currentsource, \elev, num.value);
+zlev[currentsource] = num.value;
 }
 {{znumbox.value = 0;}.defer;};
 };
@@ -5903,8 +5903,8 @@ zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 
 zslider.value = 0.5;
 zslider.action = {arg num;
 	{znumbox.value = (0.5 - num.value) * -2;}.defer;
-{zbox[fatual].valueAction = znumbox.value;}.defer;
-{zlev[fatual] = znumbox.value;}.defer;
+{zbox[currentsource].valueAction = znumbox.value;}.defer;
+{zlev[currentsource] = znumbox.value;}.defer;
 
 
 };
@@ -5953,13 +5953,13 @@ volnumbox.step_(0.1);
 volnumbox.scroll_step=0.1;
 volnumbox.align = \center;
 volnumbox.action = {arg num; 
-	{vbox[fatual].valueAction = num.value;}.defer;
+	{vbox[currentsource].valueAction = num.value;}.defer;
 
 };
 volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
 volslider.value = 0;
 volslider.action = {arg num;
-	{vbox[fatual].valueAction = num.value;}.defer;		
+	{vbox[currentsource].valueAction = num.value;}.defer;		
 };
 
 
@@ -5977,14 +5977,14 @@ dopnumbox.step_(0.1);
 dopnumbox.scroll_step=0.1;
 dopnumbox.align = \center;
 dopnumbox.action = {arg num; 
-	{dpbox[fatual].valueAction = num.value;}.defer;
+	{dpbox[currentsource].valueAction = num.value;}.defer;
 
 };
 // stepsize?
 dpslider = Slider.new(win, Rect(50, 50 + offset, 110, 20));
 dpslider.value = 0;
 dpslider.action = {arg num;
-	{dpbox[fatual].valueAction = num.value;}.defer;
+	{dpbox[currentsource].valueAction = num.value;}.defer;
 {dopnumbox.value = num.value;}.defer;
 };
 
@@ -6002,14 +6002,14 @@ gnumbox.step_(0.1);
 gnumbox.scroll_step=0.1;
 gnumbox.align = \center;
 gnumbox.action = {arg num; 
-	{gbox[fatual].valueAction = num.value;}.defer;
+	{gbox[currentsource].valueAction = num.value;}.defer;
 
 };
 // stepsize?
 gslider = Slider.new(win, Rect(50, 70 + offset, 110, 20));
 gslider.value = 0;
 gslider.action = {arg num;
-	{gbox[fatual].valueAction = num.value;}.defer;
+	{gbox[currentsource].valueAction = num.value;}.defer;
 };
 
 
@@ -6024,14 +6024,14 @@ lnumbox.step_(0.1);
 lnumbox.scroll_step=0.1;
 lnumbox.align = \center;
 lnumbox.action = {arg num; 
-	{lbox[fatual].valueAction = num.value;}.defer;
+	{lbox[currentsource].valueAction = num.value;}.defer;
 
 };
 // stepsize?
 lslider = Slider.new(win, Rect(50, 90 + offset, 110, 20));
 lslider.value = 0;
 lslider.action = {arg num;
-	{lbox[fatual].valueAction = num.value;}.defer;
+	{lbox[currentsource].valueAction = num.value;}.defer;
 };
 
 
@@ -6046,14 +6046,14 @@ rnumbox.step_(0.1);
 rnumbox.scroll_step=0.1;
 rnumbox.align = \center;
 rnumbox.action = {arg num; 
-	{rbox[fatual].valueAction = num.value;}.defer;
+	{rbox[currentsource].valueAction = num.value;}.defer;
 
 };
 // stepsize?
 rslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
 rslider.value = 0.5;
 rslider.action = {arg num;
-	{rbox[fatual].valueAction = num.value * 6.28 - pi;}.defer;
+	{rbox[currentsource].valueAction = num.value * 6.28 - pi;}.defer;
 {rnumbox.value = num.value * 2pi - pi;}.defer;
 
 };
@@ -6070,13 +6070,13 @@ dirnumbox.step_(0.1);
 dirnumbox.scroll_step=0.1;
 dirnumbox.align = \center;
 dirnumbox.action = {arg num; 
-	{dbox[fatual].valueAction = num.value;}.defer;
+	{dbox[currentsource].valueAction = num.value;}.defer;
 };
 // stepsize?
 dirslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
 dirslider.value = 0;
 dirslider.action = {arg num;
-	{dbox[fatual].valueAction = num.value * pi/2;}.defer;
+	{dbox[currentsource].valueAction = num.value * pi/2;}.defer;
 {dirnumbox.value = num.value * pi/2;}.defer;
 };
 
@@ -6092,14 +6092,14 @@ connumbox.step_(0.1);
 connumbox.scroll_step=0.1;
 connumbox.align = \center;
 connumbox.action = {arg num; 
-	{cbox[fatual].valueAction = num.value;}.defer;
+	{cbox[currentsource].valueAction = num.value;}.defer;
 
 };
 // stepsize?
 cslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
 cslider.value = 0;
 cslider.action = {arg num;
-	{cbox[fatual].valueAction = num.value;}.defer;
+	{cbox[currentsource].valueAction = num.value;}.defer;
 {connumbox.value = num.value;}.defer;
 };
 
@@ -6112,8 +6112,8 @@ bload = Button(win, Rect(this.width - 190, 10, 90, 20))
 	["load audio", Color.black, Color.white],
 ])
 .action_({ arg but;
-	this.synt[fatual].free; // error check
-this.espacializador[fatual].free;
+	this.synt[currentsource].free; // error check
+this.espacializador[currentsource].free;
 dopcheque.value = false; // coloque toggle no padrão
 
 
@@ -6128,19 +6128,19 @@ controle.stop;
 	arg path;
 	
 	{
-		this.streamdisk[fatual] = false;
-		this.tfieldProxy[fatual].valueAction = path;}.defer;
-	stcheck[fatual].valueAction = false;
+		this.streamdisk[currentsource] = false;
+		this.tfieldProxy[currentsource].valueAction = path;}.defer;
+	stcheck[currentsource].valueAction = false;
 
 	
 
 	
 }, 
 {
-	this.streamdisk[fatual] = false;
+	this.streamdisk[currentsource] = false;
 	"cancelled".postln;
-	{this.tfieldProxy[fatual].value = "";}.defer;
-	stcheck[fatual].valueAction = false;
+	{this.tfieldProxy[currentsource].value = "";}.defer;
+	stcheck[currentsource].valueAction = false;
 }				
 );
 
@@ -6151,8 +6151,8 @@ bstream = Button(win, Rect(this.width - 190, 30, 90, 20))
 	["stream audio", Color.black, Color.white],
 ])
 .action_({ arg but;
-	this.synt[fatual].free; // error check
-this.espacializador[fatual].free;
+	this.synt[currentsource].free; // error check
+this.espacializador[currentsource].free;
 dopcheque.value = false; // set to the default
 
 
@@ -6164,16 +6164,16 @@ controle.seek;
 	arg path;
 	
 	{
-		this.streamdisk[fatual] = true;
-		this.tfieldProxy[fatual].valueAction = path;}.defer;
-	stcheck[fatual].valueAction = true;
+		this.streamdisk[currentsource] = true;
+		this.tfieldProxy[currentsource].valueAction = path;}.defer;
+	stcheck[currentsource].valueAction = true;
 	
 }, 
 {
 	"cancelled".postln;
-	this.streamdisk[fatual] = false;
-	{this.tfieldProxy[fatual].value = "";}.defer;
-	stcheck[fatual].valueAction = false;
+	this.streamdisk[currentsource] = false;
+	{this.tfieldProxy[currentsource].value = "";}.defer;
+	stcheck[currentsource].valueAction = false;
 }
 
 );
@@ -6323,7 +6323,7 @@ textbuf.string = (i+1).asString;
 this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20));
 
 this.dcheck[i].action_({ arg but;
-if(i==fatual){dopcheque.value = but.value;};
+if(i==currentsource){dopcheque.value = but.value;};
 this.dcheckProxy[i].valueAction = but.value;
 });
 
@@ -6583,7 +6583,7 @@ this.espacializador[i].set(\angle, num.value);
 this.setSynths(i, \angle, num.value);
 angle[i] = num.value;
 };
-if(i == fatual) 
+if(i == currentsource) 
 {
 angnumbox.value = num.value;
 angslider.value = num.value / pi;
@@ -6851,8 +6851,8 @@ if(this.espacializador[i].notNil) {
 
 win.view.mouseMoveAction = {|view, x, y, modifiers| [x, y];
 	if(mouseButton == 0) { // left button
-		xbox[fatual].valueAction = (this.halfwidth - y) / this.halfwidth;
-ybox[fatual].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
+		xbox[currentsource].valueAction = (this.halfwidth - y) / this.halfwidth;
+ybox[currentsource].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
 
 win.drawFunc = {
 // big circle
@@ -6985,7 +6985,7 @@ MIDIIn.addFuncTo(\sysex, sysex);
 MIDIIn.removeFuncFrom(\sysex, sysex);
 };
 
-//	dcheck[fatual].valueAction = butt.value;
+//	dcheck[currentsource].valueAction = butt.value;
 });
 
 this.autoloop = CheckBox( win, Rect(305, this.width - 40, 140, 20), "Loop").action_({ arg butt;
