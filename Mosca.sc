@@ -554,7 +554,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		
-		~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: true,
+		this.controle = Automation(this.dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
 
 		
@@ -2790,7 +2790,7 @@ GUI Parameters usable in SynthDefs
 		this.watcher = Routine.new({
 			inf.do({
 				0.1.wait;
-				
+				//"WATCHER!!!".postln;
 				this.nfontes.do({
 					arg i;
 					{
@@ -4205,6 +4205,7 @@ GUI Parameters usable in SynthDefs
         nfontes.do { arg i;
 			var line = hwinf.getLine(1024);
 			//("line = " ++ line).postln;
+			
 			this.hwncheckProxy[i].valueAction = line.booleanValue; // why, why, why is this asBoolean necessary!
 		};
 
@@ -4252,9 +4253,31 @@ GUI Parameters usable in SynthDefs
 		}.play;
          this.watcher.play;
 
-	}
+      }
 
-	gui {
+// Automation call-back doesn' seem to work with no GUI, so these duplicate
+// controle.onPlay, etc.
+blindControlPlay {
+	 var startTime;
+this.controle.play;
+      "BLIND PLAY".postln;
+	this.nfontes.do { arg i;
+		this.firstTime[i]=true;
+		("NOW PLAYING = " ++ this.firstTime[i]).postln;
+	};
+
+	if(controle.now < 0)
+	{
+		startTime = 0
+	}
+	{ 
+		startTime = controle.now
+	};
+	this.isPlay = true;
+	//runTriggers.value;
+}
+
+    gui {
 
 		//arg dur = 120;
 		var fonte, dist,  
@@ -5848,15 +5871,13 @@ this.synt[i].free;
 };
 };
 
-controle.onPlay = {
-
+this.controle.onPlay = {
 	var startTime;
+	"ON PLAY".postln;
 	this.nfontes.do { arg i;
 		this.firstTime[i]=true;
-//("HERE = " ++ this.firstTime[i]).postln;
-};
-
-	//	runTriggers.value;
+		("NOW PLAYING = " ++ this.firstTime[i]).postln;
+	};
 	if(controle.now < 0)
 	{
 		startTime = 0
@@ -5864,16 +5885,15 @@ controle.onPlay = {
 	{ 
 		startTime = controle.now
 	};
-	isPlay = true;
-
-
-
+	this.isPlay = true;
 	//runTriggers.value;
 };
 
 
-controle.onSeek = {
+this.controle.onSeek = {
 	var wasplaying = isPlay;
+		"ON SEEK".postln;
+
 	//("isPlay = " ++ isPlay).postln;
 	//runStops.value; // necessary? doesn't seem to help prob of SC input
 	
@@ -5892,8 +5912,9 @@ controle.onSeek = {
 	 };
 };
 
-controle.onStop = {
+this.controle.onStop = {
 	runStops.value;
+		"ON STOP".postln;
 	this.nfontes.do { arg i;
 		// if sound is currently being "tested", don't switch off on stop
 		// leave that for user
