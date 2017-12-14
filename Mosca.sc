@@ -60,7 +60,7 @@ Mosca {
 	var <>myTestVar;
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
-	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
+	<>rirFLUspectrum, <>rirFRDspectrum, <>rirBLDspectrum, <>rirBRUspectrum,
 
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>waux, <>sprite, <>nfontes,
 	<>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
@@ -2649,12 +2649,7 @@ GUI Parameters usable in SynthDefs
 		
 		//////// END SYNTHDEFS ///////////////
 
-		//// LAUNCH GUI 
-
-		if(guiflag) {
-			this.gui;
-		};
-
+		///// launch GUI was here
 		gbus = Bus.audio(server, 1); // global reverb bus
 		gbfbus = Bus.audio(server, 4); // global b-format bus
 		soaBus = Bus.audio(server, 9);
@@ -2740,14 +2735,14 @@ GUI Parameters usable in SynthDefs
 
 						// ERROR HERE?
 						//						\mz, zbox[i].value,
-						\mz, this.zval[i].value,
-						\mx, this.xval[i].value,
-						\my, this.yval[i].value,
+						\mz, this.zval[i],
+						\mx, this.xval[i],
+						\my, this.yval[i],
 						//\xoffset, this.xoffset[i],
 						//\yoffset, this.yoffset[i],
 						//\mz, this.zval[i].value,
-						\sp, sp[i].value,
-						\df, df[i].value
+						\sp, sp[i],
+						\df, df[i];
 					);
 					
 					
@@ -2774,11 +2769,11 @@ GUI Parameters usable in SynthDefs
 					\dopamnt, dplev[source],
 					\glev, glev[source],
 					\llev, llev[source],
-					\mx, this.xval[source].value,
-					\my, this.yval[source].value,
-					\mz, this.zval[source].value,
-					\sp, sp[source].value,
-					\df, df[source].value
+					\mx, this.xval[source],
+					\my, this.yval[source],
+					\mz, this.zval[source],
+					\sp, sp[source],
+					\df, df[source];
 				);
 			};
 			if(this.synt[source] != nil) {		
@@ -2790,11 +2785,11 @@ GUI Parameters usable in SynthDefs
 					\dopamnt, dplev[source],
 					\glev, glev[source],
 					\llev, llev[source],
-					\mx, this.xval[source].value,
-					\my, this.yval[source].value,
-					\mz, this.zval[source].value,
-					\sp, sp[source].value,
-					\df, df[source].value
+					\mx, this.xval[source],
+					\my, this.yval[source],
+					\mz, this.zval[source],
+					\sp, sp[source],
+					\df, df[source];
 				);
 			};
 		};
@@ -2856,6 +2851,13 @@ GUI Parameters usable in SynthDefs
 		this.watcher.play;
 		
 		///////////////
+
+				//// LAUNCH GUI 
+
+		if(guiflag) {
+			this.gui;
+		};
+
 
 	} // end initMosca
 
@@ -3785,6 +3787,7 @@ GUI Parameters usable in SynthDefs
 								yboxProxy[i].valueAction = ybox[i].value;
 							}.defer;
 						};
+
 					};
 					
 					
@@ -4294,6 +4297,84 @@ this.controle.play;
 
 	//runTriggers.value;
 }
+
+
+kill {
+
+	this.controle.quit;
+	if (this.serport.notNil) {
+this.trackPort.close;
+//				this.trackerRoutine.stop;
+//				this.serialKeepItUp.stop;
+	};
+
+this.troutine.stop;
+this.kroutine.stop;
+this.watcher.stop;
+
+this.globTBus.free;
+this.nfontes.do { arg x;
+this.espacializador[x].free;
+this.aFormatBusFoa[0,x].free;
+this.aFormatBusFoa[1,x].free;
+this.aFormatBusSoa[0,x].free;
+this.aFormatBusSoa[1,x].free;
+this.mbus[x].free;
+this.sbus[x].free;
+//	bfbus.[x].free;
+this.sombuf[x].free;
+this.streambuf[x].free;
+this.synt[x].free;
+this.scInBus[x].free;
+//		kespac[x].stop;
+};
+MIDIIn.removeFuncFrom(\sysex, sysex);
+MIDIIn.disconnect; 
+if(this.revGlobal.notNil){
+this.revGlobal.free;
+};
+if(this.revGlobalBF.notNil){
+this.revGlobalBF.free;
+};
+if(this.revGlobalSoa.notNil){
+this.revGlobalSoa.free;
+};
+
+if(this.globFOATransform.notNil){
+this.globFOATransform.free
+};
+
+
+this.gbus.free;
+this.gbfbus.free;
+if(this.rirWspectrum.notNil){
+this.rirWspectrum.free; };
+if(this.rirXspectrum.notNil){
+this.rirXspectrum.free;};
+if(this.rirYspectrum.notNil){
+this.rirYspectrum.free;};
+if(this.rirZspectrum.notNil){
+this.rirZspectrum.free;};
+if(this.rirFRDspectrum.notNil){
+this.rirFRDspectrum.free;};
+if(this.rirBLDspectrum.notNil){
+this.rirBLDspectrum.free;};
+if(this.rirFLUspectrum.notNil){
+this.rirFLUspectrum.free;};
+if(this.rirBRUspectrum.notNil){
+this.rirBRUspectrum.free;};
+this.soaBus.free;
+12.do { arg i;
+if(rirA12Spectrum[i].notNil){
+	rirA12Spectrum[i].free;};
+};
+foaEncoderOmni.free;
+foaEncoderSpread.free;
+foaEncoderDiffuse.free;
+b2a.free;
+a2b.free;
+}
+
 
     gui {
 
@@ -6069,79 +6150,11 @@ this.nfontes.do { arg x;
 
 
 win.onClose_({ 
-	controle.quit;
-	if (this.serport.notNil) {
-this.trackPort.close;
-//				this.trackerRoutine.stop;
-//				this.serialKeepItUp.stop;
-};
-this.troutine.stop;
-this.kroutine.stop;
-this.watcher.stop;
-
-this.globTBus.free;
-this.nfontes.do { arg x;
-this.espacializador[x].free;
-this.aFormatBusFoa[0,x].free;
-this.aFormatBusFoa[1,x].free;
-this.aFormatBusSoa[0,x].free;
-this.aFormatBusSoa[1,x].free;
-mbus[x].free;
-sbus[x].free;
-//	bfbus.[x].free;
-sombuf[x].free;
-this.streambuf[x].free;
-this.synt[x].free;
-this.scInBus[x].free;
-//		kespac[x].stop;
-};
-MIDIIn.removeFuncFrom(\sysex, sysex);
-if(revGlobal.notNil){
-revGlobal.free;
-};
-if(revGlobalBF.notNil){
-revGlobalBF.free;
-};
-if(revGlobalSoa.notNil){
-revGlobalSoa.free;
-};
-
-if (this.serport.notNil) {
-if(this.globFOATransform.notNil){
-this.globFOATransform.free
-};
-};
-
-wdados.close;
-waux.close;
-gbus.free;
-gbfbus.free;
-if(rirWspectrum.notNil){
-rirWspectrum.free; };
-if(rirXspectrum.notNil){
-rirXspectrum.free;};
-if(rirYspectrum.notNil){
-rirYspectrum.free;};
-if(rirZspectrum.notNil){
-rirZspectrum.free;};
-if(rirFLUspectrum.notNil){
-rirFLUspectrum.free;};
-if(rirFRDspectrum.notNil){
-rirFRDspectrum.free;};
-if(rirBLDspectrum.notNil){
-rirBLDspectrum.free;};
-if(rirBRUspectrum.notNil){
-rirBRUspectrum.free;};
-soaBus.free;
-12.do { arg i;
-if(rirA12Spectrum[i].notNil){
-	rirA12Spectrum[i].free;};
-};
-foaEncoderOmni.free;
-foaEncoderSpread.free;
-foaEncoderDiffuse.free;
-b2a.free;
-a2b.free;
+	
+	wdados.close;
+	waux.close;
+	this.kill;
+	
 });
 
 mmcslave = CheckBox( win, Rect(197, this.width - 40, 140, 20), "Slave to MMC").action_({ arg butt;
