@@ -966,7 +966,9 @@ GUI Parameters usable in SynthDefs
 					hwInCheck.value = but.value;
 				};
 				if (but.value == true) {
-					this.scncheck[i].value = false;
+					if (guiflag) {
+						this.scncheck[i].value = false;
+					};
 					if((i==currentsource) && guiflag){scInCheck.value = false;};
 					hwn[i] = 1;
 					scn[i] = 0;
@@ -983,7 +985,9 @@ GUI Parameters usable in SynthDefs
 			this.scncheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){scInCheck.value = but.value;};
 				if (but.value == true) {
-					this.hwncheck[i].value = false;
+					if (guiflag) {
+						this.hwncheck[i].value = false;
+					};
 					if((i==currentsource) && guiflag){hwInCheck.value = false;};
 					scn[i] = 1;
 					hwn[i] = 0;
@@ -1014,7 +1018,9 @@ GUI Parameters usable in SynthDefs
 			this.spcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){spreadcheck.value = but.value;};
 				if (but.value == true) {
-					this.dfcheck[i].value = false;
+					if (guiflag) {
+						this.dfcheck[i].value = false;
+					};
 					if((i==currentsource) && guiflag){diffusecheck.value = false;};
 					sp[i] = 1;
 					df[i] = 0;
@@ -1036,7 +1042,9 @@ GUI Parameters usable in SynthDefs
 			this.dfcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){diffusecheck.value = but.value;};
 				if (but.value == true) {
-					this.spcheck[i].value = false;
+					if (guiflag) {
+						this.spcheck[i].value = false;
+					};
 					if((i==currentsource) && guiflag){spreadcheck.value = false;};
 					df[i] = 1;
 					sp[i] = 0;
@@ -1485,6 +1493,11 @@ GUI Parameters usable in SynthDefs
 					var sig = In.ar(globtbus, 4);
 					sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
 						Lag.kr(pitch, 0.01));
+					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+				}).add;
+			} {
+				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+					var sig = In.ar(globtbus, 4);
 					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
 				}).add;
 			};
@@ -2702,13 +2715,13 @@ GUI Parameters usable in SynthDefs
 						//\mx, xbox[i].value,
 						//\my, ybox[i].value,
 						//\mz, zbox[i].value,
-						\mx, this.xval[i].value,
-						\my, this.yval[i].value,
-						\mz, this.zval[i].value,
+						\mx, this.xval[i],
+						\my, this.yval[i],
+						\mz, this.zval[i],
 						//\xoffset, this.xoffset[i],
 						//\yoffset, this.yoffset[i],
-						\sp, sp[i].value,
-						\df, df[i].value
+						\sp, sp[i],
+						\df, df[i];
 					);
 				};
 				
@@ -2724,7 +2737,10 @@ GUI Parameters usable in SynthDefs
 						\llev, llev[i],
 						//\mx, xbox[i].value,
 						//\my, ybox[i].value,
-						\mz, zbox[i].value,
+
+						// ERROR HERE?
+						//						\mz, zbox[i].value,
+						\mz, this.zval[i].value,
 						\mx, this.xval[i].value,
 						\my, this.yval[i].value,
 						//\xoffset, this.xoffset[i],
@@ -3209,12 +3225,12 @@ GUI Parameters usable in SynthDefs
 			revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 		};
 		
-		if (this.serport.notNil) {
+		//if (this.serport.notNil) {
 			if(globFOATransform.isNil){
 				this.globFOATransform = Synth.new(\globFOATransformSynth, [\globtbus, this.globTBus,
 					\heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
 			};
-			};
+		//	};
 		
 		/// STREAM FROM DISK
 
@@ -4207,6 +4223,7 @@ GUI Parameters usable in SynthDefs
 			//("line = " ++ line).postln;
 			
 			this.hwncheckProxy[i].valueAction = line.booleanValue; // why, why, why is this asBoolean necessary!
+			//	this.hwncheckProxy[i].valueAction = line;
 		};
 
 
@@ -4259,7 +4276,6 @@ GUI Parameters usable in SynthDefs
 // controle.onPlay, etc.
 blindControlPlay {
 	 var startTime;
-this.controle.play;
       "BLIND PLAY".postln;
 	this.nfontes.do { arg i;
 		this.firstTime[i]=true;
@@ -4273,7 +4289,9 @@ this.controle.play;
 	{ 
 		startTime = controle.now
 	};
-	this.isPlay = true;
+this.isPlay = true;
+this.controle.play;
+
 	//runTriggers.value;
 }
 
@@ -4768,7 +4786,8 @@ this.controle.play;
 			//var filenames;
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
-			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
+
+			//var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
 
 			bounds = Rect(100,300,300,30);
 			if(prjDr.isNil && this.lastAutomation.isNil) {

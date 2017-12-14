@@ -585,12 +585,12 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 
 // without headtracking with rir supplied in the zip file mentioned above.
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 
 // with headtracking (should only be used with binaural decoder)
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
+~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
 
 
 // Use allpass filter reverberation
