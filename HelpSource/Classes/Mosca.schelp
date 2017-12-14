@@ -612,10 +612,11 @@ s.sync;
 
 )
 
-(
-MIDIIn.disconnect; 
+// If you close the Mosca window, don't forget to free the decoder afterwards
+
+
 ~decoder.free;
-)
+
 
 /*
 Using SuperCollider synths as input

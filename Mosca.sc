@@ -241,6 +241,8 @@ GUI Parameters usable in SynthDefs
 		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
 		server.sync;
 		this.globTBus = Bus.audio(server, 4);
+
+
 		server.sync;
 		//this.lock = ilock;
 		
@@ -428,7 +430,15 @@ GUI Parameters usable in SynthDefs
 
 
 		this.tfield = Array.newClear(this.nfontes);	
-		this.streamdisk = Array.newClear(this.nfontes);	
+		this.streamdisk = Array.newClear(this.nfontes);
+
+		// busses to send audio from player to spatialiser synths
+		this.nfontes.do { arg x;
+			mbus[x] = Bus.audio(server, 1); 
+			sbus[x] = Bus.audio(server, 2); 
+			//	bfbus[x] = Bus.audio(s, 4); 
+		};
+
 		
 		testado = Array.newClear(this.nfontes);
 
@@ -2267,13 +2277,16 @@ GUI Parameters usable in SynthDefs
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
+
+				
+				
 				contr = Lag.kr(contr, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
 				
 				azim1 = fonte.rotate(angle / -2).theta;
 				azim2 = fonte.rotate(angle / 2).theta;
-				
+				//SendTrig.kr(Impulse.kr(1), 0, azim1); // debug
 				//				fonte.set(mx+xoffset, my+yoffset, mz);
 				fonte.set(mx, my, mz);
 				el = fonte.phi;
@@ -2283,8 +2296,9 @@ GUI Parameters usable in SynthDefs
 				
 				dis = Select.kr(dis < 0, [dis, 0]); 
 				dis = Select.kr(dis > 1, [dis, 1]); 
-
+				//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
 				p = In.ar(inbus, 2);
+				
 				//p = p[0];
 				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
 				
@@ -2293,6 +2307,7 @@ GUI Parameters usable in SynthDefs
 				rd = Lag.kr(rd, 1.0);
 				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
 				p = dopplershift;
+				
 				
 				// Reverberação global
 				globallev = 1 / (1 - dis).sqrt;
@@ -2314,6 +2329,7 @@ GUI Parameters usable in SynthDefs
 				
 				p1 = p[0];
 				p2 = p[1];
+				
 				// Reverberação local
 				locallev = 1 - dis; 
 				
@@ -2323,7 +2339,6 @@ GUI Parameters usable in SynthDefs
 				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev);
 				junto1 = p1 + lrev1Ref.value;
 				junto2 = p2 + lrev2Ref.value;
-
 				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 
 				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
@@ -2336,6 +2351,8 @@ GUI Parameters usable in SynthDefs
 					soaSigRRef[8].value];
 				
 				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
+
+				
 
 
 				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
@@ -2368,6 +2385,7 @@ GUI Parameters usable in SynthDefs
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
 				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
 				Out.ar(aFormatBusOutSoa, aFormatSoa);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa[0]); // debug
 
 				// flag switchable selector of a-format signal (from insert or not) 
 				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
@@ -4299,14 +4317,14 @@ this.controle.play;
 }
 
 
-kill {
+free {
 
-	this.controle.quit;
-	if (this.serport.notNil) {
+this.controle.quit;
+if (this.serport.notNil) {
 this.trackPort.close;
-//				this.trackerRoutine.stop;
-//				this.serialKeepItUp.stop;
-	};
+	//				this.trackerRoutine.stop;
+	//				this.serialKeepItUp.stop;
+};
 
 this.troutine.stop;
 this.kroutine.stop;
@@ -4314,18 +4332,18 @@ this.watcher.stop;
 
 this.globTBus.free;
 this.nfontes.do { arg x;
-this.espacializador[x].free;
-this.aFormatBusFoa[0,x].free;
-this.aFormatBusFoa[1,x].free;
-this.aFormatBusSoa[0,x].free;
+	this.espacializador[x].free;
+	this.aFormatBusFoa[0,x].free;
+	this.aFormatBusFoa[1,x].free;
+	this.aFormatBusSoa[0,x].free;
 this.aFormatBusSoa[1,x].free;
-this.mbus[x].free;
-this.sbus[x].free;
-//	bfbus.[x].free;
-this.sombuf[x].free;
-this.streambuf[x].free;
-this.synt[x].free;
-this.scInBus[x].free;
+	this.mbus[x].free;
+	this.sbus[x].free;
+	//	bfbus.[x].free;
+	this.sombuf[x].free;
+	this.streambuf[x].free;
+	this.synt[x].free;
+	this.scInBus[x].free;
 //		kespac[x].stop;
 };
 MIDIIn.removeFuncFrom(\sysex, sysex);
@@ -4382,7 +4400,8 @@ a2b.free;
 		var fonte, dist,  
 		itensdemenu,
 		//gbus, gbfbus,
-		azimuth, event, brec, bplay, bload, bstream, bnodes,
+//azimuth,
+event, brec, bplay, bload, bstream, bnodes,
 		//funcs, 
 		//	,
 		//lastAutomation = nil,
@@ -6136,24 +6155,13 @@ win.refresh;
 
 };
 
-// busses to send audio from player to spatialiser synths
-this.nfontes.do { arg x;
-	mbus[x] = Bus.audio(server, 1); 
-	sbus[x] = Bus.audio(server, 2); 
-	//	bfbus[x] = Bus.audio(s, 4); 
-	if (dopflag == 0, {
-
-};, {
-});
-};
-
 
 
 win.onClose_({ 
 	
 	wdados.close;
 	waux.close;
-	this.kill;
+	this.free;
 	
 });
 
