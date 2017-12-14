@@ -95,6 +95,7 @@ Mosca {
 	<>trackarr, <>trackarr2, <>tracki, <>trackPort,
 	//<>track2arr, <>track2arr2, <>track2i,
 	<>headingnumbox, <>rollnumbox, <>pitchnumbox,
+	<>headingnumboxProxy, <>rollnumboxProxy, <>pitchnumboxProxy,
 	<>headingOffset,
 	<>troutine, <>kroutine, <>watcher,
 	<>binMasterBus,
@@ -432,7 +433,7 @@ GUI Parameters usable in SynthDefs
 		this.tfield = Array.newClear(this.nfontes);	
 		this.streamdisk = Array.newClear(this.nfontes);
 
-		// busses to send audio from player to spatialiser synths
+				// busses to send audio from player to spatialiser synths
 		this.nfontes.do { arg x;
 			mbus[x] = Bus.audio(server, 1); 
 			sbus[x] = Bus.audio(server, 2); 
@@ -563,6 +564,9 @@ GUI Parameters usable in SynthDefs
 			
 		};
 
+		headingnumboxProxy = AutomationGuiProxy.new(0.0);  
+		rollnumboxProxy = AutomationGuiProxy.new(0.0);  
+		pitchnumboxProxy = AutomationGuiProxy.new(0.0);  
 		
 		this.controle = Automation(this.dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
@@ -1144,6 +1148,33 @@ GUI Parameters usable in SynthDefs
 			controle.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
 			//controle.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
 		};
+
+		///// these next few are not to be docked
+		
+		this.headingnumboxProxy.action = { arg num;
+			this.globFOATransform.set(\heading, num.value);
+			if (guiflag) {
+				{this.headingnumbox.value = num.value;}.defer;
+			};
+		};
+
+		this.rollnumboxProxy.action = { arg num;
+			this.globFOATransform.set(\roll, num.value);
+			if (guiflag) {
+				{this.rollnumbox.value = num.value;}.defer;
+			};
+		};
+
+		this.pitchnumboxProxy.action = {arg num;
+			this.globFOATransform.set(\pitch, num.value);
+			if (guiflag) {
+				{this.pitchnumbox.value = num.value;}.defer;
+			};
+		};
+
+		
+			
+		////////////////////
 
 
 		///////////////////////////////
@@ -2871,7 +2902,14 @@ GUI Parameters usable in SynthDefs
 		///////////////
 
 				//// LAUNCH GUI 
-
+		if (this.serport.notNil) {
+			//this.troutine = this.trackerRoutine; // start parsing of serial head tracker data
+			//	this.kroutine = this.serialKeepItUp;
+			this.troutine.play;
+			this.kroutine.play;
+		};
+		
+		
 		if(guiflag) {
 			this.gui;
 		};
@@ -2904,14 +2942,15 @@ GUI Parameters usable in SynthDefs
 		
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
-		{this.headingnumbox.valueAction = h}.defer;
-		{this.rollnumbox.valueAction = r}.defer;
-		{this.pitchnumbox.valueAction = p}.defer;
+		this.headingnumboxProxy.valueAction = h;
+		this.rollnumboxProxy.valueAction = r;
+		this.pitchnumboxProxy.valueAction = p;
 		this.nfontes.do { arg i;
 			
-			
-			sprite[i, 1] = ((xval[i] * this.halfwidth * -1) + this.halfwidth);
-			sprite[i, 0] = ((yval[i] * this.halfwidth * -1) + this.halfwidth);
+			if (guiflag) {
+				sprite[i, 1] = ((xval[i] * this.halfwidth * -1) + this.halfwidth);
+				sprite[i, 0] = ((yval[i] * this.halfwidth * -1) + this.halfwidth);
+			};
 
 			if(this.espacializador[i].notNil) {
 				
@@ -5185,29 +5224,35 @@ zslider.action = {arg num;
 
 if (this.serport.notNil) {
 	
-this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
-this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
-this.pitchnumbox = NumberBox(win, Rect(this.width - 45, this.width - 25, 40, 20));
-this.headingnumbox.action = {arg num;
-	this.globFOATransform.set(\heading, num.value);
-};
-this.rollnumbox.action = {arg num;
-	this.globFOATransform.set(\roll, num.value);
-};
-this.pitchnumbox.action = {arg num;
-	this.globFOATransform.set(\pitch, num.value);
-};
-textbuf = StaticText(win, Rect(this.width - 60, this.width - 65, 12, 20));
-textbuf.string = "H:";
-textbuf = StaticText(win, Rect(this.width - 60, this.width - 45, 10, 22));
-textbuf.string = "R:";
-textbuf = StaticText(win, Rect(this.width - 60, this.width - 25, 10, 22));
-textbuf.string = "P:";
+	this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
+	this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
+	this.pitchnumbox = NumberBox(win, Rect(this.width - 45, this.width - 25, 40, 20));
+	
+	this.headingnumbox.action = {arg num;
+		this.headingnumboxProxy.valueAction = num.value;
+	};
 
 
-textbuf = StaticText(win, Rect(this.width - 45, this.width - 85, 90, 20));
-textbuf.string = "Orient.";
+	this.rollnumbox.action = {arg num;
+		this.rollnumboxProxy.valueAction = num.value;
+	};
 
+	this.pitchnumbox.action = {arg num;
+		this.pitchnumboxProxy.valueAction = num.value;
+	};
+
+
+	textbuf = StaticText(win, Rect(this.width - 60, this.width - 65, 12, 20));
+	textbuf.string = "H:";
+	textbuf = StaticText(win, Rect(this.width - 60, this.width - 45, 10, 22));
+	textbuf.string = "R:";
+	textbuf = StaticText(win, Rect(this.width - 60, this.width - 25, 10, 22));
+	textbuf.string = "P:";
+	
+	
+	textbuf = StaticText(win, Rect(this.width - 45, this.width - 85, 90, 20));
+	textbuf.string = "Orient.";
+	
 };
 
 
@@ -6219,12 +6264,6 @@ controle.seek(goto);
 
 };
 };
-};
-if (this.serport.notNil) {
-	//this.troutine = this.trackerRoutine; // start parsing of serial head tracker data
-	//	this.kroutine = this.serialKeepItUp;
-	this.troutine.play;
-	this.kroutine.play;
 };
 this.watcher.play;
 controle.snapshot; // necessary to call at least once before saving automation
