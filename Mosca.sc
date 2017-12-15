@@ -836,7 +836,7 @@ GUI Parameters usable in SynthDefs
 
 			a1checkProxy[i].action = { arg but;
 
-				if (but.value == "true") {
+				if (but.value) {
 					this.a1but[i] = 1;
 					this.setSynths(i, \a1check, 1);
 				}{
@@ -852,7 +852,7 @@ GUI Parameters usable in SynthDefs
 
 			a2checkProxy[i].action = { arg but;
 
-				if (but.value == "true") {
+				if (but.value) {
 					a2but[i] = 1;
 					this.setSynths(i, \a2check, 1);
 				}{
@@ -867,7 +867,7 @@ GUI Parameters usable in SynthDefs
 
 			a3checkProxy[i].action = { arg but;
 
-				if (but.value == "true") {
+				if (but.value) {
 					a3but[i] = 1;
 					this.setSynths(i, \a3check, 1);
 				}{
@@ -883,7 +883,7 @@ GUI Parameters usable in SynthDefs
 
 			a4checkProxy[i].action = { arg but;
 
-				if (but.value == "true") {
+				if (but.value) {
 					a4but[i] = 1;
 					this.setSynths(i, \a4check, 1);
 				}{
@@ -898,7 +898,7 @@ GUI Parameters usable in SynthDefs
 
 			a5checkProxy[i].action = { arg but;
 
-				if (but.value == "true") {
+				if (but.value) {
 					a5but[i] = 1;
 					this.setSynths(i, \a5check, 1);
 				}{
@@ -913,7 +913,7 @@ GUI Parameters usable in SynthDefs
 			
 			
 			stcheckProxy[i].action = { arg but;
-				if (but.value == "true") {
+				if (but.value) {
 					this.streamdisk[i] = true;
 				}{
 					this.streamdisk[i] = false;
@@ -926,7 +926,7 @@ GUI Parameters usable in SynthDefs
 
 			this.dcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){dopcheque.value = but.value;};
-				if (but.value == "true") {
+				if (but.value) {
 					doppler[i] = 1;
 					this.espacializador[i].set(\dopon, 1);
 					this.synt[i].set(\dopon, 1);
@@ -944,7 +944,7 @@ GUI Parameters usable in SynthDefs
 
 			this.lpcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){loopcheck.value = but.value;};
-				if (but.value == "true") {
+				if (but.value) {
 					lp[i] = 1;
 					this.synt[i].set(\lp, 1);
 					this.setSynths(i, \lp, 1);
@@ -960,7 +960,7 @@ GUI Parameters usable in SynthDefs
 
 			this.rvcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){revcheck.value = but.value;};
-				if (but.value == "true") {
+				if (but.value) {
 					rv[i] = 1;
 					//this.synt[i].set(\lp, 1);
 					this.setSynths(i, \rv, 1);
@@ -1018,7 +1018,7 @@ GUI Parameters usable in SynthDefs
 
 			this.lncheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){lincheck.value = but.value;};
-				if (but.value == "true") {
+				if (but.value) {
 					ln[i] = "_linear";
 					this.setSynths(i, \ln, 1);
 				}{
@@ -1032,7 +1032,7 @@ GUI Parameters usable in SynthDefs
 
 			this.spcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){spreadcheck.value = but.value;};
-				if (but.value == "true") {
+				if (but.value) {
 					if (guiflag) {
 						this.dfcheck[i].value = false;
 					};
@@ -1056,7 +1056,7 @@ GUI Parameters usable in SynthDefs
 
 			this.dfcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){diffusecheck.value = but.value;};
-				if (but.value == "true") {
+				if (but.value) {
 					if (guiflag) {
 						this.spcheck[i].value = false;
 					};
@@ -4230,35 +4230,47 @@ GUI Parameters usable in SynthDefs
 		};
 		nfontes.do { arg i;
 			var line = dopplerf.getLine(1024);
-			this.dcheckProxy[i].valueAction = line;
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.dcheckProxy[i].valueAction = flag;
 			// doppler[i] 0 or 1
 		};
 
 		nfontes.do { arg i;
 			var line = loopedf.getLine(1024);
-			this.lpcheckProxy[i].valueAction = line;
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.lpcheckProxy[i].valueAction = flag;
 			//lp[i] 0 or 1
 		};
 		
 		nfontes.do { arg i;
 			var line = aformatrevf.getLine(1024);
-			this.rvcheckProxy[i].valueAction = line;
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.rvcheckProxy[i].valueAction = flag;
 			//rv[i] 0 or 1
 		};
 		
 		nfontes.do { arg i;
 			var line = linearf.getLine(1024);
-			this.lncheckProxy[i].valueAction = line;
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.lncheckProxy[i].valueAction = flag;
 		};
 		
 		nfontes.do { arg i;
 			var line = spreadf.getLine(1024);
-			this.spcheckProxy[i].valueAction = line;
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.spcheckProxy[i].valueAction = flag;
 		};
 		
 		nfontes.do { arg i;
 			var line = diffusef.getLine(1024);
-			this.dfcheckProxy[i].valueAction = line;
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.dfcheckProxy[i].valueAction = flag;
 		};
 		nfontes.do { arg i;
 			var line = ncanf.getLine(1024);
@@ -4272,7 +4284,9 @@ GUI Parameters usable in SynthDefs
 		
 		nfontes.do { arg i;
 			var line = stcheckf.getLine(1024);
-			this.stcheckProxy[i].valueAction = line;
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.stcheckProxy[i].valueAction = flag;
 		};
 		
 //		nfontes.do { arg i;
@@ -5663,7 +5677,7 @@ this.lpcheckProxy[i].valueAction = but.value;
 this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20));
 
 this.rvcheck[i].action_({ arg but;
-this.lpcheckProxy[i].valueAction = but.value;
+this.rvcheckProxy[i].valueAction = but.value;
 });
 
 
