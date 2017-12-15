@@ -975,9 +975,7 @@ GUI Parameters usable in SynthDefs
 			});
 			/// testing
 			this.hwncheckProxy[i].action = { arg but;
-				("I am out here and hwncheck value is " ++ but.value.asString).postln;
-				if((i==this.currentsource)) {
-					"I am in here".postln;
+				if((i==this.currentsource) && guiflag) {
 					hwInCheck.value = but.value;
 				};
 				if (but.value == true) {
@@ -2876,7 +2874,6 @@ GUI Parameters usable in SynthDefs
 								} {
 									if(this.synt[i].isPlaying.not && (isPlay || testado[i])
 										&& (this.firstTime[i] || (this.tfieldProxy[i].value == ""))) {
-											("HELLO _ Loop is: " ++ lp[i]).postln;
 											//this.triggerFunc[i].value; // play SC input synth
 											this.firstTime[i] = false;
 											runTrigger.value(i);
@@ -4205,7 +4202,7 @@ GUI Parameters usable in SynthDefs
 	loadNonAutomationData { arg path;
 		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf,
 		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
-("THE PATH IS " ++ path ++ "/filenames.txt").postln;
+		//("THE PATH IS " ++ path ++ "/filenames.txt").postln;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
 
 		dopplerf = File((path ++ "/doppler.txt").standardizePath,"r");
@@ -4327,7 +4324,7 @@ GUI Parameters usable in SynthDefs
 		businif.close;
 		stcheckf.close;
 
-		"RARARARARAR".postln;
+		//"RARARARARAR".postln;
 				
 		// delay necessary here because streamdisks take some time to register after controle.load
 //Routine {
@@ -4336,8 +4333,7 @@ GUI Parameters usable in SynthDefs
 			this.nfontes.do { arg i;
 				
 				var newpath = this.tfieldProxy[i].value;
-				("NEWPATH = " ++ newpath).postln;
-				//server.sync;
+				//	server.sync;
 				if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
 					i.postln;
 					newpath.postln;
@@ -4347,19 +4343,17 @@ GUI Parameters usable in SynthDefs
 				};
 				
 			};
-			//}.play;
-         this.watcher.play;
+//	}.play;
+this.watcher.play;
 
       }
 
 // Automation call-back doesn' seem to work with no GUI, so these duplicate
 // controle.onPlay, etc.
 blindControlPlay {
-	 var startTime;
-      "BLIND PLAY".postln;
+	var startTime;
 	this.nfontes.do { arg i;
 		this.firstTime[i]=true;
-		("NOW PLAYING = " ++ this.firstTime[i]).postln;
 	};
 
 	if(controle.now < 0)
