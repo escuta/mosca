@@ -4330,14 +4330,14 @@ GUI Parameters usable in SynthDefs
 		"RARARARARAR".postln;
 				
 		// delay necessary here because streamdisks take some time to register after controle.load
-		Routine {
+//Routine {
 			
-			1.wait;
+//1.wait;
 			this.nfontes.do { arg i;
 				
 				var newpath = this.tfieldProxy[i].value;
 				("NEWPATH = " ++ newpath).postln;
-				server.sync;
+				//server.sync;
 				if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
 					i.postln;
 					newpath.postln;
@@ -4347,7 +4347,7 @@ GUI Parameters usable in SynthDefs
 				};
 				
 			};
-		}.play;
+			//}.play;
          this.watcher.play;
 
       }
@@ -4374,6 +4374,21 @@ this.controle.play;
 
 	//runTriggers.value;
 }
+
+blindControlStop {
+    this.controle.stop;
+	runStops.value;
+	this.nfontes.do { arg i;
+		// if sound is currently being "tested", don't switch off on stop
+		// leave that for user
+		if (testado[i] == false) {
+           this.synt[i].free; // error check
+        };
+    //	this.espacializador[i].free;
+	};
+    this.isPlay = false;
+}
+
 
 
 free {
