@@ -63,7 +63,7 @@ Mosca {
 	<>rirFLUspectrum, <>rirFRDspectrum, <>rirBLDspectrum, <>rirBRUspectrum,
 
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>waux, <>sprite, <>nfontes,
-	<>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>controle,
+	<>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>control,
 	<>globFOATransform,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
@@ -568,7 +568,7 @@ GUI Parameters usable in SynthDefs
 		rollnumboxProxy = AutomationGuiProxy.new(0.0);  
 		pitchnumboxProxy = AutomationGuiProxy.new(0.0);  
 		
-		this.controle = Automation(this.dur, showLoadSave: false, showSnapshot: true,
+		this.control = Automation(this.dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
 
 		
@@ -1124,28 +1124,28 @@ GUI Parameters usable in SynthDefs
 
 
 
-			controle.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
-			controle.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
-			controle.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
-			controle.dock(this.vboxProxy[i], "levelProxy_" ++ i);
-			controle.dock(this.dpboxProxy[i], "dopamtProxy_" ++ i);
-			controle.dock(this.aboxProxy[i], "angleProxy_" ++ i);
-			controle.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
-			controle.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
-			controle.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
-			controle.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
-			controle.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
-			controle.dock(this.a1boxProxy[i], "aux1Proxy_" ++ i);
-			controle.dock(this.a2boxProxy[i], "aux2Proxy_" ++ i);
-			controle.dock(this.a3boxProxy[i], "aux3Proxy_" ++ i);
-			controle.dock(this.a4boxProxy[i], "aux4Proxy_" ++ i);
-			controle.dock(this.a5boxProxy[i], "aux5Proxy_" ++ i);
-			controle.dock(this.a1checkProxy[i], "aux1checkProxy_" ++ i);
-			controle.dock(this.a2checkProxy[i], "aux2checkProxy_" ++ i);
-			controle.dock(this.a3checkProxy[i], "aux3checkProxy_" ++ i);
-			controle.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
-			controle.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
-			//controle.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
+			control.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
+			control.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
+			control.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
+			control.dock(this.vboxProxy[i], "levelProxy_" ++ i);
+			control.dock(this.dpboxProxy[i], "dopamtProxy_" ++ i);
+			control.dock(this.aboxProxy[i], "angleProxy_" ++ i);
+			control.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
+			control.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
+			control.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
+			control.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
+			control.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
+			control.dock(this.a1boxProxy[i], "aux1Proxy_" ++ i);
+			control.dock(this.a2boxProxy[i], "aux2Proxy_" ++ i);
+			control.dock(this.a3boxProxy[i], "aux3Proxy_" ++ i);
+			control.dock(this.a4boxProxy[i], "aux4Proxy_" ++ i);
+			control.dock(this.a5boxProxy[i], "aux5Proxy_" ++ i);
+			control.dock(this.a1checkProxy[i], "aux1checkProxy_" ++ i);
+			control.dock(this.a2checkProxy[i], "aux2checkProxy_" ++ i);
+			control.dock(this.a3checkProxy[i], "aux3checkProxy_" ++ i);
+			control.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
+			control.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
+			//control.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
 		};
 
 		///// these next few are not to be docked
@@ -3140,8 +3140,8 @@ GUI Parameters usable in SynthDefs
 		|path|
 		var filenames;
 		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
-		this.controle.load(path);
-		//this.controle.seek; 
+		this.control.load(path);
+		//this.control.seek; 
 		this.lastAutomation = path;
 		"2HHHHHHHHHHHHHHHHHHHEEEEEEEEEEEEEERRRRRRRRRRREEEEEEEEE".postln;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
@@ -3231,12 +3231,12 @@ GUI Parameters usable in SynthDefs
 	
 
 	playAutomation {
-		this.controle.play;
+		this.control.play;
 	}
 	playAutomationLooped {
 		//this.autoloopval = true;
 		this.autoloop.valueAction = true;
-		this.controle.play;
+		this.control.play;
 	}
 
 	
@@ -3836,7 +3836,7 @@ GUI Parameters usable in SynthDefs
 						{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
 						};
 					};  }; 
-					if(controle.doRecord == false){
+					if(control.doRecord == false){
 						if (guiflag) {
 							{	xboxProxy[i].valueAction = xbox[i].value;
 								yboxProxy[i].valueAction = ybox[i].value;
@@ -4326,7 +4326,7 @@ GUI Parameters usable in SynthDefs
 
 		//"RARARARARAR".postln;
 				
-		// delay necessary here because streamdisks take some time to register after controle.load
+		// delay necessary here because streamdisks take some time to register after control.load
 //Routine {
 			
 //1.wait;
@@ -4349,28 +4349,28 @@ this.watcher.play;
       }
 
 // Automation call-back doesn' seem to work with no GUI, so these duplicate
-// controle.onPlay, etc.
+// control.onPlay, etc.
 blindControlPlay {
 	var startTime;
 	this.nfontes.do { arg i;
 		this.firstTime[i]=true;
 	};
 
-	if(controle.now < 0)
+	if(control.now < 0)
 	{
 		startTime = 0
 	}
 	{ 
-		startTime = controle.now
+		startTime = control.now
 	};
 this.isPlay = true;
-this.controle.play;
+this.control.play;
 
 	//runTriggers.value;
 }
 
 blindControlStop {
-    this.controle.stop;
+    this.control.stop;
 	runStops.value;
 	this.nfontes.do { arg i;
 		// if sound is currently being "tested", don't switch off on stop
@@ -4387,7 +4387,7 @@ blindControlStop {
 
 free {
 
-this.controle.quit;
+this.control.quit;
 if (this.serport.notNil) {
 this.trackPort.close;
 	//				this.trackerRoutine.stop;
@@ -4933,7 +4933,7 @@ event, brec, bplay, bload, bstream, bnodes,
 				///////
 
 				
-				controle.save(textField.value);
+				control.save(textField.value);
 				this.lastAutomation = textField.value;
 
             };
@@ -4979,8 +4979,8 @@ event, brec, bplay, bload, bstream, bnodes,
                 success = true;
                 onSuccess.value(textField.value);
                 dwin.close;
-				controle.load(textField.value);
-				//controle.seek;
+				control.load(textField.value);
+				//control.seek;
 				this.lastAutomation = textField.value;
 				this.loadNonAutomationData(textField.value);
 				
@@ -4999,11 +4999,11 @@ bsnap = Button(win, Rect(170, this.width - 40, 25, 20))
 	["[ô]", Color.black, Color.white],
 ])
 .action_({ arg but;
-	if(controle.now>0) {
-       controle.seek; // go to 0.0
+	if(control.now>0) {
+       control.seek; // go to 0.0
        "Snapshot: Transport must be at zero seconds. Please try again.".postln;
     } {
-        controle.snapshot;  // only take snapshot at 0.0
+        control.snapshot;  // only take snapshot at 0.0
         "Snapshot taken".postln;
     }
 	
@@ -5464,9 +5464,9 @@ dopcheque.value = false; // coloque toggle no padrão
 
 
 Dialog.openPanel(
-controle.stopRecording;
-controle.stop;
-//controle.seek;
+control.stopRecording;
+control.stop;
+//control.seek;
 
 
 { 
@@ -5502,9 +5502,9 @@ dopcheque.value = false; // set to the default
 
 
 Dialog.openPanel(
-controle.stopRecording;
-controle.stop;
-controle.seek;
+control.stopRecording;
+control.stop;
+control.seek;
 { 
 	arg path;
 	
@@ -6038,24 +6038,24 @@ runStop = {
 };
 
 
-//controle = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
-/*~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: false,
+//control = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
+/*~autotest = control = Automation(this.dur, showLoadSave: false, showSnapshot: false,
 	minTimeStep: 0.001).front(win,
 		Rect(10, this.width - 80, 400, 22));
 */
-//~autotest = controle = Automation(this.dur, showLoadSave: false, showSnapshot: false,
+//~autotest = control = Automation(this.dur, showLoadSave: false, showSnapshot: false,
 //	minTimeStep: 0.001);
-controle.front(win,
+control.front(win,
 		Rect(10, this.width - 80, 400, 22));
 
 
-controle.presetDir = prjDr ++ "/auto";
-//controle.setMinTimeStep(2.0);
-controle.onEnd = {
-	//	controle.stop;
-	controle.seek;
+control.presetDir = prjDr ++ "/auto";
+//control.setMinTimeStep(2.0);
+control.onEnd = {
+	//	control.stop;
+	control.seek;
 	if(this.autoloopval) {
-		controle.play;	
+		control.play;	
 	};
 	this.nfontes.do { arg i;
 		if(this.synt[i].notNil) {
@@ -6064,26 +6064,26 @@ this.synt[i].free;
 };
 };
 
-this.controle.onPlay = {
+this.control.onPlay = {
 	var startTime;
 	"ON PLAY".postln;
 	this.nfontes.do { arg i;
 		this.firstTime[i]=true;
 		("NOW PLAYING = " ++ this.firstTime[i]).postln;
 	};
-	if(controle.now < 0)
+	if(control.now < 0)
 	{
 		startTime = 0
 	}
 	{ 
-		startTime = controle.now
+		startTime = control.now
 	};
 	this.isPlay = true;
 	//runTriggers.value;
 };
 
 
-this.controle.onSeek = {
+this.control.onSeek = {
 	var wasplaying = isPlay;
 		"ON SEEK".postln;
 
@@ -6095,17 +6095,17 @@ this.controle.onSeek = {
 		this.nfontes.do { arg i;	
         this.synt[i].free; // error check
         };
-    controle.stop;
+    control.stop;
   };
     
      if(wasplaying) {
 		 //isPlay = true;
 		 "we are here".postln;
-		 {controle.play}.defer(0.5); //delay necessary. may need more?
+		 {control.play}.defer(0.5); //delay necessary. may need more?
 	 };
 };
 
-this.controle.onStop = {
+this.control.onStop = {
 	runStops.value;
 		"ON STOP".postln;
 	this.nfontes.do { arg i;
@@ -6123,36 +6123,36 @@ isPlay = false;
 ///////////////// PROXY WILL REMOVE THIS //////////////
 
 this.nfontes.do { arg i;
-	//	controle.dock(xbox[i], "x_axis_" ++ i);
-	//controle.dock(ybox[i], "y_axis_" ++ i);
-	//controle.dock(zbox[i], "z_axis_" ++ i);
+	//	control.dock(xbox[i], "x_axis_" ++ i);
+	//control.dock(ybox[i], "y_axis_" ++ i);
+	//control.dock(zbox[i], "z_axis_" ++ i);
 
 
 
-	//controle.dock(vbox[i], "level_" ++ i);
-	//controle.dock(dpbox[i], "dopamt_" ++ i);
+	//control.dock(vbox[i], "level_" ++ i);
+	//control.dock(dpbox[i], "dopamt_" ++ i);
 
-//controle.dock(abox[i], "angle_" ++ i);
-//controle.dock(gbox[i], "revglobal_" ++ i);
-//controle.dock(lbox[i], "revlocal_" ++ i);
-//controle.dock(rbox[i], "rotation_" ++ i);
-//controle.dock(dbox[i], "diretividade_" ++ i);
-//controle.dock(cbox[i], "contraction_" ++ i);
+//control.dock(abox[i], "angle_" ++ i);
+//control.dock(gbox[i], "revglobal_" ++ i);
+//control.dock(lbox[i], "revlocal_" ++ i);
+//control.dock(rbox[i], "rotation_" ++ i);
+//control.dock(dbox[i], "diretividade_" ++ i);
+//control.dock(cbox[i], "contraction_" ++ i);
 
 
-	//controle.dock(a1box[i], "aux1_" ++ i);
-	//controle.dock(a2box[i], "aux2_" ++ i);
-	//controle.dock(a3box[i], "aux3_" ++ i);
-	//controle.dock(a4box[i], "aux4_" ++ i);
-	//controle.dock(a5box[i], "aux5_" ++ i);
+	//control.dock(a1box[i], "aux1_" ++ i);
+	//control.dock(a2box[i], "aux2_" ++ i);
+	//control.dock(a3box[i], "aux3_" ++ i);
+	//control.dock(a4box[i], "aux4_" ++ i);
+	//control.dock(a5box[i], "aux5_" ++ i);
 
-	//controle.dock(a1check[i], "aux1check_" ++ i);
-	//controle.dock(a2check[i], "aux2check_" ++ i);
-	//controle.dock(a3check[i], "aux3check_" ++ i);
-	//controle.dock(a4check[i], "aux4check_" ++ i);
-	//controle.dock(a5check[i], "aux5check_" ++ i);
+	//control.dock(a1check[i], "aux1check_" ++ i);
+	//control.dock(a2check[i], "aux2check_" ++ i);
+	//control.dock(a3check[i], "aux3check_" ++ i);
+	//control.dock(a4check[i], "aux4check_" ++ i);
+	//control.dock(a5check[i], "aux5check_" ++ i);
 
-	//controle.dock(stcheck[i], "stcheck_" ++ i);
+	//control.dock(stcheck[i], "stcheck_" ++ i);
 
 
 
@@ -6273,29 +6273,29 @@ x = case
 { sysex[4] == 1 } {
 
 "Stop".postln;
-controle.stop;
+control.stop;
 }
 { sysex[4] == 2 } {
 "Play".postln;
-controle.play;
+control.play;
 
 }
 { sysex[4] == 3 } {
 "Deffered Play".postln;
-controle.play;
+control.play;
 
 }
 { sysex[4] == 68 } { var goto; 
 ("Go to event: " ++ sysex[7] ++ "hr " ++ sysex[8] ++ "min "
 ++ sysex[9] ++ "sec and " ++ sysex[10] ++ "frames").postln;
 goto =  (sysex[7] * 3600) + (sysex[8] * 60) + sysex[9] + (sysex[10] / 30);
-controle.seek(goto);
+control.seek(goto);
 
 };
 };
 };
 this.watcher.play;
-controle.snapshot; // necessary to call at least once before saving automation
+control.snapshot; // necessary to call at least once before saving automation
 // otherwise will get not understood errors
 }
 
