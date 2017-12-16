@@ -720,7 +720,51 @@ z = Synth(\Filter, [\aformatIn, ~testMosca.getSoaInsertIn(1), \aformatOut, ~test
 z.free; // free the filter
 ~testMosca.releaseInsert(1) // return to sound with no filter 
 
-// RUNNING MOSCA WITHOU A GUI
+// CODED CONTROL OF MOSCA
+
+As described above in this help file (see "CODED CONTROL OF MOSCA" in Description), Mosca may be controlled via proxies. To use the following block of code, have the Mosca GUI running with a sound loaded in source 1. Run the block of code below to control the x, y and z coordinates and have "audition" slected for source 1 in the GUI and the "level" turned up. Note that because the proxies are controlling the GUI as well as mechanism spatialising the sound, it is necessary to encapsulate the lines of code setting the proxies in "defer" statements. If you run Mosca without a GUI (see below), it is not necessary to use defer.
+(
+// orbit derived from code by WillS: http://cplussplussatplay.blogspot.com.br/2011/09/simple-2d-orbit.html
+
+// "constants"
+var grav_const = 6.6742e-11;           
+var earth_mass = 5.975e24;             
+// variables
+var radius = 6.37814e6;              
+var angle = 0;
+var grav_accel = 0;
+var body_pos_x = 1.4e6;              // An X axis position of the body to be attracted
+var body_pos_y = 7.5e5;              // A Y axis position of the body to be attracted
+var body_vel_x = 0.0;                // Body velocity split into two components, X and Y
+var body_vel_y = 8.5e3;
+var scale = 10000 * 250;
+~orbit = true;                      // set ~orbit to false to turn orbit off (see after end of block)
+
+Routine {
+	while ( {~orbit}, {
+		radius = (pow(body_pos_x, 2) + pow(body_pos_y, 2)).sqrt;
+		grav_accel = (grav_const * (earth_mass / pow(radius, 2)));
+		angle = atan2(body_pos_x, body_pos_y);
+		body_vel_x = body_vel_x + (sin(angle) * grav_accel);
+		body_vel_y = body_vel_y + (cos(angle) * grav_accel);
+		body_pos_x = body_pos_x - body_vel_x;
+		body_pos_y = body_pos_y - body_vel_y;
+		// Control x,y and z values for source 1
+		{~testMosca.xboxProxy[0].valueAction = (body_pos_x / scale)}.defer;
+		{~testMosca.yboxProxy[0].valueAction = (body_pos_y / scale)}.defer;
+		{~testMosca.zboxProxy[0].valueAction = (body_pos_y / scale)}.defer; // duplicate Y for Z-axis
+		0.02.wait;
+	};
+	);
+}.play;
+ 
+)
+
+~orbit = false    // turn off orbit
+
+
+
+// RUNNING MOSCA WITHOUT A GUI
 
 1. As a first step, run the first block of code above in these Examples. 
 2. Record some Automation data and save to disk, taking note of the address.
