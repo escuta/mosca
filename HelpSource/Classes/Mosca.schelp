@@ -20,6 +20,8 @@ Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion 
 
 USING MOSCA
 
+A video tutorial of Mosca is available here: http://escuta.org/moscavideo
+
 Please ensure that SuperCollider is installed with plugins from: https://github.com/supercollider/sc3-plugins
 It is also necessary to install the ATK Kernels: http://www.ambisonictoolkit.net/download/kernels 
 
@@ -233,10 +235,13 @@ ARGUMENT:: offsetheading
 Value in degrees radians to offset heading value of the connected Arduino 9-axes Motion Shield. Default is 0. This may be used to adjust for the "magnetic declination" of your local region, calibrating the shield to true north (see: https://en.wikipedia.org/wiki/Magnetic_declination and http://www.magnetic-declination.com/). It may also be used to rotate North to the direction of your computer monitor. Eg. If when you are facing the monitor and the offsetheading is set to the default 0, you see a heading value (bottom-right of window) of 2.6, set the value to -2.6. The heading value will now be set to zero when you face the monitor.
 
 ARGUMENT:: recchans
-Number of channels for recording audio output to disk. Default is 2;
+Number of channels for recording audio output to disk. Default is 2.
 
 ARGUMENT:: recbus
-Starting bus for recording audio output to disk. Default is 0. Note: this argument may only be set in SC 3.9;
+Starting bus for recording audio output to disk. Default is 0. Note: this argument may only be set in SC 3.9.
+
+ARGUMENT:: guiflag
+If set to false, Mosca will run with no GUI. Default is true.
 
 returns:: New instance.
 
@@ -462,9 +467,323 @@ private:: scncheck = value
 private:: spcheck
 private:: spcheck = value
 
-
-METHOD:: gui
-Creates GUI window
+private:: a1box
+private:: a1box = value
+private:: a1boxProxy
+private:: a1boxProxy = value
+private:: a1but
+private:: a1but = value
+private:: a1check
+private:: a1check = value
+private:: a1checkProxy
+private:: a1checkProxy = value
+private:: a2box
+private:: a2box = value
+private:: a2boxProxy
+private:: a2boxProxy = value
+private:: a2but
+private:: a2but = value
+private:: a2check
+private:: a2check = value
+private:: a2checkProxy
+private:: a2checkProxy = value
+private:: a3box
+private:: a3box = value
+private:: a3boxProxy
+private:: a3boxProxy = value
+private:: a3but
+private:: a3but = value
+private:: a3check
+private:: a3check = value
+private:: a3checkProxy
+private:: a3checkProxy = value
+private:: a4box
+private:: a4box = value
+private:: a4boxProxy
+private:: a4boxProxy = value
+private:: a4but
+private:: a4but = value
+private:: a4check
+private:: a4check = value
+private:: a4checkProxy
+private:: a4checkProxy = value
+private:: a5box
+private:: a5box = value
+private:: a5boxProxy
+private:: a5boxProxy = value
+private:: a5but
+private:: a5but = value
+private:: a5check
+private:: a5check = value
+private:: a5checkProxy
+private:: a5checkProxy = value
+private:: abox
+private:: abox = value
+private:: aboxProxy
+private:: aboxProxy = value
+private:: angle
+private:: angle = value
+private:: angnumbox
+private:: angnumbox = value
+private:: angslider
+private:: angslider = value
+private:: atualizarvariaveis
+private:: atualizarvariaveis = value
+private:: aux1numbox
+private:: aux1numbox = value
+private:: aux2numbox
+private:: aux2numbox = value
+private:: aux3numbox
+private:: aux3numbox = value
+private:: aux4numbox
+private:: aux4numbox = value
+private:: aux5numbox
+private:: aux5numbox = value
+private:: auxbutton1
+private:: auxbutton1 = value
+private:: auxbutton2
+private:: auxbutton2 = value
+private:: auxbutton3
+private:: auxbutton3 = value
+private:: auxbutton4
+private:: auxbutton4 = value
+private:: auxbutton5
+private:: auxbutton5 = value
+private:: auxslider1
+private:: auxslider1 = value
+private:: auxslider2
+private:: auxslider2 = value
+private:: auxslider3
+private:: auxslider3 = value
+private:: auxslider4
+private:: auxslider4 = value
+private:: auxslider5
+private:: auxslider5 = value
+private:: blindControlPlay
+private:: blindControlStop
+private:: businiboxProxy
+private:: businiboxProxy = value
+private:: busininumbox
+private:: busininumbox = value
+private:: cbox
+private:: cbox = value
+private:: cboxProxy
+private:: cboxProxy = value
+private:: clev
+private:: clev = value
+private:: connumbox
+private:: connumbox = value
+private:: control
+private:: control = value
+private:: cslider
+private:: cslider = value
+private:: currentsource
+private:: currentsource = value
+private:: dbox
+private:: dbox = value
+private:: dboxProxy
+private:: dboxProxy = value
+private:: dcheckProxy
+private:: dcheckProxy = value
+private:: df
+private:: df = value
+private:: dfcheckProxy
+private:: dfcheckProxy = value
+private:: diffusecheck
+private:: diffusecheck = value
+private:: dirnumbox
+private:: dirnumbox = value
+private:: dirslider
+private:: dirslider = value
+private:: dlev
+private:: dlev = value
+private:: dopcheque
+private:: dopcheque = value
+private:: dopnumbox
+private:: dopnumbox = value
+private:: doppler
+private:: doppler = value
+private:: dpbox
+private:: dpbox = value
+private:: dpboxProxy
+private:: dpboxProxy = value
+private:: dplev
+private:: dplev = value
+private:: dpslider
+private:: dpslider = value
+private:: free
+private:: funcs
+private:: funcs = value
+private:: gbfbus
+private:: gbfbus = value
+private:: gbox
+private:: gbox = value
+private:: gboxProxy
+private:: gboxProxy = value
+private:: gbus
+private:: gbus = value
+private:: glev
+private:: glev = value
+private:: gnumbox
+private:: gnumbox = value
+private:: gslider
+private:: gslider = value
+private:: guiflag
+private:: guiflag = value
+private:: headingnumboxProxy
+private:: headingnumboxProxy = value
+private:: hwInCheck
+private:: hwInCheck = value
+private:: hwn
+private:: hwn = value
+private:: hwncheckProxy
+private:: hwncheckProxy = value
+private:: isPlay
+private:: isPlay = value
+private:: isRec
+private:: isRec = value
+private:: lastx
+private:: lastx = value
+private:: lasty
+private:: lasty = value
+private:: lastz
+private:: lastz = value
+private:: lbox
+private:: lbox = value
+private:: lboxProxy
+private:: lboxProxy = value
+private:: level
+private:: level = value
+private:: lincheck
+private:: lincheck = value
+private:: llev
+private:: llev = value
+private:: ln
+private:: ln = value
+private:: lncheckProxy
+private:: lncheckProxy = value
+private:: lnumbox
+private:: lnumbox = value
+private:: loadNonAutomationData(path)
+private:: loopcheck
+private:: loopcheck = value
+private:: lp
+private:: lp = value
+private:: lpcheckProxy
+private:: lpcheckProxy = value
+private:: lslider
+private:: lslider = value
+private:: mbus
+private:: mbus = value
+private:: ncanais
+private:: ncanais = value
+private:: ncanboxProxy
+private:: ncanboxProxy = value
+private:: ncannumbox
+private:: ncannumbox = value
+private:: newtocar(i, tpos, force: false)
+private:: novoplot
+private:: novoplot = value
+private:: oxbox
+private:: oxbox = value
+private:: oybox
+private:: oybox = value
+private:: ozbox
+private:: ozbox = value
+private:: pitchnumboxProxy
+private:: pitchnumboxProxy = value
+private:: rbox
+private:: rbox = value
+private:: rboxProxy
+private:: rboxProxy = value
+private:: revcheck
+private:: revcheck = value
+private:: rirBLDspectrum
+private:: rirBLDspectrum = value
+private:: rirBRUspectrum
+private:: rirBRUspectrum = value
+private:: rirFLUspectrum
+private:: rirFLUspectrum = value
+private:: rirFRDspectrum
+private:: rirFRDspectrum = value
+private:: rlev
+private:: rlev = value
+private:: rnumbox
+private:: rnumbox = value
+private:: rollnumboxProxy
+private:: rollnumboxProxy = value
+private:: rslider
+private:: rslider = value
+private:: runStop
+private:: runStop = value
+private:: runStops
+private:: runStops = value
+private:: runTrigger
+private:: runTrigger = value
+private:: runTriggers
+private:: runTriggers = value
+private:: rv
+private:: rv = value
+private:: rvcheckProxy
+private:: rvcheckProxy = value
+private:: sbus
+private:: sbus = value
+private:: scInCheck
+private:: scInCheck = value
+private:: scn
+private:: scn = value
+private:: scncheckProxy
+private:: scncheckProxy = value
+private:: soaBus
+private:: soaBus = value
+private:: sombuf
+private:: sombuf = value
+private:: sp
+private:: sp = value
+private:: spcheckProxy
+private:: spcheckProxy = value
+private:: spreadcheck
+private:: spreadcheck = value
+private:: stcheck
+private:: stcheck = value
+private:: stcheckProxy
+private:: stcheckProxy = value
+private:: testado
+private:: testado = value
+private:: tfieldProxy
+private:: tfieldProxy = value
+private:: updateSynthInArgs
+private:: updateSynthInArgs = value
+private:: updatesourcevariables
+private:: updatesourcevariables = value
+private:: vbox
+private:: vbox = value
+private:: vboxProxy
+private:: vboxProxy = value
+private:: volnumbox
+private:: volnumbox = value
+private:: volslider
+private:: volslider = value
+private:: xbox
+private:: xbox = value
+private:: xboxProxy
+private:: xboxProxy = value
+private:: ybox
+private:: ybox = value
+private:: yboxProxy
+private:: yboxProxy = value
+private:: zbox
+private:: zbox = value
+private:: zboxProxy
+private:: zboxProxy = value
+private:: zlev
+private:: zlev = value
+private:: znumbox
+private:: znumbox = value
+private:: zslider
+private:: zslider = value
+private:: gui
+private:: newtocar
 
 METHOD:: registerSynth
 Registers synth instance for a given source so that it may be spatialised and receive control data from GUI.
@@ -532,17 +851,18 @@ Create a second order A-format insert for a SOA source spatialised in the GUI. R
 ARGUMENT:: source
 The number of the source (starting with 1). 
 
-METHOD:: loadAutomation
-Non-gui method for loading automation data. Useful for loading data immediately after a Mosca instance is created.
-
-ARGUMENT:: path
-Path to automation directory. 
-
 METHOD:: playAutomation
 Non-gui method for playing automation data. Useful for playing data immediately after a Mosca instance is created. If called after loadAutomation (see above), may require a prior "wait" message to allow all data to load.
 
 METHOD:: playAutomationLooped
 Same as playAutomation but run in looped mode.
+
+METHOD:: loadNonAutomationData
+Loads saved data not recorded directly by Automation. These include GUI checkbox values (with the exception of auxiliary checkboxes) and file names. It is used for loading data immediately after a Mosca instance is created and when running Mosca without a GUI. See code examples below.
+
+ARGUMENT:: path
+Path to automation directory.
+
 
 EXAMPLES::
 
@@ -578,7 +898,7 @@ s.sync;
 //5.wait;
 s.sync;
 
-MIDIIn.connect;
+MIDIIn.connect(inport: 0, device: 0);  // must connect to MIDI for MMC synch
 s.sync;
 
 /*Create a project directory and in it create to more directories "rir" and "auto". Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings see the zip archive here: http://escuta.org/mosca 
@@ -616,8 +936,10 @@ s.sync;
 
 // If you close the Mosca window, don't forget to free the decoder afterwards
 
-
+(
 ~decoder.free;
+MIDIIn.disconnect(inport: 0, device: 0);
+)
 
 
 /*
@@ -722,7 +1044,8 @@ z.free; // free the filter
 
 // CODED CONTROL OF MOSCA
 
-As described above in this help file (see "CODED CONTROL OF MOSCA" in Description), Mosca may be controlled via proxies. To use the following block of code, have the Mosca GUI running with a sound loaded in source 1 and with "audition" selcted and the "level" turned up. Run the block of code below to control the x, y and z coordinates. Note that because the proxies are controlling the GUI as well as mechanism spatialising the sound, it is necessary to encapsulate the lines of code setting the proxies in "defer" statements. If you run Mosca without a GUI (see below), it is not necessary to use defer.
+As described above in this help file (see "CODED CONTROL OF MOSCA" in Description), Mosca may be controlled via proxies. To use the following block of code, have the Mosca GUI running with a sound loaded in source 1 and with "audition" selcted and the "level" turned up. Run the block of code below to control the x, y and z coordinates. You may also use this form of control in non-GUI mode (see below).
+
 (
 // orbit derived from code by WillS: http://cplussplussatplay.blogspot.com.br/2011/09/simple-2d-orbit.html
 
@@ -750,9 +1073,9 @@ Routine {
 		body_pos_x = body_pos_x - body_vel_x;
 		body_pos_y = body_pos_y - body_vel_y;
 		// Control x,y and z values for source 1
-		{~testMosca.xboxProxy[0].valueAction = (body_pos_x / scale)}.defer;
-		{~testMosca.yboxProxy[0].valueAction = (body_pos_y / scale)}.defer;
-		{~testMosca.zboxProxy[0].valueAction = (body_pos_y / scale)}.defer; // duplicate Y for Z-axis
+		~testMosca.xboxProxy[0].valueAction = (body_pos_x / scale);
+		~testMosca.yboxProxy[0].valueAction = (body_pos_y / scale);
+		~testMosca.zboxProxy[0].valueAction = (body_pos_y / scale); // duplicate Y for Z-axis
 		0.02.wait;
 	};
 	);
@@ -790,7 +1113,7 @@ s.sync;
 ~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
 s.sync;
 
-MIDIIn.connect;
+MIDIIn.connect(inport: 0, device: 0);
 s.sync;
 
 // without headtracking with rir supplied in the zip file mentioned above.
@@ -817,6 +1140,7 @@ s.sync;
 (
 ~testMosca.free;
 ~decoder.free;
+MIDIIn.disconnect(inport: 0, device: 0);
 )
 
 

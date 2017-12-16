@@ -588,8 +588,8 @@ GUI Parameters usable in SynthDefs
 				//("Num = " ++ num.value).postln;
 				this.xval[i] = num.value;
 				if (guiflag) {
-					sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth);
-					novoplot.value(num.value, ybox[i], i, this.nfontes);
+					{sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth)}.defer;
+					{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
 					this.espacializador[i].set(\mx, this.xval[i]);
@@ -597,7 +597,7 @@ GUI Parameters usable in SynthDefs
 					this.synt[i].set(\mx, this.xval[i]);
 				};
 				if (guiflag) {
-					this.xbox[i].value = num.value;
+					{this.xbox[i].value = num.value}.defer;
 				};
 				
 			};
@@ -605,7 +605,7 @@ GUI Parameters usable in SynthDefs
 			this.yboxProxy[i].action = {arg num;
 				this.yval[i] = num.value;
 				if (guiflag) {
-					sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth);
+					{sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth)}.defer;
 				};
 				
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -615,7 +615,7 @@ GUI Parameters usable in SynthDefs
 					this.synt[i].set(\my, this.yval[i]);
 				};
 				if (guiflag) {
-					ybox[i].value = num.value;
+					{ybox[i].value = num.value}.defer;
 				};
 				
 				//{oybox[i].valueAction = this.origin.y;}.defer;
@@ -633,11 +633,11 @@ GUI Parameters usable in SynthDefs
 				zlev[i] = this.zval[i];
 				if((i == currentsource) && guiflag) 
 				{
-					zslider.value = (num.value + 1) / 2;
-					znumbox.value = num.value;
+					{zslider.value = (num.value + 1) / 2}.defer;
+					{znumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					zbox[i].value = num.value;
+					{zbox[i].value = num.value}.defer;
 				};
 			};
 			
@@ -650,11 +650,11 @@ GUI Parameters usable in SynthDefs
 				};
 				if((i == currentsource) && guiflag) 
 				{
-					angnumbox.value = num.value;
-					angslider.value = num.value / pi;
+					{angnumbox.value = num.value}.defer;
+					{angslider.value = num.value / pi}.defer;
 				};
 				if (guiflag) {
-					abox[i].value = num.value;
+					{abox[i].value = num.value}.defer;
 				};
 			}; 
 			
@@ -664,11 +664,11 @@ GUI Parameters usable in SynthDefs
 				level[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					volslider.value = num.value;
-					volnumbox.value = num.value;
+					{volslider.value = num.value}.defer;
+					{volnumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					vbox[i].value = num.value;
+					{vbox[i].value = num.value}.defer;
 				};
 				
 			};
@@ -681,11 +681,11 @@ GUI Parameters usable in SynthDefs
 				glev[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					gslider.value = num.value;
-					gnumbox.value = num.value;
+					{gslider.value = num.value}.defer;
+					{gnumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					gbox[i].value = num.value;
+					{gbox[i].value = num.value}.defer;
 				};
 			}; 
 			
@@ -697,8 +697,8 @@ GUI Parameters usable in SynthDefs
 				llev[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					lslider.value = num.value;
-					lnumbox.value = num.value;
+					{lslider.value = num.value}.defer;
+					{lnumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
 					lbox[i].value = num.value;
@@ -713,11 +713,11 @@ GUI Parameters usable in SynthDefs
 				if((i == currentsource) && guiflag) 
 				{
 					//num.value * 6.28 - pi;
-					rslider.value = (num.value + pi) / 2pi;
-					rnumbox.value = num.value;
+					{rslider.value = (num.value + pi) / 2pi}.defer;
+					{rnumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					rbox[i].value = num.value;
+					{rbox[i].value = num.value}.defer;
 				};
 			};
 			
@@ -728,11 +728,11 @@ GUI Parameters usable in SynthDefs
 				if((i == currentsource) && guiflag) 
 				{
 					//num.value * pi/2;
-					dirslider.value = num.value / (pi/2);
-					dirnumbox.value = num.value;
+					{dirslider.value = num.value / (pi/2)}.defer;
+					{dirnumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					dbox[i].value = num.value;
+					{dbox[i].value = num.value}.defer;
 				};
 			};
 			
@@ -744,11 +744,11 @@ GUI Parameters usable in SynthDefs
 				clev[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					cslider.value = num.value;
-					connumbox.value = num.value;
+					{cslider.value = num.value}.defer;
+					{connumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					cbox[i].value = num.value;
+					{cbox[i].value = num.value}.defer;
 				};
 			};
 			
@@ -761,11 +761,11 @@ GUI Parameters usable in SynthDefs
 				dplev[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					dpslider.value = num.value;
-					dopnumbox.value = num.value;
+					{dpslider.value = num.value}.defer;
+					{dopnumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					dpbox[i].value = num.value;
+					{dpbox[i].value = num.value}.defer;
 				};
 			};
 
@@ -774,11 +774,11 @@ GUI Parameters usable in SynthDefs
 				aux1[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					auxslider1.value = num.value;
-					aux1numbox.value = num.value;
+					{auxslider1.value = num.value}.defer;
+					{aux1numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					this.a1box[i].value = num.value;
+					{this.a1box[i].value = num.value}.defer;
 				};
 			}; 
 
@@ -787,11 +787,11 @@ GUI Parameters usable in SynthDefs
 				aux2[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					auxslider2.value = num.value;
-					aux2numbox.value = num.value;
+					{auxslider2.value = num.value}.defer;
+					{aux2numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					this.a2box[i].value = num.value;
+					{this.a2box[i].value = num.value}.defer;
 				};
 			}; 
 
@@ -800,11 +800,11 @@ GUI Parameters usable in SynthDefs
 				aux3[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					auxslider3.value = num.value;
-					aux3numbox.value = num.value;
+					{auxslider3.value = num.value}.defer;
+					{aux3numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					this.a3box[i].value = num.value;
+					{this.a3box[i].value = num.value}.defer;
 				};
 			}; 
 
@@ -813,11 +813,11 @@ GUI Parameters usable in SynthDefs
 				aux4[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					auxslider4.value = num.value;
-					aux4numbox.value = num.value;
+					{auxslider4.value = num.value}.defer;
+					{aux4numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					this.a4box[i].value = num.value;
+					{this.a4box[i].value = num.value}.defer;
 				};
 			}; 
 
@@ -826,11 +826,11 @@ GUI Parameters usable in SynthDefs
 				aux5[i] = num.value;
 				if((i == currentsource) && guiflag) 
 				{
-					auxslider5.value = num.value;
-					aux5numbox.value = num.value;
+					{auxslider5.value = num.value}.defer;
+					{aux5numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					this.a5box[i].value = num.value;
+					{this.a5box[i].value = num.value}.defer;
 				};
 			}; 
 
@@ -846,7 +846,7 @@ GUI Parameters usable in SynthDefs
 				
 				if (guiflag) {
 					
-					this.a1check[i].value = but.value;
+					{this.a1check[i].value = but.value}.defer;
 				};
 			};
 
@@ -860,7 +860,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a2check, 0);
 				};
 				if (guiflag) {
-					this.a2check[i].value = but.value;
+					{this.a2check[i].value = but.value}.defer;
 				};
 			};
 
@@ -875,7 +875,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a3check, 0);
 				};
 				if (guiflag) {
-					this.a3check[i].value = but.value;
+					{this.a3check[i].value = but.value}.defer;
 				};
 			};
 
@@ -891,7 +891,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a4check, 0);
 				};
 				if (guiflag) {
-					this.a4check[i].value = but.value;
+					{this.a4check[i].value = but.value}.defer;
 				};
 			};
 
@@ -906,7 +906,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a5check, 0);
 				};
 				if (guiflag) {
-					this.a5check[i].value = but.value;
+					{this.a5check[i].value = but.value}.defer;
 				};
 			};
 
@@ -919,13 +919,15 @@ GUI Parameters usable in SynthDefs
 					this.streamdisk[i] = false;
 				};
 				if (guiflag) {
-					this.stcheck[i].value = but.value;
+					{this.stcheck[i].value = but.value}.defer;
 				};
 			};
 			
 
 			this.dcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){dopcheque.value = but.value;};
+				if((i==currentsource) && guiflag){
+					{dopcheque.value = but.value}.defer;
+				};
 				if (but.value) {
 					doppler[i] = 1;
 					this.espacializador[i].set(\dopon, 1);
@@ -938,12 +940,14 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \dopon, 0);
 				};
 				if (guiflag) {
-					this.dcheck[i].value = but.value;
+					{this.dcheck[i].value = but.value}.defer;
 				};
 			});
 
 			this.lpcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){loopcheck.value = but.value;};
+				if((i==currentsource) && guiflag) {
+					{loopcheck.value = but.value}.defer;
+				};
 				if (but.value) {
 					lp[i] = 1;
 					this.synt[i].set(\lp, 1);
@@ -954,12 +958,12 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \lp, 0);
 				};
 				if (guiflag) {
-					this.lpcheck[i].value = but.value;
+					{this.lpcheck[i].value = but.value}.defer;
 				};
 			});
 
 			this.rvcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){revcheck.value = but.value;};
+				if((i==currentsource) && guiflag){{revcheck.value = but.value}.defer;};
 				if (but.value) {
 					rv[i] = 1;
 					//this.synt[i].set(\lp, 1);
@@ -970,19 +974,19 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \rv, 0);
 				};
 				if (guiflag) {
-					this.rvcheck[i].value = but.value;
+					{this.rvcheck[i].value = but.value}.defer;
 				};
 			});
 			/// testing
 			this.hwncheckProxy[i].action = { arg but;
 				if((i==this.currentsource) && guiflag) {
-					hwInCheck.value = but.value;
+					{hwInCheck.value = but.value}.defer;
 				};
 				if (but.value == true) {
 					if (guiflag) {
-						this.scncheck[i].value = false;
+						{this.scncheck[i].value = false}.defer;
 					};
-					if((i==currentsource) && guiflag){scInCheck.value = false;};
+					if((i==currentsource) && guiflag){{scInCheck.value = false}.defer;};
 					hwn[i] = 1;
 					scn[i] = 0;
 					this.synt[i].set(\hwn, 1);
@@ -991,17 +995,17 @@ GUI Parameters usable in SynthDefs
 					this.synt[i].set(\hwn, 0);
 				};
 				if (this.guiflag) {
-					this.hwncheck[i].value = but.value;
+					{this.hwncheck[i].value = but.value}.defer;
 				};
 			};
 
 			this.scncheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){scInCheck.value = but.value;};
+				if((i==currentsource) && guiflag){{scInCheck.value = but.value}.defer;};
 				if (but.value == true) {
 					if (guiflag) {
-						this.hwncheck[i].value = false;
+						{this.hwncheck[i].value = false}.defer;
 					};
-					if((i==currentsource) && guiflag){hwInCheck.value = false;};
+					if((i==currentsource) && guiflag){{hwInCheck.value = false}.defer;};
 					scn[i] = 1;
 					hwn[i] = 0;
 					this.synt[i].set(\scn, 1);
@@ -1010,12 +1014,12 @@ GUI Parameters usable in SynthDefs
 					this.synt[i].set(\scn, 0);
 				};
 				if (guiflag) {
-					this.scncheck[i].value = but.value;
+					{this.scncheck[i].value = but.value}.defer;
 				};
 			});
 
 			this.lncheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){lincheck.value = but.value;};
+				if((i==currentsource) && guiflag){{lincheck.value = but.value}.defer;};
 				if (but.value) {
 					ln[i] = "_linear";
 					this.setSynths(i, \ln, 1);
@@ -1024,17 +1028,17 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \ln, 0);
 				};
 				if (guiflag) {
-					this.lncheck[i].value = but.value;
+					{this.lncheck[i].value = but.value}.defer;
 				};
 			});
 
 			this.spcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){spreadcheck.value = but.value;};
+				if((i==currentsource) && guiflag){{spreadcheck.value = but.value}.defer;};
 				if (but.value) {
 					if (guiflag) {
-						this.dfcheck[i].value = false;
+						{this.dfcheck[i].value = false}.defer;
 					};
-					if((i==currentsource) && guiflag){diffusecheck.value = false;};
+					if((i==currentsource) && guiflag){{diffusecheck.value = false}.defer;};
 					sp[i] = 1;
 					df[i] = 0;
 					this.espacializador[i].set(\sp, 1);
@@ -1048,17 +1052,17 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \sp, 0);
 				};
 				if (guiflag) {
-					this.spcheck[i].value = but.value;
+					{this.spcheck[i].value = but.value}.defer;
 				};
 			});
 
 			this.dfcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){diffusecheck.value = but.value;};
+				if((i==currentsource) && guiflag){{diffusecheck.value = but.value}.defer;};
 				if (but.value) {
 					if (guiflag) {
-						this.spcheck[i].value = false;
+						{this.spcheck[i].value = false}.defer;
 					};
-					if((i==currentsource) && guiflag){spreadcheck.value = false;};
+					if((i==currentsource) && guiflag){{spreadcheck.value = false}.defer;};
 					df[i] = 1;
 					sp[i] = 0;
 					this.espacializador[i].set(\df, 1);
@@ -1072,7 +1076,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \df, 0);
 				};
 				if (guiflag) {
-					this.dfcheck[i].value = but.value;
+					{this.dfcheck[i].value = but.value}.defer;
 				};
 			});
 
@@ -1085,10 +1089,10 @@ GUI Parameters usable in SynthDefs
 				{
 					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
-					ncannumbox.value = num.value;
+					{ncannumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					this.ncanbox[i].value = num.value;
+					{this.ncanbox[i].value = num.value}.defer;
 				};
 			};
 
@@ -1101,10 +1105,10 @@ GUI Parameters usable in SynthDefs
 				{
 					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
-					busininumbox.value = num.value;
+					{busininumbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					this.businibox[i].value = num.value;
+					{this.businibox[i].value = num.value}.defer;
 				};
 			}; 
 
@@ -1118,7 +1122,7 @@ GUI Parameters usable in SynthDefs
 					"To stream file".postln;
 				};
 				if (guiflag) {
-					this.tfield[i].value = path.value;
+					{this.tfield[i].value = path.value}.defer;
 				};
 			};
 
@@ -4415,7 +4419,7 @@ this.aFormatBusSoa[1,x].free;
 //		kespac[x].stop;
 };
 MIDIIn.removeFuncFrom(\sysex, sysex);
-MIDIIn.disconnect; 
+	//MIDIIn.disconnect; 
 if(this.revGlobal.notNil){
 this.revGlobal.free;
 };
