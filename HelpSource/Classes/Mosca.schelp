@@ -587,22 +587,22 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 
 // without headtracking with rir supplied in the zip file mentioned above.
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 965, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 
 // with headtracking (should only be used with binaural decoder)
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
+~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
 
 
 // Use allpass filter reverberation
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 11, width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 11, width: 965, dur: 200, rir: "allpass", decoder: ~decoder);
 
 // Use RIR and send raw 1st order ambi sginal to outputs (channels 2-10)
 //using no decoder, a raworder of 1 and rawbus value of 2.
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
 
 
 s.sync;
@@ -722,7 +722,7 @@ z.free; // free the filter
 
 // CODED CONTROL OF MOSCA
 
-As described above in this help file (see "CODED CONTROL OF MOSCA" in Description), Mosca may be controlled via proxies. To use the following block of code, have the Mosca GUI running with a sound loaded in source 1. Run the block of code below to control the x, y and z coordinates and have "audition" slected for source 1 in the GUI and the "level" turned up. Note that because the proxies are controlling the GUI as well as mechanism spatialising the sound, it is necessary to encapsulate the lines of code setting the proxies in "defer" statements. If you run Mosca without a GUI (see below), it is not necessary to use defer.
+As described above in this help file (see "CODED CONTROL OF MOSCA" in Description), Mosca may be controlled via proxies. To use the following block of code, have the Mosca GUI running with a sound loaded in source 1 and with "audition" selcted and the "level" turned up. Run the block of code below to control the x, y and z coordinates. Note that because the proxies are controlling the GUI as well as mechanism spatialising the sound, it is necessary to encapsulate the lines of code setting the proxies in "defer" statements. If you run Mosca without a GUI (see below), it is not necessary to use defer.
 (
 // orbit derived from code by WillS: http://cplussplussatplay.blogspot.com.br/2011/09/simple-2d-orbit.html
 
@@ -795,16 +795,16 @@ s.sync;
 
 // without headtracking with rir supplied in the zip file mentioned above.
 
-~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 865, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder, guiflag: false);
+~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder, guiflag: false);
 
 
 // with headtracking (should only be used with binaural decoder)
 
-//~testMosca = Mosca.new(projDir: "/home/iain/projects/ambisonics/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0, guiflag: false);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0, guiflag: false);
 
 
-	~testMosca.control.load("/home/iain/projects/ambisonics/moscaproject/auto/s14");
-	~testMosca.loadNonAutomationData("/home/iain/projects/ambisonics/moscaproject/auto/s14");
+	~testMosca.control.load("/path/to/your/automation/file");
+	~testMosca.loadNonAutomationData("/path/to/your/automation/file");
 };
 
 )
