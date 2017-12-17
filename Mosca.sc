@@ -2898,12 +2898,12 @@ GUI Parameters usable in SynthDefs
 				});
 			});
 		});
-
+		
 		this.watcher.play;
 		
 		///////////////
-
-				//// LAUNCH GUI 
+		
+		//// LAUNCH GUI 
 		if (this.serport.notNil) {
 			//this.troutine = this.trackerRoutine; // start parsing of serial head tracker data
 			//	this.kroutine = this.serialKeepItUp;
@@ -2915,8 +2915,8 @@ GUI Parameters usable in SynthDefs
 		if(guiflag) {
 			this.gui;
 		};
-
-
+		
+		
 	} // end initMosca
 
 	blips {
@@ -2953,7 +2953,7 @@ GUI Parameters usable in SynthDefs
 				sprite[i, 1] = ((xval[i] * this.halfwidth * -1) + this.halfwidth);
 				sprite[i, 0] = ((yval[i] * this.halfwidth * -1) + this.halfwidth);
 			};
-
+			
 			if(this.espacializador[i].notNil) {
 				
 				this.espacializador[i].set(\mx, this.xval[i], \my, this.yval[i]);
@@ -2968,7 +2968,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	matchTByte {|byte|  // match incoming headtracker data
+	matchTByte { |byte|  // match incoming headtracker data
 		
         if(this.trackarr[this.tracki].isNil or:{this.trackarr[this.tracki]==byte}, { 
 			this.trackarr2[this.tracki]= byte; 
@@ -2992,13 +2992,15 @@ GUI Parameters usable in SynthDefs
 
 	
 
-	trackerRoutine {Routine.new({
-		inf.do{
-			//this.trackPort.read.postln;
-			this.matchTByte(this.trackPort.read); 
-		}; 
-	})}
-
+	trackerRoutine { Routine.new
+		( {
+			inf.do{
+				//this.trackPort.read.postln;
+				this.matchTByte(this.trackPort.read); 
+			}; 
+		})
+	}
+	
 	serialKeepItUp {Routine.new({
 		inf.do{
 			if (this.trackPort.isOpen.not) // if serial port is closed
@@ -3033,7 +3035,7 @@ GUI Parameters usable in SynthDefs
 			
 		};
 	}
-
+	
 
 	getSynthRegistry { // selection of Mosca arguments for use in synths
 		| source |
@@ -3138,100 +3140,7 @@ GUI Parameters usable in SynthDefs
 		}
 	}
 
-	/*
-	// load automation data. Can be called after creation of Mosca instance
-	loadAutomation {
-		|path|
-		var filenames;
-		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
-		this.control.load(path);
-		//this.control.seek; 
-		this.lastAutomation = path;
-		"2HHHHHHHHHHHHHHHHHHHEEEEEEEEEEEEEERRRRRRRRRRREEEEEEEEE".postln;
-		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
-
-		dopplerf = File((path ++ "/doppler.txt").standardizePath,"r");
-		loopedf = File((path ++ "/looped.txt").standardizePath,"r");
-		aformatrevf = File((path ++ "/aformatrev.txt").standardizePath,"r");
-		hwinf = File((path ++ "/hwin.txt").standardizePath,"r");
-		scinf = File((path ++ "/scin.txt").standardizePath,"r");
-		linearf = File((path ++ "/linear.txt").standardizePath,"r");
-		spreadf = File((path ++ "/spread.txt").standardizePath,"r");
-		diffusef = File((path ++ "/diffuse.txt").standardizePath,"r");
-		ncanf = File((path ++ "/ncan.txt").standardizePath,"r");
-		businif = File((path ++ "/busini.txt").standardizePath,"r");
-		stcheckf = File((path ++ "/stcheck.txt").standardizePath,"r");
-		
-		this.nfontes.do { arg i;
-			var line = filenames.getLine(1024);
-			if(line!="NULL"){this.tfield[i].valueAction = line};
-		};
-				nfontes.do { arg i;
-					var line = dopplerf.getLine(1024);
-					this.dcheck[i].valueAction = line;
-				};
-
-				nfontes.do { arg i;
-					var line = loopedf.getLine(1024);
-					this.lpcheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = aformatrevf.getLine(1024);
-					this.rvcheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = hwinf.getLine(1024);
-					this.hwncheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = scinf.getLine(1024);
-					this.scncheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = linearf.getLine(1024);
-					this.lncheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = spreadf.getLine(1024);
-					this.spcheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = diffusef.getLine(1024);
-					this.dfcheck[i].valueAction = line;
-				};
-				nfontes.do { arg i;
-					var line = ncanf.getLine(1024);
-					this.ncanbox[i].valueAction = line.asFloat;
-				};
-				nfontes.do { arg i;
-					var line = businif.getLine(1024);
-					this.businibox[i].valueAction = line.asFloat;
-				};
-				nfontes.do { arg i;
-					var line = stcheckf.getLine(1024);
-					this.stcheck[i].valueAction = line;
-					("LINE = " ++ line).postln;
-				};
-
-		
-		filenames.close;
-
-		dopplerf.close;
-		loopedf.close;
-		aformatrevf.close;
-		hwinf.close;
-		scinf.close;
-		linearf.close;
-		spreadf.close;
-		diffusef.close;
-		ncanf.close;
-		businif.close;
-		stcheckf.close;
-		
-	}
-	*/
-
-
+	
 	
 
 	playAutomation {
@@ -3295,198 +3204,472 @@ GUI Parameters usable in SynthDefs
 		
 		/// STREAM FROM DISK
 
-			if ((path != "") && this.hwncheckProxy[i].value.not && this.scncheckProxy[i].value.not && this.streamdisk[i]) {
-				var x;
-				"Content Streamed from disk".postln;
-				if (testado[i].not || force) { // if source is testing don't relaunch synths
-					x = case
-					{ this.streambuf[i].numChannels == 1} {
-						"1 channel".postln;
-						if (guiflag) {
-							{angnumbox.value = 0;}.defer;
-							{angslider.value = 0;}.defer;
+		if ((path != "") && this.hwncheckProxy[i].value.not && this.scncheckProxy[i].value.not && this.streamdisk[i]) {
+			var x;
+			"Content Streamed from disk".postln;
+			if (testado[i].not || force) { // if source is testing don't relaunch synths
+				x = case
+				{ this.streambuf[i].numChannels == 1} {
+					"1 channel".postln;
+					if (guiflag) {
+						{angnumbox.value = 0;}.defer;
+						{angslider.value = 0;}.defer;
+					};
+					cboxProxy[i].valueAction = 1;
+					clev[i] = 1;
+					if((i == currentsource) && guiflag) {
+						cslider.value = 1;
+						connumbox.value = 1;
+					};
+					if(rv[i] == 1) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+								revGlobalBF, addAction:\addBefore);
 						};
-						cboxProxy[i].valueAction = 1;
-						clev[i] = 1;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 1;
-							connumbox.value = 1;
-						};
-						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									revGlobalBF, addAction:\addBefore);
-							};
-							
-							if(this.decoder.isNil && (this.raworder == 2)) {
-								
-								this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
-									\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]], 
-									revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.streambuf[i].free;
-									});
-								
-								
-							} {
-								this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
-									\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]], 
-									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.streambuf[i].free;
-									});															
-								
-							};
-							this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
-								\soaBus, soaBus, \gbfbus, gbfbus,
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								this.synt[i], addAction: \addAfter);
-							
-						} { 
+						
+						if(this.decoder.isNil && (this.raworder == 2)) {
 							
 							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]], revGlobalBF,
-								addAction: \addBefore).onFree({this.espacializador[i].free;
+								\level, level[i]], 
+								revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
-
-							("HERE!!!!!!!!!!!!!!! xval = " ++ this.xval[i] ++ "yval = " ++ this.yval[i]).postln;
-							
-							this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
-								\gbus, gbus, 
-								
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								
-								\dopon, doppler[i]], 
-								this.synt[i], addAction: \addAfter);
 							
 							
-						};
-						//atualizarvariaveis.value;
-						updatesourcevariables.value(i);	
-					}
-					{ this.streambuf[i].numChannels == 2} {
-						"2 channel".postln;
-						angle[i] = pi/2;
-						cboxProxy[i].valueAction = 1;
-						clev[i] = 1;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 1;
-							connumbox.value = 1;
-						};
-						if (guiflag) {
-							{angnumbox.value = 1.05;}.defer; // 60 degrees
-							{angslider.value = 0.33;}.defer;
-						};
-						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-								
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									revGlobalBF, addAction:\addBefore);
-							};
-							
-							
-
-							if(this.decoder.isNil && (this.raworder == 2)) {
-								this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
-									\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]],
-									revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.streambuf[i].free;
-									});
-							} {
-								this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
-									\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]],
-									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.streambuf[i].free;
-									});
-							};
-							
-							this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
-								\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								this.synt[i], addAction: \addAfter);
-							
-
-
 						} {
-							if (testado[i].not || force) {
-								this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
-									\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]], 
-									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.streambuf[i].free;
-									});
-								
-								this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
-									\gbus, gbus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
-							};
+							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
+								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]], 
+								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil;
+									this.streambuf[i].free;
+								});															
 							
 						};
-						updatesourcevariables.value(i);	
+						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+							\soaBus, soaBus, \gbfbus, gbfbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
 						
+					} { 
 						
-						
-					}
-					{ this.streambuf[i].numChannels == 4} {
-						"4 channel".postln;
-						this.playingBF[i] = true;
-						ncanais[i] = 4;
-						angle[i] = 0;
-						if (guiflag) {
-							{angnumbox.value = 0;}.defer;
-						};
-						cboxProxy[i].valueAction = 0;
-						clev[i] = 0;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 0;
-							connumbox.value = 0;
-						};
-						if (guiflag) {
-							{angslider.value = 0;}.defer;
-						};
+						this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
+							\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+							\level, level[i]], revGlobalBF,
+							addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil; this.synt[i] = nil;
+								this.streambuf[i].free;
+							});
 
-						if(rv[i] == 1) {
-
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									revGlobalBF, addAction:\addBefore);
-							};
+						("HERE!!!!!!!!!!!!!!! xval = " ++ this.xval[i] ++ "yval = " ++ this.yval[i]).postln;
+						
+						this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
+							\gbus, gbus, 
 							
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+						
+						
+					};
+					//atualizarvariaveis.value;
+					updatesourcevariables.value(i);	
+				}
+				{ this.streambuf[i].numChannels == 2} {
+					"2 channel".postln;
+					angle[i] = pi/2;
+					cboxProxy[i].valueAction = 1;
+					clev[i] = 1;
+					if((i == currentsource) && guiflag) {
+						cslider.value = 1;
+						connumbox.value = 1;
+					};
+					if (guiflag) {
+						{angnumbox.value = 1.05;}.defer; // 60 degrees
+						{angslider.value = 0.33;}.defer;
+					};
+					if(rv[i] == 1) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+							
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+								revGlobalBF, addAction:\addBefore);
+						};
+						
+						
+
+						if(this.decoder.isNil && (this.raworder == 2)) {
+							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
+								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]],
+								revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil;
+									this.streambuf[i].free;
+								});
+						} {
+							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
+								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]],
+								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil;
+									this.streambuf[i].free;
+								});
+						};
+						
+						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+						
+
+
+					} {
+						if (testado[i].not || force) {
+							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
+								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]], 
+								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil;
+									this.streambuf[i].free;
+								});
+							
+							this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+								this.synt[i], addAction: \addAfter);
+						};
+						
+					};
+					updatesourcevariables.value(i);	
+					
+					
+					
+				}
+				{ this.streambuf[i].numChannels == 4} {
+					"4 channel".postln;
+					this.playingBF[i] = true;
+					ncanais[i] = 4;
+					angle[i] = 0;
+					if (guiflag) {
+						{angnumbox.value = 0;}.defer;
+					};
+					cboxProxy[i].valueAction = 0;
+					clev[i] = 0;
+					if((i == currentsource) && guiflag) {
+						cslider.value = 0;
+						connumbox.value = 0;
+					};
+					if (guiflag) {
+						{angslider.value = 0;}.defer;
+					};
+
+					if(rv[i] == 1) {
+
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+								revGlobalBF, addAction:\addBefore);
+						};
+						
+
+						if(this.decoder.isNil && (this.raworder == 2)) {
+							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+								gbfbus, \outbus,
+								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+								\rate, 1, \tpos, tpos, \lp,
+								lp[i], \level, level[i],
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+								revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil;
+									this.playingBF[i] = false;
+									this.streambuf[i].free;
+								});
+						} {
+							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+								gbfbus, \outbus,
+								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+								\rate, 1, \tpos, tpos, \lp,
+								lp[i], \level, level[i],
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil;
+									this.playingBF[i] = false;
+									this.streambuf[i].free;
+								});					
+						};
+						
+						this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
+							\gbus, gbus, \soaBus, soaBus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+						
+					} {
+						
+						
+						this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+							mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+							\rate, 1, \tpos, tpos, \lp,
+							lp[i], \level, level[i],
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							//					~revGlobal, addAction: \addBefore);
+							revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil; this.synt[i] = nil;
+								this.playingBF[i] = false;
+								this.streambuf[i].free;
+							});
+						
+						this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
+							[\inbus, mbus[i], \gbus, gbus, 
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+						
+						
+						
+					};
+					updatesourcevariables.value(i);	
+				};
+				
+
+			};
+		};
+		/// END STREAM FROM DISK
+		
+		// check this logic - what should override what?
+		if ((path != "") && (this.hwncheckProxy[i].value.not || this.scncheckProxy[i].value.not) && this.streamdisk[i].not) {
+			
+			//{	
+			
+			if (sombuf[i].numChannels == 1)  // arquivo mono
+			{
+				//"Am I mono?".postln;
+				ncanais[i] = 1;
+				angle[i] = 0;
+				if (guiflag) {
+					{angnumbox.value = 0;}.defer;
+					{angslider.value = 0;}.defer;
+				};
+				cboxProxy[i].valueAction = 1;
+				clev[i] = 1;
+				if((i == currentsource) && guiflag) {
+					cslider.value = 1;
+					connumbox.value = 1;
+				};
+				
+				if(rv[i] == 1) {
+					if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							revGlobalBF, addAction:\addBefore);
+					};
+					if (testado[i].not || force) { // if source is testing don't relaunch synths
+
+						if(this.decoder.isNil && (this.raworder == 2)) {
+
+							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]], 
+								revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil});
+							
+							
+						} {
+							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]], 
+								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil});															
+
+						};
+						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+							\soaBus, soaBus, \gbfbus, gbfbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+					};
+				} { 
+					if (testado[i].not || force) { // if source is testing don't relaunch synths
+						this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+							\level, level[i]], revGlobalBF,
+							addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil; this.synt[i] = nil});
+						
+						this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
+							\gbus, gbus, 
+							
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+					};
+
+				};
+				updatesourcevariables.value(i);	
+				
+				
+			}
+			{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
+				angle[i] = pi/2;
+				cboxProxy[i].valueAction = 1;
+				clev[i] = 1;
+				if((i == currentsource) && guiflag) {
+					cslider.value = 1;
+					connumbox.value = 1;
+				};
+				if (guiflag) {
+					{angnumbox.value = 1.05;}.defer; // 60 degrees
+					{angslider.value = 0.33;}.defer;
+				};
+				if(rv[i] == 1) {
+					if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						
+						revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							revGlobalBF, addAction:\addBefore);
+					};
+					
+					if (testado[i].not || force) {
+
+						if(this.decoder.isNil && (this.raworder == 2)) {
+							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]],
+								revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil});
+						} {
+							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+								\level, level[i]],
+								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil});
+						};
+						
+						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+					};
+
+
+				} {
+					if (testado[i].not || force) {
+						this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+							\level, level[i]], 
+							revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil; this.synt[i] = nil});
+						
+						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+							\gbus, gbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
+					};
+					
+				};
+				//atualizarvariaveis.value;
+				updatesourcevariables.value(i);	
+				
+				//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+
+
+
+				
+			} {
+				if (sombuf[i].numChannels == 4) {
+					this.playingBF[i] = true;
+					ncanais[i] = 4;
+					angle[i] = 0;
+					if (guiflag) {
+						{angnumbox.value = 0;}.defer;
+					};
+					cboxProxy[i].valueAction = 0;
+					clev[i] = 0;
+					if((i == currentsource) && guiflag) {
+						cslider.value = 0;
+						connumbox.value = 0;
+					};
+					if (guiflag) {
+						{angslider.value = 0;}.defer;
+					};
+					
+					// reverb for non-contracted (full b-format) component
+
+					// reverb for contracted (mono) component - and for rest too
+					if(rv[i] == 1) {
+
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+								revGlobalBF, addAction:\addBefore);
+						};
+						
+
+						if (testado[i].not || force) {
 
 							if(this.decoder.isNil && (this.raworder == 2)) {
-								this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+								this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
 									gbfbus, \outbus,
-									mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
 									lp[i], \level, level[i],
 									\insertFlag, this.insertFlag[i],
@@ -3497,13 +3680,11 @@ GUI Parameters usable in SynthDefs
 									\dopon, doppler[i]], 
 									revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.playingBF[i] = false;
-										this.streambuf[i].free;
-									});
+										this.playingBF[i] = false});
 							} {
-								this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+								this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
 									gbfbus, \outbus,
-									mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
 									lp[i], \level, level[i],
 									\insertFlag, this.insertFlag[i],
@@ -3514,9 +3695,7 @@ GUI Parameters usable in SynthDefs
 									\dopon, doppler[i]], 
 									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.playingBF[i] = false;
-										this.streambuf[i].free;
-									});					
+										this.playingBF[i] = false});					
 							};
 							
 							this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
@@ -3528,12 +3707,13 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 								\dopon, doppler[i]], 
 								this.synt[i], addAction: \addAfter);
+						};
+					} {
+						if (testado[i].not || force) {
+
 							
-						} {
-							
-							
-							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
-								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+							this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+								mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
 								lp[i], \level, level[i],
 								\insertFlag, this.insertFlag[i],
@@ -3545,9 +3725,7 @@ GUI Parameters usable in SynthDefs
 								//					~revGlobal, addAction: \addBefore);
 								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.playingBF[i] = false;
-									this.streambuf[i].free;
-								});
+									this.playingBF[i] = false});
 							
 							this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
 								[\inbus, mbus[i], \gbus, gbus, 
@@ -3558,369 +3736,72 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 									\dopon, doppler[i]], 
 								this.synt[i], addAction: \addAfter);
-							
-							
-							
 						};
-						updatesourcevariables.value(i);	
+						
+
 					};
+					updatesourcevariables.value(i);	
 					
 
+					
+					
+				}
+				{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
 				};
+			};  }; 
+			if(control.doRecord == false){
+				if (guiflag) {
+					{	xboxProxy[i].valueAction = xbox[i].value;
+						yboxProxy[i].valueAction = ybox[i].value;
+					}.defer;
+				};
+
 			};
-			/// END STREAM FROM DISK
-		
-			// check this logic - what should override what?
-		if ((path != "") && (this.hwncheckProxy[i].value.not || this.scncheckProxy[i].value.not) && this.streamdisk[i].not) {
 			
-			//{	
+			
+			
+			//				}.defer;	
+			//};	
+		} {
+			
+			if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
+				var x;
+				x = case
+				{ this.ncan[i] == 1 } {
 					
-					if (sombuf[i].numChannels == 1)  // arquivo mono
-			{
-				//"Am I mono?".postln;
-				ncanais[i] = 1;
-						angle[i] = 0;
-						if (guiflag) {
-							{angnumbox.value = 0;}.defer;
-							{angslider.value = 0;}.defer;
-						};
-						cboxProxy[i].valueAction = 1;
-						clev[i] = 1;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 1;
-							connumbox.value = 1;
+					cboxProxy[i].valueAction = 1;
+					clev[i] = 1;
+					if((i == currentsource) && guiflag) {
+						cslider.value = 1;
+						connumbox.value = 1;
+					};
+
+					if(rv[i] == 1) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+								revGlobalBF, addAction:\addBefore);
 						};
 						
-						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									revGlobalBF, addAction:\addBefore);
-							};
-							if (testado[i].not || force) { // if source is testing don't relaunch synths
-
+						if (testado[i].not || force) {
+							if (this.hwncheckProxy[i].value) {
 								if(this.decoder.isNil && (this.raworder == 2)) {
-
-									this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
-										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-										\level, level[i]], 
-										revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-									
-									
-								} {
-									this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
-										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-										\level, level[i]], 
-										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});															
-
-								};
-								this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
-									\soaBus, soaBus, \gbfbus, gbfbus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
-							};
-						} { 
-							if (testado[i].not || force) { // if source is testing don't relaunch synths
-								this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]], revGlobalBF,
-									addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil});
-								
-								this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
-									\gbus, gbus, 
-									
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
-							};
-
-						};
-						updatesourcevariables.value(i);	
-						
-						
-					}
-					{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
-						angle[i] = pi/2;
-						cboxProxy[i].valueAction = 1;
-						clev[i] = 1;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 1;
-							connumbox.value = 1;
-						};
-						if (guiflag) {
-							{angnumbox.value = 1.05;}.defer; // 60 degrees
-							{angslider.value = 0.33;}.defer;
-						};
-						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-								
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									revGlobalBF, addAction:\addBefore);
-							};
-							
-							if (testado[i].not || force) {
-
-								if(this.decoder.isNil && (this.raworder == 2)) {
-									this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
-										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-										\level, level[i]],
-										revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
+										this.busini[i],
+										\level, level[i]], revGlobalSoa,
+										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								} {
-									this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
-										\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-										\level, level[i]],
-										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
+										this.busini[i],
+										\level, level[i]], revGlobalBF,
+										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
-								};
-								
-								this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
-									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
-							};
-
-
-						} {
-							if (testado[i].not || force) {
-								this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
-									\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-									\level, level[i]], 
-									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil});
-								
-								this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
-									\gbus, gbus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
-							};
-							
-						};
-						//atualizarvariaveis.value;
-						updatesourcevariables.value(i);	
-						
-						//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-
-
-
-						
-					} {
-						if (sombuf[i].numChannels == 4) {
-							this.playingBF[i] = true;
-							ncanais[i] = 4;
-							angle[i] = 0;
-							if (guiflag) {
-								{angnumbox.value = 0;}.defer;
-							};
-							cboxProxy[i].valueAction = 0;
-							clev[i] = 0;
-							if((i == currentsource) && guiflag) {
-								cslider.value = 0;
-								connumbox.value = 0;
-							};
-							if (guiflag) {
-								{angslider.value = 0;}.defer;
-							};
-							
-							// reverb for non-contracted (full b-format) component
-
-							// reverb for contracted (mono) component - and for rest too
-							if(rv[i] == 1) {
-
-								if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-										revGlobalBF, addAction:\addBefore);
-								};
-								
-
-								if (testado[i].not || force) {
-
-									if(this.decoder.isNil && (this.raworder == 2)) {
-										this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
-											gbfbus, \outbus,
-											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-											\rate, 1, \tpos, tpos, \lp,
-											lp[i], \level, level[i],
-											\insertFlag, this.insertFlag[i],
-											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-											\dopon, doppler[i]], 
-											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil;
-												this.playingBF[i] = false});
-									} {
-										this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
-											gbfbus, \outbus,
-											mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-											\rate, 1, \tpos, tpos, \lp,
-											lp[i], \level, level[i],
-											\insertFlag, this.insertFlag[i],
-											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-											\dopon, doppler[i]], 
-											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil;
-												this.playingBF[i] = false});					
-									};
-									
-									this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
-										\gbus, gbus, \soaBus, soaBus,
-										\insertFlag, this.insertFlag[i],
-										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\dopon, doppler[i]], 
-										this.synt[i], addAction: \addAfter);
 								};
 							} {
-								if (testado[i].not || force) {
-
-									
-									this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
-										mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-										\rate, 1, \tpos, tpos, \lp,
-										lp[i], \level, level[i],
-										\insertFlag, this.insertFlag[i],
-										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\dopon, doppler[i]], 
-										//					~revGlobal, addAction: \addBefore);
-										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil;
-											this.playingBF[i] = false});
-									
-									this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
-										[\inbus, mbus[i], \gbus, gbus, 
-											\insertFlag, this.insertFlag[i],
-											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-											\dopon, doppler[i]], 
-										this.synt[i], addAction: \addAfter);
-								};
-								
-
-							};
-							updatesourcevariables.value(i);	
-							
-
-							
-							
-						}
-						{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
-						};
-					};  }; 
-					if(control.doRecord == false){
-						if (guiflag) {
-							{	xboxProxy[i].valueAction = xbox[i].value;
-								yboxProxy[i].valueAction = ybox[i].value;
-							}.defer;
-						};
-
-					};
-					
-					
-					
-					//				}.defer;	
-					//};	
-			} {
-				
-				if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
-					var x;
-					x = case
-					{ this.ncan[i] == 1 } {
-						
-						cboxProxy[i].valueAction = 1;
-						clev[i] = 1;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 1;
-							connumbox.value = 1;
-						};
-
-						if(rv[i] == 1) {
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									revGlobalBF, addAction:\addBefore);
-							};
-							
-							if (testado[i].not || force) {
-								if (this.hwncheckProxy[i].value) {
-									if(this.decoder.isNil && (this.raworder == 2)) {
-										this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
-											this.busini[i],
-											\level, level[i]], revGlobalSoa,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});
-									} {
-										this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
-											this.busini[i],
-											\level, level[i]], revGlobalBF,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});
-									};
-								} {
-									if(this.decoder.isNil && (this.raworder == 2)) {
-										this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
-											\busini, this.scInBus[i], // use "index" method?
-											\level, level[i]], revGlobalSoa,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});
-									} {
-										this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
-											\busini, this.scInBus[i], // use "index" method?
-											\level, level[i]], revGlobalBF,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});
-									};
-								};
-								
-								
-								this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
-									\soaBus, soaBus, \gbfbus, gbfbus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
-							};
-							
-						} {
-							if (testado[i].not || force) {
-								if (this.hwncheckProxy[i].value) {
-									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
-										\level, level[i]], revGlobalBF,
+								if(this.decoder.isNil && (this.raworder == 2)) {
+									this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
+										\busini, this.scInBus[i], // use "index" method?
+										\level, level[i]], revGlobalSoa,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								} {
@@ -3930,112 +3811,37 @@ GUI Parameters usable in SynthDefs
 										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								};
-								
-								
-								this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
-									\gbus, gbus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
 							};
-
+							
+							
+							this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+								\soaBus, soaBus, \gbfbus, gbfbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+								this.synt[i], addAction: \addAfter);
 						};
 						
-						//atualizarvariaveis.value;
-						updatesourcevariables.value(i);	
-						
-						
-
-
-
-						
-					}
-					{ this.ncan[i] == 2 } {
-						ncanais[i] = 0; // just in case!
-						angle[i] = pi/2;
-						if (guiflag) {
-							{angnumbox.value = pi/2;}.defer;
-							{angslider.value = 0.5;}.defer;
-						};
-						
-						cboxProxy[i].valueAction = 1;
-						clev[i] = 1;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 1;
-							connumbox.value = 1;
-						};
-
-						if(rv[i] == 1) {	
-
-
-							if (testado[i].not || force) {
-
-								if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-									revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-										revGlobalBF, addAction:\addBefore);
-								};
-								if (this.hwncheckProxy[i].value) {
-
-									if(this.decoder.isNil && (this.raworder == 2)){
-										this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
-											this.busini[i],
-											\level, level[i]], revGlobalSoa,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});
-									} {
-										synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
-											this.busini[i],
-											\level, level[i]], revGlobalBF,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});							
-									};
-								} {
-									if(this.decoder.isNil && (this.raworder == 2)){
-										this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
-											\busini, this.scInBus[i],
-											\level, level[i]], revGlobalSoa,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});
-									} {
-										synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
-											\busini, this.scInBus[i],
-											\level, level[i]], revGlobalBF,
-											addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil});										
-									};
-								};
-								
-								this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i], \gbus, gbus,
-									\soaBus, soaBus, \gbfbus, gbfbus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
-							};
-
-
-						} {
+					} {
+						if (testado[i].not || force) {
 							if (this.hwncheckProxy[i].value) {
-								this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
+								this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
 									\level, level[i]], revGlobalBF,
 									addAction: \addBefore).onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil});
 							} {
-								this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
-									\busini, this.scInBus[i],
+								this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
+									\busini, this.scInBus[i], // use "index" method?
 									\level, level[i]], revGlobalBF,
 									addAction: \addBefore).onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil});
 							};
 							
-							this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+							
+							this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
 								\gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4044,164 +3850,267 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 								\dopon, doppler[i]], 
 								this.synt[i], addAction: \addAfter);
-
-
-						};
-						//atualizarvariaveis.value;
-						updatesourcevariables.value(i);	
-						
-						
-
-
-
-						
-					}
-					{ this.ncan[i] == 4 } {
-						
-						cboxProxy[i].valueAction = 0;
-						clev[i] = 0;
-						if((i == currentsource) && guiflag) {
-							cslider.value = 0;
-							connumbox.value = 0;
 						};
 
-						if(rv[i] == 1) {
+					};
+					
+					//atualizarvariaveis.value;
+					updatesourcevariables.value(i);	
+					
+					
 
-							if(revGlobalSoa == nil && this.decoder.isNil && (this.raworder == 2)) {
+
+
+					
+				}
+				{ this.ncan[i] == 2 } {
+					ncanais[i] = 0; // just in case!
+					angle[i] = pi/2;
+					if (guiflag) {
+						{angnumbox.value = pi/2;}.defer;
+						{angslider.value = 0.5;}.defer;
+					};
+					
+					cboxProxy[i].valueAction = 1;
+					clev[i] = 1;
+					if((i == currentsource) && guiflag) {
+						cslider.value = 1;
+						connumbox.value = 1;
+					};
+
+					if(rv[i] == 1) {	
+
+
+						if (testado[i].not || force) {
+
+							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									revGlobalBF, addAction:\addBefore);
 							};
-							
-							if (testado[i].not || force) {
-								if(this.decoder.isNil && (this.raworder == 2)) {
-									if (this.hwncheckProxy[i].value) {
-										this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
-											\outbus, mbus[i],
-											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
-											\dopon, doppler[i],
-											\insertFlag, this.insertFlag[i],
-											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-											\busini, this.busini[i]], 
-											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil;});
-									} {
-										this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
-											mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-											level[i],
-											\insertFlag, this.insertFlag[i],
-											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-											\dopon, doppler[i],
-											\busini, this.scInBus[i] ], 
-											revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil;});
-									};
+							if (this.hwncheckProxy[i].value) {
+
+								if(this.decoder.isNil && (this.raworder == 2)){
+									this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
+										this.busini[i],
+										\level, level[i]], revGlobalSoa,
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; this.synt[i] = nil});
 								} {
-									if (this.hwncheckProxy[i].value) {
-										this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
-											\outbus, mbus[i],
-											\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
-											\insertFlag, this.insertFlag[i],
-											\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-											\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-											\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-											\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-											\dopon, doppler[i],
-											\busini, this.busini[i]], 
-											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil;});
-									} {
-										this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
-											mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-											level[i], \dopon, doppler[i],
-											\busini, this.scInBus[i] ], 
-											revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-												this.espacializador[i] = nil; this.synt[i] = nil;});
-									};
-									
+									synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
+										this.busini[i],
+										\level, level[i]], revGlobalBF,
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; this.synt[i] = nil});							
 								};
-								this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
-									\gbus, gbus, \soaBus, soaBus,
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
+							} {
+								if(this.decoder.isNil && (this.raworder == 2)){
+									this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+										\busini, this.scInBus[i],
+										\level, level[i]], revGlobalSoa,
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; this.synt[i] = nil});
+								} {
+									synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+										\busini, this.scInBus[i],
+										\level, level[i]], revGlobalBF,
+										addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; this.synt[i] = nil});										
+								};
 							};
+							
+							this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i], \gbus, gbus,
+								\soaBus, soaBus, \gbfbus, gbfbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+								this.synt[i], addAction: \addAfter);
+						};
 
+
+					} {
+						if (this.hwncheckProxy[i].value) {
+							this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
+								\level, level[i]], revGlobalBF,
+								addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil});
 						} {
+							this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+								\busini, this.scInBus[i],
+								\level, level[i]], revGlobalBF,
+								addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil; this.synt[i] = nil});
+						};
+						
+						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+							\gbus, gbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\dopon, doppler[i]], 
+							this.synt[i], addAction: \addAfter);
 
-							if (testado[i].not || force) {
+
+					};
+					//atualizarvariaveis.value;
+					updatesourcevariables.value(i);	
+					
+					
+
+
+
+					
+				}
+				{ this.ncan[i] == 4 } {
+					
+					cboxProxy[i].valueAction = 0;
+					clev[i] = 0;
+					if((i == currentsource) && guiflag) {
+						cslider.value = 0;
+						connumbox.value = 0;
+					};
+
+					if(rv[i] == 1) {
+
+						if(revGlobalSoa == nil && this.decoder.isNil && (this.raworder == 2)) {
+							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+								revGlobalBF, addAction:\addBefore);
+						};
+						
+						if (testado[i].not || force) {
+							if(this.decoder.isNil && (this.raworder == 2)) {
 								if (this.hwncheckProxy[i].value) {
-									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
-										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-										level[i], \dopon, doppler[i],
+									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+										\outbus, mbus[i],
+										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
+										\dopon, doppler[i],
 										\insertFlag, this.insertFlag[i],
 										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.busini[i]], 
-										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil;
-											this.playingBF[i] = false});
+										revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
 									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-										level[i], \dopon, doppler[i],
+										level[i],
 										\insertFlag, this.insertFlag[i],
 										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+										\dopon, doppler[i],
+										\busini, this.scInBus[i] ], 
+										revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; this.synt[i] = nil;});
+								};
+							} {
+								if (this.hwncheckProxy[i].value) {
+									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+										\outbus, mbus[i],
+										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
+										\insertFlag, this.insertFlag[i],
+										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+										\dopon, doppler[i],
+										\busini, this.busini[i]], 
+										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+											this.espacializador[i] = nil; this.synt[i] = nil;});
+								} {
+									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+										level[i], \dopon, doppler[i],
 										\busini, this.scInBus[i] ], 
 										revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								};
 								
-								this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
-									\gbus, gbus,
+							};
+							this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+								\gbus, gbus, \soaBus, soaBus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+								this.synt[i], addAction: \addAfter);
+						};
+
+					} {
+
+						if (testado[i].not || force) {
+							if (this.hwncheckProxy[i].value) {
+								this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+									level[i], \dopon, doppler[i],
 									\insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.synt[i], addAction: \addAfter);
+									\busini, this.busini[i]], 
+									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+										this.espacializador[i] = nil; this.synt[i] = nil;
+										this.playingBF[i] = false});
+							} {
+								this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+									level[i], \dopon, doppler[i],
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\busini, this.scInBus[i] ], 
+									revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
+										this.espacializador[i] = nil; this.synt[i] = nil;});
 							};
 							
+							this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\dopon, doppler[i]], 
+								this.synt[i], addAction: \addAfter);
 						};
-						
-
-						
-
-						
-						//atualizarvariaveis.value;
-						updatesourcevariables.value(i);	
-						
-						
-
-
-
-
 						
 					};
 					
+
+					
+
+					
+					//atualizarvariaveis.value;
+					updatesourcevariables.value(i);	
+					
+					
+
+
+
+
 					
 				};
 				
 				
-				
 			};
 			
-		}
+			
+			
+		};
+		
+	}
 	
 	loadNonAutomationData { arg path;
 		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf,
@@ -4306,16 +4215,16 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-          nfontes.do { arg i;
-			  var line = scinf.getLine(1024);
-			  var flag;
-			  if (line == "true") {flag = true;} {flag = false;};
-			  this.scncheckProxy[i].value = flag;
-			}; 
-
+		nfontes.do { arg i;
+			var line = scinf.getLine(1024);
+			var flag;
+			if (line == "true") {flag = true;} {flag = false;};
+			this.scncheckProxy[i].value = flag;
+		}; 
+		
 		
 		filenames.close;
-
+		
 		dopplerf.close;
 		loopedf.close;
 		aformatrevf.close;
@@ -4331,139 +4240,139 @@ GUI Parameters usable in SynthDefs
 		//"RARARARARAR".postln;
 				
 		// delay necessary here because streamdisks take some time to register after control.load
-//Routine {
+		//Routine {
+		
+		//1.wait;
+		this.nfontes.do { arg i;
 			
-//1.wait;
-			this.nfontes.do { arg i;
-				
-				var newpath = this.tfieldProxy[i].value;
-				//	server.sync;
-				if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
-					i.postln;
-					newpath.postln;
-					this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf; 
-						"Loaded file".postln;
-					});
-				};
-				
+			var newpath = this.tfieldProxy[i].value;
+			//	server.sync;
+			if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
+				i.postln;
+				newpath.postln;
+				this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf; 
+					"Loaded file".postln;
+				});
 			};
-//	}.play;
-this.watcher.play;
-
-      }
-
-// Automation call-back doesn' seem to work with no GUI, so these duplicate
-// control.onPlay, etc.
-blindControlPlay {
-	var startTime;
-	this.nfontes.do { arg i;
-		this.firstTime[i]=true;
-	};
-
-	if(control.now < 0)
-	{
-		startTime = 0
+			
+		};
+		//	}.play;
+		this.watcher.play;
+		
 	}
-	{ 
-		startTime = control.now
-	};
-this.isPlay = true;
-this.control.play;
-
-	//runTriggers.value;
-}
-
-blindControlStop {
-    this.control.stop;
-	runStops.value;
-	this.nfontes.do { arg i;
-		// if sound is currently being "tested", don't switch off on stop
-		// leave that for user
-		if (testado[i] == false) {
-           this.synt[i].free; // error check
-        };
-    //	this.espacializador[i].free;
-	};
-    this.isPlay = false;
-}
-
-
-
-free {
-
-this.control.quit;
-if (this.serport.notNil) {
-this.trackPort.close;
-	//				this.trackerRoutine.stop;
-	//				this.serialKeepItUp.stop;
-};
-
-this.troutine.stop;
-this.kroutine.stop;
-this.watcher.stop;
-
-this.globTBus.free;
-this.nfontes.do { arg x;
-	this.espacializador[x].free;
-	this.aFormatBusFoa[0,x].free;
-	this.aFormatBusFoa[1,x].free;
-	this.aFormatBusSoa[0,x].free;
-this.aFormatBusSoa[1,x].free;
-	this.mbus[x].free;
-	this.sbus[x].free;
-	//	bfbus.[x].free;
-	this.sombuf[x].free;
-	this.streambuf[x].free;
-	this.synt[x].free;
-	this.scInBus[x].free;
-//		kespac[x].stop;
-};
-MIDIIn.removeFuncFrom(\sysex, sysex);
-	//MIDIIn.disconnect; 
-if(this.revGlobal.notNil){
-this.revGlobal.free;
-};
-if(this.revGlobalBF.notNil){
-this.revGlobalBF.free;
-};
-if(this.revGlobalSoa.notNil){
-this.revGlobalSoa.free;
-};
-
-if(this.globFOATransform.notNil){
-this.globFOATransform.free
-};
+	
+	// Automation call-back doesn' seem to work with no GUI, so these duplicate
+	// control.onPlay, etc.
+	blindControlPlay {
+		var startTime;
+		this.nfontes.do { arg i;
+			this.firstTime[i]=true;
+		};
+		
+		if(control.now < 0)
+		{
+			startTime = 0
+		}
+		{ 
+			startTime = control.now
+		};
+		this.isPlay = true;
+		this.control.play;
+		
+		//runTriggers.value;
+	}
+	
+	blindControlStop {
+		this.control.stop;
+		runStops.value;
+		this.nfontes.do { arg i;
+			// if sound is currently being "tested", don't switch off on stop
+			// leave that for user
+			if (testado[i] == false) {
+				this.synt[i].free; // error check
+			};
+			//	this.espacializador[i].free;
+		};
+		this.isPlay = false;
+	}
 
 
-this.gbus.free;
-this.gbfbus.free;
-if(this.rirWspectrum.notNil){
-this.rirWspectrum.free; };
-if(this.rirXspectrum.notNil){
-this.rirXspectrum.free;};
-if(this.rirYspectrum.notNil){
-this.rirYspectrum.free;};
-if(this.rirZspectrum.notNil){
-this.rirZspectrum.free;};
-if(this.rirFRDspectrum.notNil){
-this.rirFRDspectrum.free;};
-if(this.rirBLDspectrum.notNil){
-this.rirBLDspectrum.free;};
-if(this.rirFLUspectrum.notNil){
-this.rirFLUspectrum.free;};
-if(this.rirBRUspectrum.notNil){
-this.rirBRUspectrum.free;};
-this.soaBus.free;
-12.do { arg i;
-if(rirA12Spectrum[i].notNil){
-	rirA12Spectrum[i].free;};
-};
-foaEncoderOmni.free;
-foaEncoderSpread.free;
-foaEncoderDiffuse.free;
-b2a.free;
-a2b.free;
-}
+
+	free {
+		
+		this.control.quit;
+		if (this.serport.notNil) {
+			this.trackPort.close;
+			//				this.trackerRoutine.stop;
+			//				this.serialKeepItUp.stop;
+		};
+		
+		this.troutine.stop;
+		this.kroutine.stop;
+		this.watcher.stop;
+		
+		this.globTBus.free;
+		this.nfontes.do { arg x;
+			this.espacializador[x].free;
+			this.aFormatBusFoa[0,x].free;
+			this.aFormatBusFoa[1,x].free;
+			this.aFormatBusSoa[0,x].free;
+			this.aFormatBusSoa[1,x].free;
+			this.mbus[x].free;
+			this.sbus[x].free;
+			//	bfbus.[x].free;
+			this.sombuf[x].free;
+			this.streambuf[x].free;
+			this.synt[x].free;
+			this.scInBus[x].free;
+			//		kespac[x].stop;
+		};
+		MIDIIn.removeFuncFrom(\sysex, sysex);
+		//MIDIIn.disconnect; 
+		if(this.revGlobal.notNil){
+			this.revGlobal.free;
+		};
+		if(this.revGlobalBF.notNil){
+			this.revGlobalBF.free;
+		};
+		if(this.revGlobalSoa.notNil){
+			this.revGlobalSoa.free;
+		};
+		
+		if(this.globFOATransform.notNil){
+			this.globFOATransform.free
+		};
+		
+		
+		this.gbus.free;
+		this.gbfbus.free;
+		if(this.rirWspectrum.notNil){
+			this.rirWspectrum.free; };
+		if(this.rirXspectrum.notNil){
+			this.rirXspectrum.free;};
+		if(this.rirYspectrum.notNil){
+			this.rirYspectrum.free;};
+		if(this.rirZspectrum.notNil){
+			this.rirZspectrum.free;};
+		if(this.rirFRDspectrum.notNil){
+			this.rirFRDspectrum.free;};
+		if(this.rirBLDspectrum.notNil){
+			this.rirBLDspectrum.free;};
+		if(this.rirFLUspectrum.notNil){
+			this.rirFLUspectrum.free;};
+		if(this.rirBRUspectrum.notNil){
+			this.rirBRUspectrum.free;};
+		this.soaBus.free;
+		12.do { arg i;
+			if(rirA12Spectrum[i].notNil){
+				rirA12Spectrum[i].free;};
+		};
+		foaEncoderOmni.free;
+		foaEncoderSpread.free;
+		foaEncoderDiffuse.free;
+		b2a.free;
+		a2b.free;
+	}
 
 
     gui {
@@ -4472,8 +4381,8 @@ a2b.free;
 		var fonte, dist,  
 		itensdemenu,
 		//gbus, gbfbus,
-//azimuth,
-event, brec, bplay, bload, bstream, bnodes,
+		//azimuth,
+		event, brec, bplay, bload, bstream, bnodes,
 		//funcs, 
 		//	,
 		//lastAutomation = nil,
@@ -4514,8 +4423,8 @@ event, brec, bplay, bload, bstream, bnodes,
 		conslider, 
 		
 		//a1but, a2but, a3but, a4but, a5but, // variable
-		 // data windows representation of a1but etc (ie. as checkbox)
-		 // check box for streamed from disk audio
+		// data windows representation of a1but etc (ie. as checkbox)
+		// check box for streamed from disk audio
 		bsalvar, bcarregar, bsnap, bdados, baux, 
 		//dcheck,
 		//
@@ -4757,12 +4666,12 @@ event, brec, bplay, bload, bstream, bnodes,
 				if(but.value == 1)
 				{
 					this.firstTime[currentsource] = true;
-					                  //testado[currentsource] = true;
+					//testado[currentsource] = true;
 					//runTrigger.value(currentsource); - watcher does this now
 					//tocar.value(currentsource, 0); // needed only by SC input
 					//- and probably by HW - causes duplicates with file
 					// as file playback is handled by the "watcher" routine
-                                      "really curious!".postln;
+					"really curious!".postln;
 					testado[currentsource] = true;
 					
 				}
@@ -4841,13 +4750,13 @@ event, brec, bplay, bload, bstream, bnodes,
 			////// Changes
 
 			/*	var dopplerf = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
-			var loopedf = File((prjDr ++ "/auto/looped.txt").standardizePath,"w");
-			var aformatrevf = File((prjDr ++ "/auto/aformatrev.txt").standardizePath,"w");
-			var hwinf = File((prjDr ++ "/auto/hwin.txt").standardizePath,"w");
-			var scinf = File((prjDr ++ "/auto/scin.txt").standardizePath,"w");
-			var linearf = File((prjDr ++ "/auto/linear.txt").standardizePath,"w");
-			var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
-			var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
+				var loopedf = File((prjDr ++ "/auto/looped.txt").standardizePath,"w");
+				var aformatrevf = File((prjDr ++ "/auto/aformatrev.txt").standardizePath,"w");
+				var hwinf = File((prjDr ++ "/auto/hwin.txt").standardizePath,"w");
+				var scinf = File((prjDr ++ "/auto/scin.txt").standardizePath,"w");
+				var linearf = File((prjDr ++ "/auto/linear.txt").standardizePath,"w");
+				var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
+				var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
 			*/
 			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
 
@@ -4994,1314 +4903,1314 @@ event, brec, bplay, bload, bstream, bnodes,
 
 
 
-});
-
-
-/*
-bsnap = Button(win, Rect(170, this.width - 40, 25, 20))
-.states_([
-	["[ô]", Color.black, Color.white],
-])
-.action_({ arg but;
-	if(control.now>0) {
-       control.seek; // go to 0.0
-       "Snapshot: Transport must be at zero seconds. Please try again.".postln;
-    } {
-        control.snapshot;  // only take snapshot at 0.0
-        "Snapshot taken".postln;
-    }
-	
-});
-*/
-
-
-this.win.drawFunc = {
-	//paint origin
-	Pen.fillColor = Color(0.6,0.8,0.8);
-	Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
-	Pen.fill;
-
-
-	Pen.fillColor = Color.gray(0, 0.5);
-	Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
-	Pen.fill;
-
-	//	Pen.width = 10;
-};
-
-// seleção de fontes
-itensdemenu = Array.newClear(this.nfontes);
-this.nfontes.do { arg i;
-	itensdemenu[i] = "Source " ++ (i + 1).asString;
-};
-
-m = PopUpMenu(win,Rect(10,10,90,20));
-m.items = itensdemenu; 
-m.action = { arg menu;
-	currentsource = menu.value;
-	
-	if(doppler[currentsource] == 1){dopcheque.value = true}{dopcheque.value = false};
-if(lp[currentsource] == 1){loopcheck.value = true}{loopcheck.value = false};
-
-if(sp[currentsource] == 1){spreadcheck.value = true}{spreadcheck.value = false};
-if(df[currentsource] == 1){diffusecheck.value = true}{diffusecheck.value = false};
-
-if(rv[currentsource] == 1){revcheck.value = true}{revcheck.value = false};
-if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
-
-if(hwn[currentsource] == 1){hwInCheck.value = true}{hwInCheck.value = false};
-if(scn[currentsource] == 1){scInCheck.value = true}{scInCheck.value = false};
-
-angnumbox.value = angle[currentsource];
-angslider.value = angle[currentsource] / pi;
-volnumbox.value = level[currentsource];
-dopnumbox.value = dplev[currentsource];
-volslider.value = level[currentsource];
-gnumbox.value = glev[currentsource];
-gslider.value = glev[currentsource];
-lnumbox.value = llev[currentsource];
-lslider.value = llev[currentsource];
-rslider.value = (rlev[currentsource] + pi) / 2pi;
-rnumbox.value = rlev[currentsource];
-dirslider.value = dlev[currentsource] / (pi/2);
-dirnumbox.value = dlev[currentsource];
-cslider.value = clev[currentsource];
-zslider.value = (zlev[currentsource] + this.halfwidth) / this.width;
-
-dpslider.value = dplev[currentsource];
-connumbox.value = clev[currentsource];
-
-ncannumbox.value = this.ncan[currentsource];
-busininumbox.value = this.busini[currentsource];
-
-auxslider1.value = this.aux1[currentsource];
-aux1numbox.value = this.aux1[currentsource];
-auxslider2.value = this.aux2[currentsource];
-aux2numbox.value = this.aux2[currentsource];
-auxslider3.value = this.aux3[currentsource];
-aux3numbox.value = this.aux3[currentsource];
-auxslider4.value = this.aux4[currentsource];
-aux4numbox.value = this.aux4[currentsource];
-auxslider5.value = this.aux5[currentsource];
-aux5numbox.value = this.aux5[currentsource];
-
-if(testado[currentsource]) {  // don't change button if we are playing via automation
-	// only if it is being played/streamed manually
-	if (this.synt[currentsource] == nil){
-btestar.value = 0;
-} {
-btestar.value = 1;
-};
-} {
-	btestar.value = 0;
-};
-};
-
-
-
-offset = 60;
-
-
-dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
-	{this.dcheck[currentsource].valueAction = butt.value;}.defer;
-});
-dopcheque.value = false;
-
-loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
-	{this.lpcheck[currentsource].valueAction = butt.value;}.defer;
-});
-loopcheck.value = false;
-
-spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
-	{this.spcheck[currentsource].valueAction = butt.value;}.defer;
-});
-spreadcheck.value = false;
-diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
-	{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
-});
-diffusecheck.value = false;
-
-
-revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
-	{this.rvcheck[currentsource].valueAction = butt.value;}.defer;
-});
-revcheck.value = false;
-
-lincheck = CheckBox( win, Rect(184, 30, 180, 20), "Linear intensity").action_({ arg butt;
-	{this.lncheck[currentsource].valueAction = butt.value;}.defer;
-});
-lincheck.value = false;
-
-
-hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ arg butt;
-	{this.hwncheck[currentsource].valueAction = butt.value;}.defer;
-if (hwInCheck.value && scInCheck.value) {
-};
-});
-
-scInCheck = CheckBox( win, Rect(104, 30, 60, 20), "SC-in").action_({ arg butt;
-	{this.scncheck[currentsource].valueAction = butt.value;}.defer;
-if (scInCheck.value && hwInCheck.value) {
-};
-});
-
-
-
-
-dopcheque.value = false;
-
-
-
-textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
-textbuf.string = "No. of chans. (HW & SC-in)";
-ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
-ncannumbox.value = 0;
-ncannumbox.clipHi = 4;
-ncannumbox.clipLo = 0;
-ncannumbox.align = \center;
-ncannumbox.action = {arg num;
-	
-	
-	{this.ncanbox[currentsource].valueAction = num.value;}.defer;
-this.ncan[currentsource] = num.value;
-
-};
-
-
-
-textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
-textbuf.string = "Start Bus (HW-in)";
-busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
-busininumbox.value = 0;
-busininumbox.clipLo = 0;
-busininumbox.align = \center;
-busininumbox.action = {arg num; 
-	{this.businibox[currentsource].valueAction = num.value;}.defer;
-this.busini[currentsource] = num.value;
-};
-
-
-
-
-textbuf = StaticText(win, Rect(163, 130 + offset, 90, 20));
-textbuf.string = "Angle (Stereo)";
-angnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
-angnumbox.value = 0;
-angnumbox.clipHi = pi;
-angnumbox.clipLo = 0;
-angnumbox.step_(0.1); 
-angnumbox.scroll_step=0.1;
-angnumbox.align = \center;
-angnumbox.action = {arg num; 
-	{abox[currentsource].valueAction = num.value;}.defer;
-if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)){
-	this.espacializador[currentsource].set(\angle, num.value);
-this.setSynths(currentsource, \angle, num.value);
-angle[currentsource] = num.value;
-}
-{angnumbox.value = 0;};
-};
-
-angslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
-//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
-
-angslider.action = {arg num;
-	{abox[currentsource].valueAction = num.value * pi;}.defer;
-if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)) {
-	{angnumbox.value = num.value * pi;}.defer;
-//			this.espacializador[currentsource].set(\angle, b.map(num.value));
-this.espacializador[currentsource].set(\angle, num.value * pi);
-this.setSynths(currentsource, \angle, num.value * pi);
-//			angle[currentsource] = b.map(num.value);
-angle[currentsource] = num.value * pi;
-}{{angnumbox.value = num.value * pi;}.defer;};
-};
-
-
-
-/////////////////////////////////////////////////////////
-
-
-textbuf = StaticText(win, Rect(this.width - 90, this.halfwidth - 10, 90, 20));
-textbuf.string = "Z-Axis";
-znumbox = NumberBox(win, Rect(this.width - 65, ((this.width - zSliderHeight) / 2) + zSliderHeight, 60, 20));
-znumbox.value = 0;
-znumbox.clipHi = 1;
-znumbox.clipLo = -1;
-znumbox.step_(0.1); 
-znumbox.scroll_step=0.1;
-znumbox.align = \center;
-znumbox.action = {arg num; 
-	{zbox[currentsource].valueAction = num.value;}.defer;
-if(ncanais[currentsource]==2)   {
-	this.espacializador[currentsource].set(\elev, num.value);
-this.setSynths(currentsource, \elev, num.value);
-zlev[currentsource] = num.value;
-}
-{{znumbox.value = 0;}.defer;};
-};
-
-
-zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2), 20, zSliderHeight));
-zslider.value = 0.5;
-zslider.action = {arg num;
-	{znumbox.value = (0.5 - num.value) * -2;}.defer;
-{zbox[currentsource].valueAction = znumbox.value;}.defer;
-{zlev[currentsource] = znumbox.value;}.defer;
-
-
-};
-
-
-////////////////////////////// Orientation //////////////
-
-if (this.serport.notNil) {
-	
-	this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
-	this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
-	this.pitchnumbox = NumberBox(win, Rect(this.width - 45, this.width - 25, 40, 20));
-	
-	this.headingnumbox.action = {arg num;
-		this.headingnumboxProxy.valueAction = num.value;
-	};
-
-
-	this.rollnumbox.action = {arg num;
-		this.rollnumboxProxy.valueAction = num.value;
-	};
-
-	this.pitchnumbox.action = {arg num;
-		this.pitchnumboxProxy.valueAction = num.value;
-	};
-
-
-	textbuf = StaticText(win, Rect(this.width - 60, this.width - 65, 12, 20));
-	textbuf.string = "H:";
-	textbuf = StaticText(win, Rect(this.width - 60, this.width - 45, 10, 22));
-	textbuf.string = "R:";
-	textbuf = StaticText(win, Rect(this.width - 60, this.width - 25, 10, 22));
-	textbuf.string = "P:";
-	
-	
-	textbuf = StaticText(win, Rect(this.width - 45, this.width - 85, 90, 20));
-	textbuf.string = "Orient.";
-	
-};
-
-
-////////////////////////////////////////////////////////////
-
-
-textbuf = StaticText(win, Rect(163, 30 + offset, 50, 20));
-textbuf.string = "Level";
-volnumbox = NumberBox(win, Rect(10, 30 + offset, 40, 20));
-volnumbox.value = 0;
-volnumbox.clipHi = pi;
-volnumbox.clipLo = 0;
-volnumbox.step_(0.1); 
-volnumbox.scroll_step=0.1;
-volnumbox.align = \center;
-volnumbox.action = {arg num; 
-	{vbox[currentsource].valueAction = num.value;}.defer;
-
-};
-volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
-volslider.value = 0;
-volslider.action = {arg num;
-	{vbox[currentsource].valueAction = num.value;}.defer;		
-};
-
-
-///////////////////////////////////////////////////////////////
-
-
-textbuf= StaticText(win, Rect(163, 50 + offset, 120, 20));
-textbuf.string = "Doppler amount";
-// was called contraction, hence "connumbox".
-dopnumbox = NumberBox(win, Rect(10, 50 + offset, 40, 20));
-dopnumbox.value = 0;
-dopnumbox.clipHi = pi;
-dopnumbox.clipLo = -pi;
-dopnumbox.step_(0.1); 
-dopnumbox.scroll_step=0.1;
-dopnumbox.align = \center;
-dopnumbox.action = {arg num; 
-	{dpbox[currentsource].valueAction = num.value;}.defer;
-
-};
-// stepsize?
-dpslider = Slider.new(win, Rect(50, 50 + offset, 110, 20));
-dpslider.value = 0;
-dpslider.action = {arg num;
-	{dpbox[currentsource].valueAction = num.value;}.defer;
-{dopnumbox.value = num.value;}.defer;
-};
-
-/////////////////////////////////////////////////////////////////////////
-
-
-
-textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
-textbuf.string = "Close Reverb";
-gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
-gnumbox.value = 1;
-gnumbox.clipHi = pi;
-gnumbox.clipLo = 0;
-gnumbox.step_(0.1); 
-gnumbox.scroll_step=0.1;
-gnumbox.align = \center;
-gnumbox.action = {arg num; 
-	{gbox[currentsource].valueAction = num.value;}.defer;
-
-};
-// stepsize?
-gslider = Slider.new(win, Rect(50, 70 + offset, 110, 20));
-gslider.value = 0;
-gslider.action = {arg num;
-	{gbox[currentsource].valueAction = num.value;}.defer;
-};
-
-
-
-textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
-textbuf.string = "Distant Reverb";
-lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
-lnumbox.value = 1;
-lnumbox.clipHi = pi;
-lnumbox.clipLo = 0;
-lnumbox.step_(0.1); 
-lnumbox.scroll_step=0.1;
-lnumbox.align = \center;
-lnumbox.action = {arg num; 
-	{lbox[currentsource].valueAction = num.value;}.defer;
-
-};
-// stepsize?
-lslider = Slider.new(win, Rect(50, 90 + offset, 110, 20));
-lslider.value = 0;
-lslider.action = {arg num;
-	{lbox[currentsource].valueAction = num.value;}.defer;
-};
-
-
-
-textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
-textbuf.string = "Rotation (B-Format)";
-rnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
-rnumbox.value = 0;
-rnumbox.clipHi = pi;
-rnumbox.clipLo = -pi;
-rnumbox.step_(0.1); 
-rnumbox.scroll_step=0.1;
-rnumbox.align = \center;
-rnumbox.action = {arg num; 
-	{rbox[currentsource].valueAction = num.value;}.defer;
-
-};
-// stepsize?
-rslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
-rslider.value = 0.5;
-rslider.action = {arg num;
-	{rbox[currentsource].valueAction = num.value * 6.28 - pi;}.defer;
-{rnumbox.value = num.value * 2pi - pi;}.defer;
-
-};
-
-
-
-textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
-textbuf.string = "Directivity (B-Format)";
-dirnumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
-dirnumbox.value = 0;
-dirnumbox.clipHi = pi;
-dirnumbox.clipLo = -pi;
-dirnumbox.step_(0.1); 
-dirnumbox.scroll_step=0.1;
-dirnumbox.align = \center;
-dirnumbox.action = {arg num; 
-	{dbox[currentsource].valueAction = num.value;}.defer;
-};
-// stepsize?
-dirslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
-dirslider.value = 0;
-dirslider.action = {arg num;
-	{dbox[currentsource].valueAction = num.value * pi/2;}.defer;
-{dirnumbox.value = num.value * pi/2;}.defer;
-};
-
-
-
-textbuf = StaticText(win, Rect(163, 110 + offset, 80, 20));
-textbuf.string = "Contraction";
-connumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
-connumbox.value = 0;
-connumbox.clipHi = pi;
-connumbox.clipLo = -pi;
-connumbox.step_(0.1); 
-connumbox.scroll_step=0.1;
-connumbox.align = \center;
-connumbox.action = {arg num; 
-	{cbox[currentsource].valueAction = num.value;}.defer;
-
-};
-// stepsize?
-cslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
-cslider.value = 0;
-cslider.action = {arg num;
-	{cbox[currentsource].valueAction = num.value;}.defer;
-{connumbox.value = num.value;}.defer;
-};
-
-
-
-
-
-bload = Button(win, Rect(this.width - 190, 10, 90, 20))
-.states_([
-	["load audio", Color.black, Color.white],
-])
-.action_({ arg but;
-	this.synt[currentsource].free; // error check
-this.espacializador[currentsource].free;
-dopcheque.value = false; // coloque toggle no padrão
-
-
-
-Dialog.openPanel(
-control.stopRecording;
-control.stop;
-//control.seek;
-
-
-{ 
-	arg path;
-	
-	{
-		this.streamdisk[currentsource] = false;
-		this.tfieldProxy[currentsource].valueAction = path;}.defer;
-	stcheck[currentsource].valueAction = false;
-
-	
-
-	
-}, 
-{
-	this.streamdisk[currentsource] = false;
-	"cancelled".postln;
-	{this.tfieldProxy[currentsource].value = "";}.defer;
-	stcheck[currentsource].valueAction = false;
-}				
-);
-
-});
-
-bstream = Button(win, Rect(this.width - 190, 30, 90, 20))
-.states_([
-	["stream audio", Color.black, Color.white],
-])
-.action_({ arg but;
-	this.synt[currentsource].free; // error check
-this.espacializador[currentsource].free;
-dopcheque.value = false; // set to the default
-
-
-Dialog.openPanel(
-control.stopRecording;
-control.stop;
-control.seek;
-{ 
-	arg path;
-	
-	{
-		this.streamdisk[currentsource] = true;
-		this.tfieldProxy[currentsource].valueAction = path;}.defer;
-	stcheck[currentsource].valueAction = true;
-	
-}, 
-{
-	"cancelled".postln;
-	this.streamdisk[currentsource] = false;
-	{this.tfieldProxy[currentsource].value = "";}.defer;
-	stcheck[currentsource].valueAction = false;
-}
-
-);
-
-});
-
-
-bnodes = Button(win, Rect(this.width - 190, 50, 90, 20))
-.states_([
-	["show nodes", Color.black, Color.white],
-])
-.action_({
-	server.plotTree;
-});
-
-textbuf = StaticText(wdados, Rect(30, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Dp";
-textbuf = StaticText(wdados, Rect(45, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Lp";
-textbuf = StaticText(wdados, Rect(60, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Rv";
-textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Hw";
-textbuf = StaticText(wdados, Rect(90, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Sc";
-textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Ln";
-
-textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Sp";
-textbuf = StaticText(wdados, Rect(135, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Df";
-
-textbuf = StaticText(wdados, Rect(150, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "NCan";
-textbuf = StaticText(wdados, Rect(175, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "SBus";
-
-textbuf = StaticText(wdados, Rect(200, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "X";
-textbuf = StaticText(wdados, Rect(233, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Y";
-
-textbuf = StaticText(wdados, Rect(266, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Z";
-
-textbuf = StaticText(wdados, Rect(299, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "O.x";
-textbuf = StaticText(wdados, Rect(333, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "O.y";
-textbuf = StaticText(wdados, Rect(366, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "O.z";
-
-
-textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Lev";
-textbuf = StaticText(wdados, Rect(425, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "DAmt";
-textbuf = StaticText(wdados, Rect(450, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Prox";
-textbuf = StaticText(wdados, Rect(475, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Dist";
-textbuf = StaticText(wdados, Rect(500, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Ang";
-textbuf = StaticText(wdados, Rect(525, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Rot";
-textbuf = StaticText(wdados, Rect(550, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Dir";
-textbuf = StaticText(wdados, Rect(575, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "Cont";
-
-textbuf = StaticText(wdados, Rect(600, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "A1";
-textbuf = StaticText(wdados, Rect(625, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "A2";
-textbuf = StaticText(wdados, Rect(650, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "A3";
-textbuf = StaticText(wdados, Rect(675, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "A4";
-textbuf = StaticText(wdados, Rect(700, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "A5";
-
-textbuf = StaticText(wdados, Rect(725, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "a1";
-textbuf = StaticText(wdados, Rect(740, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "a2";
-textbuf = StaticText(wdados, Rect(755, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "a3";
-textbuf = StaticText(wdados, Rect(770, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "a4";
-textbuf = StaticText(wdados, Rect(785, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "a5";
-
-
-textbuf = StaticText(wdados, Rect(800, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "File";
-
-textbuf = StaticText(wdados, Rect(925, 20, 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = "St";
-
-
-
-
-
-this.nfontes.do { arg i;
-
-	textbuf = StaticText(wdados, Rect(10, 40 + (i*20), 50, 20));
-textbuf.font = Font(Font.defaultSansFace, 9);
-textbuf.string = (i+1).asString;
-
-this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20));
-
-this.dcheck[i].action_({ arg but;
-if((i==currentsource) && guiflag){dopcheque.value = but.value;};
-this.dcheckProxy[i].valueAction = but.value;
-});
-
-
-
-this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20));
-
-this.lpcheck[i].action_({ arg but;
-this.lpcheckProxy[i].valueAction = but.value;
-});
-
-
-
-
-this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20));
-
-this.rvcheck[i].action_({ arg but;
-this.rvcheckProxy[i].valueAction = but.value;
-});
-
-
-
-this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20));
-
-this.hwncheck[i].action_({ arg but;
-this.hwncheckProxy[i].valueAction = but.value;
-});
-
-
-this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
-
-this.scncheck[i].action_({ arg but;
-this.scncheckProxy[i].valueAction = but.value;
-});
-
-
-
-this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
-
-this.lncheck[i].action_({ arg but;
-this.lncheckProxy[i].valueAction = but.value;
-});
-
-
-this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20));
-
-this.spcheck[i].action_({ arg but;
-this.spcheckProxy[i].valueAction = but.value;
-});
-
-
-
-
-
-this.dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20));
-
-this.dfcheck[i].action_({ arg but;
-this.dfcheckProxy[i].valueAction = but.value;
-});
-
-
-
-/////////////////////////////////////////////////////////////////
-
-this.ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
-this.businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
-
-xbox[i] = NumberBox(wdados, Rect(200, 40 + (i*20), 33, 20));
-ybox[i] = NumberBox(wdados, Rect(233, 40+ (i*20), 33, 20));
-zbox[i] = NumberBox(wdados, Rect(266, 40+ (i*20), 33, 20));
-
-oxbox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 33, 20));
-oybox[i] = NumberBox(wdados, Rect(333, 40+ (i*20), 33, 20));
-ozbox[i] = NumberBox(wdados, Rect(366, 40+ (i*20), 33, 20));
-
-vbox[i] = NumberBox(wdados, Rect(400, 40 + (i*20), 25, 20));
-dpbox[i] = NumberBox(wdados, Rect(425, 40+ (i*20), 25, 20));
-gbox[i] = NumberBox(wdados, Rect(450, 40+ (i*20), 25, 20));
-lbox[i] = NumberBox(wdados, Rect(475, 40+ (i*20), 25, 20));
-abox[i] = NumberBox(wdados, Rect(500, 40+ (i*20), 25, 20));
-rbox[i] = NumberBox(wdados, Rect(525, 40+ (i*20), 25, 20));
-dbox[i] = NumberBox(wdados, Rect(550, 40+ (i*20), 25, 20));
-cbox[i] = NumberBox(wdados, Rect(575, 40+ (i*20), 25, 20));
-
-a1box[i] = NumberBox(wdados, Rect(600, 40+ (i*20), 25, 20));
-a2box[i] = NumberBox(wdados, Rect(625, 40+ (i*20), 25, 20));
-a3box[i] = NumberBox(wdados, Rect(650, 40+ (i*20), 25, 20));
-a4box[i] = NumberBox(wdados, Rect(675, 40+ (i*20), 25, 20));
-a5box[i] = NumberBox(wdados, Rect(700, 40+ (i*20), 25, 20));
-
-
-a1box[i].clipHi = 1;
-a1box[i].clipLo = 0;
-a2box[i].clipHi = 1;
-a2box[i].clipLo = 0;
-a3box[i].clipHi = 1;
-a3box[i].clipLo = 0;
-a4box[i].clipHi = 1;
-a4box[i].clipLo = 0;
-a5box[i].clipHi = 1;
-a5box[i].clipLo = 0;
-
-a1check[i] = CheckBox.new( wdados, Rect(725, 40 + (i*20), 40, 20));
-a1check[i].action = { arg but;
-this.a1checkProxy[i].valueAction = but.value;
-};
-
-
-
-a2check[i] = CheckBox.new( wdados, Rect(740, 40 + (i*20), 40, 20));
-a2check[i].action = { arg but;
-	this.a2checkProxy[i].valueAction = but.value;
-};
-
-
-a3check[i] = CheckBox.new( wdados, Rect(755, 40 + (i*20), 40, 20));
-a3check[i].action = { arg but;
-	this.a3checkProxy[i].valueAction = but.value;
-};
-
-
-a4check[i] = CheckBox.new( wdados, Rect(770, 40 + (i*20), 40, 20));
-a4check[i].action = { arg but;
-	this.a4checkProxy[i].valueAction = but.value;
-};
-
-
-a5check[i] = CheckBox.new( wdados, Rect(785, 40 + (i*20), 40, 20));
-a5check[i].action = { arg but;
-	this.a5checkProxy[i].valueAction = but.value;
-};
-
-
-
-this.tfield[i] = TextField(wdados, Rect(800, 40+ (i*20), 125, 20));
-//			this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
-
-stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
-stcheck[i].action = { arg but;
-	this.stcheckProxy[i].valueAction = but.value;
-};
-
-
-this.ncanbox[i].font = Font(Font.defaultSansFace, 9);
-this.businibox[i].font = Font(Font.defaultSansFace, 9);
-xbox[i].font = Font(Font.defaultSansFace, 9);
-ybox[i].font = Font(Font.defaultSansFace, 9);
-zbox[i].font = Font(Font.defaultSansFace, 9);
-oxbox[i].font = Font(Font.defaultSansFace, 9);
-oybox[i].font = Font(Font.defaultSansFace, 9);
-ozbox[i].font = Font(Font.defaultSansFace, 9);
-
-
-abox[i].font = Font(Font.defaultSansFace, 9);
-vbox[i].font = Font(Font.defaultSansFace, 9);
-gbox[i].font = Font(Font.defaultSansFace, 9);
-lbox[i].font = Font(Font.defaultSansFace, 9);
-rbox[i].font = Font(Font.defaultSansFace, 9);
-dbox[i].font = Font(Font.defaultSansFace, 9);
-cbox[i].font = Font(Font.defaultSansFace, 9);
-dpbox[i].font = Font(Font.defaultSansFace, 9);
-a1box[i].font = Font(Font.defaultSansFace, 9);
-a2box[i].font = Font(Font.defaultSansFace, 9);
-a3box[i].font = Font(Font.defaultSansFace, 9);
-a4box[i].font = Font(Font.defaultSansFace, 9);
-a5box[i].font = Font(Font.defaultSansFace, 9);
-
-this.tfield[i].font = Font(Font.defaultSansFace, 9);
-
-xbox[i].decimals = 3;
-ybox[i].decimals = 3;
-zbox[i].decimals = 3;
-oxbox[i].decimals = 0;
-oybox[i].decimals = 0;
-ozbox[i].decimals = 0;
-
-
-a1box[i].action = {arg num;
-	this.a1boxProxy[i].valueAction = num.value;
-}; 
-
-
-a2box[i].action = {arg num;
-	this.a2boxProxy[i].valueAction = num.value;
-}; 
-
-
-a3box[i].action = {arg num;
-	this.a3boxProxy[i].valueAction = num.value;
-}; 
-
-a4box[i].action = {arg num;
-	this.a4boxProxy[i].valueAction = num.value;
-}; 
-
-a5box[i].action = {arg num;
-	this.a5boxProxy[i].valueAction = num.value;
-}; 
-
-
-
-this.tfield[i].action = {arg path;
-	this.tfieldProxy[i].valueAction = path.value;
-};
-
-
-
-
-//// PROXY ACTIONS /////////
-
-// gradually pinching these and putting up above
-
-	this.xbox[i].action = {arg num;
-		
-		this.xboxProxy[i].valueAction = num.value;
-};
-
-
-ybox[i].action = {arg num;
-	this.yboxProxy[i].valueAction = num.value;
-};
-
-
-zbox[i].action = {arg num;
-	this.zboxProxy[i].valueAction = num.value;
-};
-
-
-
-
-this.dcheck[i].value = 0;
-
-abox[i].clipHi = pi;
-abox[i].clipLo = 0;
-vbox[i].clipHi = 1.0;
-vbox[i].clipLo = 0;
-gbox[i].clipHi = 1.0;
-gbox[i].clipLo = 0;
-lbox[i].clipHi = 1.0;
-lbox[i].clipLo = 0;
-
-vbox[i].scroll_step = 0.01;
-abox[i].scroll_step = 0.01;
-vbox[i].step = 0.01;
-abox[i].step = 0.01;
-gbox[i].scroll_step = 0.01;
-lbox[i].scroll_step = 0.01;
-gbox[i].step = 0.01;
-lbox[i].step = 0.01;
-
-
-abox[i].action = {arg num;
-	this.aboxProxy[i].valueAction = num.value;
-	/*	angle[i] = num.value;
-if((ncanais[i]==2) || (this.ncan[i]==2)){
-this.espacializador[i].set(\angle, num.value);
-this.setSynths(i, \angle, num.value);
-angle[i] = num.value;
-};
-if(i == currentsource) 
-{
-angnumbox.value = num.value;
-angslider.value = num.value / pi;
-*/
-};
-
-vbox[i].action = {arg num;
-	this.vboxProxy[i].valueAction = num.value;
-}; 
-
-
-
-
-
-
-gbox[i].value = 0;
-lbox[i].value = 0;
-
-gbox[i].action = {arg num;
-	this.gboxProxy[i].valueAction = num.value;
-}; 
-
-
-
-lbox[i].action = {arg num;
-	this.lboxProxy[i].valueAction = num.value;
-}; 
-
-
-
-rbox[i].action = {arg num; 
-	this.rboxProxy[i].valueAction = num.value;
-};
-
-
-
-
-dbox[i].action = {arg num; 
-	this.dboxProxy[i].valueAction = num.value;
-};
-
-
-cbox[i].action = {arg num; 
-	this.cboxProxy[i].valueAction = num.value;
-};
-
-
-
-
-dpbox[i].action = {arg num;
-	this.dpboxProxy[i].valueAction = num.value;
-};
-
-
-this.ncanbox[i].action = {arg num;
-	this.ncanboxProxy[i].valueAction = num.value;
-};
-
-
-this.businibox[i].action = {arg num;
-	this.businiboxProxy[i].valueAction = num.value;
-}; 
-
-
-
-
-};
-
-
-runTriggers = {
-	this.nfontes.do({
-arg i;
-if(testado[i].not) {
-	if(this.triggerFunc[i].notNil) {
-		this.triggerFunc[i].value;
-		//updateSynthInArgs.value(i);
-	}
-}
-})
-};
-
-runTrigger = {
-	arg source;
-	//	if(scncheck[i]) {
-	if(this.triggerFunc[source].notNil) {
-		this.triggerFunc[source].value;
-updateSynthInArgs.value(source);
-}
-};
-
-runStops = {
-	this.nfontes.do({
-    arg i;
-    if(testado[i].not) {
-		if(this.stopFunc[i].notNil) {
-			this.stopFunc[i].value;
-		}
-	} 
-})
-};
-
-runStop = { 
-	arg source;
-	if(this.stopFunc[source].notNil) {
-		this.stopFunc[source].value;
-}
-};
-
-
-//control = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
-/*~autotest = control = Automation(this.dur, showLoadSave: false, showSnapshot: false,
-	minTimeStep: 0.001).front(win,
-		Rect(10, this.width - 80, 400, 22));
-*/
-//~autotest = control = Automation(this.dur, showLoadSave: false, showSnapshot: false,
-//	minTimeStep: 0.001);
-control.front(win,
-		Rect(10, this.width - 80, 400, 22));
-
-
-control.presetDir = prjDr ++ "/auto";
-//control.setMinTimeStep(2.0);
-control.onEnd = {
-	//	control.stop;
-	control.seek;
-	if(this.autoloopval) {
-		control.play;	
-	};
-	this.nfontes.do { arg i;
-		if(this.synt[i].notNil) {
-this.synt[i].free;
-};
-};
-};
-
-this.control.onPlay = {
-	var startTime;
-	"ON PLAY".postln;
-	this.nfontes.do { arg i;
-		this.firstTime[i]=true;
-		("NOW PLAYING = " ++ this.firstTime[i]).postln;
-	};
-	if(control.now < 0)
-	{
-		startTime = 0
-	}
-	{ 
-		startTime = control.now
-	};
-	this.isPlay = true;
-	//runTriggers.value;
-};
-
-
-this.control.onSeek = {
-	var wasplaying = isPlay;
-		"ON SEEK".postln;
-
-	//("isPlay = " ++ isPlay).postln;
-	//runStops.value; // necessary? doesn't seem to help prob of SC input
-	
-	//runStops.value;
-	if(isPlay == true) {
-		this.nfontes.do { arg i;	
-        this.synt[i].free; // error check
-        };
-    control.stop;
-  };
-    
-     if(wasplaying) {
-		 //isPlay = true;
-		 "we are here".postln;
-		 {control.play}.defer(0.5); //delay necessary. may need more?
-	 };
-};
-
-this.control.onStop = {
-	runStops.value;
-		"ON STOP".postln;
-	this.nfontes.do { arg i;
-		// if sound is currently being "tested", don't switch off on stop
-		// leave that for user
-		if (testado[i] == false) {
-           this.synt[i].free; // error check
-        };
-//	this.espacializador[i].free;
-};
-isPlay = false;
-
-};
-
-///////////////// PROXY WILL REMOVE THIS //////////////
-
-this.nfontes.do { arg i;
-	//	control.dock(xbox[i], "x_axis_" ++ i);
-	//control.dock(ybox[i], "y_axis_" ++ i);
-	//control.dock(zbox[i], "z_axis_" ++ i);
-
-
-
-	//control.dock(vbox[i], "level_" ++ i);
-	//control.dock(dpbox[i], "dopamt_" ++ i);
-
-//control.dock(abox[i], "angle_" ++ i);
-//control.dock(gbox[i], "revglobal_" ++ i);
-//control.dock(lbox[i], "revlocal_" ++ i);
-//control.dock(rbox[i], "rotation_" ++ i);
-//control.dock(dbox[i], "diretividade_" ++ i);
-//control.dock(cbox[i], "contraction_" ++ i);
-
-
-	//control.dock(a1box[i], "aux1_" ++ i);
-	//control.dock(a2box[i], "aux2_" ++ i);
-	//control.dock(a3box[i], "aux3_" ++ i);
-	//control.dock(a4box[i], "aux4_" ++ i);
-	//control.dock(a5box[i], "aux5_" ++ i);
-
-	//control.dock(a1check[i], "aux1check_" ++ i);
-	//control.dock(a2check[i], "aux2check_" ++ i);
-	//control.dock(a3check[i], "aux3check_" ++ i);
-	//control.dock(a4check[i], "aux4check_" ++ i);
-	//control.dock(a5check[i], "aux5check_" ++ i);
-
-	//control.dock(stcheck[i], "stcheck_" ++ i);
-
-
-
-};
-
-//////////////////////////////////////////
-
-/*
-	~myview = UserView.new(win,win.view.bounds);
-
-	~myview.mouseDownAction = { |x, y, modifiers, buttonNumber, clickCount|
-	buttonNumber.postln;
-	};
-*/
-win.view.mouseDownAction={ arg view, x, y, modifiers, buttonNumber, clickCount;
-	mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
-	if((mouseButton == 1) || (mouseButton == 2)) {
-		dragStartScreen.x = y - this.halfwidth;
-		dragStartScreen.y = x - this.halfwidth;
+		});
+
+
+		/*
+			bsnap = Button(win, Rect(170, this.width - 40, 25, 20))
+			.states_([
+			["[ô]", Color.black, Color.white],
+			])
+			.action_({ arg but;
+			if(control.now>0) {
+			control.seek; // go to 0.0
+			"Snapshot: Transport must be at zero seconds. Please try again.".postln;
+			} {
+			control.snapshot;  // only take snapshot at 0.0
+			"Snapshot taken".postln;
+			}
+			
+			});
+		*/
+
+
+		this.win.drawFunc = {
+			//paint origin
+			Pen.fillColor = Color(0.6,0.8,0.8);
+			Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+			Pen.fill;
+
+
+			Pen.fillColor = Color.gray(0, 0.5);
+			Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
+			Pen.fill;
+
+			//	Pen.width = 10;
+		};
+
+		// seleção de fontes
+		itensdemenu = Array.newClear(this.nfontes);
 		this.nfontes.do { arg i;
-if(this.espacializador[i].notNil) {
-	
-	this.espacializador[i].set(\mx, this.xval[i], \my, this.yval[i]
-	);
-	//,
-	//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
-	this.setSynths(i, \mx, this.xval[i], \my, this.yval[i]
-	);
-	//,
-	//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
-	this.synt[i].set(\mx, this.xval[i], \my, this.yval[i]
-	);
-	//,
-	//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
-};
-};
-};
-};
+			itensdemenu[i] = "Source " ++ (i + 1).asString;
+		};
 
-win.view.mouseMoveAction = {|view, x, y, modifiers| [x, y];
-	if(mouseButton == 0) { // left button
-		xbox[currentsource].valueAction = (this.halfwidth - y) / this.halfwidth;
-ybox[currentsource].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
+		m = PopUpMenu(win,Rect(10,10,90,20));
+		m.items = itensdemenu; 
+		m.action = { arg menu;
+			currentsource = menu.value;
+			
+			if(doppler[currentsource] == 1){dopcheque.value = true}{dopcheque.value = false};
+			if(lp[currentsource] == 1){loopcheck.value = true}{loopcheck.value = false};
 
-win.drawFunc = {
-// big circle
-Pen.fillColor = Color(0.6,0.8,0.8);
-Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
-Pen.fill;
-//Pen.width = 10;
+			if(sp[currentsource] == 1){spreadcheck.value = true}{spreadcheck.value = false};
+			if(df[currentsource] == 1){diffusecheck.value = true}{diffusecheck.value = false};
 
-this.nfontes.do { arg i;	
-	Pen.fillColor = Color(0.8,0.2,0.9);
-	Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
-	Pen.fill;
-	(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20), 
-		Font.default, Color.white);
-};
+			if(rv[currentsource] == 1){revcheck.value = true}{revcheck.value = false};
+			if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
 
+			if(hwn[currentsource] == 1){hwInCheck.value = true}{hwInCheck.value = false};
+			if(scn[currentsource] == 1){scInCheck.value = true}{scInCheck.value = false};
 
+			angnumbox.value = angle[currentsource];
+			angslider.value = angle[currentsource] / pi;
+			volnumbox.value = level[currentsource];
+			dopnumbox.value = dplev[currentsource];
+			volslider.value = level[currentsource];
+			gnumbox.value = glev[currentsource];
+			gslider.value = glev[currentsource];
+			lnumbox.value = llev[currentsource];
+			lslider.value = llev[currentsource];
+			rslider.value = (rlev[currentsource] + pi) / 2pi;
+			rnumbox.value = rlev[currentsource];
+			dirslider.value = dlev[currentsource] / (pi/2);
+			dirnumbox.value = dlev[currentsource];
+			cslider.value = clev[currentsource];
+			zslider.value = (zlev[currentsource] + this.halfwidth) / this.width;
 
-// círculo central
-Pen.fillColor = Color.gray(0, 0.5);
-Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
-Pen.fill;
+			dpslider.value = dplev[currentsource];
+			connumbox.value = clev[currentsource];
 
+			ncannumbox.value = this.ncan[currentsource];
+			busininumbox.value = this.busini[currentsource];
 
-};
-} {
+			auxslider1.value = this.aux1[currentsource];
+			aux1numbox.value = this.aux1[currentsource];
+			auxslider2.value = this.aux2[currentsource];
+			aux2numbox.value = this.aux2[currentsource];
+			auxslider3.value = this.aux3[currentsource];
+			aux3numbox.value = this.aux3[currentsource];
+			auxslider4.value = this.aux4[currentsource];
+			aux4numbox.value = this.aux4[currentsource];
+			auxslider5.value = this.aux5[currentsource];
+			aux5numbox.value = this.aux5[currentsource];
 
-};
-
-win.refresh;
-
-};
-
-
-
-win.onClose_({ 
-	
-	wdados.close;
-	waux.close;
-	this.free;
-	
-});
-
-mmcslave = CheckBox( win, Rect(197, this.width - 40, 140, 20), "Slave to MMC").action_({ arg butt;
-	//("Doppler is " ++ butt.value).postln;
-	if(butt.value) {
-"Slaving transport to MMC".postln;
-MIDIIn.addFuncTo(\sysex, sysex);
-} {
-"MIDI input closed".postln;
-MIDIIn.removeFuncFrom(\sysex, sysex);
-};
-
-//	dcheck[currentsource].valueAction = butt.value;
-});
-
-this.autoloop = CheckBox( win, Rect(305, this.width - 40, 140, 20), "Loop").action_({ arg butt;
-	//("Doppler is " ++ butt.value).postln;
-	if(butt.value) {
-"Looping transport".postln;
-this.autoloopval = true;
-} {
-this.autoloopval = false;			
-};
-
-});
+			if(testado[currentsource]) {  // don't change button if we are playing via automation
+				// only if it is being played/streamed manually
+				if (this.synt[currentsource] == nil){
+					btestar.value = 0;
+				} {
+					btestar.value = 1;
+				};
+			} {
+				btestar.value = 0;
+			};
+		};
 
 
-sysex  = { arg src, sysex;
-	// This should be more elaborate - other things might trigger it...fix this!
-	if(sysex[3] == 6){ var x;
-		("We have : " ++ sysex[4] ++ " type action").postln;
 
-x = case
-{ sysex[4] == 1 } {
+		offset = 60;
 
-"Stop".postln;
-control.stop;
-}
-{ sysex[4] == 2 } {
-"Play".postln;
-control.play;
 
-}
-{ sysex[4] == 3 } {
-"Deffered Play".postln;
-control.play;
+		dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
+			{this.dcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		dopcheque.value = false;
 
-}
-{ sysex[4] == 68 } { var goto; 
-("Go to event: " ++ sysex[7] ++ "hr " ++ sysex[8] ++ "min "
-++ sysex[9] ++ "sec and " ++ sysex[10] ++ "frames").postln;
-goto =  (sysex[7] * 3600) + (sysex[8] * 60) + sysex[9] + (sysex[10] / 30);
-control.seek(goto);
+		loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
+			{this.lpcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		loopcheck.value = false;
 
-};
-};
-};
-this.watcher.play;
-control.snapshot; // necessary to call at least once before saving automation
-// otherwise will get not understood errors
-}
+		spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
+			{this.spcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		spreadcheck.value = false;
+		diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
+			{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		diffusecheck.value = false;
+
+
+		revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
+			{this.rvcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		revcheck.value = false;
+
+		lincheck = CheckBox( win, Rect(184, 30, 180, 20), "Linear intensity").action_({ arg butt;
+			{this.lncheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		lincheck.value = false;
+
+
+		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ arg butt;
+			{this.hwncheck[currentsource].valueAction = butt.value;}.defer;
+			if (hwInCheck.value && scInCheck.value) {
+			};
+		});
+
+		scInCheck = CheckBox( win, Rect(104, 30, 60, 20), "SC-in").action_({ arg butt;
+			{this.scncheck[currentsource].valueAction = butt.value;}.defer;
+			if (scInCheck.value && hwInCheck.value) {
+			};
+		});
+
+
+
+
+		dopcheque.value = false;
+
+
+
+		textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
+		textbuf.string = "No. of chans. (HW & SC-in)";
+		ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
+		ncannumbox.value = 0;
+		ncannumbox.clipHi = 4;
+		ncannumbox.clipLo = 0;
+		ncannumbox.align = \center;
+		ncannumbox.action = {arg num;
+			
+			
+			{this.ncanbox[currentsource].valueAction = num.value;}.defer;
+			this.ncan[currentsource] = num.value;
+
+		};
+
+
+
+		textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
+		textbuf.string = "Start Bus (HW-in)";
+		busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
+		busininumbox.value = 0;
+		busininumbox.clipLo = 0;
+		busininumbox.align = \center;
+		busininumbox.action = {arg num; 
+			{this.businibox[currentsource].valueAction = num.value;}.defer;
+			this.busini[currentsource] = num.value;
+		};
+
+
+
+
+		textbuf = StaticText(win, Rect(163, 130 + offset, 90, 20));
+		textbuf.string = "Angle (Stereo)";
+		angnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
+		angnumbox.value = 0;
+		angnumbox.clipHi = pi;
+		angnumbox.clipLo = 0;
+		angnumbox.step_(0.1); 
+		angnumbox.scroll_step=0.1;
+		angnumbox.align = \center;
+		angnumbox.action = {arg num; 
+			{abox[currentsource].valueAction = num.value;}.defer;
+			if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)){
+				this.espacializador[currentsource].set(\angle, num.value);
+				this.setSynths(currentsource, \angle, num.value);
+				angle[currentsource] = num.value;
+			}
+			{angnumbox.value = 0;};
+		};
+
+		angslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
+		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
+
+		angslider.action = {arg num;
+			{abox[currentsource].valueAction = num.value * pi;}.defer;
+			if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)) {
+				{angnumbox.value = num.value * pi;}.defer;
+				//			this.espacializador[currentsource].set(\angle, b.map(num.value));
+				this.espacializador[currentsource].set(\angle, num.value * pi);
+				this.setSynths(currentsource, \angle, num.value * pi);
+				//			angle[currentsource] = b.map(num.value);
+				angle[currentsource] = num.value * pi;
+			}{{angnumbox.value = num.value * pi;}.defer;};
+		};
+
+
+
+		/////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(this.width - 90, this.halfwidth - 10, 90, 20));
+		textbuf.string = "Z-Axis";
+		znumbox = NumberBox(win, Rect(this.width - 65, ((this.width - zSliderHeight) / 2) + zSliderHeight, 60, 20));
+		znumbox.value = 0;
+		znumbox.clipHi = 1;
+		znumbox.clipLo = -1;
+		znumbox.step_(0.1); 
+		znumbox.scroll_step=0.1;
+		znumbox.align = \center;
+		znumbox.action = {arg num; 
+			{zbox[currentsource].valueAction = num.value;}.defer;
+			if(ncanais[currentsource]==2)   {
+				this.espacializador[currentsource].set(\elev, num.value);
+				this.setSynths(currentsource, \elev, num.value);
+				zlev[currentsource] = num.value;
+			}
+			{{znumbox.value = 0;}.defer;};
+		};
+
+
+		zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2), 20, zSliderHeight));
+		zslider.value = 0.5;
+		zslider.action = {arg num;
+			{znumbox.value = (0.5 - num.value) * -2;}.defer;
+			{zbox[currentsource].valueAction = znumbox.value;}.defer;
+			{zlev[currentsource] = znumbox.value;}.defer;
+
+
+		};
+
+
+		////////////////////////////// Orientation //////////////
+
+		if (this.serport.notNil) {
+			
+			this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
+			this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
+			this.pitchnumbox = NumberBox(win, Rect(this.width - 45, this.width - 25, 40, 20));
+			
+			this.headingnumbox.action = {arg num;
+				this.headingnumboxProxy.valueAction = num.value;
+			};
+
+
+			this.rollnumbox.action = {arg num;
+				this.rollnumboxProxy.valueAction = num.value;
+			};
+
+			this.pitchnumbox.action = {arg num;
+				this.pitchnumboxProxy.valueAction = num.value;
+			};
+
+
+			textbuf = StaticText(win, Rect(this.width - 60, this.width - 65, 12, 20));
+			textbuf.string = "H:";
+			textbuf = StaticText(win, Rect(this.width - 60, this.width - 45, 10, 22));
+			textbuf.string = "R:";
+			textbuf = StaticText(win, Rect(this.width - 60, this.width - 25, 10, 22));
+			textbuf.string = "P:";
+			
+			
+			textbuf = StaticText(win, Rect(this.width - 45, this.width - 85, 90, 20));
+			textbuf.string = "Orient.";
+			
+		};
+
+
+		////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 30 + offset, 50, 20));
+		textbuf.string = "Level";
+		volnumbox = NumberBox(win, Rect(10, 30 + offset, 40, 20));
+		volnumbox.value = 0;
+		volnumbox.clipHi = pi;
+		volnumbox.clipLo = 0;
+		volnumbox.step_(0.1); 
+		volnumbox.scroll_step=0.1;
+		volnumbox.align = \center;
+		volnumbox.action = {arg num; 
+			{vbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
+		volslider.value = 0;
+		volslider.action = {arg num;
+			{vbox[currentsource].valueAction = num.value;}.defer;		
+		};
+
+
+		///////////////////////////////////////////////////////////////
+
+
+		textbuf= StaticText(win, Rect(163, 50 + offset, 120, 20));
+		textbuf.string = "Doppler amount";
+		// was called contraction, hence "connumbox".
+		dopnumbox = NumberBox(win, Rect(10, 50 + offset, 40, 20));
+		dopnumbox.value = 0;
+		dopnumbox.clipHi = pi;
+		dopnumbox.clipLo = -pi;
+		dopnumbox.step_(0.1); 
+		dopnumbox.scroll_step=0.1;
+		dopnumbox.align = \center;
+		dopnumbox.action = {arg num; 
+			{dpbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		dpslider = Slider.new(win, Rect(50, 50 + offset, 110, 20));
+		dpslider.value = 0;
+		dpslider.action = {arg num;
+			{dpbox[currentsource].valueAction = num.value;}.defer;
+			{dopnumbox.value = num.value;}.defer;
+		};
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+
+		textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
+		textbuf.string = "Close Reverb";
+		gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
+		gnumbox.value = 1;
+		gnumbox.clipHi = pi;
+		gnumbox.clipLo = 0;
+		gnumbox.step_(0.1); 
+		gnumbox.scroll_step=0.1;
+		gnumbox.align = \center;
+		gnumbox.action = {arg num; 
+			{gbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		gslider = Slider.new(win, Rect(50, 70 + offset, 110, 20));
+		gslider.value = 0;
+		gslider.action = {arg num;
+			{gbox[currentsource].valueAction = num.value;}.defer;
+		};
+
+
+
+		textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
+		textbuf.string = "Distant Reverb";
+		lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
+		lnumbox.value = 1;
+		lnumbox.clipHi = pi;
+		lnumbox.clipLo = 0;
+		lnumbox.step_(0.1); 
+		lnumbox.scroll_step=0.1;
+		lnumbox.align = \center;
+		lnumbox.action = {arg num; 
+			{lbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		lslider = Slider.new(win, Rect(50, 90 + offset, 110, 20));
+		lslider.value = 0;
+		lslider.action = {arg num;
+			{lbox[currentsource].valueAction = num.value;}.defer;
+		};
+
+
+
+		textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
+		textbuf.string = "Rotation (B-Format)";
+		rnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
+		rnumbox.value = 0;
+		rnumbox.clipHi = pi;
+		rnumbox.clipLo = -pi;
+		rnumbox.step_(0.1); 
+		rnumbox.scroll_step=0.1;
+		rnumbox.align = \center;
+		rnumbox.action = {arg num; 
+			{rbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		rslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
+		rslider.value = 0.5;
+		rslider.action = {arg num;
+			{rbox[currentsource].valueAction = num.value * 6.28 - pi;}.defer;
+			{rnumbox.value = num.value * 2pi - pi;}.defer;
+
+		};
+
+
+
+		textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
+		textbuf.string = "Directivity (B-Format)";
+		dirnumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
+		dirnumbox.value = 0;
+		dirnumbox.clipHi = pi;
+		dirnumbox.clipLo = -pi;
+		dirnumbox.step_(0.1); 
+		dirnumbox.scroll_step=0.1;
+		dirnumbox.align = \center;
+		dirnumbox.action = {arg num; 
+			{dbox[currentsource].valueAction = num.value;}.defer;
+		};
+		// stepsize?
+		dirslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
+		dirslider.value = 0;
+		dirslider.action = {arg num;
+			{dbox[currentsource].valueAction = num.value * pi/2;}.defer;
+			{dirnumbox.value = num.value * pi/2;}.defer;
+		};
+
+
+
+		textbuf = StaticText(win, Rect(163, 110 + offset, 80, 20));
+		textbuf.string = "Contraction";
+		connumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
+		connumbox.value = 0;
+		connumbox.clipHi = pi;
+		connumbox.clipLo = -pi;
+		connumbox.step_(0.1); 
+		connumbox.scroll_step=0.1;
+		connumbox.align = \center;
+		connumbox.action = {arg num; 
+			{cbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		cslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
+		cslider.value = 0;
+		cslider.action = {arg num;
+			{cbox[currentsource].valueAction = num.value;}.defer;
+			{connumbox.value = num.value;}.defer;
+		};
+
+
+
+
+
+		bload = Button(win, Rect(this.width - 190, 10, 90, 20))
+		.states_([
+			["load audio", Color.black, Color.white],
+		])
+		.action_({ arg but;
+			this.synt[currentsource].free; // error check
+			this.espacializador[currentsource].free;
+			dopcheque.value = false; // coloque toggle no padrão
+
+
+
+			Dialog.openPanel(
+				control.stopRecording;
+				control.stop;
+				//control.seek;
+
+
+				{ 
+					arg path;
+					
+					{
+						this.streamdisk[currentsource] = false;
+						this.tfieldProxy[currentsource].valueAction = path;}.defer;
+					stcheck[currentsource].valueAction = false;
+
+					
+
+					
+				}, 
+				{
+					this.streamdisk[currentsource] = false;
+					"cancelled".postln;
+					{this.tfieldProxy[currentsource].value = "";}.defer;
+					stcheck[currentsource].valueAction = false;
+				}				
+			);
+
+		});
+
+		bstream = Button(win, Rect(this.width - 190, 30, 90, 20))
+		.states_([
+			["stream audio", Color.black, Color.white],
+		])
+		.action_({ arg but;
+			this.synt[currentsource].free; // error check
+			this.espacializador[currentsource].free;
+			dopcheque.value = false; // set to the default
+
+
+			Dialog.openPanel(
+				control.stopRecording;
+				control.stop;
+				control.seek;
+				{ 
+					arg path;
+					
+					{
+						this.streamdisk[currentsource] = true;
+						this.tfieldProxy[currentsource].valueAction = path;}.defer;
+					stcheck[currentsource].valueAction = true;
+					
+				}, 
+				{
+					"cancelled".postln;
+					this.streamdisk[currentsource] = false;
+					{this.tfieldProxy[currentsource].value = "";}.defer;
+					stcheck[currentsource].valueAction = false;
+				}
+
+			);
+
+		});
+
+
+		bnodes = Button(win, Rect(this.width - 190, 50, 90, 20))
+		.states_([
+			["show nodes", Color.black, Color.white],
+		])
+		.action_({
+			server.plotTree;
+		});
+
+		textbuf = StaticText(wdados, Rect(30, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Dp";
+		textbuf = StaticText(wdados, Rect(45, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Lp";
+		textbuf = StaticText(wdados, Rect(60, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Rv";
+		textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Hw";
+		textbuf = StaticText(wdados, Rect(90, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Sc";
+		textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Ln";
+
+		textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Sp";
+		textbuf = StaticText(wdados, Rect(135, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Df";
+
+		textbuf = StaticText(wdados, Rect(150, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "NCan";
+		textbuf = StaticText(wdados, Rect(175, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "SBus";
+
+		textbuf = StaticText(wdados, Rect(200, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "X";
+		textbuf = StaticText(wdados, Rect(233, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Y";
+
+		textbuf = StaticText(wdados, Rect(266, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Z";
+
+		textbuf = StaticText(wdados, Rect(299, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "O.x";
+		textbuf = StaticText(wdados, Rect(333, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "O.y";
+		textbuf = StaticText(wdados, Rect(366, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "O.z";
+
+
+		textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Lev";
+		textbuf = StaticText(wdados, Rect(425, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "DAmt";
+		textbuf = StaticText(wdados, Rect(450, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Prox";
+		textbuf = StaticText(wdados, Rect(475, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Dist";
+		textbuf = StaticText(wdados, Rect(500, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Ang";
+		textbuf = StaticText(wdados, Rect(525, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Rot";
+		textbuf = StaticText(wdados, Rect(550, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Dir";
+		textbuf = StaticText(wdados, Rect(575, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Cont";
+
+		textbuf = StaticText(wdados, Rect(600, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A1";
+		textbuf = StaticText(wdados, Rect(625, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A2";
+		textbuf = StaticText(wdados, Rect(650, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A3";
+		textbuf = StaticText(wdados, Rect(675, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A4";
+		textbuf = StaticText(wdados, Rect(700, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "A5";
+
+		textbuf = StaticText(wdados, Rect(725, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a1";
+		textbuf = StaticText(wdados, Rect(740, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a2";
+		textbuf = StaticText(wdados, Rect(755, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a3";
+		textbuf = StaticText(wdados, Rect(770, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a4";
+		textbuf = StaticText(wdados, Rect(785, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "a5";
+
+
+		textbuf = StaticText(wdados, Rect(800, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "File";
+
+		textbuf = StaticText(wdados, Rect(925, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "St";
+
+
+
+
+
+		this.nfontes.do { arg i;
+
+			textbuf = StaticText(wdados, Rect(10, 40 + (i*20), 50, 20));
+			textbuf.font = Font(Font.defaultSansFace, 9);
+			textbuf.string = (i+1).asString;
+
+			this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20));
+
+			this.dcheck[i].action_({ arg but;
+				if((i==currentsource) && guiflag){dopcheque.value = but.value;};
+				this.dcheckProxy[i].valueAction = but.value;
+			});
+
+
+
+			this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20));
+
+			this.lpcheck[i].action_({ arg but;
+				this.lpcheckProxy[i].valueAction = but.value;
+			});
+
+
+
+
+			this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20));
+
+			this.rvcheck[i].action_({ arg but;
+				this.rvcheckProxy[i].valueAction = but.value;
+			});
+
+
+
+			this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20));
+
+			this.hwncheck[i].action_({ arg but;
+				this.hwncheckProxy[i].valueAction = but.value;
+			});
+
+
+			this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
+
+			this.scncheck[i].action_({ arg but;
+				this.scncheckProxy[i].valueAction = but.value;
+			});
+
+
+
+			this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
+
+			this.lncheck[i].action_({ arg but;
+				this.lncheckProxy[i].valueAction = but.value;
+			});
+
+
+			this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20));
+
+			this.spcheck[i].action_({ arg but;
+				this.spcheckProxy[i].valueAction = but.value;
+			});
+
+
+
+
+
+			this.dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20));
+
+			this.dfcheck[i].action_({ arg but;
+				this.dfcheckProxy[i].valueAction = but.value;
+			});
+
+
+
+			/////////////////////////////////////////////////////////////////
+
+			this.ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
+			this.businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
+
+			xbox[i] = NumberBox(wdados, Rect(200, 40 + (i*20), 33, 20));
+			ybox[i] = NumberBox(wdados, Rect(233, 40+ (i*20), 33, 20));
+			zbox[i] = NumberBox(wdados, Rect(266, 40+ (i*20), 33, 20));
+
+			oxbox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 33, 20));
+			oybox[i] = NumberBox(wdados, Rect(333, 40+ (i*20), 33, 20));
+			ozbox[i] = NumberBox(wdados, Rect(366, 40+ (i*20), 33, 20));
+
+			vbox[i] = NumberBox(wdados, Rect(400, 40 + (i*20), 25, 20));
+			dpbox[i] = NumberBox(wdados, Rect(425, 40+ (i*20), 25, 20));
+			gbox[i] = NumberBox(wdados, Rect(450, 40+ (i*20), 25, 20));
+			lbox[i] = NumberBox(wdados, Rect(475, 40+ (i*20), 25, 20));
+			abox[i] = NumberBox(wdados, Rect(500, 40+ (i*20), 25, 20));
+			rbox[i] = NumberBox(wdados, Rect(525, 40+ (i*20), 25, 20));
+			dbox[i] = NumberBox(wdados, Rect(550, 40+ (i*20), 25, 20));
+			cbox[i] = NumberBox(wdados, Rect(575, 40+ (i*20), 25, 20));
+
+			a1box[i] = NumberBox(wdados, Rect(600, 40+ (i*20), 25, 20));
+			a2box[i] = NumberBox(wdados, Rect(625, 40+ (i*20), 25, 20));
+			a3box[i] = NumberBox(wdados, Rect(650, 40+ (i*20), 25, 20));
+			a4box[i] = NumberBox(wdados, Rect(675, 40+ (i*20), 25, 20));
+			a5box[i] = NumberBox(wdados, Rect(700, 40+ (i*20), 25, 20));
+
+
+			a1box[i].clipHi = 1;
+			a1box[i].clipLo = 0;
+			a2box[i].clipHi = 1;
+			a2box[i].clipLo = 0;
+			a3box[i].clipHi = 1;
+			a3box[i].clipLo = 0;
+			a4box[i].clipHi = 1;
+			a4box[i].clipLo = 0;
+			a5box[i].clipHi = 1;
+			a5box[i].clipLo = 0;
+
+			a1check[i] = CheckBox.new( wdados, Rect(725, 40 + (i*20), 40, 20));
+			a1check[i].action = { arg but;
+				this.a1checkProxy[i].valueAction = but.value;
+			};
+
+
+
+			a2check[i] = CheckBox.new( wdados, Rect(740, 40 + (i*20), 40, 20));
+			a2check[i].action = { arg but;
+				this.a2checkProxy[i].valueAction = but.value;
+			};
+
+
+			a3check[i] = CheckBox.new( wdados, Rect(755, 40 + (i*20), 40, 20));
+			a3check[i].action = { arg but;
+				this.a3checkProxy[i].valueAction = but.value;
+			};
+
+
+			a4check[i] = CheckBox.new( wdados, Rect(770, 40 + (i*20), 40, 20));
+			a4check[i].action = { arg but;
+				this.a4checkProxy[i].valueAction = but.value;
+			};
+
+
+			a5check[i] = CheckBox.new( wdados, Rect(785, 40 + (i*20), 40, 20));
+			a5check[i].action = { arg but;
+				this.a5checkProxy[i].valueAction = but.value;
+			};
+
+
+
+			this.tfield[i] = TextField(wdados, Rect(800, 40+ (i*20), 125, 20));
+			//			this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
+
+			stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
+			stcheck[i].action = { arg but;
+				this.stcheckProxy[i].valueAction = but.value;
+			};
+
+
+			this.ncanbox[i].font = Font(Font.defaultSansFace, 9);
+			this.businibox[i].font = Font(Font.defaultSansFace, 9);
+			xbox[i].font = Font(Font.defaultSansFace, 9);
+			ybox[i].font = Font(Font.defaultSansFace, 9);
+			zbox[i].font = Font(Font.defaultSansFace, 9);
+			oxbox[i].font = Font(Font.defaultSansFace, 9);
+			oybox[i].font = Font(Font.defaultSansFace, 9);
+			ozbox[i].font = Font(Font.defaultSansFace, 9);
+
+
+			abox[i].font = Font(Font.defaultSansFace, 9);
+			vbox[i].font = Font(Font.defaultSansFace, 9);
+			gbox[i].font = Font(Font.defaultSansFace, 9);
+			lbox[i].font = Font(Font.defaultSansFace, 9);
+			rbox[i].font = Font(Font.defaultSansFace, 9);
+			dbox[i].font = Font(Font.defaultSansFace, 9);
+			cbox[i].font = Font(Font.defaultSansFace, 9);
+			dpbox[i].font = Font(Font.defaultSansFace, 9);
+			a1box[i].font = Font(Font.defaultSansFace, 9);
+			a2box[i].font = Font(Font.defaultSansFace, 9);
+			a3box[i].font = Font(Font.defaultSansFace, 9);
+			a4box[i].font = Font(Font.defaultSansFace, 9);
+			a5box[i].font = Font(Font.defaultSansFace, 9);
+
+			this.tfield[i].font = Font(Font.defaultSansFace, 9);
+
+			xbox[i].decimals = 3;
+			ybox[i].decimals = 3;
+			zbox[i].decimals = 3;
+			oxbox[i].decimals = 0;
+			oybox[i].decimals = 0;
+			ozbox[i].decimals = 0;
+
+
+			a1box[i].action = {arg num;
+				this.a1boxProxy[i].valueAction = num.value;
+			}; 
+
+
+			a2box[i].action = {arg num;
+				this.a2boxProxy[i].valueAction = num.value;
+			}; 
+
+
+			a3box[i].action = {arg num;
+				this.a3boxProxy[i].valueAction = num.value;
+			}; 
+
+			a4box[i].action = {arg num;
+				this.a4boxProxy[i].valueAction = num.value;
+			}; 
+
+			a5box[i].action = {arg num;
+				this.a5boxProxy[i].valueAction = num.value;
+			}; 
+
+
+
+			this.tfield[i].action = {arg path;
+				this.tfieldProxy[i].valueAction = path.value;
+			};
+
+
+
+
+			//// PROXY ACTIONS /////////
+
+			// gradually pinching these and putting up above
+
+			this.xbox[i].action = {arg num;
+				
+				this.xboxProxy[i].valueAction = num.value;
+			};
+
+
+			ybox[i].action = {arg num;
+				this.yboxProxy[i].valueAction = num.value;
+			};
+
+
+			zbox[i].action = {arg num;
+				this.zboxProxy[i].valueAction = num.value;
+			};
+
+
+
+
+			this.dcheck[i].value = 0;
+
+			abox[i].clipHi = pi;
+			abox[i].clipLo = 0;
+			vbox[i].clipHi = 1.0;
+			vbox[i].clipLo = 0;
+			gbox[i].clipHi = 1.0;
+			gbox[i].clipLo = 0;
+			lbox[i].clipHi = 1.0;
+			lbox[i].clipLo = 0;
+
+			vbox[i].scroll_step = 0.01;
+			abox[i].scroll_step = 0.01;
+			vbox[i].step = 0.01;
+			abox[i].step = 0.01;
+			gbox[i].scroll_step = 0.01;
+			lbox[i].scroll_step = 0.01;
+			gbox[i].step = 0.01;
+			lbox[i].step = 0.01;
+
+
+			abox[i].action = {arg num;
+				this.aboxProxy[i].valueAction = num.value;
+				/*	angle[i] = num.value;
+					if((ncanais[i]==2) || (this.ncan[i]==2)){
+					this.espacializador[i].set(\angle, num.value);
+					this.setSynths(i, \angle, num.value);
+					angle[i] = num.value;
+					};
+					if(i == currentsource) 
+					{
+					angnumbox.value = num.value;
+					angslider.value = num.value / pi;
+				*/
+			};
+
+			vbox[i].action = {arg num;
+				this.vboxProxy[i].valueAction = num.value;
+			}; 
+
+
+
+
+
+
+			gbox[i].value = 0;
+			lbox[i].value = 0;
+
+			gbox[i].action = {arg num;
+				this.gboxProxy[i].valueAction = num.value;
+			}; 
+
+
+
+			lbox[i].action = {arg num;
+				this.lboxProxy[i].valueAction = num.value;
+			}; 
+
+
+
+			rbox[i].action = {arg num; 
+				this.rboxProxy[i].valueAction = num.value;
+			};
+
+
+
+
+			dbox[i].action = {arg num; 
+				this.dboxProxy[i].valueAction = num.value;
+			};
+
+
+			cbox[i].action = {arg num; 
+				this.cboxProxy[i].valueAction = num.value;
+			};
+
+
+
+
+			dpbox[i].action = {arg num;
+				this.dpboxProxy[i].valueAction = num.value;
+			};
+
+
+			this.ncanbox[i].action = {arg num;
+				this.ncanboxProxy[i].valueAction = num.value;
+			};
+
+
+			this.businibox[i].action = {arg num;
+				this.businiboxProxy[i].valueAction = num.value;
+			}; 
+
+
+
+
+		};
+
+
+		runTriggers = {
+			this.nfontes.do({
+				arg i;
+				if(testado[i].not) {
+					if(this.triggerFunc[i].notNil) {
+						this.triggerFunc[i].value;
+						//updateSynthInArgs.value(i);
+					}
+				}
+			})
+		};
+
+		runTrigger = {
+			arg source;
+			//	if(scncheck[i]) {
+			if(this.triggerFunc[source].notNil) {
+				this.triggerFunc[source].value;
+				updateSynthInArgs.value(source);
+			}
+		};
+
+		runStops = {
+			this.nfontes.do({
+				arg i;
+				if(testado[i].not) {
+					if(this.stopFunc[i].notNil) {
+						this.stopFunc[i].value;
+					}
+				} 
+			})
+		};
+
+		runStop = { 
+			arg source;
+			if(this.stopFunc[source].notNil) {
+				this.stopFunc[source].value;
+			}
+		};
+
+
+		//control = Automation(dur).front(win, Rect(this.halfwidth, 10, 400, 25));
+		/*~autotest = control = Automation(this.dur, showLoadSave: false, showSnapshot: false,
+			minTimeStep: 0.001).front(win,
+			Rect(10, this.width - 80, 400, 22));
+		*/
+		//~autotest = control = Automation(this.dur, showLoadSave: false, showSnapshot: false,
+		//	minTimeStep: 0.001);
+		control.front(win,
+			Rect(10, this.width - 80, 400, 22));
+
+
+		control.presetDir = prjDr ++ "/auto";
+		//control.setMinTimeStep(2.0);
+		control.onEnd = {
+			//	control.stop;
+			control.seek;
+			if(this.autoloopval) {
+				control.play;	
+			};
+			this.nfontes.do { arg i;
+				if(this.synt[i].notNil) {
+					this.synt[i].free;
+				};
+			};
+		};
+
+		this.control.onPlay = {
+			var startTime;
+			"ON PLAY".postln;
+			this.nfontes.do { arg i;
+				this.firstTime[i]=true;
+				("NOW PLAYING = " ++ this.firstTime[i]).postln;
+			};
+			if(control.now < 0)
+			{
+				startTime = 0
+			}
+			{ 
+				startTime = control.now
+			};
+			this.isPlay = true;
+			//runTriggers.value;
+		};
+
+
+		this.control.onSeek = {
+			var wasplaying = isPlay;
+			"ON SEEK".postln;
+
+			//("isPlay = " ++ isPlay).postln;
+			//runStops.value; // necessary? doesn't seem to help prob of SC input
+			
+			//runStops.value;
+			if(isPlay == true) {
+				this.nfontes.do { arg i;	
+					this.synt[i].free; // error check
+				};
+				control.stop;
+			};
+			
+			if(wasplaying) {
+				//isPlay = true;
+				"we are here".postln;
+				{control.play}.defer(0.5); //delay necessary. may need more?
+			};
+		};
+
+		this.control.onStop = {
+			runStops.value;
+			"ON STOP".postln;
+			this.nfontes.do { arg i;
+				// if sound is currently being "tested", don't switch off on stop
+				// leave that for user
+				if (testado[i] == false) {
+					this.synt[i].free; // error check
+				};
+				//	this.espacializador[i].free;
+			};
+			isPlay = false;
+
+		};
+
+		///////////////// PROXY WILL REMOVE THIS //////////////
+
+		this.nfontes.do { arg i;
+			//	control.dock(xbox[i], "x_axis_" ++ i);
+			//control.dock(ybox[i], "y_axis_" ++ i);
+			//control.dock(zbox[i], "z_axis_" ++ i);
+
+
+
+			//control.dock(vbox[i], "level_" ++ i);
+			//control.dock(dpbox[i], "dopamt_" ++ i);
+
+			//control.dock(abox[i], "angle_" ++ i);
+			//control.dock(gbox[i], "revglobal_" ++ i);
+			//control.dock(lbox[i], "revlocal_" ++ i);
+			//control.dock(rbox[i], "rotation_" ++ i);
+			//control.dock(dbox[i], "diretividade_" ++ i);
+			//control.dock(cbox[i], "contraction_" ++ i);
+
+
+			//control.dock(a1box[i], "aux1_" ++ i);
+			//control.dock(a2box[i], "aux2_" ++ i);
+			//control.dock(a3box[i], "aux3_" ++ i);
+			//control.dock(a4box[i], "aux4_" ++ i);
+			//control.dock(a5box[i], "aux5_" ++ i);
+
+			//control.dock(a1check[i], "aux1check_" ++ i);
+			//control.dock(a2check[i], "aux2check_" ++ i);
+			//control.dock(a3check[i], "aux3check_" ++ i);
+			//control.dock(a4check[i], "aux4check_" ++ i);
+			//control.dock(a5check[i], "aux5check_" ++ i);
+
+			//control.dock(stcheck[i], "stcheck_" ++ i);
+
+
+
+		};
+
+		//////////////////////////////////////////
+
+		/*
+			~myview = UserView.new(win,win.view.bounds);
+
+			~myview.mouseDownAction = { |x, y, modifiers, buttonNumber, clickCount|
+			buttonNumber.postln;
+			};
+		*/
+		win.view.mouseDownAction={ arg view, x, y, modifiers, buttonNumber, clickCount;
+			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
+			if((mouseButton == 1) || (mouseButton == 2)) {
+				dragStartScreen.x = y - this.halfwidth;
+				dragStartScreen.y = x - this.halfwidth;
+				this.nfontes.do { arg i;
+					if(this.espacializador[i].notNil) {
+						
+						this.espacializador[i].set(\mx, this.xval[i], \my, this.yval[i]
+						);
+						//,
+						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
+						this.setSynths(i, \mx, this.xval[i], \my, this.yval[i]
+						);
+						//,
+						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
+						this.synt[i].set(\mx, this.xval[i], \my, this.yval[i]
+						);
+						//,
+						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
+					};
+				};
+			};
+		};
+
+		win.view.mouseMoveAction = {|view, x, y, modifiers| [x, y];
+			if(mouseButton == 0) { // left button
+				xbox[currentsource].valueAction = (this.halfwidth - y) / this.halfwidth;
+				ybox[currentsource].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
+
+				win.drawFunc = {
+					// big circle
+					Pen.fillColor = Color(0.6,0.8,0.8);
+					Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+					Pen.fill;
+					//Pen.width = 10;
+
+					this.nfontes.do { arg i;	
+						Pen.fillColor = Color(0.8,0.2,0.9);
+						Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
+						Pen.fill;
+						(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20), 
+							Font.default, Color.white);
+					};
+
+
+
+					// círculo central
+					Pen.fillColor = Color.gray(0, 0.5);
+					Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
+					Pen.fill;
+
+
+				};
+			} {
+
+			};
+
+			win.refresh;
+
+		};
+
+
+
+		win.onClose_({ 
+			
+			wdados.close;
+			waux.close;
+			this.free;
+			
+		});
+
+		mmcslave = CheckBox( win, Rect(197, this.width - 40, 140, 20), "Slave to MMC").action_({ arg butt;
+			//("Doppler is " ++ butt.value).postln;
+			if(butt.value) {
+				"Slaving transport to MMC".postln;
+				MIDIIn.addFuncTo(\sysex, sysex);
+			} {
+				"MIDI input closed".postln;
+				MIDIIn.removeFuncFrom(\sysex, sysex);
+			};
+
+			//	dcheck[currentsource].valueAction = butt.value;
+		});
+
+		this.autoloop = CheckBox( win, Rect(305, this.width - 40, 140, 20), "Loop").action_({ arg butt;
+			//("Doppler is " ++ butt.value).postln;
+			if(butt.value) {
+				"Looping transport".postln;
+				this.autoloopval = true;
+			} {
+				this.autoloopval = false;			
+			};
+
+		});
+
+
+		sysex  = { arg src, sysex;
+			// This should be more elaborate - other things might trigger it...fix this!
+			if(sysex[3] == 6){ var x;
+				("We have : " ++ sysex[4] ++ " type action").postln;
+
+				x = case
+				{ sysex[4] == 1 } {
+
+					"Stop".postln;
+					control.stop;
+				}
+				{ sysex[4] == 2 } {
+					"Play".postln;
+					control.play;
+
+				}
+				{ sysex[4] == 3 } {
+					"Deffered Play".postln;
+					control.play;
+
+				}
+				{ sysex[4] == 68 } { var goto; 
+					("Go to event: " ++ sysex[7] ++ "hr " ++ sysex[8] ++ "min "
+						++ sysex[9] ++ "sec and " ++ sysex[10] ++ "frames").postln;
+					goto =  (sysex[7] * 3600) + (sysex[8] * 60) + sysex[9] + (sysex[10] / 30);
+					control.seek(goto);
+
+				};
+			};
+		};
+		this.watcher.play;
+		control.snapshot; // necessary to call at least once before saving automation
+		// otherwise will get not understood errors
+	}
 
 
 }
