@@ -3159,10 +3159,6 @@ GUI Parameters usable in SynthDefs
 		arg i, tpos, force = false;
 		var path = this.tfieldProxy[i].value, stdur;
 		
-		"NEW TOCAR".postln;
-		
-		
-		
 			if (this.streamdisk[i]) {
 				var sf = SoundFile.new;
 				var nchan, sframe, srate;
@@ -4672,7 +4668,6 @@ GUI Parameters usable in SynthDefs
 					//tocar.value(currentsource, 0); // needed only by SC input
 					//- and probably by HW - causes duplicates with file
 					// as file playback is handled by the "watcher" routine
-					"really curious!".postln;
 					testado[currentsource] = true;
 					
 				}
@@ -5398,8 +5393,10 @@ GUI Parameters usable in SynthDefs
 				{
 					this.streamdisk[currentsource] = false;
 					"cancelled".postln;
+					
+					{this.tfield[currentsource].value = "";}.defer;
 					{this.tfieldProxy[currentsource].value = "";}.defer;
-					stcheck[currentsource].valueAction = false;
+					stcheckProxy[currentsource].valueAction = false;
 				}				
 			);
 
@@ -5432,6 +5429,7 @@ GUI Parameters usable in SynthDefs
 					"cancelled".postln;
 					this.streamdisk[currentsource] = false;
 					{this.tfieldProxy[currentsource].value = "";}.defer;
+					{this.tfield[currentsource].value = "";}.defer;
 					stcheck[currentsource].valueAction = false;
 				}
 
@@ -5999,7 +5997,6 @@ GUI Parameters usable in SynthDefs
 
 		this.control.onSeek = {
 			var wasplaying = isPlay;
-			"ON SEEK".postln;
 
 			//("isPlay = " ++ isPlay).postln;
 			//runStops.value; // necessary? doesn't seem to help prob of SC input
