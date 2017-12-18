@@ -2851,9 +2851,10 @@ GUI Parameters usable in SynthDefs
 				
 		// this regulates file playing synths
 		this.watcher = Routine.new({
+			"WATCHER!!!".postln;
 			inf.do({
 				0.1.wait;
-				//"WATCHER!!!".postln;
+				
 				this.nfontes.do({
 					arg i;
 					{
@@ -4257,7 +4258,7 @@ GUI Parameters usable in SynthDefs
 			
 		};
 		//	}.play;
-		this.watcher.play;
+		//	this.watcher.play;
 		
 	}
 	
@@ -6207,7 +6208,7 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 		};
-		this.watcher.play;
+		//		this.watcher.play;
 		control.snapshot; // necessary to call at least once before saving automation
 		// otherwise will get not understood errors
 	}

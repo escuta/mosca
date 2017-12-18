@@ -1089,7 +1089,7 @@ Routine {
 
 // RUNNING MOSCA WITHOUT A GUI
 
-1. As a first step, run the first block of code above in these Examples. 
+1. As a first step, run the first block of code above in these Examples to open a Mosca GUI. 
 2. Record some Automation data and save to disk, taking note of the address.
 3. Edit the block of code below to include the correct paths for your saved Automation file.
 4. Run the code and use the commands below the block to control playback.
