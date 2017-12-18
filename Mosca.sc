@@ -6006,15 +6006,15 @@ GUI Parameters usable in SynthDefs
 			
 			//runStops.value;
 			if(isPlay == true) {
-				this.nfontes.do { arg i;	
-					this.synt[i].free; // error check
+				this.nfontes.do { arg i;
+					if(this.testado[i].not) {
+						this.synt[i].free;
+					};
 				};
 				control.stop;
 			};
 			
 			if(wasplaying) {
-				//isPlay = true;
-				"we are here".postln;
 				{control.play}.defer(0.5); //delay necessary. may need more?
 			};
 		};
@@ -6208,9 +6208,8 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 		};
-		//		this.watcher.play;
 		control.snapshot; // necessary to call at least once before saving automation
-		// otherwise will get not understood errors
+		                  // otherwise will get not understood errors on load
 	}
 
 
