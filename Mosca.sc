@@ -104,7 +104,7 @@ Mosca {
 	<>recchans, <>recbus,
 	<>mark1, <>mark2,	// 4 number arrays for marker data
 
-	<>lastPlot, <>plotInt,
+	<>lastGui, <>guiInt,
 
 	// MOVED FROM the the gui method/////////////////////////
 
@@ -179,9 +179,9 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
 		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
-		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true, plotint = 0.07;
+		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true, guiint = 0.07;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder,
-			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag, plotint);
+			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag, guiint);
 	}
 
 	
@@ -221,7 +221,7 @@ GUI Parameters usable in SynthDefs
 
 	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder,
 		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
-		irecchans, irecbus, iguiflag, iplotint; 
+		irecchans, irecbus, iguiflag, iguiint; 
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -266,8 +266,8 @@ GUI Parameters usable in SynthDefs
 
 		this.currentsource = 0;
 		this.plim = 1.2;
-		this.lastPlot = Main.elapsedTime;
-		this.plotInt = iplotint;
+		this.lastGui = Main.elapsedTime;
+		this.guiInt = iguiint;
 		if (this.serport.notNil) {
 
 			SerialPort.devicePattern = this.serport; // needed in serKeepItUp routine - see below
@@ -588,10 +588,10 @@ GUI Parameters usable in SynthDefs
 				//("Num = " ++ num.value).postln;
 				this.xval[i] = num.value;
 				if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)  ) {
-					var period = Main.elapsedTime - this.lastPlot;
+					var period = Main.elapsedTime - this.lastGui;
 					{sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth)}.defer;
-					if (period > this.plotInt) {
-						this.lastPlot =  Main.elapsedTime;
+					if (period > this.guiInt) {
+						this.lastGui =  Main.elapsedTime;
 						{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer;
 					};
 				};
@@ -6112,7 +6112,7 @@ GUI Parameters usable in SynthDefs
 
 		win.view.mouseMoveAction = {|view, x, y, modifiers| [x, y];
 			if(mouseButton == 0) { // left button
-				var period = Main.elapsedTime - this.lastPlot;
+				var period = Main.elapsedTime - this.lastGui;
 				xbox[currentsource].valueAction = (this.halfwidth - y) / this.halfwidth;
 				ybox[currentsource].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
 
@@ -6140,9 +6140,9 @@ GUI Parameters usable in SynthDefs
 
 
 				};
-				if (period > this.plotInt) {
-					this.lastPlot =  Main.elapsedTime;
-				win.refresh;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					win.refresh;
 				};
 				
 			} {

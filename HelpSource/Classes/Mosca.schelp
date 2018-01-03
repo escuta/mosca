@@ -243,6 +243,9 @@ Starting bus for recording audio output to disk. Default is 0. Note: this argume
 ARGUMENT:: guiflag
 If set to false, Mosca will run with no GUI. Default is true.
 
+ARGUMENT:: guiint
+Maximum interval in seconds to refresh GUI. Default is 0.07.
+
 returns:: New instance.
 
 
