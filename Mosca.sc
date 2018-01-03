@@ -76,6 +76,7 @@ Mosca {
 	<>insertFlag,
 	<>aFormatBusFoa, <>aFormatBusSoa, 
 	<>dur,
+	<>plim, // distance limit from origin where processes continue to run
 	<>firstTime,
 	<>playingBF,
 	<>rawbusfoa, <>rawbussoa, <>raworder,
@@ -102,6 +103,8 @@ Mosca {
 	<>xval, <>yval, <>zval,
 	<>recchans, <>recbus,
 	<>mark1, <>mark2,	// 4 number arrays for marker data
+
+	<>lastPlot, <>plotInt,
 
 	// MOVED FROM the the gui method/////////////////////////
 
@@ -176,9 +179,9 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
 		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
-		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true;
+		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true, plotint = 0.07;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder,
-			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag);
+			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag, plotint);
 	}
 
 	
@@ -190,7 +193,6 @@ Mosca {
 GUI Parameters usable in SynthDefs
 
 \\level | level | 0 - 1 |
-\\dopon | Doppler effect on/off | 0 or 1
 \\dopamnt | Doppler ammount | 0 - 1 |
 \\angle | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
 \\glev | Global/Close reverb level | 0 - 1 |
@@ -198,13 +200,9 @@ GUI Parameters usable in SynthDefs
 \\mx | X coord | -1 - 1 |
 \\my | Y coord | -1 - 1 |
 \\mz | Z coord | -1 - 1 |
-\\sp | Spread 1st order encoding | 0 or 1 |
-\\df | Diffuse 1st order encoding | 0 or 1 |
 \\rotAngle | B-format rotation angle | -3.14 - 3.14 |
 \\directang | B-format directivity | 0 - 1.57 |
 \\contr | Contraction: fade between WXYZ & W | 0 - 1 |
-\\rv | Diffuse 2nd order A-format reverb check | 0 or 1 |
-\\ln | Linear intensity check | 0 or 1 |
 \\aux1 | Auxiliary slider 1 value | 0 - 1 |
 \\aux2 | Auxiliary slider 2 value | 0 - 1 |
 \\aux3 | Auxiliary slider 3 value | 0 - 1 |
@@ -223,7 +221,7 @@ GUI Parameters usable in SynthDefs
 
 	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder,
 		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
-		irecchans, irecbus, iguiflag;
+		irecchans, irecbus, iguiflag, iplotint;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -267,7 +265,9 @@ GUI Parameters usable in SynthDefs
 		this.guiflag = iguiflag;
 
 		this.currentsource = 0;
-
+		this.plim = 1.2;
+		this.lastPlot = Main.elapsedTime;
+		this.plotInt = iplotint;
 		if (this.serport.notNil) {
 
 			SerialPort.devicePattern = this.serport; // needed in serKeepItUp routine - see below
@@ -587,9 +587,13 @@ GUI Parameters usable in SynthDefs
 			this.xboxProxy[i].action = {arg num;
 				//("Num = " ++ num.value).postln;
 				this.xval[i] = num.value;
-				if (guiflag) {
+				if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)  ) {
+					var period = Main.elapsedTime - this.lastPlot;
 					{sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth)}.defer;
-					{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer;
+					if (period > this.plotInt) {
+						this.lastPlot =  Main.elapsedTime;
+						{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer;
+					};
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
 					this.espacializador[i].set(\mx, this.xval[i]);
@@ -604,7 +608,7 @@ GUI Parameters usable in SynthDefs
 			
 			this.yboxProxy[i].action = {arg num;
 				this.yval[i] = num.value;
-				if (guiflag) {
+				if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)) {
 					{sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth)}.defer;
 				};
 				
@@ -2710,7 +2714,7 @@ GUI Parameters usable in SynthDefs
 		updateSynthInArgs = { arg source;
 			{
 				server.sync;
-				this.setSynths(source, \dopon, doppler[source]);
+				//	this.setSynths(source, \dopon, doppler[source]);
 				this.setSynths(source, \angle, angle[source]);
 				this.setSynths(source, \level, level[source]);
 				this.setSynths(source, \dopamnt, dplev[source]);
@@ -2721,8 +2725,8 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \mz, this.zval[source]);
 				
 
-				this.setSynths(source, \sp, sp[source]);
-				this.setSynths(source, \df, df[source]);
+				//	this.setSynths(source, \sp, sp[source]);
+				//	this.setSynths(source, \df, df[source]);
 
 				this.setSynths(source, \rotAngle, rlev[source]);
 				this.setSynths(source, \directang, dlev[source]);
@@ -2866,7 +2870,7 @@ GUI Parameters usable in SynthDefs
 							source.set(this.xval[i], this.yval[i]);
 							//("testado = " ++ testado[i]).postln;
 							//("distance " ++ i ++ " = " ++ source.rho).postln;
-								if (source.rho > 1.2) {
+								if (source.rho > this.plim) {
 									this.firstTime[i] = true;
 									if(this.synt[i].isPlaying) {
 										//this.synthRegistry[i].free;
@@ -2950,7 +2954,7 @@ GUI Parameters usable in SynthDefs
 		this.pitchnumboxProxy.valueAction = p;
 		this.nfontes.do { arg i;
 			
-			if (guiflag) {
+			if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)) {
 				sprite[i, 1] = ((xval[i] * this.halfwidth * -1) + this.halfwidth);
 				sprite[i, 0] = ((yval[i] * this.halfwidth * -1) + this.halfwidth);
 			};
@@ -5433,6 +5437,8 @@ GUI Parameters usable in SynthDefs
 					stcheck[currentsource].valueAction = false;
 				}
 
+				
+
 			);
 
 		});
@@ -5928,6 +5934,7 @@ GUI Parameters usable in SynthDefs
 			if(this.triggerFunc[source].notNil) {
 				this.triggerFunc[source].value;
 				updateSynthInArgs.value(source);
+				"RUNNING TRIGGER".postln;
 			}
 		};
 
@@ -6105,6 +6112,7 @@ GUI Parameters usable in SynthDefs
 
 		win.view.mouseMoveAction = {|view, x, y, modifiers| [x, y];
 			if(mouseButton == 0) { // left button
+				var period = Main.elapsedTime - this.lastPlot;
 				xbox[currentsource].valueAction = (this.halfwidth - y) / this.halfwidth;
 				ybox[currentsource].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
 
@@ -6132,11 +6140,15 @@ GUI Parameters usable in SynthDefs
 
 
 				};
+				if (period > this.plotInt) {
+					this.lastPlot =  Main.elapsedTime;
+				win.refresh;
+				};
+				
 			} {
 
 			};
-
-			win.refresh;
+			//		win.refresh;
 
 		};
 
