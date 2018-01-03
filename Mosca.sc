@@ -221,7 +221,7 @@ GUI Parameters usable in SynthDefs
 
 	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder,
 		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
-		irecchans, irecbus, iguiflag, iplotint;
+		irecchans, irecbus, iguiflag, iplotint; 
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
