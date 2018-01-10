@@ -88,7 +88,7 @@ Mosca {
 	<>espacializador, <>synt,
 	<>lastAutomation = nil,
 	<>tfield, 
-	<>autoloopval=false,
+	<>autoloopval,
 	<>autoloop,
 	<>streamdisk,
 	<>streambuf, <>streamrate,
@@ -181,9 +181,11 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
 		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
-		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true, guiint = 0.07, reverb = true;
+		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
+		guiint = 0.07, reverb = true, autoloop = false;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder,
-			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag, guiint, reverb);
+			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag,
+			guiint, reverb, autoloop);
 	}
 
 	
@@ -223,7 +225,7 @@ GUI Parameters usable in SynthDefs
 
 	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder,
 		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
-		irecchans, irecbus, iguiflag, iguiint, ireverb; 
+		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop; 
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -271,7 +273,10 @@ GUI Parameters usable in SynthDefs
 		this.lastGui = Main.elapsedTime;
 		this.guiInt = iguiint;
 		this.reverb = ireverb;
+		this.autoloopval = iautoloop;
+		
 		this.looping = false;
+		
 		if (this.serport.notNil) {
 
 			SerialPort.devicePattern = this.serport; // needed in serKeepItUp routine - see below
@@ -2869,7 +2874,7 @@ GUI Parameters usable in SynthDefs
 		
 
 
-				
+		
 		// this regulates file playing synths
 		this.watcher = Routine.new({
 			"WATCHER!!!".postln;
@@ -2878,7 +2883,7 @@ GUI Parameters usable in SynthDefs
 				
 				this.nfontes.do({
 					arg i;
-					{
+						{
 						//("scn = " ++ scn[i]).postln;
 						if ((this.tfieldProxy[i].value != "") || ((scn[i] > 0) && (this.ncan[i]>0))
 							|| (this.hwncheckProxy[i].value && (this.ncan[i]>0)) ) {
@@ -2916,11 +2921,29 @@ GUI Parameters usable in SynthDefs
 									
 								};
 							};
-					}.defer;
+						}.defer;   // CHECK THIS DEFER
 				});
+				
+				if(this.guiflag.not) {
+					// when there is no gui, Automation callback does not work,
+					// so here we monitor when the transport reaches end
+					
+					if (this.control.now > this.dur) {
+						if (this.autoloopval) {
+							this.control.seek; // note, onSeek not called
+						} {
+							this.blindControlStop; // stop everything
+						};
+					};
+				};
+				
+				
 			});
 		});
 		
+
+
+
 		this.watcher.play;
 		
 		///////////////
@@ -3168,6 +3191,8 @@ GUI Parameters usable in SynthDefs
 	playAutomation {
 		this.control.play;
 	}
+
+	// no longer necessary as added a autoloop creation argument
 	playAutomationLooped {
 		//this.autoloopval = true;
 		this.autoloop.valueAction = true;
@@ -6028,9 +6053,22 @@ GUI Parameters usable in SynthDefs
 		this.control.onPlay = {
 			var startTime;
 			"ON PLAY".postln;
-			this.nfontes.do { arg i;
+
+
+			/*this.nfontes.do { arg i;
 				this.firstTime[i]=true;
-				("NOW PLAYING = " ++ this.firstTime[i]).postln;
+				("NOW PLAYING = " ++ this.firstTime[i]).postln;*/
+			if (this.looping) {
+				this.nfontes.do { arg i;
+					this.firstTime[i]=true;
+					//("HERE = " ++ this.firstTime[i]).postln;
+					
+				};
+				this.looping = false;
+				"Was looping".postln;
+				
+				
+				
 			};
 			if(control.now < 0)
 			{
@@ -6045,6 +6083,7 @@ GUI Parameters usable in SynthDefs
 
 
 		this.control.onSeek = {
+			/*
 			var wasplaying = isPlay;
 
 			//("isPlay = " ++ isPlay).postln;
@@ -6063,9 +6102,10 @@ GUI Parameters usable in SynthDefs
 			if(wasplaying) {
 				{control.play}.defer(0.5); //delay necessary. may need more?
 			};
+			*/
 		};
 
-		this.control.onStop = {
+		/*this.control.onStop = {
 			runStops.value;
 			"ON STOP".postln;
 			this.nfontes.do { arg i;
@@ -6078,6 +6118,37 @@ GUI Parameters usable in SynthDefs
 			};
 			isPlay = false;
 
+		};
+		*/
+
+				control.onStop = {
+			
+			if(this.autoloopval.not) {
+				//("Control now = " ++ control.now ++ " dur = " ++ this.dur).postln;
+			};
+			if(this.autoloopval.not || (this.control.now.round != this.dur)) {
+				("I HAVE STOPPED. dur = " ++ this.dur ++ " now = " ++ this.control.now).postln;
+				runStops.value;
+				this.nfontes.do { arg i;
+					// if sound is currently being "tested", don't switch off on stop
+					// leave that for user
+					if (testado[i] == false) {
+						this.synt[i].free; // error check
+					};
+					//	this.espacializador[i].free;
+				};
+				isPlay = false;
+				this.looping = false;
+				this.nfontes.do { arg i;
+					this.firstTime[i]=true;
+					//("HERE = " ++ this.firstTime[i]).postln;
+				};
+
+			} {
+				( "Did not stop. dur = " ++ this.dur ++ " now = " ++ this.control.now).postln;
+				this.looping = true;
+				this.control.play;
+			};
 		};
 
 		///////////////// PROXY WILL REMOVE THIS //////////////
@@ -6228,7 +6299,8 @@ GUI Parameters usable in SynthDefs
 
 		});
 
-
+		this.autoloop.value = this.autoloopval;
+		
 		sysex  = { arg src, sysex;
 			// This should be more elaborate - other things might trigger it...fix this!
 			if(sysex[3] == 6){ var x;
