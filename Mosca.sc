@@ -17,7 +17,7 @@
 */
 
 
-AutomationGuiProxy : QView {
+AutomationGuiProxy : View {
 	var <>val, <>function, <>action;
 	*new { arg val;
 		^super.new.initAutomationProxy(val);
