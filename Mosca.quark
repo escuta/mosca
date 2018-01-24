@@ -8,5 +8,5 @@
     	\since:   "2016",
     	\version:	"0.1", // must be a float,
     	// or (3) arrays with info in this order: [name, version, repositoryBaseUrl]
-	\dependencies:	[["Ctk"], ["MathLib"], ["Automation"], ["XML"]]
+	\dependencies:	[["Ctk"], ["MathLib"], ["Automation"], ["XML"], [atk-sc3]]
 )

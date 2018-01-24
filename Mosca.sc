@@ -16,8 +16,48 @@
 	my be downloaded here: http://escuta.org/mosca
 */
 
+/*
+AutomationGuiProxy {
+    var <>val, <>function;
+    *new { arg val;
+        ^super.new.initAutomationProxy(val);
+    }
+    initAutomationProxy { arg ival;
+        this.val = ival;
+			this.bounds(Rect(0,0,0,0)); // set fake bounds to keep Automation happy!
+    }
+    value {
+        ^this.val;
+    }
+    value_ { arg value;
+        this.val = value;
+    }
+	mapToGlobal { arg point;
+		_QWidget_MapToGlobal
+		^this.primitiveFailed;
+	}
 
-AutomationGuiProxy : View {
+	absoluteBounds {
+		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ) );
+	}
+	bounds {
+		^this.getProperty(\geometry)
+	}
+    valueAction_ { arg value;
+        this.val = value;
+        this.function.value(value);
+    }
+    action_ { arg func;
+        this.function = func;
+    }
+    action {
+        this.function.value(this.val);
+    }
+}
+*/
+
+
+AutomationGuiProxy : QView {
 	var <>val, <>function, <>action;
 	*new { arg val;
 		^super.new.initAutomationProxy(val);
@@ -36,6 +76,7 @@ AutomationGuiProxy : View {
 		_QWidget_MapToGlobal
 		^this.primitiveFailed;
 	}
+	
 	absoluteBounds {
 		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ) );
 	}
