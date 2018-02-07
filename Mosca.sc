@@ -696,8 +696,9 @@ GUI Parameters usable in SynthDefs
 			};
 			
 			this.aboxProxy[i].action = {arg num;
+				//("ncanais = " ++ this.ncanais[i]).postln;
 				angle[i] = num.value;
-				if((ncanais[i]==2) || (this.ncan[i]==2)){
+				if((this.ncanais[i]==2) || (this.ncan[i]==2)){
 					this.espacializador[i].set(\angle, num.value);
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
@@ -3377,6 +3378,7 @@ GUI Parameters usable in SynthDefs
 				}
 				{ this.streambuf[i].numChannels == 2} {
 					"2 channel".postln;
+					this.ncanais[i] = 2;
 					angle[i] = pi/2;
 					cboxProxy[i].valueAction = 1;
 					clev[i] = 1;
