@@ -220,13 +220,14 @@ Mosca {
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	server;
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
-	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "allpass",
+	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "FreeVerb",
+		freeroom = 0.5, freedamp = 0.5, freemul = 1,
 		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, reverb = true, autoloop = false;
-		^super.new.initMosca(projDir, nsources, width, dur, rir, server, decoder,
-			rawbusfoa, rawbussoa, raworder, serport, offsetheading, recchans, recbus, guiflag,
-			guiint, reverb, autoloop);
+		^super.new.initMosca(projDir, nsources, width, dur, rir, freeroom, freedamp, freemul,
+			server, decoder, rawbusfoa, rawbussoa, raworder, serport,
+			offsetheading, recchans, recbus, guiflag, guiint, reverb, autoloop);
 	}
 
 	
@@ -264,7 +265,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, idur, rir, iserver, idecoder,
+	initMosca { arg projDir, nsources, iwidth, idur, rir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
 		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
 		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop; 
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
@@ -274,6 +275,7 @@ GUI Parameters usable in SynthDefs
 		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
 		reverbOutFunc,
+		freeroom, freedamp, freemul, 
 		bufAformat, bufAformat_soa_a12, bufWXYZ;
 		server = iserver;
 		b2a = FoaDecoderMatrix.newBtoA;
@@ -317,6 +319,9 @@ GUI Parameters usable in SynthDefs
 		this.autoloopval = iautoloop;
 		
 		this.looping = false;
+		freeroom = ifreeroom;
+		freedamp = ifreedamp;
+		freemul = ifreemul;
 		
 		if (this.serport.notNil) {
 
@@ -1304,6 +1309,7 @@ GUI Parameters usable in SynthDefs
 			};
 			revGlobalAmbFunc = { |ambsinal, dec|
 				//				Out.ar( 0, FoaDecode.ar(ambsinal, dec));
+				//SendTrig.kr(Impulse.kr(1), 301, this.globTBus); //debug
 				Out.ar(this.globTBus, ambsinal);
 			};
 			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
@@ -1456,7 +1462,8 @@ GUI Parameters usable in SynthDefs
 		prjDr = projDir;
 		dec = this.decoder;
 
-		if (rir != "allpass") {
+		if (rir != "FreeVerb") {
+			
 			rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
 			rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
 			rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
@@ -1686,7 +1693,127 @@ GUI Parameters usable in SynthDefs
 
 
 		} 
-		{  // else use allpass filters  NB - This appears to be broken
+		{
+
+
+
+			// trying freeverb here
+
+			
+			SynthDef(\blip, {
+				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
+				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
+				Out.ar(0, [blip, blip]
+					
+				)
+			}).add;
+
+			if (this.serport.notNil) {
+				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+					var sig = In.ar(globtbus, 4);
+					sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
+						Lag.kr(pitch, 0.01));
+					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+				}).add;
+			} {
+				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+					var sig = In.ar(globtbus, 4);
+					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+				}).add;
+			};
+			
+
+			// the above two are duplicates. fix!
+			
+			SynthDef.new("revGlobalAmb",  { arg gbus;
+				var sig, convsig;
+				sig = In.ar(gbus, 1);
+				convsig = [
+					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+				];
+				//SendTrig.kr(Impulse.kr(1), 0, convsig[1]); // debug
+				convsig = FoaEncode.ar(convsig, a2b);
+				revGlobalAmbFunc.value(convsig, dec);
+			}).add;
+			
+			
+			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
+				var convsig, sig = In.ar(gbfbus, 4);
+				sig = FoaDecode.ar(sig, b2a);
+				convsig = [
+					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+				];
+				convsig = FoaEncode.ar(convsig, a2b);
+				revGlobalAmbFunc.value(convsig, dec);
+			}).add;
+
+			SynthDef.new("revGlobalSoaA12",  { arg soaBus;
+				var w, x, y, z, r, s, t, u, v,
+				foaSig, soaSig, tmpsig;
+				var sig = In.ar(soaBus, 9);
+
+
+				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+				//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
+				tmpsig = [
+					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[4], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[5], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[6], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[7], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[8], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[9], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[10], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[11], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+				];
+
+				tmpsig = tmpsig*4;
+				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
+				foaSig = [w, x, y, z];
+				soaSig = [w, x, y, z, r, s, t, u, v];
+				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+			}).add;
+
+			if (this.reverb) {
+				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+					//lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+					lrevRef.value = FreeVerb.ar(p * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
+				};
+				
+				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+					var temp1 = p1, temp2 = p2;
+					//temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+					//temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+					temp1 = FreeVerb.ar(p1 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
+					temp2 = FreeVerb.ar(p2 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
+					lrev1Ref.value = temp1 * locallev; 
+					lrev2Ref.value = temp2 * locallev; 
+					
+				};
+			} {
+				
+				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+				};
+				
+				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+				};
+				
+				
+			};
+			
+			
+			/*
+
+				// else use allpass filters  NB - This appears to be broken
 
 			this.decaytime = 1.0;
 			this.delaytime = 0.04;
@@ -1743,6 +1870,7 @@ GUI Parameters usable in SynthDefs
 
 
 			};
+			*/
 		};
 		
 		makeSpatialisers = { arg linear = false;
