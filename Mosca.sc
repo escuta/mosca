@@ -102,7 +102,7 @@ Mosca {
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	<>rirFLUspectrum, <>rirFRDspectrum, <>rirBLDspectrum, <>rirBRUspectrum,
-
+	<>rir,
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>waux, <>sprite, <>nfontes,
 	<>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>control,
 	<>globFOATransform,
@@ -158,7 +158,8 @@ Mosca {
 	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box, <>a4box, <>a5box,
 	<>stcheck,
 
-	<>oxbox, <>oybox, <>ozbox, <>funcs,
+	//<>oxbox, <>oybox, <>ozbox,
+	<>funcs,
 	<>reverb,
 
 
@@ -265,7 +266,7 @@ GUI Parameters usable in SynthDefs
 		
 	}
 
-	initMosca { arg projDir, nsources, iwidth, idur, rir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
+	initMosca { arg projDir, nsources, iwidth, idur, irir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
 		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
 		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop; 
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
@@ -319,6 +320,7 @@ GUI Parameters usable in SynthDefs
 		this.autoloopval = iautoloop;
 		
 		this.looping = false;
+		this.rir = irir;
 		freeroom = ifreeroom;
 		freedamp = ifreedamp;
 		freemul = ifreemul;
@@ -437,9 +439,9 @@ GUI Parameters usable in SynthDefs
 		this.playingBF = Array.newClear(this.nfontes); 
 		
 		
-		oxbox = Array.newClear(this.nfontes); 
-		oybox = Array.newClear(this.nfontes); 
-		ozbox = Array.newClear(this.nfontes); 
+		//oxbox = Array.newClear(this.nfontes); 
+		//oybox = Array.newClear(this.nfontes); 
+		//ozbox = Array.newClear(this.nfontes); 
 		xbox = Array.newClear(this.nfontes); 
 		zbox = Array.newClear(this.nfontes); 
 		ybox = Array.newClear(this.nfontes); 
@@ -4600,9 +4602,11 @@ GUI Parameters usable in SynthDefs
 		if(this.rirBRUspectrum.notNil){
 			this.rirBRUspectrum.free;};
 		this.soaBus.free;
-		12.do { arg i;
-			if(rirA12Spectrum[i].notNil){
-				rirA12Spectrum[i].free;};
+		if (this.rir != "FreeVerb") {
+			12.do { arg i;
+				if(rirA12Spectrum[i].notNil){
+					rirA12Spectrum[i].free;};
+			};
 		};
 		foaEncoderOmni.free;
 		foaEncoderSpread.free;
@@ -5894,9 +5898,9 @@ GUI Parameters usable in SynthDefs
 			ybox[i] = NumberBox(wdados, Rect(233, 40+ (i*20), 33, 20));
 			zbox[i] = NumberBox(wdados, Rect(266, 40+ (i*20), 33, 20));
 
-			oxbox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 33, 20));
-			oybox[i] = NumberBox(wdados, Rect(333, 40+ (i*20), 33, 20));
-			ozbox[i] = NumberBox(wdados, Rect(366, 40+ (i*20), 33, 20));
+			//oxbox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 33, 20));
+			//oybox[i] = NumberBox(wdados, Rect(333, 40+ (i*20), 33, 20));
+			//ozbox[i] = NumberBox(wdados, Rect(366, 40+ (i*20), 33, 20));
 
 			vbox[i] = NumberBox(wdados, Rect(400, 40 + (i*20), 25, 20));
 			dpbox[i] = NumberBox(wdados, Rect(425, 40+ (i*20), 25, 20));
@@ -5971,9 +5975,9 @@ GUI Parameters usable in SynthDefs
 			xbox[i].font = Font(Font.defaultSansFace, 9);
 			ybox[i].font = Font(Font.defaultSansFace, 9);
 			zbox[i].font = Font(Font.defaultSansFace, 9);
-			oxbox[i].font = Font(Font.defaultSansFace, 9);
-			oybox[i].font = Font(Font.defaultSansFace, 9);
-			ozbox[i].font = Font(Font.defaultSansFace, 9);
+			//oxbox[i].font = Font(Font.defaultSansFace, 9);
+			//oybox[i].font = Font(Font.defaultSansFace, 9);
+			//ozbox[i].font = Font(Font.defaultSansFace, 9);
 
 
 			abox[i].font = Font(Font.defaultSansFace, 9);
@@ -5995,9 +5999,9 @@ GUI Parameters usable in SynthDefs
 			xbox[i].decimals = 3;
 			ybox[i].decimals = 3;
 			zbox[i].decimals = 3;
-			oxbox[i].decimals = 0;
-			oybox[i].decimals = 0;
-			ozbox[i].decimals = 0;
+			//oxbox[i].decimals = 0;
+			//oybox[i].decimals = 0;
+			//ozbox[i].decimals = 0;
 
 
 			a1box[i].action = {arg num;
