@@ -211,10 +211,13 @@ ARGUMENT:: rir
 B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has the same sample rate as your system. Default is the string "FreeVerb" which makes Mosca use the FreeVerb reverberator in place of an RIR.
 
 ARGUMENT:: freeroom
-If FreeVerb is used as argument for rir, freeroom defines a room size between 0 and 1. Default is 0.5.
+If FreeVerb is used as the argument for rir, freeroom defines a room size between 0 and 1. Default is 0.5.
 
 ARGUMENT:: freedamp
-If FreeVerb is used as argument for rir, freedamp defines a dampening value between 0 and 1. Default is 0.5.
+If FreeVerb is used as the argument for rir, freedamp defines a dampening value between 0 and 1. Default is 0.5.
+
+ARGUMENT:: freemul
+FreeVerb multiplier. Default is 1.
 
 ARGUMENT:: server
 Server used. Default is Server.default.
