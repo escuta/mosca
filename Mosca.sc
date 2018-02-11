@@ -1596,18 +1596,20 @@ GUI Parameters usable in SynthDefs
 				)
 			}).add;
 
-			if (this.serport.notNil) {
-				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-					var sig = In.ar(globtbus, 4);
-					sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
-						Lag.kr(pitch, 0.01));
-					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-				}).add;
-			} {
-				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-					var sig = In.ar(globtbus, 4);
-					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-				}).add;
+			if (this.decoder.notNil) {
+				if (this.serport.notNil) {
+					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+						var sig = In.ar(globtbus, 4);
+						sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
+							Lag.kr(pitch, 0.01));
+						Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+					}).add;
+				} {
+					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+						var sig = In.ar(globtbus, 4);
+						Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+					}).add;
+				};
 			};
 			
 
@@ -3404,11 +3406,11 @@ GUI Parameters usable in SynthDefs
 
 		if (this.reverb) {
 			if(revGlobalBF.isNil){
-				revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
+				this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
 					addAction:\addToTail);
 			};
 			if(revGlobal.isNil){
-				revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+				this.revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 			};
 		};
 		//if (this.serport.notNil) {
@@ -3440,7 +3442,7 @@ GUI Parameters usable in SynthDefs
 					};
 					if(rv[i] == 1) {
 						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
@@ -3451,7 +3453,7 @@ GUI Parameters usable in SynthDefs
 							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]], 
-								nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
@@ -3523,7 +3525,7 @@ GUI Parameters usable in SynthDefs
 					if(rv[i] == 1) {
 						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
 							
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								revGlobalBF, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
@@ -3536,7 +3538,7 @@ GUI Parameters usable in SynthDefs
 							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
-								nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
@@ -3610,7 +3612,7 @@ GUI Parameters usable in SynthDefs
 					if(rv[i] == 1) {
 
 						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								revGlobalBF, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
@@ -3630,7 +3632,7 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 								\dopon, doppler[i]], 
-								nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false;
 									this.streambuf[i].free;
@@ -3728,7 +3730,7 @@ GUI Parameters usable in SynthDefs
 				
 				if(rv[i] == 1) {
 					if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-						revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 							nodeMarker1, addAction:\addBefore);
 						if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 						{  nodeMarker2 = this.globFOATransform};
@@ -3741,7 +3743,7 @@ GUI Parameters usable in SynthDefs
 							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]], 
-								nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil});
 							
 							
@@ -3816,7 +3818,7 @@ GUI Parameters usable in SynthDefs
 							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
-								nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil});
 						} {
 							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
@@ -3890,7 +3892,7 @@ GUI Parameters usable in SynthDefs
 					if(rv[i] == 1) {
 
 						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
@@ -3911,7 +3913,7 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 									\dopon, doppler[i]], 
-									nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+									this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							} {
@@ -4011,7 +4013,7 @@ GUI Parameters usable in SynthDefs
 
 					if(rv[i] == 1) {
 						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
@@ -4022,7 +4024,7 @@ GUI Parameters usable in SynthDefs
 								if(this.decoder.isNil && (this.raworder == 2)) {
 									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 										this.busini[i],
-										\level, level[i]], nodeMarker2,
+										\level, level[i]], this.revGlobalSoa,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								} {
@@ -4036,7 +4038,7 @@ GUI Parameters usable in SynthDefs
 								if(this.decoder.isNil && (this.raworder == 2)) {
 									this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
-										\level, level[i]], nodeMarker2,
+										\level, level[i]], this.revGlobalSoa,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								} {
@@ -4119,7 +4121,7 @@ GUI Parameters usable in SynthDefs
 						if (testado[i].not || force) {
 
 							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-								revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+								this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									nodeMarker1, addAction:\addBefore);
 								if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 								{  nodeMarker2 = this.globFOATransform};
@@ -4129,7 +4131,7 @@ GUI Parameters usable in SynthDefs
 								if(this.decoder.isNil && (this.raworder == 2)){
 									this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
 										this.busini[i],
-										\level, level[i]], nodeMarker2,
+										\level, level[i]], this.revGlobalSoa,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								} {
@@ -4143,7 +4145,7 @@ GUI Parameters usable in SynthDefs
 								if(this.decoder.isNil && (this.raworder == 2)){
 									this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 										\busini, this.scInBus[i],
-										\level, level[i]], nodeMarker2,
+										\level, level[i]], this.revGlobalSoa,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								} {
@@ -4214,7 +4216,7 @@ GUI Parameters usable in SynthDefs
 					if(rv[i] == 1) {
 
 						if(revGlobalSoa == nil && this.decoder.isNil && (this.raworder == 2)) {
-							revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
@@ -4233,7 +4235,7 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.busini[i]], 
-										nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+										this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
 									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
