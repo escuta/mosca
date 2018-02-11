@@ -5622,8 +5622,7 @@ GUI Parameters usable in SynthDefs
 
 			Dialog.openPanel(
 				control.stopRecording;
-				control.stop;
-				//control.seek;
+				//control.stop;
 
 
 				{ 
@@ -5662,8 +5661,8 @@ GUI Parameters usable in SynthDefs
 
 			Dialog.openPanel(
 				control.stopRecording;
-				control.stop;
-				control.seek;
+				//control.stop;
+				//control.seek;
 				{ 
 					arg path;
 					
