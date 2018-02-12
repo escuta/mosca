@@ -930,24 +930,25 @@ s.sync;
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
+// Use FreeVerb filter reverberation
+
+~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 11, width: 965, dur: 60, rir: "FreeVerb", freeroom: 0.5, freedamp: 0.5, decoder: ~decoder);
+
 // without headtracking with rir supplied in the zip file mentioned above.
 
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 965, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 965, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
 
 
 // with headtracking (used with binaural decoder)
 
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
 
 
-// Use FreeVerb filter reverberation
-
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 11, width: 965, dur: 200, rir: "FreeVerb", freeroom: 0.5, freedamp: 0.5, decoder: ~decoder);
 
 // Use RIR and send raw 1st order ambi sginal to outputs (channels 2-10)
 //using no decoder, a raworder of 1 and rawbus value of 2.
 
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 995, dur: 200, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 995, dur: 60, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
 
 
 s.sync;
@@ -1148,7 +1149,7 @@ s.sync;
 
 // with headtracking (should only be used with binaural decoder)
 
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 800, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0, guiflag: false);
+//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0, guiflag: false);
 
 
 	~testMosca.control.load("/path/to/your/automation/file");
