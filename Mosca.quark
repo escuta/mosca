@@ -6,7 +6,6 @@
     	\path:    "Mosca",
     	\url:     "http://github.com/escuta/mosca",
     	\helpdoc: "moscaHelp.scd",
-        \schelp: "Intro-to-the-ATK",
     	\since:   "2016",
     	\version:	"0.2", // must be a float,
 	\dependencies:	[
