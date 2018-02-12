@@ -1720,12 +1720,12 @@ GUI Parameters usable in SynthDefs
 					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
 				}).add;
 			} {
-				/*
+				
 				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
 					var sig = In.ar(globtbus, 4);
 					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
 				}).add;
-				*/
+				
 			};
 			
 
