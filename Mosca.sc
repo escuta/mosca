@@ -3416,7 +3416,7 @@ GUI Parameters usable in SynthDefs
 			};
 		};
 		//if (this.serport.notNil) {
-			if(globFOATransform.isNil){
+			if(globFOATransform.isNil && this.decoder.notNil) {
 				this.globFOATransform = Synth.new(\globFOATransformSynth, [\globtbus, this.globTBus,
 					\heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
 			};

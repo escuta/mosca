@@ -1143,7 +1143,7 @@ s.sync;
 
 // without headtracking with rir supplied in the zip file mentioned above.
 
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 10, rir: "QL14Tail2Sec.amb", decoder: ~decoder, guiflag: false);
+~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, guiflag: false);
 
 
 // with headtracking (should only be used with binaural decoder)
