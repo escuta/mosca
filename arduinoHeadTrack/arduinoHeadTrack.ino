@@ -42,6 +42,19 @@ void loop()
 
     // correct heading data for 90deg rotation of hardware 
     float headingf = mySensor.readEulerHeading() - 90;  
+    float rollf = mySensor.readEulerRoll();
+    float pitchf = mySensor.readEulerPitch() * -1;
+    
+    //float headingf = mySensor.readEulerHeading();  
+   /* 
+  Serial.print("Heading = ");  
+  Serial.print(headingf + 90);
+  Serial.print(". Pitch = ");  
+  Serial.print(pitchf * -1);
+  Serial.print(". Roll = ");  
+  Serial.println(rollf);
+*/
+
     if (headingf < 0) {
       headingf = (360 + headingf);
     }
@@ -51,8 +64,12 @@ void loop()
      headingf = -180 + (headingf - 180);
     }
     headingf = headingf * PI / 180; // convert heading to radians
+ 
+    
+          // Serial.print("Roll = ");
+//Serial.println(rollf);
 
-    float rollf = mySensor.readEulerRoll();
+ 
     if (rollf > 180) {
      rollf = -180 + (rollf - 180);
     }
@@ -60,14 +77,13 @@ void loop()
 
 //Serial.print("Roll = ");
 //Serial.println(rollf);
-    float pitchf = mySensor.readEulerPitch() * -1;
+    
+ 
     if (pitchf > 180) {
       pitchf = -180 + (pitchf - 180);
     }
     pitchf = pitchf * PI / 180; // convert to radians
     
-//Serial.print("Pitch(roll) = ");
-//Serial.println(pitchf);
 
 
     // note that pitch and roll are swapped below because z axis of 
@@ -76,15 +92,23 @@ void loop()
     message.heading = (headingf + PI) * 100;
     message.pitch = (rollf    + PI) * 100; 
     message.roll = (pitchf   + PI) * 100;
-    
-   // /*
+
+/*  
+   Serial.print("Heading = ");  
+  Serial.print(message.heading);
+  Serial.print(". Pitch = ");  
+  Serial.print(message.pitch);
+  Serial.print(". Roll = ");  
+  Serial.println(message.roll);
+*/
+  
     Serial.write(251); 
     Serial.write(252); 
     Serial.write(253); 
     Serial.write(254);
     Serial.write( (uint8_t *) &message, sizeof(message) );
     Serial.write(255);  
-//  */  
+  
 
   }
 }

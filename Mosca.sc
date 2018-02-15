@@ -2662,9 +2662,10 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("playMono"++type, { arg outbus, bufnum = 0, rate = 1, 
 				level = 0, tpos = 0, lp = 0, busini;
 				var scaledRate, spos, playerRef;
+				//SendTrig.kr(Impulse.kr(1), 101,  tpos); // debugging
 				playerRef = Ref(0);
 				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
-				//SendTrig.kr(Impulse.kr(1),0,  funcString); // debugging
+				
 				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
@@ -2805,6 +2806,7 @@ GUI Parameters usable in SynthDefs
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate; // Note it needs all the variables
 			
 			spos = tpos * BufSampleRate.kr(bufnum);
+		
 			scaledRate = rate * BufRateScale.kr(bufnum);
 			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
 		};
@@ -3088,10 +3090,10 @@ GUI Parameters usable in SynthDefs
 											if(lp[i] == 0) {
 												
 												//tocar.value(i, 1, force: true);
-												this.newtocar(i, 1, force: true);
+												this.newtocar(i, 0, force: true);
 											} {   // could remake this a random start point in future
 												//tocar.value(i, 1, force: true);
-												this.newtocar(i, 1, force: true);
+												this.newtocar(i, 0, force: true);
 											};
 										};
 									
@@ -3380,7 +3382,7 @@ GUI Parameters usable in SynthDefs
 	newtocar {
 		arg i, tpos, force = false;
 		var path = this.tfieldProxy[i].value, stdur;
-		var nodeMarker1, nodeMarker2;	
+		var nodeMarker1, nodeMarker2;
 			if (this.streamdisk[i]) {
 				var sf = SoundFile.new;
 				var nchan, sframe, srate;
