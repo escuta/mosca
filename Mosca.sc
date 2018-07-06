@@ -223,7 +223,7 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "FreeVerb",
 		freeroom = 0.5, freedamp = 0.5, freemul = 1,
-		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 1,
+		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, reverb = true, autoloop = false;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, freeroom, freedamp, freemul,
@@ -1602,87 +1602,19 @@ GUI Parameters usable in SynthDefs
 			}).add;
 
 			if (this.decoder.notNil) {
-				case
-				{ raworder == 1 }
-				{ // reset default order to 1, stting it above with allows to
-					                 // set ADTB decoder as alternative
-					SynthDef.new("AmbixToFuma",  { arg convBus=0, globtbus=0;
-						var sig = In.ar(convBus, 4);
-						Out.ar( globtbus, FoaEncode.ar(sig, FoaEncoderMatrix.newAmbix1));
-						}).add; // add ambix converter for additionnal encoders to be used
-					if (this.serport.notNil) {
-						SynthDef.new("globDecodeSynth",  { arg globtbus=0,
-							heading=0, roll=0, pitch=0;
-							var sig = In.ar(globtbus, 4);
-							sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),
-								Lag.kr(roll, 0.01),
-								Lag.kr(pitch, 0.01));
-							Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-						}).add;
-					} {
-						SynthDef.new("globDecodeSynth",  { arg globtbus=0, heading=0,
-							roll=0, pitch=0;
-							var sig = In.ar(globtbus, 4);
-							Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-						}).add;
-					};
-				}
-					/*SynthDef.new("FumaToAmbix",  { arg convBus=0, globtbus=0;
-						var sig = In.ar(convBus, 4);
-						Out.ar( globtbus, HOAConvert.ar(1, sig, \FuMa, \ACN_SN3D););
-					}).add; // add Fula converter for rendering with non ADTB decoder;*/
-
-					{ raworder == 2 }
-					{ dec = SynthDef("globDecodeSynth", {
-						arg globtbus=0, lf_hf, xover;
-						var sig;
-						sig = In.ar(globtbus, bFormNumChan);
-						sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-							sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
-						Out.ar(0, sig);
-					}).add }
-
-					{ raworder == 3 }
-					{ dec = SynthDef("globDecodeSynth", {
-						arg globtbus=0, lf_hf, xover;
-						var sig;
-						sig = In.ar(globtbus, bFormNumChan);
-						sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
-							sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
-						Out.ar(0, sig);
-					}).add }
-
-					{ raworder == 4 }
-					{ dec = SynthDef("globDecodeSynth", {
-						arg globtbus=0, lf_hf, xover;
-						var sig;
-						sig = In.ar(globtbus, bFormNumChan);
-						sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
-							sig[12], sig[13], sig[14],sig[15], sig[16], sig[17], sig[18],
-							sig[19], sig[20], sig[21], sig[22], sig[23], sig[24],
-							0, lf_hf, xover:xover);
-						Out.ar(0, sig);
-					}).add }
-
-					{ raworder == 5 }
-					{ dec = SynthDef("globDecodeSynth", {
-						arg globtbus=0, lf_hf, xover;
-						var sig;
-						sig = In.ar(globtbus, bFormNumChan);
-						sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
-							sig[12], sig[13], sig[14], sig[15], sig[16], sig[17],
-							sig[18], sig[19], sig[20], sig[21], sig[22], sig[23],
-							sig[24], sig[15], sig[16], sig[17], sig[18], sig[19],
-							sig[20], sig[21], sig[22], sig[23], sig[24], sig[25],
-							sig[26], sig[27], sig[28], sig[29], sig[30], sig[31],
-							sig[32], sig[33], sig[34], sig[35],
-							0, lf_hf, xover:xover);
-						Out.ar(0, sig);
-					}).add };
-
+				if (this.serport.notNil) {
+					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+						var sig = In.ar(globtbus, 4);
+						sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
+							Lag.kr(pitch, 0.01));
+						Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+					}).add;
+				} {
+					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+						var sig = In.ar(globtbus, 4);
+						Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+					}).add;
+				};
 			};
 
 
@@ -1787,20 +1719,23 @@ GUI Parameters usable in SynthDefs
 				)
 			}).add;
 
-			if (this.serport.notNil && this.decoder.notNil) {
-				SynthDef.new("globDecodeSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-					var sig = In.ar(globtbus, 4);
-					sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01), Lag.kr(roll, 0.01),
-						Lag.kr(pitch, 0.01));
-					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-				}).add;
-			} {
-				/*SynthDef.new("globDecodeSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-					var sig = In.ar(globtbus, 4);
-					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-				}).add;*/
-			};
+			if (this.decoder.notNil) {
+				if (this.serport.notNil) {
+					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+						var sig = In.ar(globtbus, 4);
+						sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01), Lag.kr(roll, 0.01),
+							Lag.kr(pitch, 0.01));
+						Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+					}).add;
+				} {
 
+					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
+					var sig = In.ar(globtbus, 4);
+					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+					}).add;
+
+				};
+			};
 
 			// the above two are duplicates. fix!
 
@@ -3492,7 +3427,7 @@ GUI Parameters usable in SynthDefs
 		};
 		//if (this.serport.notNil) {
 			if(globFOATransform.isNil && this.decoder.notNil) {
-				this.globFOATransform = Synth.new(\globDecodeSynth, [\globtbus, this.globTBus,
+				this.globFOATransform = Synth.new(\globFOATransformSynth, [\globtbus, this.globTBus,
 					\heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
 			};
 		//	};
