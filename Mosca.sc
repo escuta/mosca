@@ -121,7 +121,7 @@ Mosca {
 	<>looping,
 	<>firstTime,
 	<>playingBF,
-	<>rawbusfoa, <>rawbussoa, <>raworder,
+	<>rawbusfoa, <>rawbussoa, <>maxorder,
 	<>decoder,
 	<>serport,
 	<>offsetheading,
@@ -223,11 +223,11 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "FreeVerb",
 		freeroom = 0.5, freedamp = 0.5, freemul = 1,
-		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
+		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, maxorder = 2,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, reverb = true, autoloop = false;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, freeroom, freedamp, freemul,
-			server, decoder, rawbusfoa, rawbussoa, raworder, serport,
+			server, decoder, rawbusfoa, rawbussoa, maxorder, serport,
 			offsetheading, recchans, recbus, guiflag, guiint, reverb, autoloop);
 	}
 
@@ -267,7 +267,7 @@ GUI Parameters usable in SynthDefs
 	}
 
 	initMosca { arg projDir, nsources, iwidth, idur, irir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
-		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
+		irawbusfoa, irawbussoa, imaxorder, iserport, ioffsetheading,
 		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
@@ -278,7 +278,7 @@ GUI Parameters usable in SynthDefs
 		reverbOutFunc,
 		freeroom, freedamp, freemul,
 		bufAformat, bufAformat_soa_a12, bufWXYZ,
-		bFormNumChan = (iraworder + 1).squared; // add the number of channels of the b format depending on raworder
+		bFormNumChan = (imaxorder + 1).squared; // add the number of channels of the b format depending on maxorder
 		server = iserver;
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
@@ -306,7 +306,7 @@ GUI Parameters usable in SynthDefs
 		this.dur = idur;
 		this.rawbusfoa = irawbusfoa;
 		this.rawbussoa = irawbussoa;
-		this.raworder = iraworder;
+		this.maxorder = imaxorder;
 		this.decoder = idecoder;
 		this.serport = iserport;
 		this.offsetheading = ioffsetheading;
@@ -1329,7 +1329,7 @@ GUI Parameters usable in SynthDefs
 
 
 		} {
-			if(raworder == 1) {
+			if(maxorder == 1) {
 				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
 					Out.ar( this.rawbusfoa, ambsinal1O); };
 				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
@@ -1894,121 +1894,8 @@ GUI Parameters usable in SynthDefs
 				linear = "";
 			};
 
-			SynthDef.new("espacAmbAFormatVerb"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
-				dopon = 0, dopamnt = 0,
-				glev = 0, llev = 0, contr = 1,
-				gbfbus,
-				sp = 0, df = 0,
-				//heading = 0, roll = 0, pitch = 0,
 
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
-
-				//var w, x, y, z, r, s, t, u, v,
-				var p, ambSigSoa, ambSigFoa,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,
-				globallev, locallev, gsig, fonte,
-				intens,
-				omni, spread, diffuse,
-				soa_a12_sig;
-
-
-				var lrev;
-				var grevganho = 0.04; // needs less gain
-				var ambSigRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				contr = Lag.kr(contr, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
-
-				//SendTrig.kr(Impulse.kr(1),0,  dis); // debugging
-
-				azim = fonte.theta;
-				el = fonte.phi;
-				dis = Select.kr(dis < 0, [dis, 0]);
-				dis = Select.kr(dis > 1, [dis, 1]);
-
-				// high freq attenuation
-				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				// Doppler
-				rd = (1 - dis) * 340;
-				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-				p = dopplershift;
-				// Global reverberation & intensity
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]);
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
-
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]);
-				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				globallev = globallev * Lag.kr(glev, 0.1);
-				gsig = p * globallev;
-				// Local reverberation
-				locallev = 1 - dis;
-				locallev = locallev  * Lag.kr(llev, 0.1);
-				junto = p;
-				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambSigSoa = [w, x, y, z, r, s, t, u, v];
-				//ambSigRef.value = [0,0,0,0];
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-
-				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
-				omni = FoaEncode.ar(junto, foaEncoderOmni);
-				spread = FoaEncode.ar(junto, foaEncoderSpread);
-				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
-				junto = Select.ar(df, [omni, diffuse]);
-				junto = Select.ar(sp, [junto, spread]);
-
-
-				ambSigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
-
-
-				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
-					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
-					ambSigRef[8].value];
-
-				dis = (1 - dis) * 5.0;
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
-				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
-
-
-				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
-				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
-
-				// flag switchable selector of a-format signal (from insert or not)
-				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
-
-				// convert back to b-format
-				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
-				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
-				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
-
-
-				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa, ambSigFoa, globallev, locallev);
-				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
-			}).load(server);
-
-			SynthDef.new("espacAmbChowning"++linear,  {
+			/*SynthDef.new("espacAmbChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
 				//xoffset = 0, yoffset = 0,
 				dopon = 0, dopamnt = 0, sp, df,
@@ -2133,6 +2020,135 @@ GUI Parameters usable in SynthDefs
 				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
 
 				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
+			}).load(server);*/
+
+			SynthDef.new("espacAmbChowning"++linear,  {
+				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
+				//xoffset = 0, yoffset = 0,
+				dopon = 0, dopamnt = 0, sp, df,
+				glev = 0, llev = 0, contr=1,
+				//heading = 0, roll = 0, pitch = 0,
+				//insertFlag = 0,
+				aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+
+				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
+				ambSigSoa, ambSigFoa,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,
+				//w, x, y, z, r, s, t, u, v,
+				//		globallev = 0.0001, locallev, gsig, fonte;
+				globallev, locallev, gsig, fonte,
+				intens,
+				spread, diffuse, omni,
+				soa_a12_sig;
+				var lrev, p;
+				var grevganho = 0.04; // needs less gain
+				var w, x, y, z, r, s, t, u, v;
+				var ambSigRef = Ref(0);
+				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
+				//SendTrig.kr(Impulse.kr(1), 0, contr); // debug
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = 1 - fonte.rho;
+
+
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				// p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				// Doppler
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
+				p = dopplershift;
+				// Global reverberation & intensity
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				//				SendTrig.kr(Impulse.kr(1), 0, globallev); // debug
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				// Local reverberation
+				locallev = 1 - dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+
+				// do second order encoding
+				// prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+
+				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
+
+				// omni = FoaEncode.ar(junto, foaEncoderOmni);
+				// spread = FoaEncode.ar(junto, foaEncoderSpread);
+				// diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
+				// junto = Select.ar(df, [omni, diffuse]);
+				// junto = Select.ar(sp, [junto, spread]);
+				//junto = diffuse;
+				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
+				dis = (1 - dis);
+				dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				ambSigFoa	 = HOAEncoder.ar(maxorder, junto * dis.sqrt, azim, el, intens, 1, dis * 50);
+				ambSigFoa    = FoaEncode.ar(ambSigFoa, FoaEncoderMatrix.newAmbix1);
+
+
+				// ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				// ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
+
+
+
+				/*ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];*/
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				//aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				//Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				InFeedback.ar(aFormatBusInFoa, 4);
+				//aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+				espacAmbOutFunc.value(ambSigFoaProcessed, ambSigFoaProcessed, dec);
 			}).load(server);
 
 
@@ -2268,7 +2284,7 @@ GUI Parameters usable in SynthDefs
 
 				// high freq attenuation
 				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				//p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
 
 				// Reverberação global
 				globallev = 1 / (1 - dis).sqrt;
@@ -3453,14 +3469,14 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 					if(rv[i] == 1) {
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
 						};
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
+						if(this.decoder.isNil && (this.maxorder == 2)) {
 
 							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
@@ -3535,7 +3551,7 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0.33;}.defer;
 					};
 					if(rv[i] == 1) {
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								revGlobalBF, addAction:\addBefore);
@@ -3546,7 +3562,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
+						if(this.decoder.isNil && (this.maxorder == 2)) {
 							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
@@ -3623,7 +3639,7 @@ GUI Parameters usable in SynthDefs
 
 					if(rv[i] == 1) {
 
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								revGlobalBF, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -3632,7 +3648,7 @@ GUI Parameters usable in SynthDefs
 						};
 
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
+						if(this.decoder.isNil && (this.maxorder == 2)) {
 							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
 								gbfbus, \outbus,
 								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
@@ -3741,7 +3757,7 @@ GUI Parameters usable in SynthDefs
 				};
 
 				if(rv[i] == 1) {
-					if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+					if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 							nodeMarker1, addAction:\addBefore);
 						if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -3750,7 +3766,7 @@ GUI Parameters usable in SynthDefs
 					};
 					if (testado[i].not || force) { // if source is testing don't relaunch synths
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
+						if(this.decoder.isNil && (this.maxorder == 2)) {
 
 							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
@@ -3816,7 +3832,7 @@ GUI Parameters usable in SynthDefs
 					{angslider.value = 0.33;}.defer;
 				};
 				if(rv[i] == 1) {
-					if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+					if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 							nodeMarker1, addAction:\addBefore);
@@ -3826,7 +3842,7 @@ GUI Parameters usable in SynthDefs
 
 					if (testado[i].not || force) {
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
+						if(this.decoder.isNil && (this.maxorder == 2)) {
 							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
@@ -3903,7 +3919,7 @@ GUI Parameters usable in SynthDefs
 					// reverb for contracted (mono) component - and for rest too
 					if(rv[i] == 1) {
 
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -3913,7 +3929,7 @@ GUI Parameters usable in SynthDefs
 
 						if (testado[i].not || force) {
 
-							if(this.decoder.isNil && (this.raworder == 2)) {
+							if(this.decoder.isNil && (this.maxorder == 2)) {
 								this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
 									gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
@@ -4024,7 +4040,7 @@ GUI Parameters usable in SynthDefs
 					};
 
 					if(rv[i] == 1) {
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -4033,7 +4049,7 @@ GUI Parameters usable in SynthDefs
 
 						if (testado[i].not || force) {
 							if (this.hwncheckProxy[i].value) {
-								if(this.decoder.isNil && (this.raworder == 2)) {
+								if(this.decoder.isNil && (this.maxorder == 2)) {
 									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 										this.busini[i],
 										\level, level[i]], this.revGlobalSoa,
@@ -4047,7 +4063,7 @@ GUI Parameters usable in SynthDefs
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								};
 							} {
-								if(this.decoder.isNil && (this.raworder == 2)) {
+								if(this.decoder.isNil && (this.maxorder == 2)) {
 									this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
 										\level, level[i]], this.revGlobalSoa,
@@ -4132,7 +4148,7 @@ GUI Parameters usable in SynthDefs
 
 						if (testado[i].not || force) {
 
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+							if(revGlobalSoa.isNil && this.decoder.isNil && (this.maxorder == 2)) {
 								this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									nodeMarker1, addAction:\addBefore);
 								if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -4140,7 +4156,7 @@ GUI Parameters usable in SynthDefs
 							};
 							if (this.hwncheckProxy[i].value) {
 
-								if(this.decoder.isNil && (this.raworder == 2)){
+								if(this.decoder.isNil && (this.maxorder == 2)){
 									this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
 										this.busini[i],
 										\level, level[i]], this.revGlobalSoa,
@@ -4154,7 +4170,7 @@ GUI Parameters usable in SynthDefs
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								};
 							} {
-								if(this.decoder.isNil && (this.raworder == 2)){
+								if(this.decoder.isNil && (this.maxorder == 2)){
 									this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 										\busini, this.scInBus[i],
 										\level, level[i]], this.revGlobalSoa,
@@ -4227,7 +4243,7 @@ GUI Parameters usable in SynthDefs
 
 					if(rv[i] == 1) {
 
-						if(revGlobalSoa == nil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa == nil && this.decoder.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -4235,7 +4251,7 @@ GUI Parameters usable in SynthDefs
 						};
 
 						if (testado[i].not || force) {
-							if(this.decoder.isNil && (this.raworder == 2)) {
+							if(this.decoder.isNil && (this.maxorder == 2)) {
 								if (this.hwncheckProxy[i].value) {
 									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 										\outbus, mbus[i],
