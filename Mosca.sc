@@ -121,7 +121,7 @@ Mosca {
 	<>looping,
 	<>firstTime,
 	<>playingBF,
-	<>rawbusfoa, <>rawbussoa, <>rawbusambix, <>maxorder,
+	<>rawbusfuma, <>rawbusambix, <>maxorder,
 	<>decoder,
 	<>serport,
 	<>offsetheading,
@@ -224,11 +224,11 @@ Mosca {
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "FreeVerb",
 		freeroom = 0.5, freedamp = 0.5, freemul = 1,
-		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, rawbusambix = 9, maxorder = 1,
+		server = Server.default, decoder = nil, rawbusfuma = 0, rawbusambix = 9, maxorder = 1,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, reverb = true, autoloop = false;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, freeroom, freedamp, freemul,
-			server, decoder, rawbusfoa, rawbussoa, rawbusambix, maxorder, serport,
+			server, decoder, rawbusfuma, rawbusambix, maxorder, serport,
 			offsetheading, recchans, recbus, guiflag, guiint, reverb, autoloop);
 	}
 
@@ -268,7 +268,7 @@ GUI Parameters usable in SynthDefs
 	}
 
 	initMosca { arg projDir, nsources, iwidth, idur, irir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
-		irawbusfoa, irawbussoa, irawbusambix, imaxorder, iserport, ioffsetheading,
+		irawbusfuma, irawbusambix, imaxorder, iserport, ioffsetheading,
 		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, ambixOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
@@ -307,8 +307,8 @@ GUI Parameters usable in SynthDefs
 		this.halfwidth = this.width / 2;
 		this.scale = this.halfwidth; // for the moment at least
 		this.dur = idur;
-		this.rawbusfoa = irawbusfoa;
-		this.rawbussoa = irawbussoa;
+		this.rawbusfuma = irawbusfuma;
+		this.rawbusfuma = irawbusfuma;
 		this.rawbusambix = irawbusambix;
 		this.maxorder = imaxorder;
 		this.decoder = idecoder;
@@ -1357,22 +1357,19 @@ GUI Parameters usable in SynthDefs
 		} {
 			if(maxorder == 1) {
 				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-					Out.ar( this.rawbusfoa, ambsinal1O);
+					Out.ar( this.rawbusfuma, ambsinal1O);
 				};
 				ambixOutFunc = { |ambsinal, dec|
 					Out.ar(this.rawbusambix, ambsinal);
 				};
 				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-					Out.ar( this.rawbusfoa, ambsinal1plus2_1O);
+					Out.ar( this.rawbusfuma, ambsinal1plus2_1O);
 				};
 				revGlobalAmbFunc = { |ambsinal, dec|
-					Out.ar( this.rawbusfoa, ambsinal);
+					Out.ar( this.rawbusfuma, ambsinal);
 				};
 				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-					Out.ar( this.rawbusfoa, foaSig);
-				};
-				playBFormatOutFunc = { |player, dec|
-					Out.ar( this.rawbusfoa, player);
+					Out.ar( this.rawbusfuma, foaSig);
 				};
 				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
 					Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));
@@ -1380,28 +1377,29 @@ GUI Parameters usable in SynthDefs
 
 			} {
 				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-					Out.ar( this.rawbussoa, ambsinal);
+					Out.ar( this.rawbusfuma, ambsinal);
 				};
 				ambixOutFunc = { |ambsinal, dec|
 					Out.ar(this.rawbusambix, ambsinal);
 				};
 				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-					Out.ar( this.rawbussoa, ambsinal1plus2);
+					Out.ar( this.rawbusfuma, ambsinal1plus2);
 				};
 				revGlobalAmbFunc = { |ambsinal, dec|
-					Out.ar( this.rawbusfoa, ambsinal);
+					Out.ar( this.rawbusfuma, ambsinal);
 				};
 				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-					Out.ar( this.rawbussoa, soaSig);
-				};
-				playBFormatOutFunc = { |player, dec|
-					Out.ar( this.rawbusfoa, player);
+					Out.ar( this.rawbusfuma, soaSig);
 				};
 				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
 					Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
 				};
 
-			}
+			};
+
+			playBFormatOutFunc = { |player, dec|
+				Out.ar( this.rawbusfuma, player);
+			};
 
 		};
 
@@ -2112,22 +2110,15 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("scHoaAmbChowning",  {
-				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
-				dopamnt = 0, sp, df,
-				glev = 0, llev = 0;
+			SynthDef.new("espacAmbitoolsChowning",  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				dopamnt = 0, glev = 0, llev = 0;
 
-				var ambSig,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,
+				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte, intens;
 
-				globallev, locallev, gsig, fonte,
-				intens,
-				spread, diffuse, omni,
-				soa_a12_sig;
-				var lrev, p;
+				var p;
 				var grevganho = 0.04; // needs less gain
-				var w, x, y, z, r, s, t, u, v;
-				var ambSigRef = Ref(0);
 				var lrevRef = Ref(0);
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
@@ -2153,9 +2144,7 @@ GUI Parameters usable in SynthDefs
 				intens = Select.kr(intens < 0, [intens, 0]);
 				intens = intens / 4;
 
-				//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
 				globallev = globallev - 1.0; // lower tail of curve to zero
-				//				SendTrig.kr(Impulse.kr(1), 0, globallev); // debug
 				globallev = globallev / 3; // scale it so that it values 1 close to origin
 				globallev = Select.kr(globallev > 1, [globallev, 1]);
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
@@ -2173,12 +2162,131 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOAEncoder.ar(maxorder, junto * sqrt(1 - dis.squared), azim, el,
+				ambSig	 = HOAEncoder.ar(maxorder, junto * sqrt(1 - dis), azim, el,
 					plane_spherical:1, radius: dis * 50);
 
 				ambixOutFunc.value(ambSig, dec);
 			}).load(server);
 
+
+
+			SynthDef.new("espacHoaLibChowning",  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				dopamnt = 0, glev = 0, llev = 0;
+
+				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte, intens;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = fonte.rho;
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				ambSig	 = HOALibEnc3D.ar(maxorder, junto * sqrt(1 - dis), azim, el, -18);
+
+				ambixOutFunc.value(ambSig, dec);
+			}).load(server);
+
+
+
+			SynthDef.new("espacAmbiPannerChowning",  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				dopamnt = 0, glev = 0, llev = 0;
+
+				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte, intens;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = fonte.rho;
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				ambSig	 = HOAmbiPanner.ar(maxorder, junto * sqrt(1 - dis), azim, el, -18);
+
+				ambixOutFunc.value(ambSig, dec);
+			}).load(server);
 
 
 
@@ -2465,8 +2573,8 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2;
 
 
-				//				#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
-				//				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
+				//			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
+				//			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
 
 				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
@@ -3573,15 +3681,20 @@ GUI Parameters usable in SynthDefs
 						this.synt[i], addAction: \addAfter);
 						}
 						{this.lib[i] == 1}
-						{this.espacializador[i] = Synth.new(\scHoaAmbChowning, [\inbus, mbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						{this.espacializador[i] = Synth.new(\espacAmbitoolsChowning, [\inbus, mbus[i],
+							\gbus, gbus],
 						this.synt[i], addAction: \addAfter);
 						}
+						{this.lib[i] == 2}
+						{this.espacializador[i] = Synth.new(\espacHoaLibChowning, [\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 3}
+						{this.espacializador[i] = Synth.new(\espacAmbiPannerChowning, [\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						};
 
 					};
 					//atualizarvariaveis.value;
@@ -3846,15 +3959,20 @@ GUI Parameters usable in SynthDefs
 						this.synt[i], addAction: \addAfter);
 						}
 						{this.lib[i] == 1}
-						{this.espacializador[i] = Synth.new(\scHoaAmbChowning, [\inbus, mbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						{this.espacializador[i] = Synth.new(\espacAmbitoolsChowning, [\inbus, mbus[i],
+							\gbus, gbus],
 						this.synt[i], addAction: \addAfter);
 						}
+						{this.lib[i] == 2}
+						{this.espacializador[i] = Synth.new(\espacHoaLibChowning, [\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 3}
+						{this.espacializador[i] = Synth.new(\espacAmbiPannerChowning, [\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						};
 
 					};
 				} {
@@ -3877,15 +3995,20 @@ GUI Parameters usable in SynthDefs
 						this.synt[i], addAction: \addAfter);
 						}
 						{this.lib[i] == 1}
-						{this.espacializador[i] = Synth.new(\scHoaAmbChowning, [\inbus, mbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						{this.espacializador[i] = Synth.new(\espacAmbitoolsChowning, [\inbus, mbus[i],
+							\gbus, gbus],
 						this.synt[i], addAction: \addAfter);
 						}
+						{this.lib[i] == 2}
+						{this.espacializador[i] = Synth.new(\espacHoaLibChowning, [\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 3}
+						{this.espacializador[i] = Synth.new(\espacAmbiPannerChowning, [\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						};
 
 					};
 
@@ -4187,15 +4310,20 @@ GUI Parameters usable in SynthDefs
 							this.synt[i], addAction: \addAfter);
 							}
 							{this.lib[i] == 1}
-							{this.espacializador[i] = Synth.new(\scHoaAmbChowning, [\inbus, mbus[i],
-								\gbus, gbus,
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							{this.espacializador[i] = Synth.new(\espacAmbitoolsChowning, [\inbus, mbus[i],
+								\gbus, gbus],
 							this.synt[i], addAction: \addAfter);
 							}
+							{this.lib[i] == 2}
+							{this.espacializador[i] = Synth.new(\espacHoaLibChowning, [\inbus, mbus[i],
+								\gbus, gbus],
+							this.synt[i], addAction: \addAfter);
+							}
+							{this.lib[i] == 3}
+							{this.espacializador[i] = Synth.new(\espacAmbiPannerChowning, [\inbus, mbus[i],
+								\gbus, gbus],
+							this.synt[i], addAction: \addAfter);
+							};
 
 						};
 
@@ -4354,7 +4482,8 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.scInBus[i] ],
-										nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+										nodeMarker2,
+									addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								};
 							} {
@@ -4368,7 +4497,8 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.busini[i]],
-										nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+										nodeMarker1,
+									addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
 									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
@@ -4376,7 +4506,8 @@ GUI Parameters usable in SynthDefs
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i],
 										\busini, this.scInBus[i] ],
-										nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+										nodeMarker1,
+									addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								};
 
@@ -5098,7 +5229,8 @@ GUI Parameters usable in SynthDefs
 				var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
 				var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
 			*/
-			var libf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
+			var libf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf,
+			businif, stcheckf;
 
 			//////////////
 
@@ -5344,7 +5476,11 @@ GUI Parameters usable in SynthDefs
 		offset = 60;
 
 		libnumbox = PopUpMenu( win, Rect(10,30,90,20));
-		libnumbox.items = ["ATK", "SC-HOA   (mono)"];
+		libnumbox.items = ["ATK",
+			"ambitools  (mono)",
+			"HoaLib     (mono)",
+			"ADTB       (mono)",
+			"VBAP       (mono)"];
 		libnumbox.action_({ arg num;
 			{this.libbox[currentsource].valueAction = num.value;}.defer;
 		});
