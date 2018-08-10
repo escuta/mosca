@@ -1970,6 +1970,11 @@ GUI Parameters usable in SynthDefs
 
 
 
+
+		makeSpatialisers = { arg rev_type;
+
+		//comment out all linear parameters
+/*
 		makeSpatialisers = { arg linear = false;
 			if(linear) {
 				linear = "_linear";
@@ -1977,8 +1982,9 @@ GUI Parameters usable in SynthDefs
 				linear = "";
 			};
 
-
 			SynthDef.new("espacAmbChowning"++linear,  {
+*/
+			SynthDef.new("espacAmbChowning"++rev_type,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
 				dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
@@ -2043,7 +2049,14 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				// do second order encoding
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
 
 				omni = FoaEncode.ar(junto, foaEncoderOmni);
 				spread = FoaEncode.ar(junto, foaEncoderSpread);
@@ -2086,7 +2099,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("espacAmbitoolsChowning",  {
+			SynthDef.new("espacAmbitoolsChowning"++rev_type,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
 				dopamnt = 0, glev = 0, llev = 0;
 
@@ -2149,7 +2162,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("espacHoaLibChowning",  {
+			SynthDef.new("espacHoaLibChowning"++rev_type,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
 				dopamnt = 0, glev = 0, llev = 0;
 
@@ -2212,7 +2225,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("espacAmbiPannerChowning",  {
+			SynthDef.new("espacAmbiPannerChowning"++rev_type,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
 				dopamnt = 0, glev = 0, llev = 0;
 
@@ -2278,7 +2291,7 @@ GUI Parameters usable in SynthDefs
 			// This second version of espacAmb is used with contracted B-format sources
 
 
-			SynthDef.new("espacAmb2Chowning"++linear,  {
+			SynthDef.new("espacAmb2Chowning"++rev_type,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
 				glev = 0, llev = 0.2,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
@@ -2331,7 +2344,10 @@ GUI Parameters usable in SynthDefs
 
 				junto = p + lrevRef.value;
 
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
 				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
@@ -2368,7 +2384,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("espacAmb2AFormat"++linear,  {
+			SynthDef.new("espacAmb2AFormat"++rev_type,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
 				glev = 0, llev = 0.2, soaBus,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
@@ -2416,7 +2432,10 @@ GUI Parameters usable in SynthDefs
 
 				junto = p ;
 
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
 				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
@@ -2456,7 +2475,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
+			SynthDef.new("espacAmbEstereoAFormat"++rev_type,  {
 				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0,
 				angle = 1.05, dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
@@ -2528,12 +2547,16 @@ GUI Parameters usable in SynthDefs
 				junto1 = p1;
 				junto2 = p2;
 
-				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				//prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				soaSigLRef.value = FMHEncode0.ar(junto1, azim1, el, intens);
+				soaSigRRef.value = FMHEncode0.ar(junto2, azim2, el, intens);
+
 				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
 					soaSigLRef[3].value, soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value,
 					soaSigLRef[7].value, soaSigLRef[8].value];
 
-				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
 				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value,
 					soaSigRRef[3].value, soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value,
 					soaSigRRef[7].value, soaSigRRef[8].value];
@@ -2591,7 +2614,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("espacAmbEstereoChowning"++linear,  {
+			SynthDef.new("espacAmbEstereoChowning"++rev_type,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
 				dopamnt = 0,
 				glev = 0, llev = 0, contr=1,
@@ -2674,13 +2697,17 @@ GUI Parameters usable in SynthDefs
 				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev);
 				junto1 = p1 + lrev1Ref.value;
 				junto2 = p2 + lrev2Ref.value;
-				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				//prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				soaSigLRef.value = FMHEncode0.ar(junto1, azim1, el, intens);
+				soaSigRRef.value = FMHEncode0.ar(junto2, azim2, el, intens);
 
 				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
 					soaSigLRef[3].value, soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value,
 					soaSigLRef[7].value, soaSigLRef[8].value];
 
-				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
 				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value,
 					soaSigRRef[3].value, soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value,
 					soaSigRRef[7].value, soaSigRRef[8].value];
@@ -2732,13 +2759,16 @@ GUI Parameters usable in SynthDefs
 		}; //end makeSpatialisers
 
 
+		makeSpatialisers.value(rev_type:"");
 
+		//comment out all linear parameters
+
+/*
 		prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
 			ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
 		};
 		makeSpatialisers.value(linear: false);
 
-/*
 		prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
 			ambSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
 		};
@@ -2783,8 +2813,7 @@ GUI Parameters usable in SynthDefs
 				azim, dis = 1, fonte, globallev, locallev,
 				gsig, lsig, rd, dopplershift,
 				intens;
-				var grevganho = 0.20,
-				rotate;
+				var grevganho = 0.20;
 
 				mx = Lag.kr(mx, 0.1);
 				my = Lag.kr(my, 0.1);
@@ -2820,8 +2849,7 @@ GUI Parameters usable in SynthDefs
 
 				//comment out all linear parameters
 				//prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
-				//replaced here by the rotate var
-				rotate = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
 							Lag.kr(level, 0.1) * intens * (1 - contr));
 
 				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
