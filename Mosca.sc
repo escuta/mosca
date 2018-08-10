@@ -125,7 +125,7 @@ Mosca {
 	<>decoder,
 	<>serport,
 	<>offsetheading,
-	<>libbox, <>lpcheck, <>rvcheck, <>hwncheck, <>scncheck,
+	<>libbox, <>lpcheck, <>rvbox, <>hwncheck, <>scncheck,
 	//comment out all linear parameters
 	//<>lncheck,
 	<>spcheck, <>dfcheck,
@@ -179,7 +179,7 @@ Mosca {
 	<>aux1numbox, <>aux2numbox, <>aux3numbox, <>aux4numbox, <>aux5numbox,
 	<>a1but, <>a2but, <>a3but, <>a4but, <>a5but,
 
-	<>loopcheck, <>revcheck, <>hwInCheck,
+	<>loopcheck, <>reverbox, <>hwInCheck,
 	<>hwn, <>scInCheck, <>scn,
 	//comment out all linear parameters
 	//<>lincheck,
@@ -200,7 +200,7 @@ Mosca {
 	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy, <>a1boxProxy,
 	<>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
 
-	<>stcheckProxy, <>tfieldProxy, <>libboxProxy, <>lpcheckProxy, <>rvcheckProxy, <>hwncheckProxy,
+	<>stcheckProxy, <>tfieldProxy, <>libboxProxy, <>lpcheckProxy, <>rvboxProxy, <>hwncheckProxy,
 	<>scncheckProxy, <>dfcheckProxy,
 	//comment out all linear parameters
 	//<>lncheckProxy,
@@ -479,7 +479,7 @@ GUI Parameters usable in SynthDefs
 		this.lpcheck = Array.newClear(this.nfontes); // loop
 		this.spcheck = Array.newClear(this.nfontes); // spread
 		this.dfcheck = Array.newClear(this.nfontes); // diffuse
-		this.rvcheck = Array.newClear(this.nfontes); // diffuse reverb
+		this.rvbox = Array.newClear(this.nfontes); // diffuse  and local reverb list
 		//comment out all linear parameters
 		//this.lncheck = Array.newClear(this.nfontes); // linear intensity
 		this.hwncheck = Array.newClear(this.nfontes); // hardware-in check
@@ -592,7 +592,7 @@ GUI Parameters usable in SynthDefs
 		tfieldProxy = Array.newClear(this.nfontes);
 		libboxProxy = Array.newClear(this.nfontes);
 		lpcheckProxy = Array.newClear(this.nfontes);
-		rvcheckProxy = Array.newClear(this.nfontes);
+		rvboxProxy = Array.newClear(this.nfontes);
 		hwncheckProxy = Array.newClear(this.nfontes);
 		scncheckProxy = Array.newClear(this.nfontes);
 		dfcheckProxy = Array.newClear(this.nfontes);
@@ -631,7 +631,7 @@ GUI Parameters usable in SynthDefs
 			tfieldProxy[x] = AutomationGuiProxy.new("");
 			libboxProxy[x] = AutomationGuiProxy.new(0);
 			lpcheckProxy[x] = AutomationGuiProxy.new(false);
-			rvcheckProxy[x] = AutomationGuiProxy.new(false);
+			rvboxProxy[x] = AutomationGuiProxy.new(1);
 			scncheckProxy[x] = AutomationGuiProxy.new(false);
 			dfcheckProxy[x] = AutomationGuiProxy.new(false);
 			//comment out all linear parameters
@@ -668,6 +668,23 @@ GUI Parameters usable in SynthDefs
 				};
 				if (guiflag) {
 					{this.libbox[i].value = num.value}.defer;
+				};
+			});
+
+			this.rvboxProxy[i].action_({ arg num;
+				this.rv[i] = num.value;
+				if((i == currentsource) && guiflag )
+				{
+					{reverbox.value = num.value}.defer;
+
+					if (num.value > 2 && (num.value < 5)) {
+						this.setSynths(i, \rv, 1);
+					}{
+						this.setSynths(i, \rv, 0);
+					};
+				};
+				if (guiflag) {
+					{this.rvbox[i].value = num.value}.defer;
 				};
 			});
 
@@ -1035,22 +1052,8 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			this.rvcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){{revcheck.value = but.value}.defer;};
-				if (but.value) {
-					rv[i] = 1;
-					//this.synt[i].set(\lp, 1);
-					this.setSynths(i, \rv, 1);
-				}{
-					rv[i] = 0;
-					//this.synt[i].set(\lp, 0);
-					this.setSynths(i, \rv, 0);
-				};
-				if (guiflag) {
-					{this.rvcheck[i].value = but.value}.defer;
-				};
-			});
 			/// testing
+
 			this.hwncheckProxy[i].action = { arg but;
 				if((i==this.currentsource) && guiflag) {
 					{hwInCheck.value = but.value}.defer;
@@ -3681,7 +3684,8 @@ GUI Parameters usable in SynthDefs
 						cslider.value = 1;
 						connumbox.value = 1;
 					};
-					if(rv[i] == 1) {
+
+					if (rv[i] > 2 && (rv[i] < 5)) {
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
@@ -3785,7 +3789,8 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						{angslider.value = 0.33;}.defer;
 					};
-					if(rv[i] == 1) {
+
+					if (rv[i] > 2 && (rv[i] < 5)) {
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -3794,7 +3799,6 @@ GUI Parameters usable in SynthDefs
 							{  nodeMarker2 = this.globFOATransform};
 
 						};
-
 
 						if(this.maxorder > 1) {
 							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
@@ -3877,7 +3881,7 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 					};
 
-					if(rv[i] == 1) {
+					if (rv[i] > 2 && (rv[i] < 5)) {
 
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -3888,7 +3892,7 @@ GUI Parameters usable in SynthDefs
 						};
 
 
-						if(this.maxorder > 1) {
+						if (this.maxorder > 1) {
 
 							//comment out all linear parameters
 							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
@@ -4010,7 +4014,7 @@ GUI Parameters usable in SynthDefs
 					connumbox.value = 1;
 				};
 
-				if(rv[i] == 1) {
+				if (rv[i] > 2 && (rv[i] < 5)) {
 					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 							nodeMarker1, addAction:\addBefore);
@@ -4038,6 +4042,20 @@ GUI Parameters usable in SynthDefs
 									this.espacializador[i] = nil; this.synt[i] = nil});
 
 						};
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb, [\inbus, mbus[i],
+							\soaBus, soaBus, \gbfbus, gbfbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter);
+
+					}{
 
 						case
 						{this.lib[i] == 0}
@@ -4129,7 +4147,7 @@ GUI Parameters usable in SynthDefs
 					{angnumbox.value = 1.05;}.defer; // 60 degrees
 					{angslider.value = 0.33;}.defer;
 				};
-				if(rv[i] == 1) {
+				if (rv[i] > 2 && (rv[i] < 5)) {
 					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -4220,7 +4238,7 @@ GUI Parameters usable in SynthDefs
 					// reverb for non-contracted (full b-format) component
 
 					// reverb for contracted (mono) component - and for rest too
-					if(rv[i] == 1) {
+					if (rv[i] > 2 && (rv[i] < 5)) {
 
 						if(revGlobalSoa.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -4337,9 +4355,6 @@ GUI Parameters usable in SynthDefs
 			};
 
 
-
-			//				}.defer;
-			//};
 		} {
 
 			if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
@@ -4354,7 +4369,7 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 
-					if(rv[i] == 1) {
+					if (rv[i] > 2 && (rv[i] < 5)) {
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
@@ -4484,8 +4499,7 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 
-					if(rv[i] == 1) {
-
+					if (rv[i] > 2 && (rv[i] < 5)) {
 
 						if (testado[i].not || force) {
 
@@ -4584,7 +4598,7 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 0;
 					};
 
-					if(rv[i] == 1) {
+					if (rv[i] > 2 && (rv[i] < 5)) {
 
 						if(revGlobalSoa == nil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
@@ -4735,16 +4749,8 @@ GUI Parameters usable in SynthDefs
 					};
 
 
-
-
-
 					//atualizarvariaveis.value;
 					updatesourcevariables.value(i);
-
-
-
-
-
 
 
 				};
@@ -4803,9 +4809,7 @@ GUI Parameters usable in SynthDefs
 
 		nfontes.do { arg i;
 			var line = aformatrevf.getLine(1024);
-			var flag;
-			if (line == "true") {flag = true;} {flag = false;};
-			this.rvcheckProxy[i].valueAction = flag;
+			this.rvboxProxy[i].valueAction = line.asInt;
 			//rv[i] 0 or 1
 		};
 
@@ -5048,8 +5052,8 @@ GUI Parameters usable in SynthDefs
 		//diffusecheck,
 		//dfcheck,
 		//df,
-		//revcheck,
-		//rvcheck,
+		//reverbox,
+		//rvbox,
 
 		//lincheck,
 		//lncheck,
@@ -5462,7 +5466,7 @@ GUI Parameters usable in SynthDefs
 
 					libf.write(this.libbox[i].value.asString ++ "\n");
 					loopedf.write(this.lpcheck[i].value.asString ++ "\n");
-					aformatrevf.write(this.rvcheck[i].value.asString ++ "\n");
+					aformatrevf.write(this.rvbox[i].value.asString ++ "\n");
 					hwinf.write(this.hwncheck[i].value.asString ++ "\n");
 					scinf.write(this.scncheck[i].value.asString ++ "\n");
 					//comment out all linear parameters
@@ -5596,12 +5600,12 @@ GUI Parameters usable in SynthDefs
 
 			libnumbox.value = this.lib[currentsource];
 
+			reverbox.value = this.rv[currentsource];
+
 			if(lp[currentsource] == 1){loopcheck.value = true}{loopcheck.value = false};
 
 			if(sp[currentsource] == 1){spreadcheck.value = true}{spreadcheck.value = false};
 			if(df[currentsource] == 1){diffusecheck.value = true}{diffusecheck.value = false};
-
-			if(rv[currentsource] == 1){revcheck.value = true}{revcheck.value = false};
 
 			//comment out all linear parameters
 			//if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
@@ -5672,20 +5676,14 @@ GUI Parameters usable in SynthDefs
 		});
 		loopcheck.value = false;
 
-		spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
+		spreadcheck = CheckBox( win, Rect(10, 210, 80, 20), "Spread").action_({ arg butt;
 			{this.spcheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		spreadcheck.value = false;
-		diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
+		diffusecheck = CheckBox( win, Rect(90, 210, 80, 20), "Diffuse").action_({ arg butt;
 			{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		diffusecheck.value = false;
-
-
-		revcheck = CheckBox( win, Rect(250, 30, 180, 20), "A-format reverb").action_({ arg butt;
-			{this.rvcheck[currentsource].valueAction = butt.value;}.defer;
-		});
-		revcheck.value = false;
 
 		//comment out all linear parameters
 /*
@@ -5740,9 +5738,9 @@ GUI Parameters usable in SynthDefs
 
 
 
-		textbuf = StaticText(win, Rect(163, 130 + offset, 90, 20));
+		textbuf = StaticText(win, Rect(163, 170 + offset, 100, 20));
 		textbuf.string = "Angle (stereo)";
-		angnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
+		angnumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
 		angnumbox.value = 0;
 		angnumbox.clipHi = pi;
 		angnumbox.clipLo = 0;
@@ -5759,7 +5757,7 @@ GUI Parameters usable in SynthDefs
 			{angnumbox.value = 0;};
 		};
 
-		angslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
+		angslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
 		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 
 		angslider.action = {arg num;
@@ -5896,6 +5894,8 @@ GUI Parameters usable in SynthDefs
 			{dopnumbox.value = num.value;}.defer;
 		};
 
+
+
 		/////////////////////////////////////////////////////////////////////////
 
 
@@ -5920,11 +5920,27 @@ GUI Parameters usable in SynthDefs
 			{gbox[currentsource].valueAction = num.value;}.defer;
 		};
 
-
+		/////////////////////////////////////////////////////////////////////////
 
 		textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
 		textbuf.string = "Distant Reverb";
-		lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
+		reverbox = PopUpMenu( win, Rect(10, 90 + offset, 150, 20));
+		reverbox.items = ["no-reverb",
+			"freeverb",
+			"allpass",
+			"A-format freeverb  (ATK)",
+			"A-format allpass    (ATK)"];
+		reverbox.action_({ arg num;
+			{this.rvbox[currentsource].valueAction = num.value;}.defer;
+		});
+		reverbox.value = 1;
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 110 + offset, 150, 20));
+		textbuf.string = "Distant amount";
+		lnumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
 		lnumbox.value = 0;
 		lnumbox.clipHi = pi;
 		lnumbox.clipLo = 0;
@@ -5936,17 +5952,18 @@ GUI Parameters usable in SynthDefs
 
 		};
 		// stepsize?
-		lslider = Slider.new(win, Rect(50, 90 + offset, 110, 20));
+		lslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
 		lslider.value = 0;
 		lslider.action = {arg num;
 			{lbox[currentsource].valueAction = num.value;}.defer;
 		};
 
+		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
+		textbuf = StaticText(win, Rect(163, 190 + offset, 150, 20));
 		textbuf.string = "Rotation (B-Format)";
-		rnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
+		rnumbox = NumberBox(win, Rect(10, 190 + offset, 40, 20));
 		rnumbox.value = 0;
 		rnumbox.clipHi = pi;
 		rnumbox.clipLo = -pi;
@@ -5958,7 +5975,7 @@ GUI Parameters usable in SynthDefs
 
 		};
 		// stepsize?
-		rslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
+		rslider = Slider.new(win, Rect(50, 190 + offset, 110, 20));
 		rslider.value = 0.5;
 		rslider.action = {arg num;
 			{rbox[currentsource].valueAction = num.value * 6.28 - pi;}.defer;
@@ -5968,9 +5985,9 @@ GUI Parameters usable in SynthDefs
 
 
 
-		textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
+		textbuf = StaticText(win, Rect(163, 210 + offset, 150, 20));
 		textbuf.string = "Directivity (B-Format)";
-		dirnumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
+		dirnumbox = NumberBox(win, Rect(10, 210 + offset, 40, 20));
 		dirnumbox.value = 0;
 		dirnumbox.clipHi = pi;
 		dirnumbox.clipLo = -pi;
@@ -5981,7 +5998,7 @@ GUI Parameters usable in SynthDefs
 			{dbox[currentsource].valueAction = num.value;}.defer;
 		};
 		// stepsize?
-		dirslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
+		dirslider = Slider.new(win, Rect(50, 210 + offset, 110, 20));
 		dirslider.value = 0;
 		dirslider.action = {arg num;
 			{dbox[currentsource].valueAction = num.value * pi/2;}.defer;
@@ -5990,9 +6007,9 @@ GUI Parameters usable in SynthDefs
 
 
 
-		textbuf = StaticText(win, Rect(163, 110 + offset, 80, 20));
+		textbuf = StaticText(win, Rect(163, 130 + offset, 80, 20));
 		textbuf.string = "Contraction";
-		connumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
+		connumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
 		connumbox.value = 0;
 		connumbox.clipHi = pi;
 		connumbox.clipLo = -pi;
@@ -6004,7 +6021,7 @@ GUI Parameters usable in SynthDefs
 
 		};
 		// stepsize?
-		cslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
+		cslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
 		cslider.value = 0;
 		cslider.action = {arg num;
 			{cbox[currentsource].valueAction = num.value;}.defer;
@@ -6100,22 +6117,22 @@ GUI Parameters usable in SynthDefs
 		textbuf = StaticText(wdados, Rect(25, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Lib";
-		textbuf = StaticText(wdados, Rect(45, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Lp";
 		textbuf = StaticText(wdados, Rect(60, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Rv";
 		textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Hw";
+		textbuf.string = "Lp";
 		textbuf = StaticText(wdados, Rect(90, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Sc";
+		textbuf.string = "Hw";
 		textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Sc";
 
 		//comment out all linear parameters
+		//textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
+		//textbuf.font = Font(Font.defaultSansFace, 9);
 		//textbuf.string = "Ln";
 
 		textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
@@ -6230,33 +6247,24 @@ GUI Parameters usable in SynthDefs
 			textbuf.font = Font(Font.defaultSansFace, 9);
 			textbuf.string = (i+1).asString;
 
-			this.libbox[i] = NumberBox(wdados, Rect(24, 40 + (i*20), 20, 20));
+			this.libbox[i] = NumberBox(wdados, Rect(20, 40 + (i*20), 25, 20));
 
-			this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20));
+			this.rvbox[i] = NumberBox.new(wdados, Rect(45, 40 + (i*20), 25, 20));
+
+			this.lpcheck[i] = CheckBox.new(wdados, Rect(75, 40 + (i*20), 40, 20));
 
 			this.lpcheck[i].action_({ arg but;
 				this.lpcheckProxy[i].valueAction = but.value;
 			});
 
-
-
-
-			this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20));
-
-			this.rvcheck[i].action_({ arg but;
-				this.rvcheckProxy[i].valueAction = but.value;
-			});
-
-
-
-			this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20));
+			this.hwncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
 
 			this.hwncheck[i].action_({ arg but;
 				this.hwncheckProxy[i].valueAction = but.value;
 			});
 
 
-			this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
+			this.scncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
 
 			this.scncheck[i].action_({ arg but;
 				this.scncheckProxy[i].valueAction = but.value;
@@ -6363,7 +6371,7 @@ GUI Parameters usable in SynthDefs
 
 
 			this.tfield[i] = TextField(wdados, Rect(800, 40+ (i*20), 125, 20));
-			//			this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
+			//this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
 			stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
 			stcheck[i].action = { arg but;
@@ -6372,6 +6380,7 @@ GUI Parameters usable in SynthDefs
 
 
 			this.libbox[i].font = Font(Font.defaultSansFace, 9);
+			this.rvbox[i].font = Font(Font.defaultSansFace, 9);
 			this.ncanbox[i].font = Font(Font.defaultSansFace, 9);
 			this.businibox[i].font = Font(Font.defaultSansFace, 9);
 			xbox[i].font = Font(Font.defaultSansFace, 9);
@@ -6482,6 +6491,11 @@ GUI Parameters usable in SynthDefs
 				this.libboxProxy[i].valueAction = num.value;
 			};
 			libbox[i].value = 0;
+
+			this.rvbox[i].action = {arg num;
+				this.rvboxProxy[i].valueAction = num.value;
+			};
+			rvbox[i].value = 1;
 
 			abox[i].action = {arg num;
 				this.aboxProxy[i].valueAction = num.value;
