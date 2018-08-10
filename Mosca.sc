@@ -125,7 +125,10 @@ Mosca {
 	<>decoder,
 	<>serport,
 	<>offsetheading,
-	<>libbox, <>lpcheck, <>rvcheck, <>hwncheck, <>scncheck, <>lncheck, <>spcheck, <>dfcheck,
+	<>libbox, <>lpcheck, <>rvcheck, <>hwncheck, <>scncheck,
+	//comment out all linear parameters
+	//<>lncheck,
+	<>spcheck, <>dfcheck,
 	<>ncanbox, <>businibox,
 	<>espacializador, <>synt,
 	<>lastAutomation = nil,
@@ -153,7 +156,10 @@ Mosca {
 
 	<>currentsource,
 	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus,
-	<>lib, <>level, <>lp, <>rv, <>ln, <>angslider, <>connumbox, <>cslider,
+	<>lib, <>level, <>lp, <>rv,
+	//comment out all linear parameters
+	//<>ln,
+	<>angslider, <>connumbox, <>cslider,
 	<>xbox, <>ybox, <>sombuf, <>sbus, <>updatesourcevariables, <>soaBus, <>mbus,
 	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
 	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box, <>a4box, <>a5box,
@@ -174,7 +180,10 @@ Mosca {
 	<>a1but, <>a2but, <>a3but, <>a4but, <>a5but,
 
 	<>loopcheck, <>revcheck, <>hwInCheck,
-	<>hwn, <>scInCheck, <>scn, <>lincheck, <>spreadcheck,
+	<>hwn, <>scInCheck, <>scn,
+	//comment out all linear parameters
+	//<>lincheck,
+	<>spreadcheck,
 	<>diffusecheck, <>sp, <>df, <>ncannumbox, <>busininumbox,
 
 	<>atualizarvariaveis, <>updateSynthInArgs,
@@ -193,7 +202,9 @@ Mosca {
 
 	<>stcheckProxy, <>tfieldProxy, <>libboxProxy, <>lpcheckProxy, <>rvcheckProxy, <>hwncheckProxy,
 	<>scncheckProxy, <>dfcheckProxy,
-	<>lncheckProxy, <>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
+	//comment out all linear parameters
+	//<>lncheckProxy,
+	<>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
 	<>guiflag;
 
@@ -401,7 +412,8 @@ GUI Parameters usable in SynthDefs
 		sp = Array.newClear(this.nfontes);
 		df = Array.newClear(this.nfontes);
 		rv = Array.newClear(this.nfontes);
-		ln = Array.newClear(this.nfontes);
+		//comment out all linear parameters
+		//ln = Array.newClear(this.nfontes);
 		hwn = Array.newClear(this.nfontes);
 		scn = Array.newClear(this.nfontes);
 		mbus = Array.newClear(this.nfontes);
@@ -468,7 +480,8 @@ GUI Parameters usable in SynthDefs
 		this.spcheck = Array.newClear(this.nfontes); // spread
 		this.dfcheck = Array.newClear(this.nfontes); // diffuse
 		this.rvcheck = Array.newClear(this.nfontes); // diffuse reverb
-		this.lncheck = Array.newClear(this.nfontes); // linear intensity
+		//comment out all linear parameters
+		//this.lncheck = Array.newClear(this.nfontes); // linear intensity
 		this.hwncheck = Array.newClear(this.nfontes); // hardware-in check
 		this.scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
 		a1box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
@@ -517,7 +530,8 @@ GUI Parameters usable in SynthDefs
 			df[i] = 0;
 			this.lib[i] = 0;
 			rv[i] = 0;
-			ln[i] = "";
+			//comment out all linear parameters
+			//ln[i] = "";
 			hwn[i] = 0;
 			scn[i] = 0;
 			rlev[i] = 0;
@@ -582,7 +596,8 @@ GUI Parameters usable in SynthDefs
 		hwncheckProxy = Array.newClear(this.nfontes);
 		scncheckProxy = Array.newClear(this.nfontes);
 		dfcheckProxy = Array.newClear(this.nfontes);
-		lncheckProxy = Array.newClear(this.nfontes);
+		//comment out all linear parameters
+		//lncheckProxy = Array.newClear(this.nfontes);
 		spcheckProxy = Array.newClear(this.nfontes);
 		ncanboxProxy = Array.newClear(this.nfontes);
 		businiboxProxy = Array.newClear(this.nfontes);
@@ -619,7 +634,8 @@ GUI Parameters usable in SynthDefs
 			rvcheckProxy[x] = AutomationGuiProxy.new(false);
 			scncheckProxy[x] = AutomationGuiProxy.new(false);
 			dfcheckProxy[x] = AutomationGuiProxy.new(false);
-			lncheckProxy[x] = AutomationGuiProxy.new(false);
+			//comment out all linear parameters
+			//lncheckProxy[x] = AutomationGuiProxy.new(false);
 			spcheckProxy[x] = AutomationGuiProxy.new(false);
 			ncanboxProxy[x] = AutomationGuiProxy.new(0);
 			businiboxProxy[x] = AutomationGuiProxy.new(0);
@@ -1075,6 +1091,8 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
+			//comment out all linear parameters
+/*
 			this.lncheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){{lincheck.value = but.value}.defer;};
 				if (but.value) {
@@ -1088,6 +1106,7 @@ GUI Parameters usable in SynthDefs
 					{this.lncheck[i].value = but.value}.defer;
 				};
 			});
+*/
 
 			this.spcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){{spreadcheck.value = but.value}.defer;};
@@ -1610,9 +1629,6 @@ GUI Parameters usable in SynthDefs
 			server.sync;
 
 
-
-			~rirSpecTest =  rirA12Spectrum;
-			~rirFLUspectrum = rirFLUspectrum;
 
 
 			rirW.free; // don't need time domain data anymore, just needed spectral version
@@ -3670,7 +3686,7 @@ GUI Parameters usable in SynthDefs
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{  nodeMarker2 = this.globFOATransform};
+							{ nodeMarker2 = this.globFOATransform };
 						};
 
 						if(this.maxorder > 1) {
@@ -3696,7 +3712,10 @@ GUI Parameters usable in SynthDefs
 
 						};
 
-						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i],
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb, [\inbus, mbus[i],
 							\soaBus, soaBus, \gbfbus, gbfbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -3719,7 +3738,11 @@ GUI Parameters usable in SynthDefs
 
 						case
 						{this.lib[i] == 0}
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+						//comment out all linear parameters
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+						{this.espacializador[i] = Synth.new(\espacAmbChowning, [\inbus, mbus[i],
 							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -3792,7 +3815,10 @@ GUI Parameters usable in SynthDefs
 								});
 						};
 
-						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat, [\inbus, sbus[i],
 							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -3813,7 +3839,10 @@ GUI Parameters usable in SynthDefs
 									this.streambuf[i].free;
 								});
 
-							this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i],
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAmbEstereoChowning,
 								[\inbus, sbus[i],
 								\gbus, gbus,
 								\insertFlag, this.insertFlag[i],
@@ -3860,7 +3889,11 @@ GUI Parameters usable in SynthDefs
 
 
 						if(this.maxorder > 1) {
-							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+							this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
 								gbfbus, \outbus,
 								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
@@ -3877,7 +3910,11 @@ GUI Parameters usable in SynthDefs
 									this.streambuf[i].free;
 								});
 						} {
-							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+							this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
 								gbfbus, \outbus,
 								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
@@ -3894,7 +3931,10 @@ GUI Parameters usable in SynthDefs
 								});
 						};
 
-						this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i],
 							\gbus, gbus, \soaBus, soaBus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -3905,8 +3945,10 @@ GUI Parameters usable in SynthDefs
 
 					} {
 
+						//comment out all linear parameters
+						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
 
-						this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+						this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
 							gbfbus, \outbus,
 							mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 							\rate, 1, \tpos, tpos, \lp,
@@ -3916,14 +3958,16 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							//					~revGlobal, addAction: \addBefore);
 							nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil; this.synt[i] = nil;
 								this.playingBF[i] = false;
 								this.streambuf[i].free;
 							});
 
-						this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
+						//comment out all linear parameters
+						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+						this.espacializador[i] = Synth.new(\espacAmb2Chowning,
 							[\inbus, mbus[i], \gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -3997,7 +4041,11 @@ GUI Parameters usable in SynthDefs
 
 						case
 						{this.lib[i] == 0}
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+						//comment out all linear parameters
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+						{this.espacializador[i] = Synth.new(\espacAmbChowning, [\inbus, mbus[i],
 							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4033,7 +4081,11 @@ GUI Parameters usable in SynthDefs
 
 						case
 						{this.lib[i] == 0}
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+						//comment out all linear parameters
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+						{this.espacializador[i] = Synth.new(\espacAmbChowning, [\inbus, mbus[i],
 							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4083,7 +4135,7 @@ GUI Parameters usable in SynthDefs
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 							nodeMarker1, addAction:\addBefore);
 						if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-						{  nodeMarker2 = this.globFOATransform};
+						{ nodeMarker2 = this.globFOATransform };
 					};
 
 					if (testado[i].not || force) {
@@ -4102,7 +4154,10 @@ GUI Parameters usable in SynthDefs
 									this.espacializador[i] = nil; this.synt[i] = nil});
 						};
 
-						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat, [\inbus, sbus[i],
 							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4121,7 +4176,11 @@ GUI Parameters usable in SynthDefs
 							nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil; this.synt[i] = nil});
 
-						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i],
+
+						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning,
+							[\inbus, sbus[i],
 							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4174,7 +4233,11 @@ GUI Parameters usable in SynthDefs
 						if (testado[i].not || force) {
 
 							if(this.maxorder > 1) {
-								this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+
+								this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
 									gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
@@ -4189,7 +4252,11 @@ GUI Parameters usable in SynthDefs
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							} {
-								this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+
+								this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
 									gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
@@ -4204,7 +4271,10 @@ GUI Parameters usable in SynthDefs
 										this.playingBF[i] = false});
 							};
 
-							this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i],
 								\gbus, gbus, \soaBus, soaBus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4216,8 +4286,10 @@ GUI Parameters usable in SynthDefs
 					} {
 						if (testado[i].not || force) {
 
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
 
-							this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
+							this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus,
 								\gbfbus, gbfbus, \outbus,
 								mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
@@ -4227,12 +4299,14 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								//					~revGlobal, addAction: \addBefore);
 								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false});
 
-							this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2Chowning,
 								[\inbus, mbus[i], \gbus, gbus,
 									\insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4319,13 +4393,17 @@ GUI Parameters usable in SynthDefs
 								};
 							};
 
-						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i],
-							\soaBus, soaBus, \gbfbus, gbfbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAmbAFormatVerb,
+								[\inbus, mbus[i],
+								\soaBus, soaBus, \gbfbus, gbfbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 							this.synt[i], addAction: \addAfter);
 
 						};
@@ -4348,7 +4426,12 @@ GUI Parameters usable in SynthDefs
 
 							case
 							{this.lib[i] == 0}
-							{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+							//comment out all linear parameters
+							//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
+
+							{this.espacializador[i] = Synth.new(\espacAmbChowning,
+								[\inbus, mbus[i],
 								\gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4443,7 +4526,10 @@ GUI Parameters usable in SynthDefs
 								};
 							};
 
-							this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i],
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat,
 								[\inbus, sbus[i], \gbus, gbus,
 								\soaBus, soaBus, \gbfbus, gbfbus,
 								\insertFlag, this.insertFlag[i],
@@ -4470,15 +4556,18 @@ GUI Parameters usable in SynthDefs
 									this.espacializador[i] = nil; this.synt[i] = nil});
 						};
 
-						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter);
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i],
 
+						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning,
+							[\inbus, sbus[i],
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter);
 
 					};
 					//atualizarvariaveis.value;
@@ -4507,7 +4596,11 @@ GUI Parameters usable in SynthDefs
 						if (testado[i].not || force) {
 							if(this.maxorder > 1) {
 								if (this.hwncheckProxy[i].value) {
-									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
 										\outbus, mbus[i],
 										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 										\insertFlag, this.insertFlag[i],
@@ -4520,7 +4613,11 @@ GUI Parameters usable in SynthDefs
 									addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
-									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
 										\outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i],
@@ -4536,7 +4633,11 @@ GUI Parameters usable in SynthDefs
 								};
 							} {
 								if (this.hwncheckProxy[i].value) {
-									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
 										\outbus, mbus[i],
 										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 										\insertFlag, this.insertFlag[i],
@@ -4549,7 +4650,11 @@ GUI Parameters usable in SynthDefs
 									addAction: \addBefore).onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
-									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
 										\outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i],
@@ -4560,7 +4665,11 @@ GUI Parameters usable in SynthDefs
 								};
 
 							};
-							this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2AFormat, [\inbus, mbus[i],
 								\gbus, gbus, \soaBus, soaBus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4574,7 +4683,12 @@ GUI Parameters usable in SynthDefs
 
 						if (testado[i].not || force) {
 							if (this.hwncheckProxy[i].value) {
-								this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i],
+
+								this.synt[i] = Synth.new(\playBFormatHWBus,
+									[\gbfbus, gbfbus, \outbus,
 									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos,
 									\level, level[i],
 									\insertFlag, this.insertFlag[i],
@@ -4587,7 +4701,12 @@ GUI Parameters usable in SynthDefs
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							} {
-								this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i],
+
+								this.synt[i] = Synth.new(\playBFormatSWBus,
+									[\gbfbus, gbfbus, \outbus,
 									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos,
 									\level, level[i],
 									\insertFlag, this.insertFlag[i],
@@ -4600,7 +4719,10 @@ GUI Parameters usable in SynthDefs
 										this.espacializador[i] = nil; this.synt[i] = nil;});
 							};
 
-							this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2Chowning, [\inbus, mbus[i],
 								\gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4637,7 +4759,9 @@ GUI Parameters usable in SynthDefs
 	}
 
 	loadNonAutomationData { arg path;
-		var libf, loopedf, aformatrevf, hwinf, scinf, linearf,
+		var libf, loopedf, aformatrevf, hwinf, scinf,
+		//comment out all linear parameters
+		//linearf,
 		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
 		//("THE PATH IS " ++ path ++ "/filenames.txt").postln;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
@@ -4647,7 +4771,8 @@ GUI Parameters usable in SynthDefs
 		aformatrevf = File((path ++ "/aformatrev.txt").standardizePath,"r");
 		hwinf = File((path ++ "/hwin.txt").standardizePath,"r");
 		scinf = File((path ++ "/scin.txt").standardizePath,"r");
-		linearf = File((path ++ "/linear.txt").standardizePath,"r");
+		//comment out all linear parameters
+		//linearf = File((path ++ "/linear.txt").standardizePath,"r");
 		spreadf = File((path ++ "/spread.txt").standardizePath,"r");
 		diffusef = File((path ++ "/diffuse.txt").standardizePath,"r");
 		ncanf = File((path ++ "/ncan.txt").standardizePath,"r");
@@ -4684,13 +4809,15 @@ GUI Parameters usable in SynthDefs
 			//rv[i] 0 or 1
 		};
 
+		//comment out all linear parameters
+/*
 		nfontes.do { arg i;
 			var line = linearf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
 			this.lncheckProxy[i].valueAction = flag;
 		};
-
+*/
 		nfontes.do { arg i;
 			var line = spreadf.getLine(1024);
 			var flag;
@@ -4753,7 +4880,8 @@ GUI Parameters usable in SynthDefs
 		aformatrevf.close;
 		hwinf.close;
 		scinf.close;
-		linearf.close;
+		//comment out all linear parameters
+		//linearf.close;
 		spreadf.close;
 		diffusef.close;
 		ncanf.close;
@@ -5023,9 +5151,6 @@ GUI Parameters usable in SynthDefs
 
 
 
-		~t1 = gbus;
-		~t2 = gbfbus;
-		~t3 = soaBus;
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, this.width, this.width, this.width)).front;
 		wdados = Window.new("Data", Rect(this.width, 0, 955, (this.nfontes*20)+60 ), scroll: true);
@@ -5277,7 +5402,10 @@ GUI Parameters usable in SynthDefs
 				var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
 				var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
 			*/
-			var libf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf,
+			var libf, loopedf, aformatrevf, hwinf, scinf,
+			//comment out all linear parameters
+			//linearf,
+			spreadf, diffusef, ncanf,
 			businif, stcheckf;
 
 			//////////////
@@ -5316,7 +5444,8 @@ GUI Parameters usable in SynthDefs
 				aformatrevf = File((textField.value ++ "/aformatrev.txt").standardizePath,"w");
 				hwinf = File((textField.value ++ "/hwin.txt").standardizePath,"w");
 				scinf = File((textField.value ++ "/scin.txt").standardizePath,"w");
-				linearf = File((textField.value ++ "/linear.txt").standardizePath,"w");
+				//comment out all linear parameters
+				//linearf = File((textField.value ++ "/linear.txt").standardizePath,"w");
 				spreadf = File((textField.value ++ "/spread.txt").standardizePath,"w");
 				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"w");
 				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"w");
@@ -5336,7 +5465,8 @@ GUI Parameters usable in SynthDefs
 					aformatrevf.write(this.rvcheck[i].value.asString ++ "\n");
 					hwinf.write(this.hwncheck[i].value.asString ++ "\n");
 					scinf.write(this.scncheck[i].value.asString ++ "\n");
-					linearf.write(this.lncheck[i].value.asString ++ "\n");
+					//comment out all linear parameters
+					//linearf.write(this.lncheck[i].value.asString ++ "\n");
 					spreadf.write(this.spcheck[i].value.asString ++ "\n");
 					diffusef.write(this.dfcheck[i].value.asString ++ "\n");
 					ncanf.write(this.ncanbox[i].value.asString ++ "\n");
@@ -5355,7 +5485,8 @@ GUI Parameters usable in SynthDefs
 				aformatrevf.close;
 				hwinf.close;
 				scinf.close;
-				linearf.close;
+				//comment out all linear parameters
+				//linearf.close;
 				spreadf.close;
 				diffusef.close;
 				ncanf.close;
@@ -5471,7 +5602,9 @@ GUI Parameters usable in SynthDefs
 			if(df[currentsource] == 1){diffusecheck.value = true}{diffusecheck.value = false};
 
 			if(rv[currentsource] == 1){revcheck.value = true}{revcheck.value = false};
-			if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
+
+			//comment out all linear parameters
+			//if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
 
 			if(hwn[currentsource] == 1){hwInCheck.value = true}{hwInCheck.value = false};
 			if(scn[currentsource] == 1){scInCheck.value = true}{scInCheck.value = false};
@@ -5554,11 +5687,13 @@ GUI Parameters usable in SynthDefs
 		});
 		revcheck.value = false;
 
+		//comment out all linear parameters
+/*
 		lincheck = CheckBox( win, Rect(184, 10, 180, 20), "Linear intensity (ATK)").action_({ arg butt;
 			{this.lncheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		lincheck.value = false;
-
+*/
 
 		hwInCheck = CheckBox( win, Rect(104, 30, 100, 20), "HW-in").action_({ arg butt;
 			{this.hwncheck[currentsource].valueAction = butt.value;}.defer;
@@ -5979,7 +6114,9 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "Sc";
 		textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Ln";
+
+		//comment out all linear parameters
+		//textbuf.string = "Ln";
 
 		textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
@@ -6126,13 +6263,14 @@ GUI Parameters usable in SynthDefs
 			});
 
 
-
+			//comment out all linear parameters
+/*
 			this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
 
 			this.lncheck[i].action_({ arg but;
 				this.lncheckProxy[i].valueAction = but.value;
 			});
-
+*/
 
 			this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20));
 
