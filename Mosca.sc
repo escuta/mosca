@@ -222,7 +222,7 @@ Mosca {
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	server;
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
-	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "FreeVerb",
+	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir,
 		freeroom = 0.5, freedamp = 0.5, freemul = 1,
 		server = Server.default, decoder = nil, rawbusfuma = 0, rawbusambix = 9, maxorder = 1,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
@@ -1515,6 +1515,7 @@ GUI Parameters usable in SynthDefs
 			rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
 			rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [3]);
 
+
 			bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rir);
 			server.sync;
 			bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
@@ -1563,7 +1564,7 @@ GUI Parameters usable in SynthDefs
 
 			bufsize = PartConv.calcBufSize(fftsize, rirW);
 
-			~bufsize1=bufsize;
+			//~bufsize1=bufsize;
 
 			rirWspectrum= Buffer.alloc(server, bufsize, 1);
 			rirXspectrum= Buffer.alloc(server, bufsize, 1);
@@ -1627,6 +1628,7 @@ GUI Parameters usable in SynthDefs
 			12.do { arg i;
 				rirA12[i].free;
 			};
+
 
 			server.sync;
 
@@ -1719,7 +1721,6 @@ GUI Parameters usable in SynthDefs
 		}
 		{
 
-
 			// trying freeverb here
 
 			SynthDef.new("revGlobalAmb",  { arg gbus;
@@ -1782,15 +1783,12 @@ GUI Parameters usable in SynthDefs
 
 			if (this.reverb) {
 				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-					//lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
 					lrevRef.value = FreeVerb.ar(p * locallev, mix: 1, room: freeroom, damp: freedamp,
 						mul: freemul);
 				};
 
 				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
 					var temp1 = p1, temp2 = p2;
-					//temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-					//temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
 					temp1 = FreeVerb.ar(p1 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
 					temp2 = FreeVerb.ar(p2 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
 					lrev1Ref.value = temp1 * locallev;
@@ -1909,7 +1907,7 @@ GUI Parameters usable in SynthDefs
 
 			{ maxorder == 2 }
 			{ SynthDef("globDecodeSynth", {
-				arg globtbus=0, ambixbus=0, lf_hf, xover;
+				arg globtbus=0, lf_hf=0, xover=400;
 				var ambixsig, sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
@@ -1922,7 +1920,7 @@ GUI Parameters usable in SynthDefs
 
 			{ maxorder == 3 }
 			{ SynthDef("globDecodeSynth", {
-				arg globtbus=0, lf_hf, xover;
+				arg globtbus=0, lf_hf=0, xover=400;
 				var ambixsig, sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
@@ -1936,7 +1934,7 @@ GUI Parameters usable in SynthDefs
 
 			{ maxorder == 4 }
 			{ SynthDef("globDecodeSynth", {
-				arg globtbus=0, lf_hf, xover;
+				arg globtbus=0, lf_hf=0, xover=400;
 				var ambixsig, sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
@@ -1951,7 +1949,7 @@ GUI Parameters usable in SynthDefs
 
 			{ maxorder == 5 }
 			{ SynthDef("globDecodeSynth", {
-				arg globtbus=0, lf_hf, xover;
+				arg globtbus=0, lf_hf=0, xover=400;
 				var ambixsig, sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
@@ -1982,10 +1980,8 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("espacAmbChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
-				//xoffset = 0, yoffset = 0,
 				dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
-				//heading = 0, roll = 0, pitch = 0,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
@@ -1993,8 +1989,6 @@ GUI Parameters usable in SynthDefs
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
 				ambSigSoa, ambSigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,
-				//w, x, y, z, r, s, t, u, v,
-				//		globallev = 0.0001, locallev, gsig, fonte;
 				globallev, locallev, gsig, fonte,
 				intens,
 				spread, diffuse, omni,
@@ -2008,12 +2002,9 @@ GUI Parameters usable in SynthDefs
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
 				contr = Lag.kr(contr, 0.1);
-				//SendTrig.kr(Impulse.kr(1), 0, contr); // debug
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
-
-
 
 				azim = fonte.theta;
 				el = fonte.phi;
@@ -2025,7 +2016,7 @@ GUI Parameters usable in SynthDefs
 				// Doppler
 				rd = (1 - dis) * 340;
 				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				dopplershift = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 				p = dopplershift;
 				// Global reverberation & intensity
 				globallev = 1 / (1 - dis).sqrt;
@@ -2034,19 +2025,13 @@ GUI Parameters usable in SynthDefs
 				intens = Select.kr(intens < 0, [intens, 0]);
 				intens = intens / 4;
 
-				//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
 				globallev = globallev - 1.0; // lower tail of curve to zero
-				//				SendTrig.kr(Impulse.kr(1), 0, globallev); // debug
 				globallev = globallev / 3; // scale it so that it values 1 close to origin
 				globallev = Select.kr(globallev > 1, [globallev, 1]);
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
 
-
-
 				globallev = globallev * Lag.kr(glev, 0.1);
 				gsig = p * globallev;
-
-
 
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 				// Local reverberation
@@ -2057,28 +2042,21 @@ GUI Parameters usable in SynthDefs
 
 				junto = p + lrevRef.value;
 
-
-				// do decond order encoding
+				// do second order encoding
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-
-				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
 
 				omni = FoaEncode.ar(junto, foaEncoderOmni);
 				spread = FoaEncode.ar(junto, foaEncoderSpread);
 				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
 				junto = Select.ar(df, [omni, diffuse]);
 				junto = Select.ar(sp, [junto, spread]);
-				//junto = diffuse;
-				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
-				ambSigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
+				ambSigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
 				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
-
-
 
 				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
@@ -2086,7 +2064,6 @@ GUI Parameters usable in SynthDefs
 
 				// convert to A-format and send to a-format out busses
 				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
 				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
 				Out.ar(aFormatBusOutSoa, aFormatSoa);
@@ -2099,7 +2076,6 @@ GUI Parameters usable in SynthDefs
 				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
 				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
 
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
 				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
 				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
@@ -2153,16 +2129,19 @@ GUI Parameters usable in SynthDefs
 				gsig = p * globallev;
 
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-				// Local reverberation
+				//Local reverberation
 				locallev = dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
 
 				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
 
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOAEncoder.ar(maxorder, junto * sqrt(1 - dis), azim, el,
+				ambSig	 = HOAEncoder.ar(maxorder, junto, azim, el,
 					plane_spherical:1, radius: dis * 50);
 
 				ambixOutFunc.value(ambSig, dec);
@@ -2218,12 +2197,15 @@ GUI Parameters usable in SynthDefs
 				locallev = dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
+
 				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
 
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOALibEnc3D.ar(maxorder, junto * sqrt(1 - dis), azim, el, -18);
+				ambSig	 = HOALibEnc3D.ar(maxorder, junto, azim, el, -18);
 
 				ambixOutFunc.value(ambSig, dec);
 			}).load(server);
@@ -2278,12 +2260,15 @@ GUI Parameters usable in SynthDefs
 				locallev = dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
+
 				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
 
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOAmbiPanner.ar(maxorder, junto * sqrt(1 - dis), azim, el, -18);
+				ambSig	 = HOAmbiPanner.ar(maxorder, junto, azim, el, -18);
 
 				ambixOutFunc.value(ambSig, dec);
 			}).load(server);
@@ -2317,7 +2302,6 @@ GUI Parameters usable in SynthDefs
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
-				//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
 
 				// high freq attenuation
 				p = In.ar(inbus, 1);
@@ -2336,26 +2320,17 @@ GUI Parameters usable in SynthDefs
 
 				globallev = globallev * Lag.kr(glev, 0.1);
 
-
 				gsig = p * globallev;
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 
 				// Reverberação local
 				locallev = 1 - dis;
-				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
 				locallev = locallev * Lag.kr(llev, 0.1);
-
-
 
 				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
 
-				//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
 				junto = p + lrevRef.value;
 
-				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambSigSoa = [w, x, y, z, r, s, t, u, v];
-
-				//	ambSigFoa = [w, x, y, z];
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
@@ -2367,10 +2342,8 @@ GUI Parameters usable in SynthDefs
 				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
-
 				// convert to A-format and send to a-format out busses
 				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
 				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
 				Out.ar(aFormatBusOutSoa, aFormatSoa);
@@ -2383,12 +2356,9 @@ GUI Parameters usable in SynthDefs
 				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
 				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
 
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
 				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
 				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
-
-
 
 				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
 
@@ -2401,7 +2371,6 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("espacAmb2AFormat"++linear,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
 				glev = 0, llev = 0.2, soaBus,
-				//heading = 0, roll = 0, pitch = 0,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa;
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
@@ -2439,26 +2408,19 @@ GUI Parameters usable in SynthDefs
 
 				globallev = globallev * Lag.kr(glev, 0.1);
 
-
 				gsig = p * globallev;
 
 				// Reverberação local
 				locallev = 1 - dis;
-				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
 				locallev = locallev * Lag.kr(llev, 0.1);
 
-
 				junto = p ;
-
-				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambSigSoa = [w, x, y, z, r, s, t, u, v];
 
 				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
-
 
 				Out.ar(soaBus, (ambSigSoa*globallev) + (ambSigSoa*locallev));
 
@@ -2469,7 +2431,6 @@ GUI Parameters usable in SynthDefs
 
 				// convert to A-format and send to a-format out busses
 				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
 				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
 				Out.ar(aFormatBusOutSoa, aFormatSoa);
@@ -2482,7 +2443,6 @@ GUI Parameters usable in SynthDefs
 				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
 				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
 
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
 				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
 				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
@@ -2497,10 +2457,8 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
-				//xoffset = 0, yoffset = 0,
-				dopamnt = 0,
-				sp, df,
+				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0,
+				angle = 1.05, dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
@@ -2560,7 +2518,6 @@ GUI Parameters usable in SynthDefs
 
 				globallev = globallev * Lag.kr(glev, 0.1);
 
-
 				p1 = p[0];
 				p2 = p[1];
 				// Reverberação local
@@ -2568,13 +2525,8 @@ GUI Parameters usable in SynthDefs
 
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-
 				junto1 = p1;
 				junto2 = p2;
-
-
-				//			#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
-				//			#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
 
 				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
@@ -2586,11 +2538,6 @@ GUI Parameters usable in SynthDefs
 					soaSigRRef[3].value, soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value,
 					soaSigRRef[7].value, soaSigRRef[8].value];
 
-
-				//ambSigSoa1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1];
-				//ambSigSoa2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
-
-				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
 				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
 				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
 				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
@@ -2604,16 +2551,10 @@ GUI Parameters usable in SynthDefs
 				junto2 = Select.ar(df, [omni2, diffuse2]);
 				junto2 = Select.ar(sp, [junto2, spread2]);
 
-
 				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 
-
 				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
-
-
-				//Out.ar(soaBus, (ambSigFoa1plus2*globallev) + (ambSigFoa1plus2*locallev));
-
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
@@ -2624,7 +2565,6 @@ GUI Parameters usable in SynthDefs
 
 				// convert to A-format and send to a-format out busses
 				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
 				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
 				Out.ar(aFormatBusOutSoa, aFormatSoa);
@@ -2637,12 +2577,9 @@ GUI Parameters usable in SynthDefs
 				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
 				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
 
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
 				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
 				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
-
-
 
 				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa1plus2, ambSigFoa1plus2, globallev, locallev);
 
@@ -2650,9 +2587,12 @@ GUI Parameters usable in SynthDefs
 
 			}).load(server);
 
+
+
+
+
 			SynthDef.new("espacAmbEstereoChowning"++linear,  {
 				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
-				//xoffset = 0, yoffset = 0,
 				dopamnt = 0,
 				glev = 0, llev = 0, contr=1,
 				sp, df,
@@ -2680,28 +2620,21 @@ GUI Parameters usable in SynthDefs
 				my = Lag.kr(my, 0.1);
 				mz = Lag.kr(mz, 0.1);
 
-
-
 				contr = Lag.kr(contr, 0.1);
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
 
 				azim1 = fonte.rotate(angle / -2).theta;
 				azim2 = fonte.rotate(angle / 2).theta;
-				//SendTrig.kr(Impulse.kr(1), 0, azim1); // debug
-				//				fonte.set(mx+xoffset, my+yoffset, mz);
 				fonte.set(mx, my, mz);
 				el = fonte.phi;
 
-				//				dis = (1 - (fonte.rho - this.scale)) / this.scale;
 				dis = 1 - fonte.rho;
 
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
-				//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
 				p = In.ar(inbus, 2);
 
-				//p = p[0];
 				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
 
 				// Doppler
@@ -2709,7 +2642,6 @@ GUI Parameters usable in SynthDefs
 				rd = Lag.kr(rd, 1.0);
 				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 				p = dopplershift;
-
 
 				// Reverberação global
 				globallev = 1 / (1 - dis).sqrt;
@@ -2739,7 +2671,6 @@ GUI Parameters usable in SynthDefs
 
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-
 				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev);
 				junto1 = p1 + lrev1Ref.value;
 				junto2 = p2 + lrev2Ref.value;
@@ -2756,18 +2687,12 @@ GUI Parameters usable in SynthDefs
 
 				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
 
-
-
-
-				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
 				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
 				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
 				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
 				junto1 = Select.ar(df, [omni1, diffuse1]);
 				junto1 = Select.ar(sp, [junto1, spread1]);
 
-
-				//				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
 				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
 				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
 				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
@@ -2777,7 +2702,6 @@ GUI Parameters usable in SynthDefs
 				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
 				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
 
-
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
 				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
@@ -2785,11 +2709,9 @@ GUI Parameters usable in SynthDefs
 
 				// convert to A-format and send to a-format out busses
 				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
 				Out.ar(aFormatBusOutFoa, aFormatFoa);
 				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
 				Out.ar(aFormatBusOutSoa, aFormatSoa);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa[0]); // debug
 
 				// flag switchable selector of a-format signal (from insert or not)
 				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
@@ -2799,12 +2721,9 @@ GUI Parameters usable in SynthDefs
 				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
 				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
 
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
 				// not sure if the b2a/a2b process degrades signal. Just in case it does:
 				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
 				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
-
-
 
 				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
 
@@ -2819,11 +2738,12 @@ GUI Parameters usable in SynthDefs
 		};
 		makeSpatialisers.value(linear: false);
 
+/*
 		prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
 			ambSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
 		};
 		makeSpatialisers.value(linear: true);
-
+*/
 
 		makeSynthDefPlayers = { arg type, i = 0;
 		// 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
@@ -2846,7 +2766,107 @@ GUI Parameters usable in SynthDefs
 				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
-			2.do {   // make linear and non-linear versions
+
+
+
+
+			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1,
+				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+				mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+				busini,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;
+
+				var scaledRate, playerRef, wsinal, spos, pushang = 0,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+
+				azim, dis = 1, fonte, globallev, locallev,
+				gsig, lsig, rd, dopplershift,
+				intens;
+				var grevganho = 0.20,
+				rotate;
+
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = 1 - fonte.rho;
+				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
+				azim = fonte.theta; // ângulo (azimuth) de deslocamento
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				playerRef = Ref(0);
+				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+				playerRef.value = dopplershift;
+
+				wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
+
+				Out.ar(outbus, wsinal);
+
+				// global reverb
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
+
+				//comment out all linear parameters
+				//prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
+				//replaced here by the rotate var
+				rotate = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+							Lag.kr(level, 0.1) * intens * (1 - contr));
+
+				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				// aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				// Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				//aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				playerRef.value = Select.ar(insertFlag, [playerRef.value, ambSigFoaProcessed]);
+				//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+				playBFormatOutFunc.value(playerRef.value, dec);
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				globallev = globallev * Lag.kr(glev, 0.1) * 6;
+
+				gsig = playerRef.value[0] * globallev;
+
+				locallev = 1 - dis;
+
+				locallev = locallev  * Lag.kr(llev, 0.1) * 5;
+				lsig = playerRef.value[0] * locallev;
+
+				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+				Out.ar(gbfbus, gsig);
+
+
+			}).add;
+
+			//comment out all linear parameters
+
+/*			2.do {   // make linear and non-linear versions
 				arg x;
 				var prepareRotateFunc, linear = "";
 				if (x == 1) {
@@ -2966,7 +2986,7 @@ GUI Parameters usable in SynthDefs
 
 				}).add;
 			};
-
+*/
 		}; //end makeSynthDefPlayers
 
 		// Make File-in SynthDefs
@@ -5506,7 +5526,7 @@ GUI Parameters usable in SynthDefs
 		});
 		revcheck.value = false;
 
-		lincheck = CheckBox( win, Rect(184, 10, 180, 20), "Linear intensity(ATK)").action_({ arg butt;
+		lincheck = CheckBox( win, Rect(184, 10, 180, 20), "Linear intensity (ATK)").action_({ arg butt;
 			{this.lncheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		lincheck.value = false;
@@ -5528,7 +5548,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
-		textbuf.string = "No. of chans.(HW & SC-in)";
+		textbuf.string = "No. of chans. (HW & SC-in)";
 		ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
 		ncannumbox.value = 0;
 		ncannumbox.clipHi = 4;
@@ -5544,7 +5564,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
-		textbuf.string = "Start Bus(HW-in)";
+		textbuf.string = "Start Bus (HW-in)";
 		busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
 		busininumbox.value = 0;
 		busininumbox.clipLo = 0;
@@ -5558,7 +5578,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(163, 130 + offset, 90, 20));
-		textbuf.string = "Angle(Stereo)";
+		textbuf.string = "Angle (stereo)";
 		angnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
 		angnumbox.value = 0;
 		angnumbox.clipHi = pi;
@@ -5762,7 +5782,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
-		textbuf.string = "Rotation(B-Format)";
+		textbuf.string = "Rotation (B-Format)";
 		rnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
 		rnumbox.value = 0;
 		rnumbox.clipHi = pi;
@@ -5786,7 +5806,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
-		textbuf.string = "Directivity(B-Format)";
+		textbuf.string = "Directivity (B-Format)";
 		dirnumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
 		dirnumbox.value = 0;
 		dirnumbox.clipHi = pi;
