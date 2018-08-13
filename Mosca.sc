@@ -1,12 +1,12 @@
 /*
-	Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a 
+	Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
 	Creative Commons Attribution-NonCommercial 4.0 International License
 	http://creativecommons.org/licenses/by-nc/4.0/
 	The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
-	by Joseph Anderson and the Automation quark 
+	by Joseph Anderson and the Automation quark
 	(https://github.com/neeels/Automation) by Neels Hofmeyr.
 	Required Quarks : Automation, Ctk, XML and  MathLib
-	Required classes: 
+	Required classes:
 	SC Plugins: https://github.com/supercollider/sc3-plugins
 	User must set up a project directory with subdirectoties "rir" and "auto"
 	RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
@@ -76,7 +76,7 @@ AutomationGuiProxy : QView {
 		_QWidget_MapToGlobal
 		^this.primitiveFailed;
 	}
-	
+
 	absoluteBounds {
 		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ) );
 	}
@@ -102,33 +102,37 @@ Mosca {
 	var  <>kernelSize, <>scale, <>rirW, <>rirX, <>rirY, <>rirZ,
 	<>rirWspectrum, <>rirXspectrum, <>rirYspectrum, <>rirZspectrum,
 	<>rirFLUspectrum, <>rirFRDspectrum, <>rirBLDspectrum, <>rirBRUspectrum,
-	<>rir,
+	<>rir, <>rirList, <>rirAfmtList,
 	<>irbuffer, <>bufsize, <>win, <>wdados, <>waux, <>sprite, <>nfontes,
-	<>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>offset, <>textbuf, <>control,
+	<>revGlobal, <>revGlobalSoa, <>revGlobalBF, <>m, <>libnumbox, <>textbuf, <>control,
 	<>globFOATransform,
 	<>sysex, <>mmcslave,
 	<>synthRegistry, <>busini, <>ncan, <>swinbus,
-	<>aux1, <>aux2, <>aux3, <>aux4, <>aux5,  // aux slider values 
+	<>aux1, <>aux2, <>aux3, <>aux4, <>aux5,  // aux slider values
 	<>dec,
 	<>triggerFunc, <>stopFunc,
 	<>scInBus,
 	<>globTBus,
 	<>width, <>halfwidth, <>scale,
 	<>insertFlag,
-	<>aFormatBusFoa, <>aFormatBusSoa, 
+	<>aFormatBusFoa, <>aFormatBusSoa,
 	<>dur,
 	<>plim, // distance limit from origin where processes continue to run
 	<>looping,
 	<>firstTime,
 	<>playingBF,
-	<>rawbusfoa, <>rawbussoa, <>raworder,
+	<>rawbusfuma, <>rawbusambix, <>maxorder,
 	<>decoder,
 	<>serport,
 	<>offsetheading,
-	<>dcheck, <>lpcheck, <>rvcheck, <>hwncheck, <>scncheck, <>lncheck, <>spcheck, <>dfcheck, <>ncanbox, <>businibox,
+	<>libbox, <>lpcheck, <>rvbox, <>hwncheck, <>scncheck,
+	//comment out all linear parameters
+	//<>lncheck,
+	<>spcheck, <>dfcheck,
+	<>ncanbox, <>businibox,
 	<>espacializador, <>synt,
 	<>lastAutomation = nil,
-	<>tfield, 
+	<>tfield,
 	<>autoloopval,
 	<>autoloop,
 	<>streamdisk,
@@ -151,8 +155,11 @@ Mosca {
 	// MOVED FROM the the gui method/////////////////////////
 
 	<>currentsource,
-	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus,
-	<>doppler, <>level, <>lp, <>rv, <>ln, <>angslider, <>connumbox, <>cslider,
+	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus,
+	<>lib, <>level, <>lp, <>rv, <>rvtypes, <>clsRvtypes,
+	//comment out all linear parameters
+	//<>ln,
+	<>angslider, <>connumbox, <>cslider,
 	<>xbox, <>ybox, <>sombuf, <>sbus, <>updatesourcevariables, <>soaBus, <>mbus,
 	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
 	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box, <>a4box, <>a5box,
@@ -172,38 +179,46 @@ Mosca {
 	<>aux1numbox, <>aux2numbox, <>aux3numbox, <>aux4numbox, <>aux5numbox,
 	<>a1but, <>a2but, <>a3but, <>a4but, <>a5but,
 
-	<>dopcheque, <>loopcheck, <>revcheck, <>hwInCheck,
-	<>hwn, <>scInCheck, <>scn, <>lincheck, <>spreadcheck,
+	<>loopcheck, <>dstReverbox, <>clsReverbox, <>hwInCheck,
+	<>hwn, <>scInCheck, <>scn,
+	//comment out all linear parameters
+	//<>lincheck,
+	<>spreadcheck,
 	<>diffusecheck, <>sp, <>df, <>ncannumbox, <>busininumbox,
 
 	<>atualizarvariaveis, <>updateSynthInArgs,
 
 	<>runTriggers, <>runStops, <>runTrigger, <>runStop,
 	<>isPlay = false, <>isRec,
-	
+
 	/////////////////////////////////////////////////////////
 
 	// NEW PROXY VARIABLES /////////////
 
-	<>rboxProxy, <>cboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy, <>dboxProxy, <>dpboxProxy,
-	<>zboxProxy, <>yboxProxy, <>xboxProxy,
+	<>rboxProxy, <>cboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy, <>dboxProxy,
+	<>dpboxProxy, <>zboxProxy, <>yboxProxy, <>xboxProxy,
 	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy, <>a1boxProxy,
 	<>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
 
-	<>stcheckProxy, <>tfieldProxy, <>dcheckProxy, <>lpcheckProxy, <>rvcheckProxy, <>hwncheckProxy,
+	<>stcheckProxy, <>tfieldProxy, <>libboxProxy, <>lpcheckProxy, <>rvboxProxy, <>clsrevProxy,
+	<>hwncheckProxy,
 	<>scncheckProxy, <>dfcheckProxy,
-	<>lncheckProxy, <>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
+	//comment out all linear parameters
+	//<>lncheckProxy,
+	<>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
-	<>guiflag; 
+	<>guiflag,
+
+	<>firstGlobTime;
 
 
 	/////////////////////////////////////////
-	
-	
 
 
 
-	
+
+
+
 	classvar server, rirW, rirX, rirY, rirZ,
 	rirFLU, rirFRD, rirBLD, rirBRU,
 	rirA12, // 2nd order a-format array of RIRs
@@ -220,18 +235,18 @@ Mosca {
 	classvar fftsize = 2048,
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	server;
-	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse; 
-	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir = "FreeVerb",
+	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
+	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir,
 		freeroom = 0.5, freedamp = 0.5, freemul = 1,
-		server = Server.default, decoder = nil, rawbusfoa = 0, rawbussoa = 0, raworder = 2,
+		server = Server.default, decoder = nil, rawbusfuma = 0, rawbusambix = 9, maxorder = 1,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, reverb = true, autoloop = false;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, freeroom, freedamp, freemul,
-			server, decoder, rawbusfoa, rawbussoa, raworder, serport,
+			server, decoder, rawbusfuma, rawbusambix, maxorder, serport,
 			offsetheading, recchans, recbus, guiflag, guiint, reverb, autoloop);
 	}
 
-	
+
 
 	*printSynthParams {
 		var string =
@@ -263,21 +278,23 @@ GUI Parameters usable in SynthDefs
 
 ";
 		^string;
-		
+
 	}
 
 	initMosca { arg projDir, nsources, iwidth, idur, irir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
-		irawbusfoa, irawbussoa, iraworder, iserport, ioffsetheading,
-		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop; 
+		irawbusfuma, irawbusambix, imaxorder, iserport, ioffsetheading,
+		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
-		espacAmbOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
+		espacAmbOutFunc, ambixOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
 		revGlobalSoaOutFunc,
 		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
 		reverbOutFunc,
-		freeroom, freedamp, freemul, 
-		bufAformat, bufAformat_soa_a12, bufWXYZ;
+		freeroom, freedamp, freemul,
+		bufAformat, bufAformat_soa_a12, bufWXYZ,
+		bFormNumChan = (imaxorder + 1).squared; // add the number of channels of the b format
+		                                        // Ddepending on maxorder
 		server = iserver;
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
@@ -287,13 +304,15 @@ GUI Parameters usable in SynthDefs
 		server.sync;
 		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
 		server.sync;
-		this.globTBus = Bus.audio(server, 4);
+		this.globTBus = Bus.audio(server, bFormNumChan.clip(4, 9));
+		ambixbus = Bus.audio(server, bFormNumChan); // global b-format ACN-SN3D bus
+
 
 
 		server.sync;
 		//this.lock = ilock;
-		
-		
+
+
 		if (iwidth < 600) {
 			this.width = 600;
 		} {
@@ -302,9 +321,10 @@ GUI Parameters usable in SynthDefs
 		this.halfwidth = this.width / 2;
 		this.scale = this.halfwidth; // for the moment at least
 		this.dur = idur;
-		this.rawbusfoa = irawbusfoa;
-		this.rawbussoa = irawbussoa;
-		this.raworder = iraworder;
+		this.rawbusfuma = irawbusfuma;
+		this.rawbusfuma = irawbusfuma;
+		this.rawbusambix = irawbusambix;
+		this.maxorder = imaxorder;
 		this.decoder = idecoder;
 		this.serport = iserport;
 		this.offsetheading = ioffsetheading;
@@ -318,24 +338,24 @@ GUI Parameters usable in SynthDefs
 		this.guiInt = iguiint;
 		this.reverb = ireverb;
 		this.autoloopval = iautoloop;
-		
+
 		this.looping = false;
 		this.rir = irir;
 		freeroom = ifreeroom;
 		freedamp = ifreedamp;
 		freemul = ifreemul;
-		
+
 		if (this.serport.notNil) {
 
 			SerialPort.devicePattern = this.serport; // needed in serKeepItUp routine - see below
 			this.trackPort = SerialPort(this.serport, 115200, crtscts: true);
 			//this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
-			//	nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol 
-			this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];  //protocol 
-			this.trackarr2= this.trackarr.copy; 
+			//	nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol
+			this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];  //protocol
+			this.trackarr2= this.trackarr.copy;
 			this.tracki= 0;
-			//this.track2arr= [247, 248, 249, 250, nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol 
-			//this.track2arr2= trackarr.copy; 
+			//this.track2arr= [247, 248, 249, 250, nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol
+			//this.track2arr2= trackarr.copy;
 			//this.track2i= 0;
 
 
@@ -348,9 +368,9 @@ GUI Parameters usable in SynthDefs
 
 
 		this.troutine = Routine.new({
-			inf.do{ 
-				this.matchTByte(this.trackPort.read); 
-			}; 
+			inf.do{
+				this.matchTByte(this.trackPort.read);
+			};
 		});
 
 		this.kroutine = Routine.new({
@@ -366,12 +386,12 @@ GUI Parameters usable in SynthDefs
 						this.trackPort = SerialPort(this.serport, 115200, crtscts: true);
 						this.troutine.play; // start tracker routine again
 					}
-					
+
 				};
-				1.wait; 
-			}; 
+				1.wait;
+			};
 		});
-		
+
 		this.headingOffset = this.offsetheading;
 
 
@@ -383,28 +403,32 @@ GUI Parameters usable in SynthDefs
 
 		this.mark1 = Array.newClear(4);
 		this.mark2 = Array.newClear(4);
-		
+
+
 		this.nfontes = nsources;
 
 		///////////////////// DECLARATIONS FROM gui /////////////////////
 
 
-				this.espacializador = Array.newClear(this.nfontes);
-		doppler = Array.newClear(this.nfontes); 
-		lp = Array.newClear(this.nfontes); 
-		sp = Array.newClear(this.nfontes); 
-		df = Array.newClear(this.nfontes); 
-		rv = Array.newClear(this.nfontes); 
-		ln = Array.newClear(this.nfontes); 
-		hwn = Array.newClear(this.nfontes); 
-		scn = Array.newClear(this.nfontes); 
-		mbus = Array.newClear(this.nfontes); 
-		sbus = Array.newClear(this.nfontes); 
+		this.espacializador = Array.newClear(this.nfontes);
+		lib = Array.newClear(this.nfontes);
+		lp = Array.newClear(this.nfontes);
+		sp = Array.newClear(this.nfontes);
+		df = Array.newClear(this.nfontes);
+		rv = Array.newClear(this.nfontes);
+		rvtypes = Array.newClear(this.nfontes);
+		//comment out all linear parameters
+		//ln = Array.newClear(this.nfontes);
+		hwn = Array.newClear(this.nfontes);
+		scn = Array.newClear(this.nfontes);
+		mbus = Array.newClear(this.nfontes);
+		sbus = Array.newClear(this.nfontes);
 		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		// note that ncan refers to # of channels in streamed sources.
 		// ncanais is related to sources read from file
-		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping (ie. mono, stereo or b-format)
+		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping
+		                                            // (ie. mono, stereo or b-format)
 		this.aux1 = Array.newClear(this.nfontes);
 		this.aux2 = Array.newClear(this.nfontes);
 		this.aux3 = Array.newClear(this.nfontes);
@@ -417,51 +441,52 @@ GUI Parameters usable in SynthDefs
 		this.a4but = Array.newClear(this.nfontes);
 		this.a5but = Array.newClear(this.nfontes);
 
-		sombuf = Array.newClear(this.nfontes); 
-		//		xoffset = Array.fill(this.nfontes, 0); 
+		sombuf = Array.newClear(this.nfontes);
+		//		xoffset = Array.fill(this.nfontes, 0);
 		//		yoffset = Array.fill(this.nfontes, 0);
 		this.synt = Array.newClear(this.nfontes);
 		sprite = Array2D.new(this.nfontes, 2);
 		funcs = Array.newClear(this.nfontes);
 		angle = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
-		zlev = Array.newClear(this.nfontes); 
-		level = Array.newClear(this.nfontes); 
-		//	doplev = Array.newClear(this.nfontes); 
-		glev = Array.newClear(this.nfontes); 
-		llev = Array.newClear(this.nfontes); 
-		rlev = Array.newClear(this.nfontes); 
-		dlev = Array.newClear(this.nfontes); 
-		dplev = Array.newClear(this.nfontes); 
-		clev = Array.newClear(this.nfontes); 
+		zlev = Array.newClear(this.nfontes);
+		level = Array.newClear(this.nfontes);
+		//	doplev = Array.newClear(this.nfontes);
+		glev = Array.newClear(this.nfontes);
+		llev = Array.newClear(this.nfontes);
+		rlev = Array.newClear(this.nfontes);
+		dlev = Array.newClear(this.nfontes);
+		dplev = Array.newClear(this.nfontes);
+		clev = Array.newClear(this.nfontes);
 
-		this.ncanbox = Array.newClear(this.nfontes); 
-		this.businibox = Array.newClear(this.nfontes); 
-		this.playingBF = Array.newClear(this.nfontes); 
-		
-		
-		//oxbox = Array.newClear(this.nfontes); 
-		//oybox = Array.newClear(this.nfontes); 
-		//ozbox = Array.newClear(this.nfontes); 
-		xbox = Array.newClear(this.nfontes); 
-		zbox = Array.newClear(this.nfontes); 
-		ybox = Array.newClear(this.nfontes); 
-		lastx = Array.newClear(this.nfontes); 
-		lasty = Array.newClear(this.nfontes); 
-		lastz = Array.newClear(this.nfontes); 
+		this.ncanbox = Array.newClear(this.nfontes);
+		this.businibox = Array.newClear(this.nfontes);
+		this.playingBF = Array.newClear(this.nfontes);
+
+
+		//oxbox = Array.newClear(this.nfontes);
+		//oybox = Array.newClear(this.nfontes);
+		//ozbox = Array.newClear(this.nfontes);
+		xbox = Array.newClear(this.nfontes);
+		zbox = Array.newClear(this.nfontes);
+		ybox = Array.newClear(this.nfontes);
+		lastx = Array.newClear(this.nfontes);
+		lasty = Array.newClear(this.nfontes);
+		lastz = Array.newClear(this.nfontes);
 		abox = Array.newClear(this.nfontes); // ângulo
 		vbox = Array.newClear(this.nfontes);  // level
-		this.dcheck = Array.newClear(this.nfontes);  // Doppler check
 		gbox = Array.newClear(this.nfontes); // reverberação global
 		lbox = Array.newClear(this.nfontes); // reverberação local
 		rbox = Array.newClear(this.nfontes); // rotação de b-format
 		dbox = Array.newClear(this.nfontes); // diretividade de b-format
 		cbox = Array.newClear(this.nfontes); // contrair b-format
 		dpbox = Array.newClear(this.nfontes); // dop amount
+		this.libbox = Array.newClear(this.nfontes); // libs
 		this.lpcheck = Array.newClear(this.nfontes); // loop
 		this.spcheck = Array.newClear(this.nfontes); // spread
 		this.dfcheck = Array.newClear(this.nfontes); // diffuse
-		this.rvcheck = Array.newClear(this.nfontes); // diffuse reverb
-		this.lncheck = Array.newClear(this.nfontes); // linear intensity
+		this.rvbox = Array.newClear(this.nfontes); // diffuse  and local reverb list
+		//comment out all linear parameters
+		//this.lncheck = Array.newClear(this.nfontes); // linear intensity
 		this.hwncheck = Array.newClear(this.nfontes); // hardware-in check
 		this.scncheck = Array.newClear(this.nfontes); // SuperCollider-in check
 		a1box = Array.newClear(this.nfontes); // aux - array of num boxes in data window
@@ -487,21 +512,24 @@ GUI Parameters usable in SynthDefs
 		this.firstTime = Array.newClear(this.nfontes);
 
 
-		this.tfield = Array.newClear(this.nfontes);	
+		this.tfield = Array.newClear(this.nfontes);
 		this.streamdisk = Array.newClear(this.nfontes);
 
 				// busses to send audio from player to spatialiser synths
 		this.nfontes.do { arg x;
-			mbus[x] = Bus.audio(server, 1); 
-			sbus[x] = Bus.audio(server, 2); 
-			//	bfbus[x] = Bus.audio(s, 4); 
+			mbus[x] = Bus.audio(server, 1);
+			sbus[x] = Bus.audio(server, 2);
+			//	bfbus[x] = Bus.audio(s, 4);
 		};
 
-		
+
 		testado = Array.newClear(this.nfontes);
 
-				this.nfontes.do { arg i;
-			doppler[i] = 0;
+		clsRvtypes = "_free"; // initialise close reverb type
+		this.firstGlobTime = false; // make sure no close reverb synth is instanciated
+		                            // when setting close reverb types for the firs time
+
+		this.nfontes.do { arg i;
 			angle[i] = 0;
 			level[i] = 0;
 			glev[i] = 0;
@@ -509,8 +537,11 @@ GUI Parameters usable in SynthDefs
 			lp[i] = 0;
 			sp[i] = 0;
 			df[i] = 0;
-			rv[i] = 0;
-			ln[i] = "";
+			this.lib[i] = 0;
+			rv[i] = 1;
+			rvtypes[i] = "_free"; // initialise distants reverbs types
+			//comment out all linear parameters
+			//ln[i] = "";
 			hwn[i] = 0;
 			scn[i] = 0;
 			rlev[i] = 0;
@@ -540,107 +571,146 @@ GUI Parameters usable in SynthDefs
 
 		// these proxies behave like GUI elements. They eneable
 		// the use of Automation without a GUI
-		
-		xval = Array.fill(this.nfontes, 100000); 
-		yval = Array.fill(this.nfontes, 100000); 
-		zval = Array.fill(this.nfontes, 0); 
+
+		xval = Array.fill(this.nfontes, 100000);
+		yval = Array.fill(this.nfontes, 100000);
+		zval = Array.fill(this.nfontes, 0);
 
 
-		rboxProxy = Array.newClear(this.nfontes); 
-		cboxProxy = Array.newClear(this.nfontes); 
-		aboxProxy = Array.newClear(this.nfontes); 
-		vboxProxy = Array.newClear(this.nfontes); 
-		gboxProxy = Array.newClear(this.nfontes); 
-		lboxProxy = Array.newClear(this.nfontes); 
-		dboxProxy = Array.newClear(this.nfontes); 
-		dpboxProxy = Array.newClear(this.nfontes);   
-		zboxProxy = Array.newClear(this.nfontes); 
-		yboxProxy = Array.newClear(this.nfontes); 
-		xboxProxy = Array.newClear(this.nfontes); 
-		a1checkProxy = Array.newClear(this.nfontes); 
-		a2checkProxy = Array.newClear(this.nfontes); 
-		a3checkProxy = Array.newClear(this.nfontes); 
-		a4checkProxy = Array.newClear(this.nfontes); 
-		a5checkProxy = Array.newClear(this.nfontes); 
-		a1boxProxy = Array.newClear(this.nfontes); 
-		a2boxProxy = Array.newClear(this.nfontes); 
-		a3boxProxy = Array.newClear(this.nfontes); 
-		a4boxProxy = Array.newClear(this.nfontes); 
-		a5boxProxy = Array.newClear(this.nfontes); 
+		rboxProxy = Array.newClear(this.nfontes);
+		cboxProxy = Array.newClear(this.nfontes);
+		aboxProxy = Array.newClear(this.nfontes);
+		vboxProxy = Array.newClear(this.nfontes);
+		gboxProxy = Array.newClear(this.nfontes);
+		lboxProxy = Array.newClear(this.nfontes);
+		dboxProxy = Array.newClear(this.nfontes);
+		dpboxProxy = Array.newClear(this.nfontes);
+		zboxProxy = Array.newClear(this.nfontes);
+		yboxProxy = Array.newClear(this.nfontes);
+		xboxProxy = Array.newClear(this.nfontes);
+		a1checkProxy = Array.newClear(this.nfontes);
+		a2checkProxy = Array.newClear(this.nfontes);
+		a3checkProxy = Array.newClear(this.nfontes);
+		a4checkProxy = Array.newClear(this.nfontes);
+		a5checkProxy = Array.newClear(this.nfontes);
+		a1boxProxy = Array.newClear(this.nfontes);
+		a2boxProxy = Array.newClear(this.nfontes);
+		a3boxProxy = Array.newClear(this.nfontes);
+		a4boxProxy = Array.newClear(this.nfontes);
+		a5boxProxy = Array.newClear(this.nfontes);
 
-		tfieldProxy = Array.newClear(this.nfontes); 
-		dcheckProxy = Array.newClear(this.nfontes); 
-		lpcheckProxy = Array.newClear(this.nfontes); 
-		rvcheckProxy = Array.newClear(this.nfontes); 
-		hwncheckProxy = Array.newClear(this.nfontes); 
-		scncheckProxy = Array.newClear(this.nfontes); 
-		dfcheckProxy = Array.newClear(this.nfontes); 
-		lncheckProxy = Array.newClear(this.nfontes); 
-		spcheckProxy = Array.newClear(this.nfontes); 
-		ncanboxProxy = Array.newClear(this.nfontes); 
-		businiboxProxy = Array.newClear(this.nfontes); 
-		stcheckProxy = Array.newClear(this.nfontes); 
+		tfieldProxy = Array.newClear(this.nfontes);
+		libboxProxy = Array.newClear(this.nfontes);
+		lpcheckProxy = Array.newClear(this.nfontes);
+		rvboxProxy = Array.newClear(this.nfontes);
+		hwncheckProxy = Array.newClear(this.nfontes);
+		scncheckProxy = Array.newClear(this.nfontes);
+		dfcheckProxy = Array.newClear(this.nfontes);
+		//comment out all linear parameters
+		//lncheckProxy = Array.newClear(this.nfontes);
+		spcheckProxy = Array.newClear(this.nfontes);
+		ncanboxProxy = Array.newClear(this.nfontes);
+		businiboxProxy = Array.newClear(this.nfontes);
+		stcheckProxy = Array.newClear(this.nfontes);
+
 
 		this.nfontes.do { arg x;
-			rboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			cboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			aboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			vboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			gboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			lboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			dboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			dpboxProxy[x] = AutomationGuiProxy.new(0.0);    
-			zboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			yboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			xboxProxy[x] = AutomationGuiProxy.new(0.0);  
-			a1checkProxy[x] = AutomationGuiProxy.new(false);  
-			a2checkProxy[x] = AutomationGuiProxy.new(false);  
-			a3checkProxy[x] = AutomationGuiProxy.new(false);  
-			a4checkProxy[x] = AutomationGuiProxy.new(false);  
-			a5checkProxy[x] = AutomationGuiProxy.new(false);  
-			a1boxProxy[x] = AutomationGuiProxy.new(0.0);  
-			a2boxProxy[x] = AutomationGuiProxy.new(0.0);  
-			a3boxProxy[x] = AutomationGuiProxy.new(0.0);  
-			a4boxProxy[x] = AutomationGuiProxy.new(0.0);  
-			a5boxProxy[x] = AutomationGuiProxy.new(0.0);  
+			rboxProxy[x] = AutomationGuiProxy.new(0.0);
+			cboxProxy[x] = AutomationGuiProxy.new(0.0);
+			aboxProxy[x] = AutomationGuiProxy.new(0.0);
+			vboxProxy[x] = AutomationGuiProxy.new(0.0);
+			gboxProxy[x] = AutomationGuiProxy.new(0.0);
+			lboxProxy[x] = AutomationGuiProxy.new(0.0);
+			dboxProxy[x] = AutomationGuiProxy.new(0.0);
+			dpboxProxy[x] = AutomationGuiProxy.new(0.0);
+			zboxProxy[x] = AutomationGuiProxy.new(0.0);
+			yboxProxy[x] = AutomationGuiProxy.new(0.0);
+			xboxProxy[x] = AutomationGuiProxy.new(0.0);
+			a1checkProxy[x] = AutomationGuiProxy.new(false);
+			a2checkProxy[x] = AutomationGuiProxy.new(false);
+			a3checkProxy[x] = AutomationGuiProxy.new(false);
+			a4checkProxy[x] = AutomationGuiProxy.new(false);
+			a5checkProxy[x] = AutomationGuiProxy.new(false);
+			a1boxProxy[x] = AutomationGuiProxy.new(0.0);
+			a2boxProxy[x] = AutomationGuiProxy.new(0.0);
+			a3boxProxy[x] = AutomationGuiProxy.new(0.0);
+			a4boxProxy[x] = AutomationGuiProxy.new(0.0);
+			a5boxProxy[x] = AutomationGuiProxy.new(0.0);
 
-			hwncheckProxy[x] = AutomationGuiProxy.new(false); 
+			hwncheckProxy[x] = AutomationGuiProxy.new(false);
 
-			tfieldProxy[x] = AutomationGuiProxy.new(""); 
-			dcheckProxy[x] = AutomationGuiProxy.new(false); 
-			lpcheckProxy[x] = AutomationGuiProxy.new(false); 
-			rvcheckProxy[x] = AutomationGuiProxy.new(false); 
-			scncheckProxy[x] = AutomationGuiProxy.new(false); 
-			dfcheckProxy[x] = AutomationGuiProxy.new(false); 
-			lncheckProxy[x] = AutomationGuiProxy.new(false); 
-			spcheckProxy[x] = AutomationGuiProxy.new(false); 
-			ncanboxProxy[x] = AutomationGuiProxy.new(0); 
-			businiboxProxy[x] = AutomationGuiProxy.new(0); 
-			stcheckProxy[x] = AutomationGuiProxy.new(false); 
-			
-			
+			tfieldProxy[x] = AutomationGuiProxy.new("");
+			libboxProxy[x] = AutomationGuiProxy.new(0);
+			lpcheckProxy[x] = AutomationGuiProxy.new(false);
+			rvboxProxy[x] = AutomationGuiProxy.new(1);
+			scncheckProxy[x] = AutomationGuiProxy.new(false);
+			dfcheckProxy[x] = AutomationGuiProxy.new(false);
+			//comment out all linear parameters
+			//lncheckProxy[x] = AutomationGuiProxy.new(false);
+			spcheckProxy[x] = AutomationGuiProxy.new(false);
+			ncanboxProxy[x] = AutomationGuiProxy.new(0);
+			businiboxProxy[x] = AutomationGuiProxy.new(0);
+			stcheckProxy[x] = AutomationGuiProxy.new(false);
+
+
 		};
 
-		headingnumboxProxy = AutomationGuiProxy.new(0.0);  
-		rollnumboxProxy = AutomationGuiProxy.new(0.0);  
-		pitchnumboxProxy = AutomationGuiProxy.new(0.0);  
-		
+		//set up automationProxy for single parameters outside of the previous loop, not to be docked
+		clsrevProxy = AutomationGuiProxy.new(1);
+
+		headingnumboxProxy = AutomationGuiProxy.new(0.0);
+		rollnumboxProxy = AutomationGuiProxy.new(0.0);
+		pitchnumboxProxy = AutomationGuiProxy.new(0.0);
+
 		this.control = Automation(this.dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
 
-		
+
 		////////////// DOCK PROXIES /////////////
 
 
 		// this should be done after the actions are assigned
-		
-		
+
+
 		this.nfontes.do { arg i;
-			
-			
-			
+
+			this.libboxProxy[i].action_({ arg num;
+				this.lib[i] = num.value;
+				if((i == currentsource) && guiflag )
+				{
+					{libnumbox.value = num.value}.defer;
+				};
+				if (guiflag) {
+					{this.libbox[i].value = num.value}.defer;
+				};
+			});
+
+			this.rvboxProxy[i].action_({ arg num;
+				this.rv[i] = num.value;
+				if((i == currentsource) && guiflag )
+				{
+					{ dstReverbox.value = num.value }.defer;
+
+					case
+					{ num.value == 0 }{ rvtypes[i] = ""; }
+					{ num.value == 1 || (num.value == 3) }{ rvtypes[i] = "_free"; }
+					{ num.value == 2 || (num.value == 4) }{ rvtypes[i] = "_pass"; }
+					{ num.value > 4 }{ rvtypes[i] = "_conv"; };
+
+					if (num.value > 2 && (num.value < 5)) {
+						this.setSynths(i, \rv, 1);
+					}{
+						this.setSynths(i, \rv, 0);
+					};
+				};
+
+				if (guiflag) {
+					{this.rvbox[i].value = num.value}.defer;
+				};
+			});
+
 			//("AAAAAAA xboxProxy = " ++ this.xboxProxy[i]).postln;
-			
+
 			this.xboxProxy[i].action = {arg num;
 				//("Num = " ++ num.value).postln;
 				this.xval[i] = num.value;
@@ -660,17 +730,17 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.xbox[i].value = num.value}.defer;
 				};
-				
+
 			};
-			
+
 			this.yboxProxy[i].action = {arg num;
 				this.yval[i] = num.value;
 				if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)) {
 					{sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth)}.defer;
 				};
-				
+
 				if(this.espacializador[i].notNil || this.playingBF[i]){
-					
+
 					this.espacializador[i].set(\my, this.yval[i]);
 					this.setSynths(i, \my, this.yval[i]);
 					this.synt[i].set(\my, this.yval[i]);
@@ -678,21 +748,21 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{ybox[i].value = num.value}.defer;
 				};
-				
+
 				//{oybox[i].valueAction = this.origin.y;}.defer;
 			};
-			
+
 			this.zboxProxy[i].action = {arg num;
 				lastz[i] = num.value;
 				this.espacializador[i].set(\mz, num.value);
 				this.zval[i] = num.value;
 				if (this.zval[i] > 1) {this.zval[i] = 1};
 				if (this.zval[i] < -1) {this.zval[i] = -1};
-				
+
 				this.setSynths(i, \mz, this.zval[i]);
 				this.synt[i].set(\mz, this.zval[i]);
 				zlev[i] = this.zval[i];
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{zslider.value = (num.value + 1) / 2}.defer;
 					{znumbox.value = num.value}.defer;
@@ -701,7 +771,7 @@ GUI Parameters usable in SynthDefs
 					{zbox[i].value = num.value}.defer;
 				};
 			};
-			
+
 			this.aboxProxy[i].action = {arg num;
 				//("ncanais = " ++ this.ncanais[i]).postln;
 				angle[i] = num.value;
@@ -710,7 +780,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
 				};
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{angnumbox.value = num.value}.defer;
 					{angslider.value = num.value / pi}.defer;
@@ -718,13 +788,13 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{abox[i].value = num.value}.defer;
 				};
-			}; 
-			
+			};
+
 			vboxProxy[i].action = {arg num;
 				this.synt[i].set(\level, num.value);
 				this.setSynths(i, \level, num.value);
 				level[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{volslider.value = num.value}.defer;
 					{volnumbox.value = num.value}.defer;
@@ -732,16 +802,16 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{vbox[i].value = num.value}.defer;
 				};
-				
+
 			};
-			
+
 			gboxProxy[i].action = {arg num;
 				this.espacializador[i].set(\glev, num.value);
 				this.setSynths(i, \glev, num.value);
-				
+
 				this.synt[i].set(\glev, num.value);
 				glev[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{gslider.value = num.value}.defer;
 					{gnumbox.value = num.value}.defer;
@@ -749,15 +819,15 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{gbox[i].value = num.value}.defer;
 				};
-			}; 
-			
-			
+			};
+
+
 			lboxProxy[i].action = {arg num;
 				this.espacializador[i].set(\llev, num.value);
 				this.setSynths(i, \llev, num.value);
 				this.synt[i].set(\llev, num.value);
 				llev[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{lslider.value = num.value}.defer;
 					{lnumbox.value = num.value}.defer;
@@ -765,14 +835,14 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					lbox[i].value = num.value;
 				};
-			}; 
-			
-			rboxProxy[i].action = {arg num; 
-				
+			};
+
+			rboxProxy[i].action = {arg num;
+
 				this.synt[i].set(\rotAngle, num.value);
 				this.setSynths(i, \rotAngle, num.value);
 				rlev[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					//num.value * 6.28 - pi;
 					{rslider.value = (num.value + pi) / 2pi}.defer;
@@ -782,12 +852,12 @@ GUI Parameters usable in SynthDefs
 					{rbox[i].value = num.value}.defer;
 				};
 			};
-			
-			dboxProxy[i].action = {arg num; 
+
+			dboxProxy[i].action = {arg num;
 				this.synt[i].set(\directang, num.value);
 				this.setSynths(i, \directang, num.value);
 				dlev[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					//num.value * pi/2;
 					{dirslider.value = num.value / (pi/2)}.defer;
@@ -797,14 +867,14 @@ GUI Parameters usable in SynthDefs
 					{dbox[i].value = num.value}.defer;
 				};
 			};
-			
-			cboxProxy[i].action = {arg num; 
+
+			cboxProxy[i].action = {arg num;
 				this.synt[i].set(\contr, num.value);
 				// TESTING
 				this.espacializador[i].set(\contr, num.value);
 				this.setSynths(i, \contr, num.value);
 				clev[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{cslider.value = num.value}.defer;
 					{connumbox.value = num.value}.defer;
@@ -813,7 +883,7 @@ GUI Parameters usable in SynthDefs
 					{cbox[i].value = num.value}.defer;
 				};
 			};
-			
+
 			dpboxProxy[i].action = {arg num;
 				// used for b-format amb/bin only
 				this.synt[i].set(\dopamnt, num.value);
@@ -821,7 +891,7 @@ GUI Parameters usable in SynthDefs
 				// used for the others
 				this.espacializador[i].set(\dopamnt, num.value);
 				dplev[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{dpslider.value = num.value}.defer;
 					{dopnumbox.value = num.value}.defer;
@@ -834,7 +904,7 @@ GUI Parameters usable in SynthDefs
 			a1boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux1, num.value);
 				aux1[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{auxslider1.value = num.value}.defer;
 					{aux1numbox.value = num.value}.defer;
@@ -842,12 +912,12 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.a1box[i].value = num.value}.defer;
 				};
-			}; 
+			};
 
 			a2boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux2, num.value);
 				aux2[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{auxslider2.value = num.value}.defer;
 					{aux2numbox.value = num.value}.defer;
@@ -855,12 +925,12 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.a2box[i].value = num.value}.defer;
 				};
-			}; 
+			};
 
 			a3boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux3, num.value);
 				aux3[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{auxslider3.value = num.value}.defer;
 					{aux3numbox.value = num.value}.defer;
@@ -868,12 +938,12 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.a3box[i].value = num.value}.defer;
 				};
-			}; 
+			};
 
 			a4boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux4, num.value);
 				aux4[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{auxslider4.value = num.value}.defer;
 					{aux4numbox.value = num.value}.defer;
@@ -881,12 +951,12 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.a4box[i].value = num.value}.defer;
 				};
-			}; 
+			};
 
 			a5boxProxy[i].action = {arg num;
 				this.setSynths(i, \aux5, num.value);
 				aux5[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					{auxslider5.value = num.value}.defer;
 					{aux5numbox.value = num.value}.defer;
@@ -894,7 +964,7 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.a5box[i].value = num.value}.defer;
 				};
-			}; 
+			};
 
 			a1checkProxy[i].action = { arg but;
 
@@ -905,9 +975,9 @@ GUI Parameters usable in SynthDefs
 					this.a1but[i] = 0;
 					this.setSynths(i, \a1check, 0);
 				};
-				
+
 				if (guiflag) {
-					
+
 					{this.a1check[i].value = but.value}.defer;
 				};
 			};
@@ -933,7 +1003,7 @@ GUI Parameters usable in SynthDefs
 					a3but[i] = 1;
 					this.setSynths(i, \a3check, 1);
 				}{
-					a3but[i] = 0;	
+					a3but[i] = 0;
 					this.setSynths(i, \a3check, 0);
 				};
 				if (guiflag) {
@@ -972,8 +1042,8 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			
-			
+
+
 			stcheckProxy[i].action = { arg but;
 				if (but.value) {
 					this.streamdisk[i] = true;
@@ -984,27 +1054,6 @@ GUI Parameters usable in SynthDefs
 					{this.stcheck[i].value = but.value}.defer;
 				};
 			};
-			
-
-			this.dcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){
-					{dopcheque.value = but.value}.defer;
-				};
-				if (but.value) {
-					doppler[i] = 1;
-					this.espacializador[i].set(\dopon, 1);
-					this.synt[i].set(\dopon, 1);
-					this.setSynths(i, \dopon, 1);
-				}{
-					doppler[i] = 0;
-					this.espacializador[i].set(\dopon, 0);
-					this.synt[i].set(\dopon, 0);
-					this.setSynths(i, \dopon, 0);
-				};
-				if (guiflag) {
-					{this.dcheck[i].value = but.value}.defer;
-				};
-			});
 
 			this.lpcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag) {
@@ -1024,22 +1073,8 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			this.rvcheckProxy[i].action_({ arg but;
-				if((i==currentsource) && guiflag){{revcheck.value = but.value}.defer;};
-				if (but.value) {
-					rv[i] = 1;
-					//this.synt[i].set(\lp, 1);
-					this.setSynths(i, \rv, 1);
-				}{
-					rv[i] = 0;
-					//this.synt[i].set(\lp, 0);
-					this.setSynths(i, \rv, 0);
-				};
-				if (guiflag) {
-					{this.rvcheck[i].value = but.value}.defer;
-				};
-			});
 			/// testing
+
 			this.hwncheckProxy[i].action = { arg but;
 				if((i==this.currentsource) && guiflag) {
 					{hwInCheck.value = but.value}.defer;
@@ -1080,6 +1115,8 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
+			//comment out all linear parameters
+/*
 			this.lncheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){{lincheck.value = but.value}.defer;};
 				if (but.value) {
@@ -1093,6 +1130,7 @@ GUI Parameters usable in SynthDefs
 					{this.lncheck[i].value = but.value}.defer;
 				};
 			});
+*/
 
 			this.spcheckProxy[i].action_({ arg but;
 				if((i==currentsource) && guiflag){{spreadcheck.value = but.value}.defer;};
@@ -1163,7 +1201,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \mz, num.value);
 				this.synt[i].set(\mz, num.value);
 				this.busini[i] = num.value;
-				if((i == currentsource) && guiflag) 
+				if((i == currentsource) && guiflag)
 				{
 					//var val = (this.halfwidth - (num.value * width)) * -1;
 					//	ncanslider.value = num.value;
@@ -1172,12 +1210,12 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.businibox[i].value = num.value}.defer;
 				};
-			}; 
+			};
 
 
 			this.tfieldProxy[i].action = {arg path;
 				if ( (path.notNil || (path != "")) && this.streamdisk[i].not ) {
-					sombuf[i] = Buffer.read(server, path.value, action: {arg buf; 
+					sombuf[i] = Buffer.read(server, path.value, action: {arg buf;
 						"Loaded file".postln;
 					});
 				} {
@@ -1214,38 +1252,111 @@ GUI Parameters usable in SynthDefs
 			//control.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
 		};
 
+
 		///// these next few are not to be docked
-		
-		this.headingnumboxProxy.action = { arg num;
+
+
+		this.clsrevProxy.action_({ arg num;
+			case
+			{ num.value == 0 }
+			{
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+			}
+			{ num.value == 1 }
+			{ clsRvtypes = "_free";
+
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+
+				if (this.firstGlobTime)
+				{
+					if(globFOATransform.isNil,
+						{ this.revGlobal = Synth.new(\revGlobalAmb_free, [\gbus, gbus, \gate, 1],
+							addAction:\addToTail).register },
+						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_free,
+							[\gbus, gbus, \gate, 1]).register });
+				};
+
+			}
+			{ num.value == 2 }
+			{ clsRvtypes = "_pass";
+
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+
+				if (this.firstGlobTime)
+				{
+					if(globFOATransform.isNil,
+						{ this.revGlobal = Synth.new(\revGlobalAmb_pass, [\gbus, gbus, \gate, 1],
+							addAction:\addToTail).register },
+						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_pass,
+							[\gbus, gbus, \gate, 1]).register });
+				};
+
+			}
+			{ num.value > 2 }
+			{ clsRvtypes = "_conv";
+
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+
+				if (this.firstGlobTime)
+				{
+					if(globFOATransform.isNil,
+						{ this.revGlobal = Synth.new(\revGlobalAmb_conv, [\gbus, gbus, \gate, 1],
+							addAction:\addToTail).register },
+						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_conv,
+							[\gbus, gbus, \gate, 1]).register });
+				};
+
+			};
+
+			/*if (num.value > 2 && (num.value < 5)) {
+			this.setSynths(i, \rv, 1);
+			}{
+			this.setSynths(i, \rv, 0);
+			};*/
+
+			if (guiflag) {
+				{ clsReverbox.value = num.value }.defer;
+			};
+
+			/*if (guiflag) {
+			{this.rvbox[i].value = num.value}.defer;
+			};*/
+		});
+
+		this.headingnumboxProxy.action_({ arg num;
 			this.globFOATransform.set(\heading, num.value);
 			if (guiflag) {
 				{this.headingnumbox.value = num.value;}.defer;
 			};
-		};
+		});
 
-		this.rollnumboxProxy.action = { arg num;
+		this.rollnumboxProxy.action_({ arg num;
 			this.globFOATransform.set(\roll, num.value);
 			if (guiflag) {
 				{this.rollnumbox.value = num.value;}.defer;
 			};
-		};
+		});
 
-		this.pitchnumboxProxy.action = {arg num;
+		this.pitchnumboxProxy.action_({arg num;
 			this.globFOATransform.set(\pitch, num.value);
 			if (guiflag) {
 				{this.pitchnumbox.value = num.value;}.defer;
 			};
-		};
+		});
 
-		
-			
+
+
 		////////////////////
 
 
 		///////////////////////////////
 
-		
-		
+
+
 		playMonoInFunc = Array.newClear(4); // one for File, Stereo, BFormat, Stream - streamed file;
 		playStereoInFunc = Array.newClear(4);
 		playBFormatInFunc = Array.newClear(4);
@@ -1256,19 +1367,16 @@ GUI Parameters usable in SynthDefs
 
 		this.streambuf = Array.newClear(this.nfontes);
 		this.streamrate = Array.newClear(this.nfontes);
-	
-
-		o = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		this.scInBus = Array.newClear(this.nfontes);
 		this.nfontes.do { arg x;
 			this.scInBus[x] = Bus.audio(server, 4);
 		};
-		
+
 		this.insertFlag = Array.newClear(this.nfontes);
 		this.aFormatBusFoa = Array2D.new(2, this.nfontes);
 		this.aFormatBusSoa = Array2D.new(2, this.nfontes);
-		
+
 		this.nfontes.do { arg x;
 			this.aFormatBusFoa[0, x] =  Bus.audio(server, 4);
 			server.sync;
@@ -1289,7 +1397,7 @@ GUI Parameters usable in SynthDefs
 			this.insertFlag[x] = 0;
 		};
 
-		
+
 		// array of functions, 1 for each source (if defined), that will be launched on Automation's "play"
 		this.triggerFunc = Array.newClear(this.nfontes);
 		//companion to above. Launched by "Stop"
@@ -1299,73 +1407,114 @@ GUI Parameters usable in SynthDefs
 		// can place headtracker rotations in these functions - don't forget that the synthdefs
 		// need to have there values for heading, roll and pitch "set" by serial routine
 		// NO - DON'T PUT THIS HERE - Make a global synth with a common input bus
-		
+
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
+
 		if (this.decoder.notNil) {
-			espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-				Out.ar(this.globTBus, ambsinal1O);
-			};
-			espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-				//				Out.ar( 0, FoaDecode.ar(ambsinal1plus2_1O, dec));
-				Out.ar(this.globTBus, ambsinal1plus2_1O);
-			};
-			revGlobalAmbFunc = { |ambsinal, dec|
-				//				Out.ar( 0, FoaDecode.ar(ambsinal, dec));
-				//SendTrig.kr(Impulse.kr(1), 301, this.globTBus); //debug
-				Out.ar(this.globTBus, ambsinal);
-			};
-			revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-				//				Out.ar( 0, FoaDecode.ar(foaSig, dec));
-				Out.ar(this.globTBus, foaSig);
-			};
-			playBFormatOutFunc = { |player, dec|
-				//				Out.ar( 0, FoaDecode.ar(player, dec));
-				Out.ar(this.globTBus, player);
-			};
-			reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
-				Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));};
 
+			if(maxorder == 1) {
 
-		} {
-			if(raworder == 1) {
 				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-					Out.ar( this.rawbusfoa, ambsinal1O); };
+					Out.ar(this.globTBus, ambsinal1O);
+				};
+				ambixOutFunc = { |ambsinal, dec|
+					Out.ar(this.ambixbus, ambsinal);
+				};
 				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-					Out.ar( this.rawbusfoa, ambsinal1plus2_1O); };
+					Out.ar(this.globTBus, ambsinal1plus2_1O);
+				};
 				revGlobalAmbFunc = { |ambsinal, dec|
-					Out.ar( this.rawbusfoa, ambsinal); };
-				
+					Out.ar(this.globTBus, ambsinal);
+				};
 				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-					Out.ar( this.rawbusfoa, foaSig); };
+					Out.ar(this.globTBus, foaSig);
+				};
 				playBFormatOutFunc = { |player, dec|
-					Out.ar( this.rawbusfoa, player); };
+					Out.ar(this.globTBus, player);
+				};
 				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
-					Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));	};
+					Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));};
+
 			} {
 				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
-					Out.ar( this.rawbussoa, ambsinal); };
+					Out.ar(this.globTBus, ambsinal);
+				};
+				ambixOutFunc = { |ambsinal, dec|
+					Out.ar(this.ambixbus, ambsinal);
+				};
 				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
-					Out.ar( this.rawbussoa, ambsinal1plus2); };
+					Out.ar(this.globTBus, ambsinal1plus2);
+				};
 				revGlobalAmbFunc = { |ambsinal, dec|
-					Out.ar( this.rawbusfoa, ambsinal); };
+					Out.ar(this.globTBus, ambsinal);
+				};
 				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
-					Out.ar( this.rawbussoa, soaSig); };
+					Out.ar(this.globTBus, soaSig);
+				};
 				playBFormatOutFunc = { |player, dec|
-					Out.ar( this.rawbusfoa, player); };
+					Out.ar(this.globTBus, player);
+				};
 				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
-					Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));	};
+					Out.ar(gbfbus, (ambsinal*globallev) + (ambsinal*locallev));};
 			}
+
+		} {
+			if(maxorder == 1) {
+				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+					Out.ar( this.rawbusfuma, ambsinal1O);
+				};
+				ambixOutFunc = { |ambsinal, dec|
+					Out.ar(this.rawbusambix, ambsinal);
+				};
+				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+					Out.ar( this.rawbusfuma, ambsinal1plus2_1O);
+				};
+				revGlobalAmbFunc = { |ambsinal, dec|
+					Out.ar( this.rawbusfuma, ambsinal);
+				};
+				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
+					Out.ar( this.rawbusfuma, foaSig);
+				};
+				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
+					Out.ar(gbfbus, (ambsinal1O*globallev) + (ambsinal1O*locallev));
+				};
+
+			} {
+				espacAmbOutFunc = { |ambsinal, ambsinal1O, dec|
+					Out.ar( this.rawbusfuma, ambsinal);
+				};
+				ambixOutFunc = { |ambsinal, dec|
+					Out.ar(this.rawbusambix, ambsinal);
+				};
+				espacAmbEstereoOutFunc = { |ambsinal1plus2, ambsinal1plus2_1O, dec|
+					Out.ar( this.rawbusfuma, ambsinal1plus2);
+				};
+				revGlobalAmbFunc = { |ambsinal, dec|
+					Out.ar( this.rawbusfuma, ambsinal);
+				};
+				revGlobalSoaOutFunc = { |soaSig, foaSig, dec|
+					Out.ar( this.rawbusfuma, soaSig);
+				};
+				reverbOutFunc = { |soaBus, gbfbus, ambsinal, ambsinal1O, globallev, locallev |
+					Out.ar(soaBus, (ambsinal*globallev) + (ambsinal*locallev));
+				};
+
+			};
+
+			playBFormatOutFunc = { |player, dec|
+				Out.ar( this.rawbusfuma, player);
+			};
 
 		};
 
 
 		////////////////// END Functions to substitute blocs of code /////////////
-		
+
 
 		/////////// START code for 2nd order matrices /////////////////////
 		/*
 			2nd-order FuMa-MaxN A-format decoder & encoder
-			Author: Joseph Anderson 
+			Author: Joseph Anderson
 			http://www.ambisonictoolkit.net
 			Taken from: https://gist.github.com/joslloand/c70745ef0106afded73e1ea07ff69afc
 		*/
@@ -1385,7 +1534,7 @@ GUI Parameters usable in SynthDefs
 			[ 0.11785113, 0.131432778, 0.212662702, 0, -0.208333333, 0, 0, -0.139754249, 0.279508497 ],
 			[ 0.11785113, 0, -0.131432778, -0.212662702, 0.243920915, 0, 0.279508497, -0.0863728757, 0 ],
 		]);
-		
+
 		// a-12 encoder matrix
 		soa_a12_encoder_matrix = Matrix.with([
 			[ 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781,
@@ -1404,7 +1553,7 @@ GUI Parameters usable in SynthDefs
 				0.723606798, -0.447213596, -0.276393202, 0.723606798, -0.447213596, -0.276393202 ],
 			[ 0, -0.894427191, 0, 0, 0.894427191, 0, 0, -0.894427191, 0, 0, 0.894427191, 0 ],
 		]);
-		
+
 		/*
 			1st-order FuMa-MaxN A-format decoder
 		*/
@@ -1451,307 +1600,1296 @@ GUI Parameters usable in SynthDefs
 		// convert to angles -- use these directions
 		spher = cart.clump(3).collect({ arg cart, i;
 			cart.asCartesian.asSpherical.angles;
-		});	
+		});
 
 		foa_a12_decoder_matrix = FoaEncoderMatrix.newDirections(spher).matrix.pseudoInverse;
-		~teste2 = foa_a12_decoder_matrix;
 
 		/////////// END code for 2nd order matrices /////////////////////
 
 
-		
 
 		prjDr = projDir;
 		dec = this.decoder;
 
-		if (rir != "FreeVerb") {
-			
-			rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
-			rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
-			rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
-			rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [3]);
-			
-			bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rir);
-			server.sync;
-			bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
-			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
-			server.sync;
-			
-			
-			{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
-				bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-				Out.ar(0, Silent.ar);
-			}.play;
 
-			
-			(bufAformat.numFrames / server.sampleRate).wait;
 
-			
-			bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
-			
-			
-			server.sync;
-			
-			
-			{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), foa_a12_decoder_matrix),
-				bufAformat_soa_a12, 
-				Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-				Out.ar(0, Silent.ar);
-			}.play;
-			
-
-			(bufAformat.numFrames / server.sampleRate).wait;
-
-			bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav", sampleFormat: "int24");
-			
-			
-			
-			server.sync;
-			rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
-			rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
-			rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
-			rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
-			
-			server.sync;
-			
-			
-			bufsize = PartConv.calcBufSize(fftsize, rirW);
-
-			~bufsize1=bufsize;
-
-			rirWspectrum= Buffer.alloc(server, bufsize, 1);
-			rirXspectrum= Buffer.alloc(server, bufsize, 1);
-			rirYspectrum= Buffer.alloc(server, bufsize, 1);
-			rirZspectrum= Buffer.alloc(server, bufsize, 1);
-			server.sync;
-			rirWspectrum.preparePartConv(rirW, fftsize);
-			server.sync;
-			rirXspectrum.preparePartConv(rirX, fftsize);
-			server.sync;
-			rirYspectrum.preparePartConv(rirY, fftsize);
-			server.sync;
-			rirZspectrum.preparePartConv(rirZ, fftsize);
-
-			
-			server.sync;
-			
-			rirFLUspectrum= Buffer.alloc(server, bufsize, 1);
-			rirFRDspectrum= Buffer.alloc(server, bufsize, 1);
-			rirBLDspectrum= Buffer.alloc(server, bufsize, 1);
-			rirBRUspectrum= Buffer.alloc(server, bufsize, 1);
-			server.sync;
-			rirFLUspectrum.preparePartConv(rirFLU, fftsize);
-			server.sync;
-			rirFRDspectrum.preparePartConv(rirFRD, fftsize);
-			server.sync;
-			rirBLDspectrum.preparePartConv(rirBLD, fftsize);
-			server.sync;
-			rirBRUspectrum.preparePartConv(rirBRU, fftsize);
-			server.sync;
-
-			rirA12 = Array.newClear(12);
-			rirA12Spectrum = Array.newClear(12);
-			12.do { arg i;
-				rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav", channels: [i]);
-				server.sync;
-				rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
-				server.sync;
-				rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
-				server.sync;
-			};
-			server.sync;
+		SynthDef(\blip, {
+			var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
+			var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
+			Out.ar(0, [blip, blip]);
+		}).add;
 
 
 
-			~rirSpecTest =  rirA12Spectrum;
-			~rirFLUspectrum = rirFLUspectrum;
-
-			
-			rirW.free; // don't need time domain data anymore, just needed spectral version
-			rirX.free;
-			rirY.free;
-			rirZ.free;
-			rirFLU.free; 
-			rirFRD.free;
-			rirBLD.free;
-			rirBRU.free;
-			bufAformat.free;
-			bufWXYZ.free;
-			12.do { arg i;
-				rirA12[i].free;
-			};
-			
-			server.sync;
-
-
-
-			/// START SYNTH DEFS ///////
-
-
-			SynthDef(\blip, {
-				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
-				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
-				Out.ar(0, [blip, blip]
-					
-				)
-			}).add;
-
-			if (this.decoder.notNil) {
-				if (this.serport.notNil) {
-					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-						var sig = In.ar(globtbus, 4);
-						sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
-							Lag.kr(pitch, 0.01));
-						Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-					}).add;
-				} {
-					SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-						var sig = In.ar(globtbus, 4);
-						Out.ar( 0, FoaDecode.ar(sig, this.decoder));
-					}).add;
-				};
-			};
-			
-
-			SynthDef.new("revGlobalAmb",  { arg gbus;
-				var sig, convsig;
-				sig = In.ar(gbus, 1);
-				convsig = [
-					PartConv.ar(sig, fftsize, rirWspectrum), 
-					PartConv.ar(sig, fftsize, rirXspectrum), 
-					PartConv.ar(sig, fftsize, rirYspectrum),
-					PartConv.ar(sig, fftsize, rirZspectrum)
-				];
-				revGlobalAmbFunc.value(convsig, dec);
-			}).add;
-			
-			
-			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-				var convsig, sig = In.ar(gbfbus, 4);
-				sig = FoaDecode.ar(sig, b2a);
-				convsig = [
-					PartConv.ar(sig[0], fftsize, rirFLUspectrum), 
-					PartConv.ar(sig[1], fftsize, rirFRDspectrum), 
-					PartConv.ar(sig[2], fftsize, rirBLDspectrum),
-					PartConv.ar(sig[3], fftsize, rirBRUspectrum)
-				];
-				convsig = FoaEncode.ar(convsig, a2b);
-				revGlobalAmbFunc.value(convsig, dec);
-			}).add;
-
-			SynthDef.new("revGlobalSoaA12",  { arg soaBus;
-				var w, x, y, z, r, s, t, u, v,
-				foaSig, soaSig, tmpsig;
-				var sig = In.ar(soaBus, 9);
-
-
-				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-				//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
-				tmpsig = [
-					PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]), 
-					PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]), 
-					PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]), 
-					PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]), 
-					PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]), 
-					PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]), 
-					PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]), 
-					PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]), 
-					PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]), 
-					PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]), 
-					PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]), 
-					PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]), 
-				];
-
-				tmpsig = tmpsig*4;
-				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
-				foaSig = [w, x, y, z];
-				soaSig = [w, x, y, z, r, s, t, u, v];
-				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-			}).add;
-
-			if (this.reverb) {
-				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-					lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
-				};
-				
-				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-					var temp1 = p1, temp2 = p2;
-					temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-					temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-					lrev1Ref.value = temp1 * locallev; 
-					lrev2Ref.value = temp2 * locallev; 
-					
-				};
-			} {
-				
-				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-				};
-				
-				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-				};
-				
-				
-			};
-			
-			
-
-
-		} 
-		{
-
-
-
-			// trying freeverb here
-
-			
-			SynthDef(\blip, {
-				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
-				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
-				Out.ar(0, [blip, blip]
-					
-				)
-			}).add;
-
-			if (this.serport.notNil && this.decoder.notNil) {
-				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-					var sig = In.ar(globtbus, 4);
+		if (this.decoder.notNil) {
+			case
+			{ maxorder == 1 }
+			{ if (this.serport.notNil) {
+				SynthDef.new("globDecodeSynth",  { arg globtbus=0, ambixbus=0,
+					heading=0, roll=0, pitch=0;
+					var ambixsig, sig = In.ar(globtbus, 4);
+					ambixsig = In.ar(ambixbus, 4);
+					ambixsig = FoaEncode.ar(ambixsig, FoaEncoderMatrix.newAmbix1);
+					sig = sig + ambixsig;
 					sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),  Lag.kr(roll, 0.01),
 						Lag.kr(pitch, 0.01));
 					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
 				}).add;
 			} {
-				
-				SynthDef.new("globFOATransformSynth",  { arg globtbus=0, heading=0, roll=0, pitch=0;
-					var sig = In.ar(globtbus, 4);
-					Out.ar( 0, FoaDecode.ar(sig, this.decoder));
+				SynthDef.new("globDecodeSynth",  { arg globtbus=0, ambixbus=0,
+					heading=0, roll=0, pitch=0;
+					var ambixsig, sig = In.ar(globtbus, 4);
+					ambixsig = In.ar(ambixbus, 4);
+					ambixsig = FoaEncode.ar(ambixsig, FoaEncoderMatrix.newAmbix1);
+					sig = sig + ambixsig;
+					Out.ar(0, FoaDecode.ar(sig, this.decoder));
 				}).add;
-				
-			};
-			
+			}
+			}
 
-			// the above two are duplicates. fix!
-			
-			SynthDef.new("revGlobalAmb",  { arg gbus;
-				var sig, convsig;
-				sig = In.ar(gbus, 1);
-				convsig = [
-					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
-					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
-					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul)
-				];
-				//SendTrig.kr(Impulse.kr(1), 0, convsig[1]); // debug
-				convsig = FoaEncode.ar(convsig, a2b);
-				revGlobalAmbFunc.value(convsig, dec);
+			{ maxorder == 2 }
+			{ SynthDef("globDecodeSynth", {
+				arg globtbus=0, lf_hf=0, xover=400;
+				var ambixsig, sig = In.ar(globtbus, 9);
+				ambixsig = In.ar(ambixbus, bFormNumChan);
+				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
+				sig = sig + ambixsig;
+				sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
+					sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
+				Out.ar(0, sig);
 			}).add;
-			
-			
+			}
+
+			{ maxorder == 3 }
+			{ SynthDef("globDecodeSynth", {
+				arg globtbus=0, lf_hf=0, xover=400;
+				var ambixsig, sig = In.ar(globtbus, 9);
+				ambixsig = In.ar(ambixbus, bFormNumChan);
+				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
+				sig = sig + ambixsig;
+				sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
+					sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
+					sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
+				Out.ar(0, sig);
+			}).add;
+			}
+
+			{ maxorder == 4 }
+			{ SynthDef("globDecodeSynth", {
+				arg globtbus=0, lf_hf=0, xover=400;
+				var ambixsig, sig = In.ar(globtbus, 9);
+				ambixsig = In.ar(ambixbus, bFormNumChan);
+				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
+				sig = sig + ambixsig;
+				sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
+					sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
+					sig[12], sig[13], sig[14],sig[15], sig[16], sig[17], sig[18],
+					sig[19], sig[20], sig[21], sig[22], sig[23], sig[24],
+					0, lf_hf, xover:xover);
+				Out.ar(0, sig);
+			}).add }
+
+			{ maxorder == 5 }
+			{ SynthDef("globDecodeSynth", {
+				arg globtbus=0, lf_hf=0, xover=400;
+				var ambixsig, sig = In.ar(globtbus, 9);
+				ambixsig = In.ar(ambixbus, bFormNumChan);
+				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
+				sig = sig + ambixsig;
+				sig = this.decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
+					sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
+					sig[12], sig[13], sig[14], sig[15], sig[16], sig[17],
+					sig[18], sig[19], sig[20], sig[21], sig[22], sig[23],
+					sig[24], sig[15], sig[16], sig[17], sig[18], sig[19],
+					sig[20], sig[21], sig[22], sig[23], sig[24], sig[25],
+					sig[26], sig[27], sig[28], sig[29], sig[30], sig[31],
+					sig[32], sig[33], sig[34], sig[35],
+					0, lf_hf, xover:xover);
+				Out.ar(0, sig);
+			}).add;
+			};
+		};
+
+
+
+
+		makeSpatialisers = { arg rev_type;
+
+		//comment out all linear parameters
+/*
+		makeSpatialisers = { arg linear = false;
+			if(linear) {
+				linear = "_linear";
+			} {
+				linear = "";
+			};
+
+			SynthDef.new("espacAFormatVerb"++linear,  {
+*/
+
+
+			SynthDef.new("espacAFormatVerb"++rev_type,  {
+				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
+				dopon = 0, dopamnt = 0,
+				glev = 0, llev = 0, contr = 1,
+				gbfbus,
+				sp = 0, df = 0,
+
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+
+				var p, ambSigSoa, ambSigFoa,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte,
+				intens,
+				omni, spread, diffuse,
+				soa_a12_sig;
+
+				var lrev;
+				var grevganho = 0.04; // needs less gain
+				var ambSigRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = 1 - fonte.rho;
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				// Doppler
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				// Local reverberation
+				locallev = 1 - dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+				junto = p;
+
+				// do second order encoding
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
+				omni = FoaEncode.ar(junto, foaEncoderOmni);
+				spread = FoaEncode.ar(junto, foaEncoderSpread);
+				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
+				junto = Select.ar(df, [omni, diffuse]);
+				junto = Select.ar(sp, [junto, spread]);
+
+				ambSigFoa = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
+
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa, ambSigFoa, globallev, locallev);
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
+
+			}).load(server);
+
+
+
+
+			SynthDef.new("espacAmbChowning"++rev_type,  {
+				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
+				dopamnt = 0, sp, df,
+				glev = 0, llev = 0, contr=1,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+
+				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
+				ambSigSoa, ambSigFoa,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte,
+				intens,
+				spread, diffuse, omni,
+				soa_a12_sig;
+				var lrev, p;
+				var grevganho = 0.04; // needs less gain
+				var w, x, y, z, r, s, t, u, v;
+				var ambSigRef = Ref(0);
+				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = 1 - fonte.rho;
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+				// Doppler
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				// Local reverberation
+				locallev = 1 - dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+				// do second order encoding
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
+
+				omni = FoaEncode.ar(junto, foaEncoderOmni);
+				spread = FoaEncode.ar(junto, foaEncoderSpread);
+				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
+				junto = Select.ar(df, [omni, diffuse]);
+				junto = Select.ar(sp, [junto, spread]);
+
+				ambSigFoa = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
+
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
+			}).load(server);
+
+
+
+
+			SynthDef.new("ambitoolsChowning"++rev_type,  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				dopamnt = 0, glev = 0, llev = 0;
+
+				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte, intens;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = fonte.rho;
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 1);
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				//Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				ambSig	 = HOAEncoder.ar(maxorder, junto, azim, el,
+					plane_spherical:1, radius: dis * 50);
+
+				ambixOutFunc.value(ambSig, dec);
+			}).load(server);
+
+
+
+			SynthDef.new("hoaLibChowning"++rev_type,  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				dopamnt = 0, glev = 0, llev = 0;
+
+				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte, intens;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = fonte.rho;
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				ambSig	 = HOALibEnc3D.ar(maxorder, junto, azim, el, -18);
+
+				ambixOutFunc.value(ambSig, dec);
+			}).load(server);
+
+
+
+			SynthDef.new("ambiPannerChowning"++rev_type,  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				dopamnt = 0, glev = 0, llev = 0;
+
+				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev, locallev, gsig, fonte, intens;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = fonte.rho;
+
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				ambSig	 = HOAmbiPanner.ar(maxorder, junto, azim, el, -18);
+
+				ambixOutFunc.value(ambSig, dec);
+			}).load(server);
+
+
+
+			// This second version of espacAmb is used with contracted B-format sources
+
+
+			SynthDef.new("espacAmb2Chowning"++rev_type,  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				glev = 0, llev = 0.2,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev = 0.0004, locallev, gsig, fonte,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+				var lrev,
+				intens;
+				var ambSigRef = Ref(0);
+				var lrevRef = Ref(0);
+				var grevganho = 0.20;
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = 1 - fonte.rho;
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+
+				gsig = p * globallev;
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				// Reverberação local
+				locallev = 1 - dis;
+				locallev = locallev * Lag.kr(llev, 0.1);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+
+				junto = p + lrevRef.value;
+
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
+
+			}).load(server);
+
+
+
+
+
+			SynthDef.new("espacAmb2AFormat"++rev_type,  {
+				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				glev = 0, llev = 0.2, soaBus,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+				junto, rd, dopplershift, azim, dis, xatras, yatras,
+				globallev = 0.0004, locallev, gsig, fonte;
+				var lrev, intens;
+				var grevganho = 0.20;
+				var ambSigRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = 1 - fonte.rho;
+				azim = fonte.theta;
+				el = fonte.phi;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				// high freq attenuation
+				p = In.ar(inbus, 1);
+				//p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+
+				gsig = p * globallev;
+
+				// Reverberação local
+				locallev = 1 - dis;
+				locallev = locallev * Lag.kr(llev, 0.1);
+
+				junto = p ;
+
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value,
+					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
+					ambSigRef[8].value];
+
+				Out.ar(soaBus, (ambSigSoa*globallev) + (ambSigSoa*locallev));
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
+				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+
+				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
+
+			}).add;
+
+
+
+
+
+			SynthDef.new("espacEstereoAFormat"++rev_type,  {
+				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0,
+				angle = 1.05, dopamnt = 0, sp, df,
+				glev = 0, llev = 0, contr=1,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
+				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
+				junto, rd, dopplershift, azim, dis,
+				junto1, azim1,
+				junto2, azim2,
+				omni1, spread1, diffuse1,
+				omni2, spread2, diffuse2,
+				intens,
+				globallev = 0.0001, locallev, gsig, fonte;
+				var lrev;
+				var grevganho = 0.20;
+				var soaSigLRef = Ref(0);
+				var soaSigRRef = Ref(0);
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+				contr = Lag.kr(contr, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my);
+
+				azim1 = fonte.rotate(angle / -2).theta;
+				azim2 = fonte.rotate(angle / 2).theta;
+
+				fonte.set(mx, my, mz);
+				el = fonte.phi;
+
+				dis = 1 - fonte.rho;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				p = In.ar(inbus, 2);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Doppler
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				// verifica se o "sinal" está mais do que 1
+
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+
+				p1 = p[0];
+				p2 = p[1];
+
+				// Reverberação local
+				locallev = 1 - dis;
+
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				junto1 = p1;
+				junto2 = p2;
+
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				//prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				soaSigLRef.value = FMHEncode0.ar(junto1, azim1, el, intens);
+				soaSigRRef.value = FMHEncode0.ar(junto2, azim2, el, intens);
+
+				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
+					soaSigLRef[3].value, soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value,
+					soaSigLRef[7].value, soaSigLRef[8].value];
+
+				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value,
+					soaSigRRef[3].value, soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value,
+					soaSigRRef[7].value, soaSigRRef[8].value];
+
+				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
+				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
+				junto1 = Select.ar(df, [omni1, diffuse1]);
+				junto1 = Select.ar(sp, [junto1, spread1]);
+
+				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
+				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
+				junto2 = Select.ar(df, [omni2, diffuse2]);
+				junto2 = Select.ar(sp, [junto2, spread2]);
+
+				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
+				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
+
+				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
+				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
+
+				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa1plus2, ambSigFoa1plus2, globallev, locallev);
+
+				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
+
+			}).load(server);
+
+
+
+
+
+			SynthDef.new("espacEstereoChowning"++rev_type,  {
+				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
+				dopamnt = 0,
+				glev = 0, llev = 0, contr=1,
+				sp, df,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;
+				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
+				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
+				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
+				junto, rd, dopplershift, azim, dis,
+				junto1, azim1,
+				junto2, azim2,
+				omni1, spread1, diffuse1,
+				omni2, spread2, diffuse2,
+				globallev = 0.0001, locallev, gsig, fonte,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+				var lrev,
+				intens;
+				var grevganho = 0.20;
+				var soaSigLRef = Ref(0);
+				var soaSigRRef = Ref(0);
+				var lrev1Ref =  Ref(0);
+				var lrev2Ref =  Ref(0);
+
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+
+				contr = Lag.kr(contr, 0.1);
+				fonte = Cartesian.new;
+				fonte.set(mx, my);
+
+				azim1 = fonte.rotate(angle / -2).theta;
+				azim2 = fonte.rotate(angle / 2).theta;
+				fonte.set(mx, my, mz);
+				el = fonte.phi;
+
+				dis = 1 - fonte.rho;
+
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 2);
+
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Doppler
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Reverberação global
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; //scale so it values 1 close to origin
+
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				// verifica se o "sinal" está mais do que 1
+
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+
+				gsig = Mix.new(p) / 2 * globallev;
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				p1 = p[0];
+				p2 = p[1];
+
+				// Reverberação local
+				locallev = 1 - dis;
+
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev);
+				junto1 = p1 + lrev1Ref.value;
+				junto2 = p2 + lrev2Ref.value;
+
+				//comment out all linear parameters
+				//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
+				//prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
+				soaSigLRef.value = FMHEncode0.ar(junto1, azim1, el, intens);
+				soaSigRRef.value = FMHEncode0.ar(junto2, azim2, el, intens);
+
+				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
+					soaSigLRef[3].value, soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value,
+					soaSigLRef[7].value, soaSigLRef[8].value];
+
+				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value,
+					soaSigRRef[3].value, soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value,
+					soaSigRRef[7].value, soaSigRRef[8].value];
+
+				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
+
+				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
+				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
+				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
+				junto1 = Select.ar(df, [omni1, diffuse1]);
+				junto1 = Select.ar(sp, [junto1, spread1]);
+
+				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
+				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
+				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
+				junto2 = Select.ar(df, [omni2, diffuse2]);
+				junto2 = Select.ar(sp, [junto2, spread2]);
+
+				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
+				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
+
+				dis = (1 - dis) * 5.0;
+				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
+				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
+				Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
+				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
+				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
+
+				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
+
+			}).load(server);
+
+		}; //end makeSpatialisers
+
+
+		//basic prameters for allpass filter reverb
+		this.decaytime = 1.0;
+		this.delaytime = 0.04;
+
+		this.rirList = [];
+		this.rirAfmtList = [];
+
+		if (rir != "freeverb") {
+
+			if (rir != "allpass") {
+
+				// prepare list of impulse responses for close and distant reverb selection menue
+				var rirName = PathName(rir).fileNameWithoutExtension;
+
+				this.rirList = [rirName];
+				this.rirAfmtList = ["A-format "++rirName++" (ATK)"]; // add A-fmt for close reveb
+
+
+				rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
+				rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
+				rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
+				rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [3]);
+
+
+				bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rir);
+				server.sync;
+				bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
+				bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
+				server.sync;
+
+
+				{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
+					bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+				Out.ar(0, Silent.ar);
+				}.play;
+
+
+				(bufAformat.numFrames / server.sampleRate).wait;
+
+
+				bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
+
+
+				server.sync;
+
+
+				{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
+					foa_a12_decoder_matrix),
+				bufAformat_soa_a12,
+				Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+				Out.ar(0, Silent.ar);
+				}.play;
+
+
+				(bufAformat.numFrames / server.sampleRate).wait;
+
+				bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav",
+					sampleFormat: "int24");
+
+
+
+				server.sync;
+				rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
+				rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
+				rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
+				rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
+
+				server.sync;
+
+
+				bufsize = PartConv.calcBufSize(fftsize, rirW);
+
+				//~bufsize1=bufsize;
+
+				rirWspectrum = Buffer.alloc(server, bufsize, 1);
+				rirXspectrum = Buffer.alloc(server, bufsize, 1);
+				rirYspectrum = Buffer.alloc(server, bufsize, 1);
+				rirZspectrum = Buffer.alloc(server, bufsize, 1);
+				server.sync;
+				rirWspectrum.preparePartConv(rirW, fftsize);
+				server.sync;
+				rirXspectrum.preparePartConv(rirX, fftsize);
+				server.sync;
+				rirYspectrum.preparePartConv(rirY, fftsize);
+				server.sync;
+				rirZspectrum.preparePartConv(rirZ, fftsize);
+
+
+				server.sync;
+
+				rirFLUspectrum = Buffer.alloc(server, bufsize, 1);
+				rirFRDspectrum = Buffer.alloc(server, bufsize, 1);
+				rirBLDspectrum = Buffer.alloc(server, bufsize, 1);
+				rirBRUspectrum = Buffer.alloc(server, bufsize, 1);
+				server.sync;
+				rirFLUspectrum.preparePartConv(rirFLU, fftsize);
+				server.sync;
+				rirFRDspectrum.preparePartConv(rirFRD, fftsize);
+				server.sync;
+				rirBLDspectrum.preparePartConv(rirBLD, fftsize);
+				server.sync;
+				rirBRUspectrum.preparePartConv(rirBRU, fftsize);
+				server.sync;
+
+				rirA12 = Array.newClear(12);
+				rirA12Spectrum = Array.newClear(12);
+				12.do { arg i;
+					rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav",
+						channels: [i]);
+					server.sync;
+					rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
+					server.sync;
+					rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
+					server.sync;
+				};
+				server.sync;
+
+
+
+
+				rirW.free; // don't need time domain data anymore, just needed spectral version
+				rirX.free;
+				rirY.free;
+				rirZ.free;
+				rirFLU.free;
+				rirFRD.free;
+				rirBLD.free;
+				rirBRU.free;
+				bufAformat.free;
+				bufWXYZ.free;
+				12.do { arg i;
+					rirA12[i].free;
+				};
+
+
+				server.sync;
+
+
+
+				/// START SYNTH DEFS ///////
+
+
+
+				SynthDef.new("revGlobalAmb_conv",  { arg gbus, gate = 1;
+					var env, sig, convsig;
+					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+					sig = In.ar(gbus, 1);
+					convsig = [
+						PartConv.ar(sig, fftsize, rirWspectrum),
+						PartConv.ar(sig, fftsize, rirXspectrum),
+						PartConv.ar(sig, fftsize, rirYspectrum),
+						PartConv.ar(sig, fftsize, rirZspectrum)
+					];
+					convsig = convsig * env;
+					revGlobalAmbFunc.value(convsig, dec);
+				}).add;
+
+
+				SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
+					var convsig, sig = In.ar(gbfbus, 4);
+					sig = FoaDecode.ar(sig, b2a);
+					convsig = [
+						PartConv.ar(sig[0], fftsize, rirFLUspectrum),
+						PartConv.ar(sig[1], fftsize, rirFRDspectrum),
+						PartConv.ar(sig[2], fftsize, rirBLDspectrum),
+						PartConv.ar(sig[3], fftsize, rirBRUspectrum)
+					];
+					convsig = FoaEncode.ar(convsig, a2b);
+					revGlobalAmbFunc.value(convsig, dec);
+				}).add;
+
+
+				SynthDef.new("revGlobalSoaA12",  { arg soaBus;
+					var w, x, y, z, r, s, t, u, v,
+					foaSig, soaSig, tmpsig;
+					var sig = In.ar(soaBus, 9);
+
+					sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+					//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
+					tmpsig = [
+						PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]),
+						PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]),
+						PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]),
+						PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]),
+						PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]),
+						PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]),
+						PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]),
+						PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]),
+						PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]),
+						PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]),
+						PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]),
+						PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]),
+					];
+
+					tmpsig = tmpsig*4;
+					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
+					foaSig = [w, x, y, z];
+					soaSig = [w, x, y, z, r, s, t, u, v];
+					revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+				}).add;
+
+
+				//run the makeSpatialisers function for each types of local reverbs
+
+				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+					lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+				};
+
+				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+					var temp1 = p1, temp2 = p2;
+					temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+					temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+					lrev1Ref.value = temp1 * locallev;
+					lrev2Ref.value = temp2 * locallev;
+				};
+
+
+				makeSpatialisers.value(rev_type:"_conv");
+
+
+			}{
+
+				// else use allpass filters
+
+				SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
+					var temp, sig = In.ar(gbfbus, 4);
+
+					sig = FoaDecode.ar(sig, b2a);
+					16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
+						this.decaytime)});
+
+					sig = FoaEncode.ar(sig, a2b);
+					revGlobalAmbFunc.value(sig, dec);
+				}).add;
+
+
+
+				SynthDef.new("revGlobalSoaA12",  { arg soaBus;
+					var w, x, y, z, r, s, t, u, v,
+					foaSig, soaSig, tmpsig;
+					var sig = In.ar(soaBus, 9);
+					sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+					16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.001,this.delaytime) }.dup(12),
+						this.decaytime)});
+					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
+					foaSig = [w, x, y, z];
+					soaSig = [w, x, y, z, r, s, t, u, v];
+					revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+				}).load(server);
+
+			};
+
+		}{
+
+			// trying freeverb here
+
+
 			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
 				var convsig, sig = In.ar(gbfbus, 4);
 				sig = FoaDecode.ar(sig, b2a);
 				convsig = [
-					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
-					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
 				];
@@ -1768,16 +2906,16 @@ GUI Parameters usable in SynthDefs
 				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
 				//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
 				tmpsig = [
-					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
-					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[4], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
-					FreeVerb.ar(sig[5], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[4], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[5], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[6], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[7], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[8], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
-					FreeVerb.ar(sig[9], mix: 1, room: freeroom, damp: freedamp, mul: freemul), 
+					FreeVerb.ar(sig[8], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+					FreeVerb.ar(sig[9], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[10], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 					FreeVerb.ar(sig[11], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
 				];
@@ -1789,887 +2927,115 @@ GUI Parameters usable in SynthDefs
 				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
 			}).add;
 
-			if (this.reverb) {
-				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-					//lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
-					lrevRef.value = FreeVerb.ar(p * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
-				};
-				
-				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-					var temp1 = p1, temp2 = p2;
-					//temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-					//temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-					temp1 = FreeVerb.ar(p1 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
-					temp2 = FreeVerb.ar(p2 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
-					lrev1Ref.value = temp1 * locallev; 
-					lrev2Ref.value = temp2 * locallev; 
-					
-				};
-			} {
-				
-				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-				};
-				
-				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-				};
-				
-				
-			};
-			
-			
-			/*
-
-				// else use allpass filters  NB - This appears to be broken
-
-			this.decaytime = 1.0;
-			this.delaytime = 0.04;
-			SynthDef.new("revGlobalAmb",  { arg gbus;
-				var sig = In.ar(gbus, 1);
-				//	sig = [sig, sig, sig, sig];
-				16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
-					this.decaytime)});
-				sig = sig / 4; // running too hot, so attenuate
-				sig = FoaEncode.ar(sig, a2b);
-				revGlobalAmbFunc.value(sig, dec);
-			}).add;
-
-			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-				var temp, sig = In.ar(gbfbus, 4);
-
-				sig = FoaDecode.ar(sig, b2a);
-				16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
-					this.decaytime)});
-				
-				
-				
-				sig = FoaEncode.ar(sig, a2b);
-				revGlobalAmbFunc.value(sig, dec);
-			}).add;
-
-			SynthDef.new("revGlobalSoaA12",  { arg soaBus;
-				var w, x, y, z, r, s, t, u, v,
-				foaSig, soaSig, tmpsig;
-				var sig = In.ar(soaBus, 9);
-				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-				16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.001,this.delaytime) }.dup(12),
-					this.decaytime)});
-				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
-				foaSig = [w, x, y, z];
-				soaSig = [w, x, y, z, r, s, t, u, v];
-				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-			}).add;
-
-			localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-				var temp;
-				temp = p;
-				16.do({ temp = AllpassC.ar(temp, this.delaytime, { Rand(0.001,this.delaytime) }, this.decaytime)});
-				lrevRef.value = temp * locallev; 
-			};
-			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-				var temp1 = p1, temp2 = p2;
-				16.do({ temp1 = AllpassC.ar(temp1, this.delaytime, { Rand(0.001,this.delaytime) },
-					this.decaytime)});
-				16.do({ temp2 = AllpassC.ar(temp2, this.delaytime, { Rand(0.001,this.delaytime) },
-					this.decaytime)});
-				lrev1Ref.value = temp1 * locallev; 
-				lrev2Ref.value = temp2 * locallev; 
-
-
-			};
-			*/
 		};
-		
-		makeSpatialisers = { arg linear = false;
-			if(linear) {
-				linear = "_linear";
-			} {
-				linear = "";
-			};
 
-			SynthDef.new("espacAmbAFormatVerb"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
-				dopon = 0, dopamnt = 0,
-				glev = 0, llev = 0, contr = 1,
-				gbfbus,
-				sp = 0, df = 0,
-				//heading = 0, roll = 0, pitch = 0,
-				
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
 
-				//var w, x, y, z, r, s, t, u, v,
-				var p, ambSigSoa, ambSigFoa,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,  
-				globallev, locallev, gsig, fonte,
-				intens,
-				omni, spread, diffuse,
-				soa_a12_sig;
-				
 
-				var lrev;
-				var grevganho = 0.04; // needs less gain
-				var ambSigRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				contr = Lag.kr(contr, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
+		//run the makeSpatialisers function for each types of local reverbs
 
-				//SendTrig.kr(Impulse.kr(1),0,  dis); // debugging
-				
-				azim = fonte.theta;
-				el = fonte.phi;
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				dis = Select.kr(dis > 1, [dis, 1]); 
-				
-				// high freq attenuation
-				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				// Doppler
-				rd = (1 - dis) * 340;
-				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-				p = dopplershift;			
-				// Global reverberation & intensity
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]); 
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
+		SynthDef.new("revGlobalAmb_pass",  { arg gbus, gate = 1;
+			var env, sig = In.ar(gbus, 1);
+			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+			16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
+				this.decaytime)});
+			sig = sig / 4; // running too hot, so attenuate
+			sig = sig * env;
+			sig = FoaEncode.ar(sig, a2b);
+			revGlobalAmbFunc.value(sig, dec);
+		}).add;
 
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); 
-				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				globallev = globallev * Lag.kr(glev, 0.1);			
-				gsig = p * globallev;
-				// Local reverberation
-				locallev = 1 - dis; 			
-				locallev = locallev  * Lag.kr(llev, 0.1);			
-				junto = p;
-				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambSigSoa = [w, x, y, z, r, s, t, u, v];
-				//ambSigRef.value = [0,0,0,0];				
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
+		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+			var temp;
+			temp = p;
+			16.do({ temp = AllpassC.ar(temp, this.delaytime, { Rand(0.001,this.delaytime) },
+				this.decaytime)});
+			lrevRef.value = temp * locallev;
+		};
 
-				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
-				omni = FoaEncode.ar(junto, foaEncoderOmni);
-				spread = FoaEncode.ar(junto, foaEncoderSpread);
-				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
-				junto = Select.ar(df, [omni, diffuse]);
-				junto = Select.ar(sp, [junto, spread]);
-				
-				
-				ambSigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+			var temp1 = p1, temp2 = p2;
+			16.do({ temp1 = AllpassC.ar(temp1, this.delaytime, { Rand(0.001,this.delaytime) },
+				this.decaytime)});
+			16.do({ temp2 = AllpassC.ar(temp2, this.delaytime, { Rand(0.001,this.delaytime) },
+				this.decaytime)});
+			lrev1Ref.value = temp1 * locallev;
+			lrev2Ref.value = temp2 * locallev;
+		};
 
+		makeSpatialisers.value(rev_type:"_pass");
 
-				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
-					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
-					ambSigRef[8].value];
 
-				dis = (1 - dis) * 5.0;
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
-				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
+		SynthDef.new("revGlobalAmb_free",  { arg gbus, gate = 1;
+			var env, sig, convsig;
+			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+			sig = In.ar(gbus, 1);
+			convsig = [
+				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+			];
+			convsig = FoaEncode.ar(convsig, a2b);
+			convsig = convsig * env;
+			revGlobalAmbFunc.value(convsig, dec);
+		}).add;
 
-				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
-				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
+		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+			lrevRef.value = FreeVerb.ar(p * locallev, mix: 1, room: freeroom, damp: freedamp,
+				mul: freemul);
+		};
 
-				// flag switchable selector of a-format signal (from insert or not) 
-				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+			var temp1 = p1, temp2 = p2;
+			temp1 = FreeVerb.ar(p1 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
+			temp2 = FreeVerb.ar(p2 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
+			lrev1Ref.value = temp1 * locallev;
+			lrev2Ref.value = temp2 * locallev;
 
-				// convert back to b-format
-				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-				
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
-				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
-				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+		};
 
+		makeSpatialisers.value(rev_type:"_free");
 
-				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa, ambSigFoa, globallev, locallev);
-				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);			
-			}).add;
 
-			SynthDef.new("espacAmbChowning"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
-				//xoffset = 0, yoffset = 0,
-				dopon = 0, dopamnt = 0, sp, df,
-				glev = 0, llev = 0, contr=1,
-				//heading = 0, roll = 0, pitch = 0,
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
-				
-				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
-				ambSigSoa, ambSigFoa,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,
-				//w, x, y, z, r, s, t, u, v,
-				//		globallev = 0.0001, locallev, gsig, fonte;
-				globallev, locallev, gsig, fonte,
-				intens,
-				spread, diffuse, omni,
-				soa_a12_sig;
-				var lrev, p;
-				var grevganho = 0.04; // needs less gain
-				var w, x, y, z, r, s, t, u, v;
-				var ambSigRef = Ref(0);
-				var lrevRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				contr = Lag.kr(contr, 0.1);
-				//SendTrig.kr(Impulse.kr(1), 0, contr); // debug
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
 
+		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+		};
 
+		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+		};
 
-				azim = fonte.theta;
-				el = fonte.phi;
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				dis = Select.kr(dis > 1, [dis, 1]); 
-				// high freq attenuation
-				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				// Doppler
-				rd = (1 - dis) * 340;
-				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-				p = dopplershift;
-				// Global reverberation & intensity
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]); 
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
+		makeSpatialisers.value(rev_type:"");
 
-				//SendTrig.kr(Impulse.kr(1), 0, intens); // debug
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				//				SendTrig.kr(Impulse.kr(1), 0, globallev); // debug
-				globallev = globallev / 3; // scale it so that it values 1 close to origin
-				globallev = Select.kr(globallev > 1, [globallev, 1]); 
-				globallev = Select.kr(globallev < 0, [globallev, 0]);
 
-				
+		//comment out all linear parameters
 
-				globallev = globallev * Lag.kr(glev, 0.1);
-				gsig = p * globallev;
-
-				
-				
-				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-				// Local reverberation
-				locallev = 1 - dis; 
-				locallev = locallev  * Lag.kr(llev, 0.1);
-
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
-
-				junto = p + lrevRef.value;
-
-
-				// do decond order encoding
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-
-				//				junto = FoaEncode.ar(junto, foaEncoderOmni);
-
-				omni = FoaEncode.ar(junto, foaEncoderOmni);
-				spread = FoaEncode.ar(junto, foaEncoderSpread);
-				diffuse = FoaEncode.ar(junto, foaEncoderDiffuse);
-				junto = Select.ar(df, [omni, diffuse]);
-				junto = Select.ar(sp, [junto, spread]);
-				//junto = diffuse;
-				//SendTrig.kr(Impulse.kr(1), 0, df); // debug
-				ambSigFoa	 = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
-				
-
-				dis = (1 - dis) * 5.0;
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
-				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
-
-				
-				
-				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
-					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
-					ambSigRef[8].value];
-				
-				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
-				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
-
-				// flag switchable selector of a-format signal (from insert or not) 
-				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
-
-				// convert back to b-format
-				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-				
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
-				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
-				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
-				
-				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);			
-			}).add;
-
-			
-
-
-			// This second version of espacAmb is used with contracted B-format sources
-
-			
-			SynthDef.new("espacAmb2Chowning"++linear,  { 
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-				glev = 0, llev = 0.2,
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa;
-				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,  
-				globallev = 0.0004, locallev, gsig, fonte,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
-				var lrev,
-				intens;
-				var ambSigRef = Ref(0);
-				var lrevRef = Ref(0);
-				var grevganho = 0.20;
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
-				azim = fonte.theta;
-				el = fonte.phi;
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				dis = Select.kr(dis > 1, [dis, 1]); 
-				//SendTrig.kr(Impulse.kr(1),0,  azim); // debugging
-				
-				// high freq attenuation
-				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]); 
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
-
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); 
-				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				
-				globallev = globallev * Lag.kr(glev, 0.1);
-				
-				
-				gsig = p * globallev;
-				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-				
-				// Reverberação local
-				locallev = 1 - dis; 
-				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
-				locallev = locallev * Lag.kr(llev, 0.1);
-				
-				
-				
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
-				
-				//SendTrig.kr(Impulse.kr(1),0,  lrev); // debugging
-				junto = p + lrevRef.value;
-				
-				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambSigSoa = [w, x, y, z, r, s, t, u, v]; 
-				
-				//	ambSigFoa = [w, x, y, z];
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
-				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
-					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
-					ambSigRef[8].value];
-
-				dis = (1 - dis) * 5.0;
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
-				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
-
-
-				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
-				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
-
-				// flag switchable selector of a-format signal (from insert or not) 
-				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
-
-				// convert back to b-format
-				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-				
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
-				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
-				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
-
-
-				
-				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
-				
-			}).add;
-
-			SynthDef.new("espacAmb2AFormat"++linear,  { 
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0, dopon = 0,
-				glev = 0, llev = 0.2, soaBus,
-				//heading = 0, roll = 0, pitch = 0,
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa;
-				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,  
-				globallev = 0.0004, locallev, gsig, fonte;
-				var lrev, intens;
-				var grevganho = 0.20;
-				var ambSigRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
-				azim = fonte.theta;
-				el = fonte.phi;
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				dis = Select.kr(dis > 1, [dis, 1]); 
-				
-				// high freq attenuation
-				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]); 
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
-
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); 
-				globallev = Select.kr(globallev < 0, [globallev, 0]);
-				
-				globallev = globallev * Lag.kr(glev, 0.1);
-				
-				
-				gsig = p * globallev;
-				
-				// Reverberação local
-				locallev = 1 - dis; 
-				//		SendTrig.kr(Impulse.kr(1),0,  locallev); // debugging
-				locallev = locallev * Lag.kr(llev, 0.1);
-				
-				
-				junto = p ;
-				
-				//				#w, x, y, z, r, s, t, u, v = FMHEncode0.ar(junto, azim, el, intens);
-				//				ambSigSoa = [w, x, y, z, r, s, t, u, v];
-
-				prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
-				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
-					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
-					ambSigRef[8].value];
-
-
-				Out.ar(soaBus, (ambSigSoa*globallev) + (ambSigSoa*locallev));
-
-				dis = (1 - dis) * 5.0;
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
-				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
-
-				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambSigFoa, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
-				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
-
-				// flag switchable selector of a-format signal (from insert or not) 
-				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
-
-				// convert back to b-format
-				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-				
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
-				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambSigFoa = Select.ar(insertFlag, [ambSigFoa, ambSigFoaProcessed]);
-				ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
-				
-				
-				espacAmbOutFunc.value(ambSigSoa, ambSigFoa, dec);
-				
-			}).add;
-
-
-			
-
-
-			SynthDef.new("espacAmbEstereoAFormat"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
-				//xoffset = 0, yoffset = 0,
-				dopon = 0, dopamnt = 0,
-				sp, df,
-				glev = 0, llev = 0, contr=1,
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;				
-				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
-				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
-				junto, rd, dopplershift, azim, dis, 
-				junto1, azim1, 
-				junto2, azim2,
-				omni1, spread1, diffuse1,
-				omni2, spread2, diffuse2,
-				intens,
-				globallev = 0.0001, locallev, gsig, fonte;
-				var lrev;
-				var grevganho = 0.20;
-				var soaSigLRef = Ref(0);
-				var soaSigRRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				contr = Lag.kr(contr, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my);
-				
-				azim1 = fonte.rotate(angle / -2).theta;
-				azim2 = fonte.rotate(angle / 2).theta;
-				
-				fonte.set(mx, my, mz);
-				el = fonte.phi;
-				
-				dis = 1 - fonte.rho;
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				dis = Select.kr(dis > 1, [dis, 1]); 
-
-				p = In.ar(inbus, 2);
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				
-				// Doppler
-				rd = (1 - dis) * 340; 
-				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-				p = dopplershift;
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]); 
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
-
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				
-				globallev = globallev * Lag.kr(glev, 0.1);
-				
-				
-				p1 = p[0];
-				p2 = p[1];
-				// Reverberação local
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * Lag.kr(llev, 0.1);
-				
-				
-				junto1 = p1;
-				junto2 = p2;
-				
-				
-				//				#w1, x1, y1, z1, r1, s1, t1, u1, v1 = FMHEncode0.ar(junto1, azim1, el, intens);
-				//				#w2, x2, y2, z2, r2, s2, t2, u2, v2 = FMHEncode0.ar(junto2, azim2, el, intens);
-
-				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
-				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
-					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
-					soaSigLRef[8].value];
-
-				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
-				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
-					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
-					soaSigRRef[8].value];
-				
-				
-				//ambSigSoa1 = [w1, x1, y1, z1, r1, s1, t1, u1, v1]; 
-				//ambSigSoa2 = [w2, x2, y2, z2, r2, s2, t2, u2, v2];
-
-				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
-				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
-				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
-				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
-				junto1 = Select.ar(df, [omni1, diffuse1]);
-				junto1 = Select.ar(sp, [junto1, spread1]);
-
-				//				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
-				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
-				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
-				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
-				junto2 = Select.ar(df, [omni2, diffuse2]);
-				junto2 = Select.ar(sp, [junto2, spread2]);
-
-				
-				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
-				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
-
-				
-				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
-
-
-				//Out.ar(soaBus, (ambSigFoa1plus2*globallev) + (ambSigFoa1plus2*locallev));
-
-				
-				dis = (1 - dis) * 5.0;
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
-				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
-
-
-
-				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
-				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
-
-				// flag switchable selector of a-format signal (from insert or not) 
-				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
-
-				// convert back to b-format
-				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-				
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
-				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
-				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
-
-
-				
-				reverbOutFunc.value(soaBus, gbfbus, ambSigSoa1plus2, ambSigFoa1plus2, globallev, locallev);
-
-				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
-				
-			}).add;
-
-			SynthDef.new("espacAmbEstereoChowning"++linear,  {
-				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
-				//xoffset = 0, yoffset = 0,
-				dopon = 0, dopamnt = 0, 
-				glev = 0, llev = 0, contr=1,
-				sp, df,
-				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa;			
-				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
-				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
-				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
-				junto, rd, dopplershift, azim, dis, 
-				junto1, azim1, 
-				junto2, azim2,
-				omni1, spread1, diffuse1,
-				omni2, spread2, diffuse2,
-				globallev = 0.0001, locallev, gsig, fonte,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;	
-				var lrev,
-				intens;
-				var grevganho = 0.20;
-				var soaSigLRef = Ref(0);
-				var soaSigRRef = Ref(0);
-				var lrev1Ref =  Ref(0);
-				var lrev2Ref =  Ref(0);
-
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-
-				
-				
-				contr = Lag.kr(contr, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my);
-				
-				azim1 = fonte.rotate(angle / -2).theta;
-				azim2 = fonte.rotate(angle / 2).theta;
-				//SendTrig.kr(Impulse.kr(1), 0, azim1); // debug
-				//				fonte.set(mx+xoffset, my+yoffset, mz);
-				fonte.set(mx, my, mz);
-				el = fonte.phi;
-				
-				//				dis = (1 - (fonte.rho - this.scale)) / this.scale;
-				dis = 1 - fonte.rho;
-				
-				dis = Select.kr(dis < 0, [dis, 0]); 
-				dis = Select.kr(dis > 1, [dis, 1]); 
-				//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
-				p = In.ar(inbus, 2);
-				
-				//p = p[0];
-				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
-				
-				// Doppler
-				rd = (1 - dis) * 340; 
-				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopon * dopamnt);
-				p = dopplershift;
-				
-				
-				// Reverberação global
-				globallev = 1 / (1 - dis).sqrt;
-				intens = globallev - 1;
-				intens = Select.kr(intens > 4, [intens, 4]); 
-				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
-				
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = globallev / 3; //scale so it values 1 close to origin
-				
-				globallev = Select.kr(globallev > 1, [globallev, 1]); // verifica se o "sinal" está mais do que 1
-				globallev = Select.kr(globallev < 0, [globallev, 0]); 
-				
-				globallev = globallev * Lag.kr(glev, 0.1);
-				
-				gsig = Mix.new(p) / 2 * globallev;
-				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
-				
-				p1 = p[0];
-				p2 = p[1];
-				
-				// Reverberação local
-				locallev = 1 - dis; 
-				
-				locallev = locallev  * Lag.kr(llev, 0.1);
-				
-
-				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev);
-				junto1 = p1 + lrev1Ref.value;
-				junto2 = p2 + lrev2Ref.value;
-				prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
-
-				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value, soaSigLRef[3].value,
-					soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value, soaSigLRef[7].value,
-					soaSigLRef[8].value];
-
-				prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
-				ambSigSoa2 = [soaSigRRef[0].value, soaSigRRef[1].value, soaSigRRef[2].value, soaSigRRef[3].value,
-					soaSigRRef[4].value, soaSigRRef[5].value, soaSigRRef[6].value, soaSigRRef[7].value,
-					soaSigRRef[8].value];
-				
-				ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
-
-				
-
-
-				//				junto1 = FoaEncode.ar(junto1, foaEncoderOmni);
-				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
-				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
-				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
-				junto1 = Select.ar(df, [omni1, diffuse1]);
-				junto1 = Select.ar(sp, [junto1, spread1]);
-
-				
-				//				junto2 = FoaEncode.ar(junto2, foaEncoderOmni);
-				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
-				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
-				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
-				junto2 = Select.ar(df, [omni2, diffuse2]);
-				junto2 = Select.ar(sp, [junto2, spread2]);
-
-				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
-				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
-
-				
-				dis = (1 - dis) * 5.0;
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
-				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
-
-				// convert to A-format and send to a-format out busses
-				aFormatFoa = FoaDecode.ar(ambSigFoa1plus2, b2a);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa); // debug
-				Out.ar(aFormatBusOutFoa, aFormatFoa);
-				aFormatSoa = AtkMatrixMix.ar(ambSigSoa1plus2, soa_a12_decoder_matrix);
-				Out.ar(aFormatBusOutSoa, aFormatSoa);
-				//SendTrig.kr(Impulse.kr(1), 0, aFormatBusOutFoa[0]); // debug
-
-				// flag switchable selector of a-format signal (from insert or not) 
-				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-				aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
-
-				// convert back to b-format
-				ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
-				ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-				
-				//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
-				// not sure if the b2a/a2b process degrades signal. Just in case it does:
-				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
-				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
-
-				
-
-				espacAmbEstereoOutFunc.value(ambSigSoa1plus2, ambSigFoa1plus2, dec);
-				
-			}).add;
-
-		}; //end makeSpatialisers
-
-
-		
+/*
 		prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
-			ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);				
+			ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
 		};
 		makeSpatialisers.value(linear: false);
-		
+
 		prepareAmbSigFunc = { |ambSigRef, junto, azim, el, intens, dis|
 			ambSigRef.value = FMHEncode0.ar(junto, azim, el, dis);
 		};
 		makeSpatialisers.value(linear: true);
+*/
 
-		
-		makeSynthDefPlayers = { arg type, i = 0;    // 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
+		makeSynthDefPlayers = { arg type, i = 0;
+		// 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
 
-			SynthDef.new("playMono"++type, { arg outbus, bufnum = 0, rate = 1, 
+			SynthDef.new("playMono"++type, { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, busini;
 				var scaledRate, spos, playerRef;
 				//SendTrig.kr(Impulse.kr(1), 101,  tpos); // debugging
 				playerRef = Ref(0);
 				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
-				
+
 				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
-			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1, 
+			SynthDef.new("playStereo"++type, { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, busini;
 				var scaledRate, spos, playerRef;
 				playerRef = Ref(0);
@@ -2677,7 +3043,100 @@ GUI Parameters usable in SynthDefs
 				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
-			2.do {   // make linear and non-linear versions
+			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1,
+				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+				mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+				busini,
+				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+				aFormatBusOutSoa, aFormatBusInSoa;
+
+				var scaledRate, playerRef, wsinal, spos, pushang = 0,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+
+				azim, dis = 1, fonte, globallev, locallev,
+				gsig, lsig, rd, dopplershift,
+				intens;
+				var grevganho = 0.20;
+
+				mx = Lag.kr(mx, 0.1);
+				my = Lag.kr(my, 0.1);
+				mz = Lag.kr(mz, 0.1);
+
+				fonte = Cartesian.new;
+				fonte.set(mx, my, mz);
+				dis = 1 - fonte.rho;
+				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
+				azim = fonte.theta; // ângulo (azimuth) de deslocamento
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				playerRef = Ref(0);
+				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+
+				rd = (1 - dis) * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+				playerRef.value = dopplershift;
+
+				wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
+
+				Out.ar(outbus, wsinal);
+
+				// global reverb
+				globallev = 1 / (1 - dis).sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
+
+				//comment out all linear parameters
+				//prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
+				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+							Lag.kr(level, 0.1) * intens * (1 - contr));
+
+				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
+
+				// convert to A-format and send to a-format out busses
+				aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
+				Out.ar(aFormatBusOutFoa, aFormatFoa);
+				// aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+				// Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+				// flag switchable selector of a-format signal (from insert or not)
+				aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+				//aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+				// convert back to b-format
+				ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+				//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+				// not sure if the b2a/a2b process degrades signal. Just in case it does:
+				playerRef.value = Select.ar(insertFlag, [playerRef.value, ambSigFoaProcessed]);
+				//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+				playBFormatOutFunc.value(playerRef.value, dec);
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				globallev = globallev * Lag.kr(glev, 0.1) * 6;
+
+				gsig = playerRef.value[0] * globallev;
+
+				locallev = 1 - dis;
+
+				locallev = locallev  * Lag.kr(llev, 0.1) * 5;
+				lsig = playerRef.value[0] * locallev;
+
+				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+				Out.ar(gbfbus, gsig);
+
+			}).add;
+
+			//comment out all linear parameters
+
+/*			2.do {   // make linear and non-linear versions
 				arg x;
 				var prepareRotateFunc, linear = "";
 				if (x == 1) {
@@ -2692,11 +3151,11 @@ GUI Parameters usable in SynthDefs
 							Lag.kr(level, 0.1) * intens * (1 - contr));
 					};
 				};
-				
-				
-				SynthDef.new("playBFormat"++type++linear, { arg outbus, bufnum = 0, rate = 1, 
+
+
+				SynthDef.new("playBFormat"++type++linear, { arg outbus, bufnum = 0, rate = 1,
 					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-					mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopon, dopamnt,
+					mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
 					//xoffset = 0, yoffset = 0,
 					busini,
 					insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
@@ -2704,8 +3163,8 @@ GUI Parameters usable in SynthDefs
 
 					var scaledRate, playerRef, wsinal, spos, pushang = 0,
 					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
-					
-					azim, dis = 1, fonte, globallev, locallev, 
+
+					azim, dis = 1, fonte, globallev, locallev,
 					gsig, lsig, rd, dopplershift,
 					intens;
 					var grevganho = 0.20;
@@ -2713,36 +3172,36 @@ GUI Parameters usable in SynthDefs
 					mx = Lag.kr(mx, 0.1);
 					my = Lag.kr(my, 0.1);
 					mz = Lag.kr(mz, 0.1);
-					
-					
+
+
 					fonte = Cartesian.new;
 					fonte.set(mx, my, mz);
 					dis = 1 - fonte.rho;
 					pushang = (1 - dis) * pi / 2; // degree of sound field displacement
 					azim = fonte.theta; // ângulo (azimuth) de deslocamento
-					dis = Select.kr(dis < 0, [dis, 0]); 
-					dis = Select.kr(dis > 1, [dis, 1]); 
+					dis = Select.kr(dis < 0, [dis, 0]);
+					dis = Select.kr(dis > 1, [dis, 1]);
 					playerRef = Ref(0);
 					playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
-					
+
 					rd = (1 - dis) * 340;
 					rd = Lag.kr(rd, 1.0);
-					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopon * dopamnt);
+					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
 					playerRef.value = dopplershift;
-					
+
 					wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
-					
+
 					Out.ar(outbus, wsinal);
-					
+
 					// global reverb
 					globallev = 1 / (1 - dis).sqrt;
 					intens = globallev - 1;
-					intens = Select.kr(intens > 4, [intens, 4]); 
+					intens = Select.kr(intens > 4, [intens, 4]);
 					intens = Select.kr(intens < 0, [intens, 0]);
 					intens = intens / 4;
 					//SendTrig.kr(Impulse.kr(1), 0, dis); // debug
 					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
-					
+
 
 					prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
 
@@ -2756,86 +3215,89 @@ GUI Parameters usable in SynthDefs
 					//	aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
 					//Out.ar(aFormatBusOutSoa, aFormatSoa);
 
-					// flag switchable selector of a-format signal (from insert or not) 
+					// flag switchable selector of a-format signal (from insert or not)
 					aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
 					//aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
 
 					// convert back to b-format
 					ambSigFoaProcessed  = FoaEncode.ar(aFormatFoa, a2b);
 					//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-					
+
 					//SendTrig.kr(Impulse.kr(0.5), 0, ambSigFoaProcessed); // debug
 					// not sure if the b2a/a2b process degrades signal. Just in case it does:
 					playerRef.value = Select.ar(insertFlag, [playerRef.value, ambSigFoaProcessed]);
 					//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
 
-					
-					
+
+
 					//	Out.ar(2, player);
 					playBFormatOutFunc.value(playerRef.value, dec);
-					
-					
+
+
 					globallev = globallev - 1.0; // lower tail of curve to zero
-					globallev = Select.kr(globallev > 1, [globallev, 1]); 
-					globallev = Select.kr(globallev < 0, [globallev, 0]); 
+					globallev = Select.kr(globallev > 1, [globallev, 1]);
+					globallev = Select.kr(globallev < 0, [globallev, 0]);
 					globallev = globallev * Lag.kr(glev, 0.1) * 6;
-					
+
 					gsig = playerRef.value[0] * globallev;
-					
-					locallev = 1 - dis; 
-					
+
+					locallev = 1 - dis;
+
 					//				locallev = locallev  * (llev*10) * grevganho;
 					locallev = locallev  * Lag.kr(llev, 0.1) * 5;
 					lsig = playerRef.value[0] * locallev;
-					
-					
+
+
 					// trying again ... testing
-					
+
 					gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
-					Out.ar(gbfbus, gsig); 
-					
-					
+					Out.ar(gbfbus, gsig);
+
+
 				}).add;
 			};
-			
+*/
 		}; //end makeSynthDefPlayers
 
 		// Make File-in SynthDefs
-		
+
 		playMonoInFunc[0] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate; // Note it needs all the variables
-			
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			// Note it needs all the variables
+
 			spos = tpos * BufSampleRate.kr(bufnum);
-		
+
 			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
+			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
 		};
-		
+
 		playStereoInFunc[0] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			spos = tpos * BufSampleRate.kr(bufnum);
 			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);			
+			playerRef.value = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
 		};
 
 		playBFormatInFunc[0] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			spos = tpos * BufSampleRate.kr(bufnum);
-			scaledRate = rate * BufRateScale.kr(bufnum); 
+			scaledRate = rate * BufRateScale.kr(bufnum);
 			playerRef.value = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
 		};
-		
+
 		makeSynthDefPlayers.("File", 0);
 
 
 		playMonoInFunc[3] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate; // Note it needs all the variables
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+			// Note it needs all the variables
+
 			var trig;
 			playerRef.value = DiskIn.ar(1, bufnum, lp);
 			trig = Done.kr(playerRef.value);
 			FreeSelf.kr(trig);
 		};
-		
+
 		playStereoInFunc[3] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			var trig;
@@ -2849,24 +3311,24 @@ GUI Parameters usable in SynthDefs
 			var trig;
 			playerRef.value = DiskIn.ar(4, bufnum, lp);
 			trig = Done.kr(playerRef.value);
-			FreeSelf.kr(trig);	
+			FreeSelf.kr(trig);
 		};
-		
+
 		makeSynthDefPlayers.("Stream", 3);
 
 		// Make HWBus-in SynthDefs
 
-		
+
 		playMonoInFunc[1] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			playerRef.value =  SoundIn.ar(busini, 1);
 		};
-		
+
 		playStereoInFunc[1] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			playerRef.value =  [SoundIn.ar(busini), SoundIn.ar(busini + 1)];
 		};
-		
+
 
 		playBFormatInFunc[1] = {
 			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
@@ -2874,8 +3336,8 @@ GUI Parameters usable in SynthDefs
 				SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
 
 		};
-		
-		
+
+
 		makeSynthDefPlayers.("HWBus", 1);
 		//("Bus is " ++ this.swinbus[0]).postln;
 
@@ -2885,12 +3347,12 @@ GUI Parameters usable in SynthDefs
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			playerRef.value =  In.ar(busini, 1);
 		};
-		
+
 		playStereoInFunc[2] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			playerRef.value =  [In.ar(busini, 1), In.ar(busini + 1, 1)];
 		};
-		
+
 
 		playBFormatInFunc[2] = {
 			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
@@ -2898,11 +3360,11 @@ GUI Parameters usable in SynthDefs
 				In.ar(busini + 2, 1), In.ar(busini + 3, 1)];
 
 		};
-		
+
 
 		makeSynthDefPlayers.("SWBus", 2);
 
-		
+
 		//////// END SYNTHDEFS ///////////////
 
 		///// launch GUI was here
@@ -2910,11 +3372,9 @@ GUI Parameters usable in SynthDefs
 		gbfbus = Bus.audio(server, 4); // global b-format bus
 		soaBus = Bus.audio(server, 9);
 
-
 		updateSynthInArgs = { arg source;
 			{
 				server.sync;
-				//	this.setSynths(source, \dopon, doppler[source]);
 				this.setSynths(source, \angle, angle[source]);
 				this.setSynths(source, \level, level[source]);
 				this.setSynths(source, \dopamnt, dplev[source]);
@@ -2923,7 +3383,7 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \mx, this.xval[source]);
 				this.setSynths(source, \my, this.yval[source]);
 				this.setSynths(source, \mz, this.zval[source]);
-				
+
 
 				//	this.setSynths(source, \sp, sp[source]);
 				//	this.setSynths(source, \df, df[source]);
@@ -2944,20 +3404,19 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \a4check, this.a4but[source]);
 				this.setSynths(source, \a5check, this.a5but[source]);
 
-				
+
 			}.fork;
 		};
-		
+
 		atualizarvariaveis = {
-			
-			
+
+
 			this.nfontes.do { arg i;
 				//	updateSynthInArgs.value(i);
-				
+
 				if(this.espacializador[i] != nil) {
 					this.espacializador[i].set(
 						//	\mx, num.value  ???
-						\dopon, doppler[i], // not needed...
 						\angle, angle[i],
 						\level, level[i], // ? or in player?
 						\dopamnt, dplev[i],
@@ -2975,9 +3434,9 @@ GUI Parameters usable in SynthDefs
 						\df, df[i];
 					);
 				};
-				
+
 				if(this.synt[i] != nil) {
-					
+
 					this.synt[i].set(
 						\level, level[i],
 						\rotAngle, rlev[i],
@@ -3000,26 +3459,25 @@ GUI Parameters usable in SynthDefs
 						\sp, sp[i],
 						\df, df[i];
 					);
-					
-					
+
+
 				};
 
-				
+
 			};
-			
-			
-			
+
+
+
 		};
 
 
 		//source only version (perhaps phase put other
 
 		updatesourcevariables = {
-			arg source;				
+			arg source;
 			if(this.espacializador[source] != nil) {
 				this.espacializador[source].set(
 					//	\mx, num.value  ???
-					\dopon, doppler[source], // not needed...
 					\angle, angle[source],
 					\level, level[source], // ? or in player?
 					\dopamnt, dplev[source],
@@ -3032,7 +3490,7 @@ GUI Parameters usable in SynthDefs
 					\df, df[source];
 				);
 			};
-			if(this.synt[source] != nil) {		
+			if(this.synt[source] != nil) {
 				this.synt[source].set(
 					\level, level[source],
 					\rotAngle, rlev[source],
@@ -3049,16 +3507,16 @@ GUI Parameters usable in SynthDefs
 				);
 			};
 		};
-		
 
 
-		
+
+
 		// this regulates file playing synths
 		this.watcher = Routine.new({
 			"WATCHER!!!".postln;
 			inf.do({
 				0.1.wait;
-				
+
 				this.nfontes.do({
 					arg i;
 						{
@@ -3086,9 +3544,9 @@ GUI Parameters usable in SynthDefs
 											//this.triggerFunc[i].value; // play SC input synth
 											this.firstTime[i] = false;
 											runTrigger.value(i);
-											
+
 											if(lp[i] == 0) {
-												
+
 												//tocar.value(i, 1, force: true);
 												this.newtocar(i, 0, force: true);
 											} {   // could remake this a random start point in future
@@ -3096,16 +3554,16 @@ GUI Parameters usable in SynthDefs
 												this.newtocar(i, 0, force: true);
 											};
 										};
-									
+
 								};
 							};
 						}.defer;   // CHECK THIS DEFER
 				});
-				
+
 				if(this.guiflag.not) {
 					// when there is no gui, Automation callback does not work,
 					// so here we monitor when the transport reaches end
-					
+
 					if (this.control.now > this.dur) {
 						if (this.autoloopval) {
 							this.control.seek; // note, onSeek not called
@@ -3114,32 +3572,32 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 				};
-				
-				
+
+
 			});
 		});
-		
+
 
 
 
 		this.watcher.play;
-		
+
 		///////////////
-		
-		//// LAUNCH GUI 
+
+		//// LAUNCH GUI
 		if (this.serport.notNil) {
 			//this.troutine = this.trackerRoutine; // start parsing of serial head tracker data
 			//	this.kroutine = this.serialKeepItUp;
 			this.troutine.play;
 			this.kroutine.play;
 		};
-		
-		
+
+
 		if(guiflag) {
 			this.gui;
 		};
-		
-		
+
+
 	} // end initMosca
 
 	blips {
@@ -3151,7 +3609,7 @@ GUI Parameters usable in SynthDefs
 			yieldAndReset(true);
 		}).play;
 	}
-	
+
 	//	procTracker  {|heading, roll, pitch, lat, lon|
 	procTracker  {|heading, roll, pitch|
 		var h, r, p;
@@ -3164,66 +3622,69 @@ GUI Parameters usable in SynthDefs
 		if (h > pi) {
 			h = -pi - (pi - h);
 		};
-		
+
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 		this.headingnumboxProxy.valueAction = h;
 		this.rollnumboxProxy.valueAction = r;
 		this.pitchnumboxProxy.valueAction = p;
 		this.nfontes.do { arg i;
-			
+
 			if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)) {
 				sprite[i, 1] = ((xval[i] * this.halfwidth * -1) + this.halfwidth);
 				sprite[i, 0] = ((yval[i] * this.halfwidth * -1) + this.halfwidth);
 			};
-			
+
 			if(this.espacializador[i].notNil) {
-				
+
 				this.espacializador[i].set(\mx, this.xval[i], \my, this.yval[i]);
 				this.setSynths(i, \mx, this.xval[i], \my, this.yval[i]);
 				this.synt[i].set(\mx, this.xval[i], \my, this.yval[i]);
 			};
-			
+
 		};
 
 
-		
-		
+
+
 	}
 
 	matchTByte { |byte|  // match incoming headtracker data
-		
-        if(this.trackarr[this.tracki].isNil or:{this.trackarr[this.tracki]==byte}, { 
-			this.trackarr2[this.tracki]= byte; 
-			this.tracki= this.tracki+1; 
-			if(this.tracki>=this.trackarr.size, { 
+
+        if(this.trackarr[this.tracki].isNil or:{this.trackarr[this.tracki]==byte}, {
+			this.trackarr2[this.tracki]= byte;
+			this.tracki= this.tracki+1;
+			if(this.tracki>=this.trackarr.size, {
 				//				this.procTracker(this.trackarr2[4]<<8+this.trackarr2[5],
-				//				this.trackarr2[6]<<8+this.trackarr2[7], this.trackarr2[8]<<8+this.trackarr2[9],
+				//				this.trackarr2[6]<<8+this.trackarr2[7],
+				//              this.trackarr2[8]<<8+this.trackarr2[9],
 				this.procTracker(
 					(this.trackarr2[5]<<8)+this.trackarr2[4],
 					(this.trackarr2[7]<<8)+this.trackarr2[6], (this.trackarr2[9]<<8)+this.trackarr2[8]
 					//,
-					//(this.trackarr2[13]<<24) + (this.trackarr2[12]<<16) + (this.trackarr2[11]<<8) + this.trackarr2[10],
-					//(this.trackarr2[17]<<24) + (this.trackarr2[16]<<16) + (this.trackarr2[15]<<8) + this.trackarr2[14]
-				); 
+					//(this.trackarr2[13]<<24) + (this.trackarr2[12]<<16) + (this.trackarr2[11]<<8)
+					//+ this.trackarr2[10],
+					//(this.trackarr2[17]<<24) + (this.trackarr2[16]<<16) + (this.trackarr2[15]<<8)
+					//+ this.trackarr2[14]
+				);
 				this.tracki= 0;
-			}); 
-        }, { 
-			this.tracki= 0; 
+			});
+        }, {
+			this.tracki= 0;
         });
 	}
 
-	
+
 
 	trackerRoutine { Routine.new
 		( {
 			inf.do{
 				//this.trackPort.read.postln;
-				this.matchTByte(this.trackPort.read); 
-			}; 
+				this.matchTByte(this.trackPort.read);
+			};
 		})
 	}
-	
+
 	serialKeepItUp {Routine.new({
 		inf.do{
 			if (this.trackPort.isOpen.not) // if serial port is closed
@@ -3237,16 +3698,16 @@ GUI Parameters usable in SynthDefs
 				}
 
 			};
-			1.wait; 
-		}; 
+			1.wait;
+		};
 	})}
 
 	offsetHeading { // give offset to reset North
 		| angle |
 		this.headingOffset = angle;
 	}
-	
-	
+
+
 	registerSynth { // selection of Mosca arguments for use in synths
 		| source, synth |
 		this.synthRegistry[source-1].add(synth);
@@ -3255,10 +3716,10 @@ GUI Parameters usable in SynthDefs
 		| source, synth |
 		if(this.synthRegistry[source-1].notNil){
 			this.synthRegistry[source-1].remove(synth);
-			
+
 		};
 	}
-	
+
 
 	getSynthRegistry { // selection of Mosca arguments for use in synths
 		| source |
@@ -3276,15 +3737,15 @@ GUI Parameters usable in SynthDefs
 
 	setSynths {
 		|source, param, value|
-		
+
 		this.synthRegistry[source].do({
 			arg item, i;
-			
+
 			//	if(item.isPlaying) {
 			item.set(param, value);
 			//	}
 		});
-		
+
 	}
 
 	getFoaInsertIn {
@@ -3297,6 +3758,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	getFoaInsertOut {
 		|source |
 		if (source > 0) {
@@ -3307,6 +3769,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	getSoaInsertIn {
 		|source |
 		if (source > 0) {
@@ -3316,6 +3779,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	getSoaInsertOut {
 		|source |
 		if (source > 0) {
@@ -3325,6 +3789,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	releaseInsert {
 		|source |
 		if (source > 0) {
@@ -3332,10 +3797,10 @@ GUI Parameters usable in SynthDefs
 			this.espacializador[source-1].set(\insertFlag, 0);
 		}
 	}
-	
+
 	// These methods relate to control of synths when SW Input delected
 	// for source in GUI
-	
+
 	// Set by user. Registerred functions called by Automation's play
 	setTriggerFunc {
 		|source, function|
@@ -3343,6 +3808,7 @@ GUI Parameters usable in SynthDefs
 			this.triggerFunc[source-1] = function;
 		}
 	}
+
 	// Companion stop method
 	setStopFunc {
 		|source, function|
@@ -3350,21 +3816,20 @@ GUI Parameters usable in SynthDefs
 			this.stopFunc[source-1] = function;
 		}
 	}
+
 	clearTriggerFunc {
 		|source|
 		if (source > 0) {
 			this.triggerFunc[source-1] = nil;
 		}
 	}
+
 	clearStopFunc {
 		|source|
 		if (source > 0) {
 			this.stopFunc[source-1] = nil;
 		}
 	}
-
-	
-	
 
 	playAutomation {
 		this.control.play;
@@ -3377,8 +3842,16 @@ GUI Parameters usable in SynthDefs
 		this.control.play;
 	}
 
-	
-		
+	globBfmtNeeded { |i|
+		if(i == this.nfontes + 1,
+			{ false.asBoolean },
+			{ if(this.espacializador[i].isPlaying,
+				{ true.asBoolean },
+				{ this.globBfmtNeeded.value(i + 1) };
+			) };
+		);
+	}
+
 	newtocar {
 		arg i, tpos, force = false;
 		var path = this.tfieldProxy[i].value, stdur;
@@ -3396,11 +3869,10 @@ GUI Parameters usable in SynthDefs
 				//		this.streambuf[i] = srate; //??
 				("Creating buffer for source: " ++ i).postln;
 			};
-		
-			
-		
-		
-		
+
+
+
+
 		// Note: ncanais refers to number of channels in the context of
 		// files on disk
 		// ncan is number of channels for hardware or supercollider input
@@ -3409,25 +3881,31 @@ GUI Parameters usable in SynthDefs
 		// in buses 7, 8, 9 and 10.
 
 		if (this.reverb) {
-			if(revGlobalBF.isNil){
-				this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
-					addAction:\addToTail);
+			if (revGlobalBF.isNil){
+				this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
 			};
-			if(revGlobal.isNil){
-				this.revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+
+			if (revGlobal.isNil && (this.clsrevProxy.value > 0)){
+				this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
+					addAction:\addToTail).register;
+
+				this.firstGlobTime = true;
 			};
 		};
-		//if (this.serport.notNil) {
+
+		//if (this.serport.notNil) { // comment out serial port prerequisit
 			if(globFOATransform.isNil && this.decoder.notNil) {
-				this.globFOATransform = Synth.new(\globFOATransformSynth, [\globtbus, this.globTBus,
-					\heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
+			this.globFOATransform = Synth.new(\globDecodeSynth, [\globtbus, this.globTBus,
+				\ambixbus, this.ambixbus, \heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
 			};
 		//	};
-		
+
 		if (this.reverb) { nodeMarker1 = this.revGlobalBF } {  nodeMarker1 = this.globFOATransform};
 		/// STREAM FROM DISK
 
-		if ((path != "") && this.hwncheckProxy[i].value.not && this.scncheckProxy[i].value.not && this.streamdisk[i]) {
+		if ((path != "") && this.hwncheckProxy[i].value.not
+			&& this.scncheckProxy[i].value.not
+			&& this.streamdisk[i]) {
 			var x;
 			"Content Streamed from disk".postln;
 			if (testado[i].not || force) { // if source is testing don't relaunch synths
@@ -3444,48 +3922,54 @@ GUI Parameters usable in SynthDefs
 						cslider.value = 1;
 						connumbox.value = 1;
 					};
-					if(rv[i] == 1) {
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+
+					if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
+
+						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{  nodeMarker2 = this.globFOATransform};
+							{ nodeMarker2 = this.globFOATransform };
 						};
-						
-						if(this.decoder.isNil && (this.raworder == 2)) {
-							
-							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
+
+						if(this.maxorder > 1) {
+
+							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]], 
-								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+								\level, level[i]],
+								this.revGlobalSoa,
+							addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
-							
-							
+
+
 						} {
-							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
+							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]], 
+								\level, level[i]],
 								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
-								});															
-							
+								});
+
 						};
-						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i], [\inbus, mbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAFormatVerb++rvtypes[i], [\inbus, mbus[i],
 							\soaBus, soaBus, \gbfbus, gbfbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
-							this.synt[i], addAction: \addAfter);
-						
-					} { 
-						
-						this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i], 
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter).register;
+
+					} {
+
+						this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
 							\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 							\level, level[i]], nodeMarker1,
 							addAction: \addBefore).onFree({this.espacializador[i].free;
@@ -3494,23 +3978,44 @@ GUI Parameters usable in SynthDefs
 							});
 
 						("HERE!!!!!!!!!!!!!!! xval = " ++ this.xval[i] ++ "yval = " ++ this.yval[i]).postln;
-						
-						this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
-							\gbus, gbus, 
-							
+
+						case
+						{this.lib[i] == 0}
+
+						//comment out all linear parameters
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+
+						{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i], [\inbus, mbus[i],
+							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							
-							\dopon, doppler[i]], 
-							this.synt[i], addAction: \addAfter);
-						
-						
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 1}
+						{this.espacializador[i] = Synth.new(\ambitoolsChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 2}
+						{this.espacializador[i] = Synth.new(\hoaLibChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 3}
+						{this.espacializador[i] = Synth.new(\ambiPannerChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						};
+
 					};
 					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);	
+					updatesourcevariables.value(i);
 				}
 				{ this.streambuf[i].numChannels == 2} {
 					"2 channel".postln;
@@ -3526,28 +4031,29 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						{angslider.value = 0.33;}.defer;
 					};
-					if(rv[i] == 1) {
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-							
+
+					if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
+
+						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
+
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								revGlobalBF, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
 
 						};
-						
-						
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
-							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
+						if(this.maxorder > 1) {
+							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
-								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.revGlobalSoa,
+							addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
 						} {
-							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
+							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
 								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
@@ -3555,45 +4061,51 @@ GUI Parameters usable in SynthDefs
 									this.streambuf[i].free;
 								});
 						};
-						
-						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i],
+
+						this.espacializador[i] = Synth.new(\espacEstereoAFormat++rvtypes[i],
+							[\inbus, sbus[i],
 							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
-							this.synt[i], addAction: \addAfter);
-						
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter).register;
+
 
 
 					} {
 						if (testado[i].not || force) {
-							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i], 
+							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]], 
+								\level, level[i]],
 								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
-							
-							this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacEstereoChowning++rvtypes[i],
+								[\inbus, sbus[i],
 								\gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 								this.synt[i], addAction: \addAfter);
 						};
-						
+
 					};
-					updatesourcevariables.value(i);	
-					
-					
-					
+					updatesourcevariables.value(i);
+
+
+
 				}
 				{ this.streambuf[i].numChannels == 4} {
 					"4 channel".postln;
@@ -3613,19 +4125,23 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 					};
 
-					if(rv[i] == 1) {
+					if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
 
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								revGlobalBF, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
 
 						};
-						
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
-							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+						if (this.maxorder > 1) {
+
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+							this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
 								gbfbus, \outbus,
 								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
@@ -3634,15 +4150,19 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								this.revGlobalSoa,
+							addAction: \addBefore).register.onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false;
 									this.streambuf[i].free;
 								});
 						} {
-							this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+							this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
 								gbfbus, \outbus,
 								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
@@ -3651,29 +4171,34 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								nodeMarker1,
+							addAction: \addBefore).register.onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false;
 									this.streambuf[i].free;
-								});					
+								});
 						};
-						
-						this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAmb2AFormat++rvtypes[i], [\inbus, mbus[i],
 							\gbus, gbus, \soaBus, soaBus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 							this.synt[i], addAction: \addAfter);
-						
+
 					} {
-						
-						
-						this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+
+						//comment out all linear parameters
+						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+						this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
+							gbfbus, \outbus,
 							mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 							\rate, 1, \tpos, tpos, \lp,
 							lp[i], \level, level[i],
@@ -3681,41 +4206,44 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
-							//					~revGlobal, addAction: \addBefore);
-							nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							nodeMarker1,
+						addAction: \addBefore).register.onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil; this.synt[i] = nil;
 								this.playingBF[i] = false;
 								this.streambuf[i].free;
 							});
-						
-						this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
-							[\inbus, mbus[i], \gbus, gbus, 
+
+						//comment out all linear parameters
+						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+
+						this.espacializador[i] = Synth.new(\espacAmb2Chowning++rvtypes[i],
+							[\inbus, mbus[i], \gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 							this.synt[i], addAction: \addAfter);
-						
-						
-						
+
+
+
 					};
-					updatesourcevariables.value(i);	
+					updatesourcevariables.value(i);
 				};
-				
+
 
 			};
 		};
 		/// END STREAM FROM DISK
-		
+
 		// check this logic - what should override what?
-		if ((path != "") && (this.hwncheckProxy[i].value.not || this.scncheckProxy[i].value.not) && this.streamdisk[i].not) {
-			
-			//{	
-			
+		if ((path != "") && (this.hwncheckProxy[i].value.not
+			|| this.scncheckProxy[i].value.not)
+		&& this.streamdisk[i].not) {
+
+			//{
+
 			if (sombuf[i].numChannels == 1)  // arquivo mono
 			{
 				//"Am I mono?".postln;
@@ -3731,9 +4259,10 @@ GUI Parameters usable in SynthDefs
 					cslider.value = 1;
 					connumbox.value = 1;
 				};
-				
-				if(rv[i] == 1) {
-					if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+
+				if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
+
+					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 							nodeMarker1, addAction:\addBefore);
 						if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -3742,58 +4271,124 @@ GUI Parameters usable in SynthDefs
 					};
 					if (testado[i].not || force) { // if source is testing don't relaunch synths
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
+						if(this.maxorder > 1) {
 
-							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]], 
-								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+								\level, level[i]],
+								this.revGlobalSoa,
+							addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil});
-							
-							
+
+
 						} {
-							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
+							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]], 
+								\level, level[i]],
 								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil});															
+									this.espacializador[i] = nil; this.synt[i] = nil});
 
 						};
-						this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i], [\inbus, mbus[i],
+
+						this.espacializador[i] = Synth.new(\espacAFormatVerb++rvtypes[i], [\inbus, mbus[i],
 							\soaBus, soaBus, \gbfbus, gbfbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
-							this.synt[i], addAction: \addAfter);
-					};
-				} { 
-					if (testado[i].not || force) { // if source is testing don't relaunch synths
-						this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i], 
-							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-							\level, level[i]], nodeMarker1,
-							addAction: \addBefore).onFree({this.espacializador[i].free;
-								this.espacializador[i] = nil; this.synt[i] = nil});
-						
-						this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
-							\gbus, gbus, 
-							
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter).register;
+
+					}{
+
+						case
+						{this.lib[i] == 0}
+
+						//comment out all linear parameters
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
+
+						{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							
-							\dopon, doppler[i]], 
-							this.synt[i], addAction: \addAfter);
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 1}
+						{this.espacializador[i] = Synth.new(\ambitoolsChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 2}
+						{this.espacializador[i] = Synth.new(\hoaLibChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 3}
+						{this.espacializador[i] = Synth.new(\ambiPannerChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						};
+
+					};
+				} {
+					if (testado[i].not || force) { // if source is testing don't relaunch synths
+						this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
+							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+							\level, level[i]], nodeMarker1,
+							addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil; this.synt[i] = nil});
+
+						case
+						{this.lib[i] == 0}
+
+						//comment out all linear parameters
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
+
+						{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus,
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 1}
+						{this.espacializador[i] = Synth.new(\ambitoolsChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 2}
+						{this.espacializador[i] = Synth.new(\hoaLibChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						}
+						{this.lib[i] == 3}
+						{this.espacializador[i] = Synth.new(\ambiPannerChowning++rvtypes[i],
+							[\inbus, mbus[i],
+							\gbus, gbus],
+						this.synt[i], addAction: \addAfter);
+						};
+
 					};
 
 				};
-				updatesourcevariables.value(i);	
-				
-				
+				updatesourcevariables.value(i);
+
+
 			}
 			{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
 				angle[i] = pi/2;
@@ -3807,71 +4402,78 @@ GUI Parameters usable in SynthDefs
 					{angnumbox.value = 1.05;}.defer; // 60 degrees
 					{angslider.value = 0.33;}.defer;
 				};
-				if(rv[i] == 1) {
-					if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
-						
+				if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
+
+					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
+
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 							nodeMarker1, addAction:\addBefore);
 						if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-						{  nodeMarker2 = this.globFOATransform};
+						{ nodeMarker2 = this.globFOATransform };
 					};
-					
+
 					if (testado[i].not || force) {
 
-						if(this.decoder.isNil && (this.raworder == 2)) {
-							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+						if(this.maxorder > 1) {
+							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
 								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil});
 						} {
-							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
 								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
 								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil});
 						};
-						
-						this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i],
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i], [\inbus, sbus[i],
+
+						this.espacializador[i] = Synth.new(\espacEstereoAFormat++rvtypes[i],
+							[\inbus, sbus[i],
 							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
-							this.synt[i], addAction: \addAfter);
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter).register;
 					};
 
 
 				} {
 					if (testado[i].not || force) {
-						this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i], 
+						this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
 							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-							\level, level[i]], 
+							\level, level[i]],
 							nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil; this.synt[i] = nil});
-						
-						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
+
+						this.espacializador[i] = Synth.new(\espacEstereoChowning++rvtypes[i],
+							[\inbus, sbus[i],
 							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 							this.synt[i], addAction: \addAfter);
 					};
-					
+
 				};
 				//atualizarvariaveis.value;
-				updatesourcevariables.value(i);	
-				
+				updatesourcevariables.value(i);
+
 				//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
 
 
 
-				
+
 			} {
 				if (sombuf[i].numChannels == 4) {
 					this.playingBF[i] = true;
@@ -3889,24 +4491,28 @@ GUI Parameters usable in SynthDefs
 					if (guiflag) {
 						{angslider.value = 0;}.defer;
 					};
-					
+
 					// reverb for non-contracted (full b-format) component
 
 					// reverb for contracted (mono) component - and for rest too
-					if(rv[i] == 1) {
+					if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
 
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
 						};
-						
+
 
 						if (testado[i].not || force) {
 
-							if(this.decoder.isNil && (this.raworder == 2)) {
-								this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+							if(this.maxorder > 1) {
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+
+								this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
 									gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
@@ -3915,13 +4521,17 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+									this.revGlobalSoa,
+								addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							} {
-								this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
+
+								this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
 									gbfbus, \outbus,
 									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 									\rate, 1, \tpos, tpos, \lp,
@@ -3930,28 +4540,34 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
-									nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+									nodeMarker1,
+								addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.playingBF[i] = false});					
+										this.playingBF[i] = false});
 							};
-							
-							this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i], 
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2AFormat++rvtypes[i],
+								[\inbus, mbus[i],
 								\gbus, gbus, \soaBus, soaBus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 								this.synt[i], addAction: \addAfter);
 						};
 					} {
 						if (testado[i].not || force) {
 
-							
-							this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus, gbfbus, \outbus,
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
+
+							this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus,
+								\gbfbus, gbfbus, \outbus,
 								mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
 								lp[i], \level, level[i],
@@ -3959,35 +4575,36 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								//					~revGlobal, addAction: \addBefore);
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								nodeMarker1,
+							addAction: \addBefore).register.onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false});
-							
-							this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
-								[\inbus, mbus[i], \gbus, gbus, 
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2Chowning++rvtypes[i],
+								[\inbus, mbus[i], \gbus, gbus,
 									\insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\dopon, doppler[i]], 
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 								this.synt[i], addAction: \addAfter);
 						};
-						
+
 
 					};
-					updatesourcevariables.value(i);	
-					
+					updatesourcevariables.value(i);
 
-					
-					
+
+
+
 				}
 				{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
 				};
-			};  }; 
+			};  };
 			if(control.doRecord == false){
 				if (guiflag) {
 					{	xboxProxy[i].valueAction = xbox[i].value;
@@ -3996,18 +4613,15 @@ GUI Parameters usable in SynthDefs
 				};
 
 			};
-			
-			
-			
-			//				}.defer;	
-			//};	
+
+
 		} {
-			
+
 			if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
 				var x;
 				x = case
 				{ this.ncan[i] == 1 } {
-					
+
 					cboxProxy[i].valueAction = 1;
 					clev[i] = 1;
 					if((i == currentsource) && guiflag) {
@@ -4015,17 +4629,18 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 
-					if(rv[i] == 1) {
-						if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+					if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
+
+						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
 						};
-						
+
 						if (testado[i].not || force) {
 							if (this.hwncheckProxy[i].value) {
-								if(this.decoder.isNil && (this.raworder == 2)) {
+								if(this.maxorder > 1) {
 									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
 										this.busini[i],
 										\level, level[i]], this.revGlobalSoa,
@@ -4039,7 +4654,7 @@ GUI Parameters usable in SynthDefs
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								};
 							} {
-								if(this.decoder.isNil && (this.raworder == 2)) {
+								if(this.maxorder > 1) {
 									this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 										\busini, this.scInBus[i], // use "index" method?
 										\level, level[i]], this.revGlobalSoa,
@@ -4053,23 +4668,27 @@ GUI Parameters usable in SynthDefs
 											this.espacializador[i] = nil; this.synt[i] = nil});
 								};
 							};
-							
-							
-							this.espacializador[i] = Synth.new(\espacAmbAFormatVerb++ln[i], [\inbus, mbus[i], 
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAFormatVerb++rvtypes[i],
+								[\inbus, mbus[i],
 								\soaBus, soaBus, \gbfbus, gbfbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								this.synt[i], addAction: \addAfter);
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter).register;
+
 						};
-						
+
 					} {
 						if (testado[i].not || force) {
 							if (this.hwncheckProxy[i].value) {
-								this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini, this.busini[i],
+								this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i],
+									\busini, this.busini[i],
 									\level, level[i]], nodeMarker1,
 									addAction: \addBefore).onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil});
@@ -4080,29 +4699,54 @@ GUI Parameters usable in SynthDefs
 									addAction: \addBefore).onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil});
 							};
-							
-							
-							this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
+
+							case
+							{this.lib[i] == 0}
+
+							//comment out all linear parameters
+							//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
+
+							{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i],
+								[\inbus, mbus[i],
 								\gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								this.synt[i], addAction: \addAfter);
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter);
+							}
+							{this.lib[i] == 1}
+							{this.espacializador[i] = Synth.new(\ambitoolsChowning++rvtypes[i],
+								[\inbus, mbus[i],
+								\gbus, gbus],
+							this.synt[i], addAction: \addAfter);
+							}
+							{this.lib[i] == 2}
+							{this.espacializador[i] = Synth.new(\hoaLibChowning++rvtypes[i],
+								[\inbus, mbus[i],
+								\gbus, gbus],
+							this.synt[i], addAction: \addAfter);
+							}
+							{this.lib[i] == 3}
+							{this.espacializador[i] = Synth.new(\ambiPannerChowning++rvtypes[i],
+								[\inbus, mbus[i],
+								\gbus, gbus],
+							this.synt[i], addAction: \addAfter);
+							};
+
 						};
 
 					};
-					
+
 					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);	
-					
-					
+					updatesourcevariables.value(i);
 
 
 
-					
+
+
+
 				}
 				{ this.ncan[i] == 2 } {
 					ncanais[i] = 0; // just in case!
@@ -4111,7 +4755,7 @@ GUI Parameters usable in SynthDefs
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
 					};
-					
+
 					cboxProxy[i].valueAction = 1;
 					clev[i] = 1;
 					if((i == currentsource) && guiflag) {
@@ -4119,12 +4763,11 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 
-					if(rv[i] == 1) {	
-
+					if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
 
 						if (testado[i].not || force) {
 
-							if(revGlobalSoa.isNil && this.decoder.isNil && (this.raworder == 2)) {
+							if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 								this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 									nodeMarker1, addAction:\addBefore);
 								if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
@@ -4132,7 +4775,7 @@ GUI Parameters usable in SynthDefs
 							};
 							if (this.hwncheckProxy[i].value) {
 
-								if(this.decoder.isNil && (this.raworder == 2)){
+								if(this.maxorder > 1){
 									this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
 										this.busini[i],
 										\level, level[i]], this.revGlobalSoa,
@@ -4143,10 +4786,10 @@ GUI Parameters usable in SynthDefs
 										this.busini[i],
 										\level, level[i]], nodeMarker1,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});							
+											this.espacializador[i] = nil; this.synt[i] = nil});
 								};
 							} {
-								if(this.decoder.isNil && (this.raworder == 2)){
+								if(this.maxorder > 1){
 									this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 										\busini, this.scInBus[i],
 										\level, level[i]], this.revGlobalSoa,
@@ -4157,25 +4800,29 @@ GUI Parameters usable in SynthDefs
 										\busini, this.scInBus[i],
 										\level, level[i]], nodeMarker1,
 										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});										
+											this.espacializador[i] = nil; this.synt[i] = nil});
 								};
 							};
-							
-							this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i], [\inbus, sbus[i], \gbus, gbus,
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacEstereoAFormat++rvtypes[i],
+								[\inbus, sbus[i], \gbus, gbus,
 								\soaBus, soaBus, \gbfbus, gbfbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
-								this.synt[i], addAction: \addAfter);
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								this.synt[i], addAction: \addAfter).register;
 						};
 
 
 					} {
 						if (this.hwncheckProxy[i].value) {
-							this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini, this.busini[i],
+							this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i],
+								\busini, this.busini[i],
 								\level, level[i]], nodeMarker1,
 								addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil});
@@ -4186,30 +4833,28 @@ GUI Parameters usable in SynthDefs
 								addAction: \addBefore).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil});
 						};
-						
-						this.espacializador[i] = Synth.new(\espacAmbEstereoChowning++ln[i], [\inbus, sbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\dopon, doppler[i]], 
-							this.synt[i], addAction: \addAfter);
 
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
+
+						this.espacializador[i] = Synth.new(\espacEstereoChowning++rvtypes[i],
+							[\inbus, sbus[i],
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter);
 
 					};
 					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);	
-					
-					
+					updatesourcevariables.value(i);
 
 
-
-					
 				}
 				{ this.ncan[i] == 4 } {
-					
+
 					cboxProxy[i].valueAction = 0;
 					clev[i] = 0;
 					if((i == currentsource) && guiflag) {
@@ -4217,32 +4862,41 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 0;
 					};
 
-					if(rv[i] == 1) {
+					if (rv[i] == 3 || (rv[i] == 4) || (rv[i] > 5)) {
 
-						if(revGlobalSoa == nil && this.decoder.isNil && (this.raworder == 2)) {
+						if(revGlobalSoa == nil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
 								nodeMarker1, addAction:\addBefore);
 							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
 							{  nodeMarker2 = this.globFOATransform};
 						};
-						
+
 						if (testado[i].not || force) {
-							if(this.decoder.isNil && (this.raworder == 2)) {
+							if(this.maxorder > 1) {
 								if (this.hwncheckProxy[i].value) {
-									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
 										\outbus, mbus[i],
 										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
-										\dopon, doppler[i],
 										\insertFlag, this.insertFlag[i],
 										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\busini, this.busini[i]], 
-										this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
+										\busini, this.busini[i]],
+										this.revGlobalSoa,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
-									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
+										\outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
 										level[i],
 										\insertFlag, this.insertFlag[i],
@@ -4250,14 +4904,18 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\dopon, doppler[i],
-										\busini, this.scInBus[i] ], 
-										nodeMarker2, addAction: \addBefore).onFree({this.espacializador[i].free;
+										\busini, this.scInBus[i] ],
+										nodeMarker2,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								};
 							} {
 								if (this.hwncheckProxy[i].value) {
-									this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
 										\outbus, mbus[i],
 										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 										\insertFlag, this.insertFlag[i],
@@ -4265,28 +4923,38 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\dopon, doppler[i],
-										\busini, this.busini[i]], 
-										nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+										\busini, this.busini[i]],
+										nodeMarker1,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
-									this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
+
+									//comment out all linear parameters
+									//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
+
+									this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
+										\outbus,
 										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-										level[i], \dopon, doppler[i],
-										\busini, this.scInBus[i] ], 
-										nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+										level[i],
+										\busini, this.scInBus[i] ],
+										nodeMarker1,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								};
-								
+
 							};
-							this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2AFormat++rvtypes[i],
+								[\inbus, mbus[i],
 								\gbus, gbus, \soaBus, soaBus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 								this.synt[i], addAction: \addAfter);
 						};
 
@@ -4294,101 +4962,107 @@ GUI Parameters usable in SynthDefs
 
 						if (testado[i].not || force) {
 							if (this.hwncheckProxy[i].value) {
-								this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus, \outbus,
-									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-									level[i], \dopon, doppler[i],
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i],
+
+								this.synt[i] = Synth.new(\playBFormatHWBus,
+									[\gbfbus, gbfbus, \outbus,
+									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos,
+									\level, level[i],
 									\insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\busini, this.busini[i]], 
-									nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+									\busini, this.busini[i]], nodeMarker1,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							} {
-								this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus, \outbus,
-									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-									level[i], \dopon, doppler[i],
+
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i],
+
+								this.synt[i] = Synth.new(\playBFormatSWBus,
+									[\gbfbus, gbfbus, \outbus,
+									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos,
+									\level, level[i],
 									\insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\busini, this.scInBus[i] ], 
-									nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+									\busini, this.scInBus[i] ], nodeMarker1,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;});
 							};
-							
-							this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
+
+							this.espacializador[i] = Synth.new(\espacAmb2Chowning++rvtypes[i],
+								[\inbus, mbus[i],
 								\gbus, gbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\dopon, doppler[i]], 
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 								this.synt[i], addAction: \addAfter);
 						};
-						
+
 					};
-					
 
-					
 
-					
 					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);	
-					
-					
+					updatesourcevariables.value(i);
 
 
-
-
-					
 				};
-				
-				
+
+
 			};
-			
-			
-			
+
+
+
 		};
-		
+
 	}
-	
+
 	loadNonAutomationData { arg path;
-		var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf,
+		var libf, loopedf, aformatrevf, hwinf, scinf,
+		//comment out all linear parameters
+		//linearf,
 		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
 		//("THE PATH IS " ++ path ++ "/filenames.txt").postln;
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
 
-		dopplerf = File((path ++ "/doppler.txt").standardizePath,"r");
+		libf = File((path ++ "/lib.txt").standardizePath,"r");
 		loopedf = File((path ++ "/looped.txt").standardizePath,"r");
 		aformatrevf = File((path ++ "/aformatrev.txt").standardizePath,"r");
 		hwinf = File((path ++ "/hwin.txt").standardizePath,"r");
 		scinf = File((path ++ "/scin.txt").standardizePath,"r");
-		linearf = File((path ++ "/linear.txt").standardizePath,"r");
+		//comment out all linear parameters
+		//linearf = File((path ++ "/linear.txt").standardizePath,"r");
 		spreadf = File((path ++ "/spread.txt").standardizePath,"r");
 		diffusef = File((path ++ "/diffuse.txt").standardizePath,"r");
 		ncanf = File((path ++ "/ncan.txt").standardizePath,"r");
 		businif = File((path ++ "/busini.txt").standardizePath,"r");
 		stcheckf = File((path ++ "/stcheck.txt").standardizePath,"r");
 
-		
+
 		//{	("BEFORE ACTION - stream = " ++ stcheckProxy[0].value).postln;}.defer;
-		
-		
+
+
 		nfontes.do { arg i;
 			var line = filenames.getLine(1024);
 			if(line!="NULL"){this.tfieldProxy[i].valueAction = line};
 		};
+
 		nfontes.do { arg i;
-			var line = dopplerf.getLine(1024);
-			var flag;
-			if (line == "true") {flag = true;} {flag = false;};
-			this.dcheckProxy[i].valueAction = flag;
-			// doppler[i] 0 or 1
+			var line = libf.getLine(1024);
+			this.libboxProxy[i].valueAction = line.asInt;
 		};
 
 		nfontes.do { arg i;
@@ -4398,29 +5072,29 @@ GUI Parameters usable in SynthDefs
 			this.lpcheckProxy[i].valueAction = flag;
 			//lp[i] 0 or 1
 		};
-		
+
 		nfontes.do { arg i;
 			var line = aformatrevf.getLine(1024);
-			var flag;
-			if (line == "true") {flag = true;} {flag = false;};
-			this.rvcheckProxy[i].valueAction = flag;
+			this.rvboxProxy[i].valueAction = line.asInt;
 			//rv[i] 0 or 1
 		};
-		
+
+		//comment out all linear parameters
+/*
 		nfontes.do { arg i;
 			var line = linearf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
 			this.lncheckProxy[i].valueAction = flag;
 		};
-		
+*/
 		nfontes.do { arg i;
 			var line = spreadf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
 			this.spcheckProxy[i].valueAction = flag;
 		};
-		
+
 		nfontes.do { arg i;
 			var line = diffusef.getLine(1024);
 			var flag;
@@ -4429,21 +5103,21 @@ GUI Parameters usable in SynthDefs
 		};
 		nfontes.do { arg i;
 			var line = ncanf.getLine(1024);
-			this.ncanboxProxy[i].valueAction = line.asFloat;
+			this.ncanboxProxy[i].valueAction = line.asInt;
 		};
-		
+
 		nfontes.do { arg i;
 			var line = businif.getLine(1024);
-			this.businiboxProxy[i].valueAction = line.asFloat;
+			this.businiboxProxy[i].valueAction = line.asInt;
 		};
-		
+
 		nfontes.do { arg i;
 			var line = stcheckf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
 			this.stcheckProxy[i].valueAction = flag;
 		};
-		
+
 //		nfontes.do { arg i;
 //	var line = hwinf.getLine(1024);
 //	this.hwncheckProxy[i].valueAction = line;
@@ -4452,10 +5126,11 @@ GUI Parameters usable in SynthDefs
 			var line = hwinf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
-			
+
 			//("line = " ++ line.asString).postln;
-			
-			//this.hwncheckProxy[i].valueAction = line.booleanValue; // why, why, why is this asBoolean necessary!
+
+			//this.hwncheckProxy[i].valueAction = line.booleanValue;
+			// why, why, why is this asBoolean necessary!
 			this.hwncheckProxy[i].valueAction = flag;
 		};
 
@@ -4465,17 +5140,18 @@ GUI Parameters usable in SynthDefs
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
 			this.scncheckProxy[i].value = flag;
-		}; 
-		
-		
+		};
+
+
 		filenames.close;
-		
-		dopplerf.close;
+
+		libf.close;
 		loopedf.close;
 		aformatrevf.close;
 		hwinf.close;
 		scinf.close;
-		linearf.close;
+		//comment out all linear parameters
+		//linearf.close;
 		spreadf.close;
 		diffusef.close;
 		ncanf.close;
@@ -4483,29 +5159,29 @@ GUI Parameters usable in SynthDefs
 		stcheckf.close;
 
 		//"RARARARARAR".postln;
-				
+
 		// delay necessary here because streamdisks take some time to register after control.load
 		//Routine {
-		
+
 		//1.wait;
 		this.nfontes.do { arg i;
-			
+
 			var newpath = this.tfieldProxy[i].value;
 			//	server.sync;
 			if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
 				i.postln;
 				newpath.postln;
-				this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf; 
+				this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf;
 					"Loaded file".postln;
 				});
 			};
-			
+
 		};
 		//	}.play;
 		//	this.watcher.play;
-		
+
 	}
-	
+
 	// Automation call-back doesn' seem to work with no GUI, so these duplicate
 	// control.onPlay, etc.
 	blindControlPlay {
@@ -4513,20 +5189,20 @@ GUI Parameters usable in SynthDefs
 		this.nfontes.do { arg i;
 			this.firstTime[i]=true;
 		};
-		
+
 		if(control.now < 0)
 		{
 			startTime = 0
 		}
-		{ 
+		{
 			startTime = control.now
 		};
 		this.isPlay = true;
 		this.control.play;
-		
+
 		//runTriggers.value;
 	}
-	
+
 	blindControlStop {
 		this.control.stop;
 		runStops.value;
@@ -4544,18 +5220,18 @@ GUI Parameters usable in SynthDefs
 
 
 	free {
-		
+
 		this.control.quit;
 		if (this.serport.notNil) {
 			this.trackPort.close;
 			//				this.trackerRoutine.stop;
 			//				this.serialKeepItUp.stop;
 		};
-		
+
 		this.troutine.stop;
 		this.kroutine.stop;
 		this.watcher.stop;
-		
+
 		this.globTBus.free;
 		this.nfontes.do { arg x;
 			this.espacializador[x].free;
@@ -4573,7 +5249,7 @@ GUI Parameters usable in SynthDefs
 			//		kespac[x].stop;
 		};
 		MIDIIn.removeFuncFrom(\sysex, sysex);
-		//MIDIIn.disconnect; 
+		//MIDIIn.disconnect;
 		if(this.revGlobal.notNil){
 			this.revGlobal.free;
 		};
@@ -4583,12 +5259,12 @@ GUI Parameters usable in SynthDefs
 		if(this.revGlobalSoa.notNil){
 			this.revGlobalSoa.free;
 		};
-		
+
 		if(this.globFOATransform.notNil){
 			this.globFOATransform.free
 		};
-		
-		
+
+
 		this.gbus.free;
 		this.gbfbus.free;
 		if(this.rirWspectrum.notNil){
@@ -4625,36 +5301,36 @@ GUI Parameters usable in SynthDefs
     gui {
 
 		//arg dur = 120;
-		var fonte, dist,  
+		var fonte, dist,
 		itensdemenu,
 		//gbus, gbfbus,
 		//azimuth,
 		event, brec, bplay, bload, bstream, bnodes,
-		//funcs, 
+		//funcs,
 		//	,
 		//lastAutomation = nil,
 		//	loopcheck,
 		//lpcheck,
-		
+
 		//spreadcheck,
 		//spcheck,
 		//sp,
 		//diffusecheck,
 		//dfcheck,
 		//df,
-		//revcheck,
-		//rvcheck,
-		
+		//dstReverbox,
+		//rvbox,
+
 		//lincheck,
 		//lncheck,
-		
+
 		//hwInCheck,
 		//hwncheck,
 		//hwn, scInCheck,
 		//scncheck,
 		//scn,
 		dopcheque2,
-		//glev, 
+		//glev,
 		//llev,
 		//volnumbox,
 		//ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
@@ -4663,18 +5339,16 @@ GUI Parameters usable in SynthDefs
 		mouseButton, dragStartScreen,
 		//novoplot,
 		//runTriggers, runStops, runTrigger, runStop,
-		
+
 		//dopnumbox,
 		//volslider,
 		//dirnumbox, dirslider,
-		conslider, 
-		
+		conslider,
+
 		//a1but, a2but, a3but, a4but, a5but, // variable
 		// data windows representation of a1but etc (ie. as checkbox)
 		// check box for streamed from disk audio
-		bsalvar, bcarregar, bsnap, bdados, baux, 
-		//dcheck,
-		//
+		bsalvar, bcarregar, bsnap, bdados, baux,
 		//lastx, lasty, lastz,
 		//gslider,
 		//gnumbox, lslider, lnumbox,
@@ -4683,42 +5357,41 @@ GUI Parameters usable in SynthDefs
 		//tocar,
 		//isPlay = false, isRec,
 		//atualizarvariaveis, updateSynthInArgs,
-		
+
 		//auxslider1, auxslider2, auxslider3, auxslider4, auxslider5, // aux sliders in control window
 		//auxbutton1, auxbutton2, auxbutton3, auxbutton4, auxbutton5, // aux sliders in control window
-		
-		//rnumbox, rslider, 
+
+		//rnumbox, rslider,
 		//znumbox, zslider,
 		//zlev, // z-axis
 		bmark1, bmark2,
-		
+
 		//rlev,
 		//dlev,
 		//dplev, dpslider,
 		cnumbox,
-		//aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox, 
+		//aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox,
 		zSliderHeight = this.width * 2 / 3;
 		dragStartScreen = Point.new;
 		//dragStartMap = Point.new;
-
 
 		//////// Huge lot declarations removed //////////
 
 
 		////////////////////////////////////////////////
-		
-		
+
+
 		//this.offsetHeading(this.offsetheading);
 		//("headingoffset variable = " ++ this.offsetheading).postln;
 
 
 
-		
-		
-		
+
+
+
 		// Note there is an extreme amount repetition occurring here. See the calling function. fix
 		novoplot = {
-			arg mx, my, i, nfnts; 
+			arg mx, my, i, nfnts;
 			var btest;
 			{
 				win.drawFunc = {
@@ -4731,32 +5404,30 @@ GUI Parameters usable in SynthDefs
 						Pen.fillColor = Color(0.8,0.2,0.9);
 						Pen.addArc(sprite[ind, 0]@sprite[ind, 1], 20, 0, 2pi);
 						Pen.fill;
-						(ind + 1).asString.drawCenteredIn(Rect(sprite[ind, 0] - 10, sprite[ind, 1] - 10, 20, 20), 
+						(ind + 1).asString.drawCenteredIn(Rect(sprite[ind, 0] - 10,
+							sprite[ind, 1] - 10, 20, 20),
 							Font.default, Color.white);
 					};
 					Pen.fillColor = Color.gray(0, 0.5);
 					Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
 					Pen.fill;
 
-					
+
 				}
 			}.defer;
 			{ win.refresh; }.defer;
-			
+
 		};
-		
-		
-		
-		~t1 = gbus;
-		~t2 = gbfbus;
-		~t3 = soaBus;
+
+
+
 		fonte = Point.new;
 		win = Window.new("Mosca", Rect(0, this.width, this.width, this.width)).front;
 		wdados = Window.new("Data", Rect(this.width, 0, 955, (this.nfontes*20)+60 ), scroll: true);
 		wdados.userCanClose = false;
 		wdados.alwaysOnTop = true;
-		
-		
+
+
 		bdados = Button(win, Rect(this.width - 100, 10, 90, 20))
 		.states_([
 			["show data", Color.black, Color.white],
@@ -4771,8 +5442,8 @@ GUI Parameters usable in SynthDefs
 		waux = Window.new("Auxiliary Controllers", Rect(this.width, (this.nfontes*20)+114, 260, 250 ));
 		waux.userCanClose = false;
 		waux.alwaysOnTop = true;
-		
-		
+
+
 		baux = Button(win, Rect(this.width - 100, 30, 90, 20))
 		.states_([
 			["show aux", Color.black, Color.white],
@@ -4847,7 +5518,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		
+
 		auxslider1 = Slider.new(waux, Rect(40, 20, 20, 160));
 		auxslider2 = Slider.new(waux, Rect(80, 20, 20, 160));
 		auxslider3 = Slider.new(waux, Rect(120, 20, 20, 160));
@@ -4900,9 +5571,9 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-		
 
-		
+
+
 		btestar = Button(win, Rect(this.width - 100, 50, 90, 20))
 		.states_([
 			["audition", Color.black, Color.white],
@@ -4919,23 +5590,23 @@ GUI Parameters usable in SynthDefs
 					//- and probably by HW - causes duplicates with file
 					// as file playback is handled by the "watcher" routine
 					testado[currentsource] = true;
-					
+
 				}
 				{
-					
+
 					//testado[currentsource] = false;
 					runStop.value(currentsource);
 					this.synt[currentsource].free;
 					this.synt[currentsource] = nil;
 					testado[currentsource] = false;
 					"stopping!".postln;
-					
+
 				};
 			} {
 				but.value = 0;
 			}
 			}.defer;
-			
+
 		});
 
 
@@ -4948,7 +5619,7 @@ GUI Parameters usable in SynthDefs
 		.action_({ arg but;
 			if(but.value == 1)
 			{
-				
+
 				//("Recording stereo. chans = " ++ chans ++ " bus = " ++ bus).postln;
 				prjDr.postln;
 				if(blipcheck.value)
@@ -4958,32 +5629,30 @@ GUI Parameters usable in SynthDefs
 				server.recChannels = this.recchans;
 				// note the 2nd bus argument only works in SC 3.9
 				server.record((prjDr ++ "/out.wav").standardizePath, this.recbus);
-				
+
 			}
 			{
 				server.stopRecording;
 				"Recording stopped".postln;
-			};		
-			
+			};
+
 		});
 		blipcheck = CheckBox( win, Rect(this.width - 95, 63, 60, 40), "blips").action_({ arg butt;
 			if(butt.value) {
 				//"Looping transport".postln;
 				//this.autoloopval = true;
 			} {
-				//		this.autoloopval = false;			
+				//		this.autoloopval = false;
 			};
-			
+
 		});
 
-		~win = win;
-		
 		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
-		
+
 		bsalvar = Button(win, Rect(10, this.width - 40, 80, 20))
 		.states_([
 			["save auto", Color.black, Color.white],
-			
+
 		])
 		.action_({
 			//arg but;
@@ -4991,12 +5660,11 @@ GUI Parameters usable in SynthDefs
 			//			var arquivo = File((prjDr ++ "/auto/arquivos.txt").standardizePath,"w");
 			var title="Save: select automation dir", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
-			
+
 
 			////// Changes
 
-			/*	var dopplerf = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
-				var loopedf = File((prjDr ++ "/auto/looped.txt").standardizePath,"w");
+			/*	var loopedf = File((prjDr ++ "/auto/looped.txt").standardizePath,"w");
 				var aformatrevf = File((prjDr ++ "/auto/aformatrev.txt").standardizePath,"w");
 				var hwinf = File((prjDr ++ "/auto/hwin.txt").standardizePath,"w");
 				var scinf = File((prjDr ++ "/auto/scin.txt").standardizePath,"w");
@@ -5004,13 +5672,17 @@ GUI Parameters usable in SynthDefs
 				var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
 				var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
 			*/
-			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
+			var libf, loopedf, aformatrevf, hwinf, scinf,
+			//comment out all linear parameters
+			//linearf,
+			spreadf, diffusef, ncanf,
+			businif, stcheckf;
 
 			//////////////
 
 
 			bounds = Rect(100,300,300,30);
-			
+
 			if(prjDr.isNil && this.lastAutomation.isNil) {
 				preset = "HOME".getenv ++ "/auto/"; } {
 					if (this.lastAutomation.isNil) {
@@ -5032,17 +5704,18 @@ GUI Parameters usable in SynthDefs
                 success = true;
                 onSuccess.value(textField.value);
                 dwin.close;
-				
+
 				("FILE IS " ++ textField.value ++ "/filenames.txt").postln;
 				("mkdir -p" + textField.value).systemCmd;
 				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
 
-				dopplerf = File((textField.value ++ "/doppler.txt").standardizePath,"w");
+				libf = File((textField.value ++ "/lib.txt").standardizePath,"w");
 				loopedf = File((textField.value ++ "/looped.txt").standardizePath,"w");
 				aformatrevf = File((textField.value ++ "/aformatrev.txt").standardizePath,"w");
 				hwinf = File((textField.value ++ "/hwin.txt").standardizePath,"w");
 				scinf = File((textField.value ++ "/scin.txt").standardizePath,"w");
-				linearf = File((textField.value ++ "/linear.txt").standardizePath,"w");
+				//comment out all linear parameters
+				//linearf = File((textField.value ++ "/linear.txt").standardizePath,"w");
 				spreadf = File((textField.value ++ "/spread.txt").standardizePath,"w");
 				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"w");
 				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"w");
@@ -5057,64 +5730,61 @@ GUI Parameters usable in SynthDefs
 						filenames.write("NULL\n")
 					};
 
-
-					dopplerf.write(this.dcheck[i].value.asString ++ "\n");
+					libf.write(this.libbox[i].value.asString ++ "\n");
 					loopedf.write(this.lpcheck[i].value.asString ++ "\n");
-					aformatrevf.write(this.rvcheck[i].value.asString ++ "\n");
+					aformatrevf.write(this.rvbox[i].value.asString ++ "\n");
 					hwinf.write(this.hwncheck[i].value.asString ++ "\n");
 					scinf.write(this.scncheck[i].value.asString ++ "\n");
-					linearf.write(this.lncheck[i].value.asString ++ "\n");
+					//comment out all linear parameters
+					//linearf.write(this.lncheck[i].value.asString ++ "\n");
 					spreadf.write(this.spcheck[i].value.asString ++ "\n");
 					diffusef.write(this.dfcheck[i].value.asString ++ "\n");
 					ncanf.write(this.ncanbox[i].value.asString ++ "\n");
 					businif.write(this.businibox[i].value.asString ++ "\n");
 					stcheckf.write(this.stcheck[i].value.asString ++ "\n");
-					
-					// REMEMBER AUX? 
-					
+
+					// REMEMBER AUX?
+
 				};
 				filenames.close;
 
 				////////
 
-				dopplerf.close;
+				libf.close;
 				loopedf.close;
 				aformatrevf.close;
 				hwinf.close;
 				scinf.close;
-				linearf.close;
+				//comment out all linear parameters
+				//linearf.close;
 				spreadf.close;
 				diffusef.close;
 				ncanf.close;
 				businif.close;
 				stcheckf.close;
-				
+
 				///////
 
-				
+
 				control.save(textField.value);
 				this.lastAutomation = textField.value;
 
             };
             dwin.front;
 
-			
-			
+
+
 		});
-		
-		
+
 		// load automation - adapted from chooseDirectoryDialog in AutomationGui.sc
-		
+
 		bcarregar = Button(win, Rect(90, this.width - 40, 80, 20))
 		.states_([
 			["load auto", Color.black, Color.white],
 		])
 		.action_({
-			//var filenames;
 			var title="Select Automation directory", onSuccess, onFailure=nil,
 			preset=nil, bounds,  dwin, textField, success=false;
-
-			//var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
 
 			bounds = Rect(100,300,300,30);
 			if(prjDr.isNil && this.lastAutomation.isNil) {
@@ -5142,7 +5812,7 @@ GUI Parameters usable in SynthDefs
 				//control.seek;
 				this.lastAutomation = textField.value;
 				this.loadNonAutomationData(textField.value);
-				
+
 			};
 			dwin.front;
 
@@ -5165,10 +5835,9 @@ GUI Parameters usable in SynthDefs
 			control.snapshot;  // only take snapshot at 0.0
 			"Snapshot taken".postln;
 			}
-			
+
 			});
 		*/
-
 
 		this.win.drawFunc = {
 			//paint origin
@@ -5190,19 +5859,22 @@ GUI Parameters usable in SynthDefs
 			itensdemenu[i] = "Source " ++ (i + 1).asString;
 		};
 
-		m = PopUpMenu(win,Rect(10,10,90,20));
-		m.items = itensdemenu; 
+		m = PopUpMenu(win,Rect(10, 10, 150, 20));
+		m.items = itensdemenu;
 		m.action = { arg menu;
 			currentsource = menu.value;
-			
-			if(doppler[currentsource] == 1){dopcheque.value = true}{dopcheque.value = false};
+
+			libnumbox.value = this.lib[currentsource];
+
+			dstReverbox.value = this.rv[currentsource];
+
 			if(lp[currentsource] == 1){loopcheck.value = true}{loopcheck.value = false};
 
 			if(sp[currentsource] == 1){spreadcheck.value = true}{spreadcheck.value = false};
 			if(df[currentsource] == 1){diffusecheck.value = true}{diffusecheck.value = false};
 
-			if(rv[currentsource] == 1){revcheck.value = true}{revcheck.value = false};
-			if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
+			//comment out all linear parameters
+			//if(ln[currentsource] == "_linear"){lincheck.value = true}{lincheck.value = false};
 
 			if(hwn[currentsource] == 1){hwInCheck.value = true}{hwInCheck.value = false};
 			if(scn[currentsource] == 1){scInCheck.value = true}{scInCheck.value = false};
@@ -5252,41 +5924,15 @@ GUI Parameters usable in SynthDefs
 			};
 		};
 
+		//offset = 60;
 
-
-		offset = 60;
-
-
-		dopcheque = CheckBox( win, Rect(104, 10, 80, 20), "Doppler").action_({ arg butt;
-			{this.dcheck[currentsource].valueAction = butt.value;}.defer;
-		});
-		dopcheque.value = false;
-
-		loopcheck = CheckBox( win, Rect(184, 10, 80, 20), "Loop").action_({ arg butt;
-			{this.lpcheck[currentsource].valueAction = butt.value;}.defer;
-		});
-		loopcheck.value = false;
-
-		spreadcheck = CheckBox( win, Rect(244, 170, 80, 20), "Spread").action_({ arg butt;
-			{this.spcheck[currentsource].valueAction = butt.value;}.defer;
-		});
-		spreadcheck.value = false;
-		diffusecheck = CheckBox( win, Rect(314, 170, 80, 20), "Diffuse").action_({ arg butt;
-			{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
-		});
-		diffusecheck.value = false;
-
-
-		revcheck = CheckBox( win, Rect(250, 10, 180, 20), "A-format reverb").action_({ arg butt;
-			{this.rvcheck[currentsource].valueAction = butt.value;}.defer;
-		});
-		revcheck.value = false;
-
-		lincheck = CheckBox( win, Rect(184, 30, 180, 20), "Linear intensity").action_({ arg butt;
+		//comment out all linear parameters
+/*
+		lincheck = CheckBox( win, Rect(184, 10, 180, 20), "Linear intensity (ATK)").action_({ arg butt;
 			{this.lncheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		lincheck.value = false;
-
+*/
 
 		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ arg butt;
 			{this.hwncheck[currentsource].valueAction = butt.value;}.defer;
@@ -5294,84 +5940,61 @@ GUI Parameters usable in SynthDefs
 			};
 		});
 
-		scInCheck = CheckBox( win, Rect(104, 30, 60, 20), "SC-in").action_({ arg butt;
+		scInCheck = CheckBox( win, Rect(90, 30, 60, 20), "SC-in").action_({ arg butt;
 			{this.scncheck[currentsource].valueAction = butt.value;}.defer;
 			if (scInCheck.value && hwInCheck.value) {
 			};
 		});
 
+		loopcheck = CheckBox( win, Rect(163, 30, 80, 20), "Loop").action_({ arg butt;
+			{this.lpcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		loopcheck.value = false;
 
 
-
-		dopcheque.value = false;
-
+		/////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(55, -10 + offset, 200, 20));
+		textbuf = StaticText(win, Rect(55, 50, 200, 20));
 		textbuf.string = "No. of chans. (HW & SC-in)";
-		ncannumbox = NumberBox(win, Rect(10, -10 + offset, 40, 20));
+		ncannumbox = NumberBox(win, Rect(10, 50, 40, 20));
 		ncannumbox.value = 0;
 		ncannumbox.clipHi = 4;
 		ncannumbox.clipLo = 0;
 		ncannumbox.align = \center;
 		ncannumbox.action = {arg num;
-			
-			
+
 			{this.ncanbox[currentsource].valueAction = num.value;}.defer;
 			this.ncan[currentsource] = num.value;
 
 		};
 
 
+		/////////////////////////////////////////////////////////
 
-		textbuf = StaticText(win, Rect(55, 10 + offset, 240, 20));
+
+		textbuf = StaticText(win, Rect(55, 70, 240, 20));
 		textbuf.string = "Start Bus (HW-in)";
-		busininumbox = NumberBox(win, Rect(10, 10 + offset, 40, 20));
+		busininumbox = NumberBox(win, Rect(10, 70, 40, 20));
 		busininumbox.value = 0;
 		busininumbox.clipLo = 0;
 		busininumbox.align = \center;
-		busininumbox.action = {arg num; 
+		busininumbox.action = {arg num;
 			{this.businibox[currentsource].valueAction = num.value;}.defer;
 			this.busini[currentsource] = num.value;
 		};
 
 
-
-
-		textbuf = StaticText(win, Rect(163, 130 + offset, 90, 20));
-		textbuf.string = "Angle (Stereo)";
-		angnumbox = NumberBox(win, Rect(10, 130 + offset, 40, 20));
-		angnumbox.value = 0;
-		angnumbox.clipHi = pi;
-		angnumbox.clipLo = 0;
-		angnumbox.step_(0.1); 
-		angnumbox.scroll_step=0.1;
-		angnumbox.align = \center;
-		angnumbox.action = {arg num; 
-			{abox[currentsource].valueAction = num.value;}.defer;
-			if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)){
-				this.espacializador[currentsource].set(\angle, num.value);
-				this.setSynths(currentsource, \angle, num.value);
-				angle[currentsource] = num.value;
-			}
-			{angnumbox.value = 0;};
-		};
-
-		angslider = Slider.new(win, Rect(50, 130 + offset, 110, 20));
-		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
-
-		angslider.action = {arg num;
-			{abox[currentsource].valueAction = num.value * pi;}.defer;
-			if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)) {
-				{angnumbox.value = num.value * pi;}.defer;
-				//			this.espacializador[currentsource].set(\angle, b.map(num.value));
-				this.espacializador[currentsource].set(\angle, num.value * pi);
-				this.setSynths(currentsource, \angle, num.value * pi);
-				//			angle[currentsource] = b.map(num.value);
-				angle[currentsource] = num.value * pi;
-			}{{angnumbox.value = num.value * pi;}.defer;};
-		};
-
+		libnumbox = PopUpMenu( win, Rect(10, 90, 150, 20));
+		libnumbox.items = ["ATK",
+			"ambitools   (mono)",
+			"HoaLib       (mono)",
+			"ADTB         (mono)",
+			"VBAP         (mono)"];
+		libnumbox.action_({ arg num;
+			{this.libbox[currentsource].valueAction = num.value;}.defer;
+		});
+		libnumbox.value = 0;
 
 
 		/////////////////////////////////////////////////////////
@@ -5379,14 +6002,15 @@ GUI Parameters usable in SynthDefs
 
 		textbuf = StaticText(win, Rect(this.width - 90, this.halfwidth - 10, 90, 20));
 		textbuf.string = "Z-Axis";
-		znumbox = NumberBox(win, Rect(this.width - 65, ((this.width - zSliderHeight) / 2) + zSliderHeight, 60, 20));
+		znumbox = NumberBox(win, Rect(this.width - 65, ((this.width - zSliderHeight) / 2)
+			+ zSliderHeight, 60, 20));
 		znumbox.value = 0;
 		znumbox.clipHi = 1;
 		znumbox.clipLo = -1;
-		znumbox.step_(0.1); 
+		znumbox.step_(0.1);
 		znumbox.scroll_step=0.1;
 		znumbox.align = \center;
-		znumbox.action = {arg num; 
+		znumbox.action = {arg num;
 			{zbox[currentsource].valueAction = num.value;}.defer;
 			if(ncanais[currentsource]==2)   {
 				this.espacializador[currentsource].set(\elev, num.value);
@@ -5397,7 +6021,8 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-		zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2), 20, zSliderHeight));
+		zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2),
+			20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = {arg num;
 			{znumbox.value = (0.5 - num.value) * -2;}.defer;
@@ -5410,12 +6035,13 @@ GUI Parameters usable in SynthDefs
 
 		////////////////////////////// Orientation //////////////
 
-		if (this.serport.notNil) {
-			
+
+		//if (this.serport.notNil) { //comment out serial port prerequisit
+
 			this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
 			this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
 			this.pitchnumbox = NumberBox(win, Rect(this.width - 45, this.width - 25, 40, 20));
-			
+
 			this.headingnumbox.action = {arg num;
 				this.headingnumboxProxy.valueAction = num.value;
 			};
@@ -5436,125 +6062,242 @@ GUI Parameters usable in SynthDefs
 			textbuf.string = "R:";
 			textbuf = StaticText(win, Rect(this.width - 60, this.width - 25, 10, 22));
 			textbuf.string = "P:";
-			
-			
+
+
 			textbuf = StaticText(win, Rect(this.width - 45, this.width - 85, 90, 20));
 			textbuf.string = "Orient.";
-			
-		};
+
+		//}; //comment out the prerequisit for the serial port
 
 
 		////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 30 + offset, 50, 20));
+		textbuf = StaticText(win, Rect(163, 110, 50, 20));
 		textbuf.string = "Level";
-		volnumbox = NumberBox(win, Rect(10, 30 + offset, 40, 20));
+		volnumbox = NumberBox(win, Rect(10, 110, 40, 20));
 		volnumbox.value = 0;
 		volnumbox.clipHi = pi;
 		volnumbox.clipLo = 0;
-		volnumbox.step_(0.1); 
+		volnumbox.step_(0.1);
 		volnumbox.scroll_step=0.1;
 		volnumbox.align = \center;
-		volnumbox.action = {arg num; 
+		volnumbox.action = {arg num;
 			{vbox[currentsource].valueAction = num.value;}.defer;
 
 		};
-		volslider = Slider.new(win, Rect(50, 30 + offset, 110, 20));
+		volslider = Slider.new(win, Rect(50, 110, 110, 20));
 		volslider.value = 0;
 		volslider.action = {arg num;
-			{vbox[currentsource].valueAction = num.value;}.defer;		
+			{vbox[currentsource].valueAction = num.value;}.defer;
 		};
 
 
 		///////////////////////////////////////////////////////////////
 
 
-		textbuf= StaticText(win, Rect(163, 50 + offset, 120, 20));
+		textbuf= StaticText(win, Rect(163, 130, 120, 20));
 		textbuf.string = "Doppler amount";
 		// was called contraction, hence "connumbox".
-		dopnumbox = NumberBox(win, Rect(10, 50 + offset, 40, 20));
+		dopnumbox = NumberBox(win, Rect(10, 130, 40, 20));
 		dopnumbox.value = 0;
 		dopnumbox.clipHi = pi;
 		dopnumbox.clipLo = -pi;
-		dopnumbox.step_(0.1); 
+		dopnumbox.step_(0.1);
 		dopnumbox.scroll_step=0.1;
 		dopnumbox.align = \center;
-		dopnumbox.action = {arg num; 
+		dopnumbox.action = {arg num;
 			{dpbox[currentsource].valueAction = num.value;}.defer;
 
 		};
 		// stepsize?
-		dpslider = Slider.new(win, Rect(50, 50 + offset, 110, 20));
+		dpslider = Slider.new(win, Rect(50, 130, 110, 20));
 		dpslider.value = 0;
 		dpslider.action = {arg num;
 			{dpbox[currentsource].valueAction = num.value;}.defer;
 			{dopnumbox.value = num.value;}.defer;
 		};
 
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 150, 150, 20));
+		textbuf.string = "Close Reverb";
+		clsReverbox = PopUpMenu( win, Rect(10, 150, 150, 20));
+		clsReverbox.items = ["no-reverb",
+			"freeverb",
+			"allpass"] ++ this.rirList;
+		// add the list of impule response if one is provided
+
+		clsReverbox.action_({ arg num;
+			//{
+				this.clsrevProxy.valueAction = num.value;
+				//this.rvbox.valueAction = num.value;
+
+			//}.defer;
+		});
+		clsReverbox.value = 1;
+
+
 		/////////////////////////////////////////////////////////////////////////
 
 
 
-		textbuf = StaticText(win, Rect(163, 70 + offset, 150, 20));
-		textbuf.string = "Close Reverb";
-		gnumbox = NumberBox(win, Rect(10, 70 + offset, 40, 20));
-		gnumbox.value = 1;
+		textbuf = StaticText(win, Rect(163, 170, 150, 20));
+		textbuf.string = "Cls. amount";
+		gnumbox = NumberBox(win, Rect(10, 170, 40, 20));
+		gnumbox.value = 0;
 		gnumbox.clipHi = pi;
 		gnumbox.clipLo = 0;
-		gnumbox.step_(0.1); 
+		gnumbox.step_(0.1);
 		gnumbox.scroll_step=0.1;
 		gnumbox.align = \center;
-		gnumbox.action = {arg num; 
+		gnumbox.action = {arg num;
 			{gbox[currentsource].valueAction = num.value;}.defer;
 
 		};
 		// stepsize?
-		gslider = Slider.new(win, Rect(50, 70 + offset, 110, 20));
+		gslider = Slider.new(win, Rect(50, 170, 110, 20));
 		gslider.value = 0;
 		gslider.action = {arg num;
 			{gbox[currentsource].valueAction = num.value;}.defer;
 		};
 
 
+		/////////////////////////////////////////////////////////////////////////
 
-		textbuf = StaticText(win, Rect(163, 90 + offset, 150, 20));
+
+		textbuf = StaticText(win, Rect(163, 190, 150, 20));
 		textbuf.string = "Distant Reverb";
-		lnumbox = NumberBox(win, Rect(10, 90 + offset, 40, 20));
-		lnumbox.value = 1;
+		dstReverbox = PopUpMenu( win, Rect(10, 190, 150, 20));
+		dstReverbox.items = ["no-reverb",
+				"freeverb",
+				"allpass",
+				"A-format freeverb  (ATK)",
+				"A-format allpass    (ATK)"] ++ this.rirList ++ this.rirAfmtList;
+		// add the list of impule response if one is provided
+
+		dstReverbox.action_({ arg num;
+			{this.rvbox[currentsource].valueAction = num.value;}.defer;
+		});
+		dstReverbox.value = 1;
+
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 210, 150, 20));
+		textbuf.string = "Dst. amount";
+		lnumbox = NumberBox(win, Rect(10, 210, 40, 20));
+		lnumbox.value = 0;
 		lnumbox.clipHi = pi;
 		lnumbox.clipLo = 0;
-		lnumbox.step_(0.1); 
+		lnumbox.step_(0.1);
 		lnumbox.scroll_step=0.1;
 		lnumbox.align = \center;
-		lnumbox.action = {arg num; 
+		lnumbox.action = {arg num;
 			{lbox[currentsource].valueAction = num.value;}.defer;
 
 		};
 		// stepsize?
-		lslider = Slider.new(win, Rect(50, 90 + offset, 110, 20));
+		lslider = Slider.new(win, Rect(50, 210, 110, 20));
 		lslider.value = 0;
 		lslider.action = {arg num;
 			{lbox[currentsource].valueAction = num.value;}.defer;
 		};
 
 
+		/////////////////////////////////////////////////////////////////////////
 
-		textbuf = StaticText(win, Rect(163, 150 + offset, 150, 20));
+
+		textbuf = StaticText(win, Rect(163, 230, 150, 20));
+		textbuf.string = "Contraction (ATK)";
+		connumbox = NumberBox(win, Rect(10, 230, 40, 20));
+		connumbox.value = 0;
+		connumbox.clipHi = pi;
+		connumbox.clipLo = -pi;
+		connumbox.step_(0.1);
+		connumbox.scroll_step=0.1;
+		connumbox.align = \center;
+		connumbox.action = {arg num;
+			{cbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		cslider = Slider.new(win, Rect(50, 230, 110, 20));
+		cslider.value = 0;
+		cslider.action = {arg num;
+			{cbox[currentsource].valueAction = num.value;}.defer;
+			{connumbox.value = num.value;}.defer;
+		};
+
+		spreadcheck = CheckBox( win, Rect(10, 250, 80, 20), "Spread").action_({ arg butt;
+			{this.spcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		spreadcheck.value = false;
+		diffusecheck = CheckBox( win, Rect(90, 250, 80, 20), "Diffuse").action_({ arg butt;
+			{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
+		});
+		diffusecheck.value = false;
+
+
+		/////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 270, 100, 20));
+		textbuf.string = "Angle (stereo)";
+		angnumbox = NumberBox(win, Rect(10, 270, 40, 20));
+		angnumbox.value = 0;
+		angnumbox.clipHi = pi;
+		angnumbox.clipLo = 0;
+		angnumbox.step_(0.1);
+		angnumbox.scroll_step=0.1;
+		angnumbox.align = \center;
+		angnumbox.action = {arg num;
+			{abox[currentsource].valueAction = num.value;}.defer;
+			if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)){
+				this.espacializador[currentsource].set(\angle, num.value);
+				this.setSynths(currentsource, \angle, num.value);
+				angle[currentsource] = num.value;
+			}
+			{angnumbox.value = 0;};
+		};
+
+		angslider = Slider.new(win, Rect(50, 270, 110, 20));
+		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
+
+		angslider.action = {arg num;
+			{abox[currentsource].valueAction = num.value * pi;}.defer;
+			if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)) {
+				{angnumbox.value = num.value * pi;}.defer;
+				//			this.espacializador[currentsource].set(\angle, b.map(num.value));
+				this.espacializador[currentsource].set(\angle, num.value * pi);
+				this.setSynths(currentsource, \angle, num.value * pi);
+				//			angle[currentsource] = b.map(num.value);
+				angle[currentsource] = num.value * pi;
+			}{{angnumbox.value = num.value * pi;}.defer;};
+		};
+
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 290, 150, 20));
 		textbuf.string = "Rotation (B-Format)";
-		rnumbox = NumberBox(win, Rect(10, 150 + offset, 40, 20));
+		rnumbox = NumberBox(win, Rect(10, 290, 40, 20));
 		rnumbox.value = 0;
 		rnumbox.clipHi = pi;
 		rnumbox.clipLo = -pi;
-		rnumbox.step_(0.1); 
+		rnumbox.step_(0.1);
 		rnumbox.scroll_step=0.1;
 		rnumbox.align = \center;
-		rnumbox.action = {arg num; 
+		rnumbox.action = {arg num;
 			{rbox[currentsource].valueAction = num.value;}.defer;
 
 		};
 		// stepsize?
-		rslider = Slider.new(win, Rect(50, 150 + offset, 110, 20));
+		rslider = Slider.new(win, Rect(50, 290, 110, 20));
 		rslider.value = 0.5;
 		rslider.action = {arg num;
 			{rbox[currentsource].valueAction = num.value * 6.28 - pi;}.defer;
@@ -5563,21 +6306,23 @@ GUI Parameters usable in SynthDefs
 		};
 
 
+		/////////////////////////////////////////////////////////////////////////
 
-		textbuf = StaticText(win, Rect(163, 170 + offset, 150, 20));
+
+		textbuf = StaticText(win, Rect(163, 310, 150, 20));
 		textbuf.string = "Directivity (B-Format)";
-		dirnumbox = NumberBox(win, Rect(10, 170 + offset, 40, 20));
+		dirnumbox = NumberBox(win, Rect(10, 310, 40, 20));
 		dirnumbox.value = 0;
 		dirnumbox.clipHi = pi;
 		dirnumbox.clipLo = -pi;
-		dirnumbox.step_(0.1); 
+		dirnumbox.step_(0.1);
 		dirnumbox.scroll_step=0.1;
 		dirnumbox.align = \center;
-		dirnumbox.action = {arg num; 
+		dirnumbox.action = {arg num;
 			{dbox[currentsource].valueAction = num.value;}.defer;
 		};
 		// stepsize?
-		dirslider = Slider.new(win, Rect(50, 170 + offset, 110, 20));
+		dirslider = Slider.new(win, Rect(50, 310, 110, 20));
 		dirslider.value = 0;
 		dirslider.action = {arg num;
 			{dbox[currentsource].valueAction = num.value * pi/2;}.defer;
@@ -5585,30 +6330,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-
-		textbuf = StaticText(win, Rect(163, 110 + offset, 80, 20));
-		textbuf.string = "Contraction";
-		connumbox = NumberBox(win, Rect(10, 110 + offset, 40, 20));
-		connumbox.value = 0;
-		connumbox.clipHi = pi;
-		connumbox.clipLo = -pi;
-		connumbox.step_(0.1); 
-		connumbox.scroll_step=0.1;
-		connumbox.align = \center;
-		connumbox.action = {arg num; 
-			{cbox[currentsource].valueAction = num.value;}.defer;
-
-		};
-		// stepsize?
-		cslider = Slider.new(win, Rect(50, 110 + offset, 110, 20));
-		cslider.value = 0;
-		cslider.action = {arg num;
-			{cbox[currentsource].valueAction = num.value;}.defer;
-			{connumbox.value = num.value;}.defer;
-		};
-
-
-
+		/////////////////////////////////////////////////////////////////////////
 
 
 		bload = Button(win, Rect(this.width - 190, 10, 90, 20))
@@ -5618,8 +6340,6 @@ GUI Parameters usable in SynthDefs
 		.action_({ arg but;
 			this.synt[currentsource].free; // error check
 			this.espacializador[currentsource].free;
-			dopcheque.value = false; // coloque toggle no padrão
-
 
 
 			Dialog.openPanel(
@@ -5627,26 +6347,26 @@ GUI Parameters usable in SynthDefs
 				//control.stop;
 
 
-				{ 
+				{
 					arg path;
-					
+
 					{
 						this.streamdisk[currentsource] = false;
 						this.tfieldProxy[currentsource].valueAction = path;}.defer;
 					stcheck[currentsource].valueAction = false;
 
-					
 
-					
-				}, 
+
+
+				},
 				{
 					this.streamdisk[currentsource] = false;
 					"cancelled".postln;
-					
+
 					{this.tfield[currentsource].value = "";}.defer;
 					{this.tfieldProxy[currentsource].value = "";}.defer;
 					stcheckProxy[currentsource].valueAction = false;
-				}				
+				}
 			);
 
 		});
@@ -5658,22 +6378,20 @@ GUI Parameters usable in SynthDefs
 		.action_({ arg but;
 			this.synt[currentsource].free; // error check
 			this.espacializador[currentsource].free;
-			dopcheque.value = false; // set to the default
-
 
 			Dialog.openPanel(
 				control.stopRecording;
 				//control.stop;
 				//control.seek;
-				{ 
+				{
 					arg path;
-					
+
 					{
 						this.streamdisk[currentsource] = true;
 						this.tfieldProxy[currentsource].valueAction = path;}.defer;
 					stcheck[currentsource].valueAction = true;
-					
-				}, 
+
+				},
 				{
 					"cancelled".postln;
 					this.streamdisk[currentsource] = false;
@@ -5681,8 +6399,6 @@ GUI Parameters usable in SynthDefs
 					{this.tfield[currentsource].value = "";}.defer;
 					stcheck[currentsource].valueAction = false;
 				}
-
-				
 
 			);
 
@@ -5697,24 +6413,26 @@ GUI Parameters usable in SynthDefs
 			server.plotTree;
 		});
 
-		textbuf = StaticText(wdados, Rect(30, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(20, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Dp";
+		textbuf.string = "Lib";
 		textbuf = StaticText(wdados, Rect(45, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Lp";
-		textbuf = StaticText(wdados, Rect(60, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Rv";
 		textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Hw";
+		textbuf.string = "Lp";
 		textbuf = StaticText(wdados, Rect(90, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Sc";
+		textbuf.string = "Hw";
 		textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Ln";
+		textbuf.string = "Sc";
+
+		//comment out all linear parameters
+		//textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
+		//textbuf.font = Font(Font.defaultSansFace, 9);
+		//textbuf.string = "Ln";
 
 		textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
@@ -5828,53 +6546,38 @@ GUI Parameters usable in SynthDefs
 			textbuf.font = Font(Font.defaultSansFace, 9);
 			textbuf.string = (i+1).asString;
 
-			this.dcheck[i] = CheckBox.new( wdados, Rect(30, 40 + (i*20), 40, 20));
+			this.libbox[i] = NumberBox(wdados, Rect(20, 40 + (i*20), 25, 20));
 
-			this.dcheck[i].action_({ arg but;
-				if((i==currentsource) && guiflag){dopcheque.value = but.value;};
-				this.dcheckProxy[i].valueAction = but.value;
-			});
+			this.rvbox[i] = NumberBox.new(wdados, Rect(45, 40 + (i*20), 25, 20));
 
-
-
-			this.lpcheck[i] = CheckBox.new(wdados, Rect(45, 40 + (i*20), 40, 20));
+			this.lpcheck[i] = CheckBox.new(wdados, Rect(75, 40 + (i*20), 40, 20));
 
 			this.lpcheck[i].action_({ arg but;
 				this.lpcheckProxy[i].valueAction = but.value;
 			});
 
-
-
-
-			this.rvcheck[i] = CheckBox.new(wdados, Rect(60, 40 + (i*20), 40, 20));
-
-			this.rvcheck[i].action_({ arg but;
-				this.rvcheckProxy[i].valueAction = but.value;
-			});
-
-
-
-			this.hwncheck[i] = CheckBox.new( wdados, Rect(75, 40 + (i*20), 40, 20));
+			this.hwncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
 
 			this.hwncheck[i].action_({ arg but;
 				this.hwncheckProxy[i].valueAction = but.value;
 			});
 
 
-			this.scncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
+			this.scncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
 
 			this.scncheck[i].action_({ arg but;
 				this.scncheckProxy[i].valueAction = but.value;
 			});
 
 
-
+			//comment out all linear parameters
+/*
 			this.lncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
 
 			this.lncheck[i].action_({ arg but;
 				this.lncheckProxy[i].valueAction = but.value;
 			});
-
+*/
 
 			this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20));
 
@@ -5895,6 +6598,7 @@ GUI Parameters usable in SynthDefs
 
 
 			/////////////////////////////////////////////////////////////////
+
 
 			this.ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
 			this.businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
@@ -5967,7 +6671,7 @@ GUI Parameters usable in SynthDefs
 
 
 			this.tfield[i] = TextField(wdados, Rect(800, 40+ (i*20), 125, 20));
-			//			this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
+			//this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
 			stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
 			stcheck[i].action = { arg but;
@@ -5975,6 +6679,8 @@ GUI Parameters usable in SynthDefs
 			};
 
 
+			this.libbox[i].font = Font(Font.defaultSansFace, 9);
+			this.rvbox[i].font = Font(Font.defaultSansFace, 9);
 			this.ncanbox[i].font = Font(Font.defaultSansFace, 9);
 			this.businibox[i].font = Font(Font.defaultSansFace, 9);
 			xbox[i].font = Font(Font.defaultSansFace, 9);
@@ -6011,25 +6717,25 @@ GUI Parameters usable in SynthDefs
 
 			a1box[i].action = {arg num;
 				this.a1boxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 
 			a2box[i].action = {arg num;
 				this.a2boxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 
 			a3box[i].action = {arg num;
 				this.a3boxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 			a4box[i].action = {arg num;
 				this.a4boxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 			a5box[i].action = {arg num;
 				this.a5boxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 
 
@@ -6045,7 +6751,7 @@ GUI Parameters usable in SynthDefs
 			// gradually pinching these and putting up above
 
 			this.xbox[i].action = {arg num;
-				
+
 				this.xboxProxy[i].valueAction = num.value;
 			};
 
@@ -6061,8 +6767,6 @@ GUI Parameters usable in SynthDefs
 
 
 
-
-			this.dcheck[i].value = 0;
 
 			abox[i].clipHi = pi;
 			abox[i].clipLo = 0;
@@ -6083,6 +6787,16 @@ GUI Parameters usable in SynthDefs
 			lbox[i].step = 0.01;
 
 
+			this.libbox[i].action = {arg num;
+				this.libboxProxy[i].valueAction = num.value;
+			};
+			libbox[i].value = 0;
+
+			this.rvbox[i].action = {arg num;
+				this.rvboxProxy[i].valueAction = num.value;
+			};
+			rvbox[i].value = 1;
+
 			abox[i].action = {arg num;
 				this.aboxProxy[i].valueAction = num.value;
 				/*	angle[i] = num.value;
@@ -6091,7 +6805,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
 					};
-					if(i == currentsource) 
+					if(i == currentsource)
 					{
 					angnumbox.value = num.value;
 					angslider.value = num.value / pi;
@@ -6100,7 +6814,7 @@ GUI Parameters usable in SynthDefs
 
 			vbox[i].action = {arg num;
 				this.vboxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 
 
@@ -6112,29 +6826,29 @@ GUI Parameters usable in SynthDefs
 
 			gbox[i].action = {arg num;
 				this.gboxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 
 
 			lbox[i].action = {arg num;
 				this.lboxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 
 
-			rbox[i].action = {arg num; 
+			rbox[i].action = {arg num;
 				this.rboxProxy[i].valueAction = num.value;
 			};
 
 
 
 
-			dbox[i].action = {arg num; 
+			dbox[i].action = {arg num;
 				this.dboxProxy[i].valueAction = num.value;
 			};
 
 
-			cbox[i].action = {arg num; 
+			cbox[i].action = {arg num;
 				this.cboxProxy[i].valueAction = num.value;
 			};
 
@@ -6153,7 +6867,7 @@ GUI Parameters usable in SynthDefs
 
 			this.businibox[i].action = {arg num;
 				this.businiboxProxy[i].valueAction = num.value;
-			}; 
+			};
 
 
 
@@ -6190,11 +6904,11 @@ GUI Parameters usable in SynthDefs
 					if(this.stopFunc[i].notNil) {
 						this.stopFunc[i].value;
 					}
-				} 
+				}
 			})
 		};
 
-		runStop = { 
+		runStop = {
 			arg source;
 			if(this.stopFunc[source].notNil) {
 				this.stopFunc[source].value;
@@ -6219,7 +6933,7 @@ GUI Parameters usable in SynthDefs
 			//	control.stop;
 			control.seek;
 			if(this.autoloopval) {
-				//control.play;	
+				//control.play;
 			};
 			/*
 			this.nfontes.do { arg i;
@@ -6242,19 +6956,19 @@ GUI Parameters usable in SynthDefs
 				this.nfontes.do { arg i;
 					this.firstTime[i]=true;
 					//("HERE = " ++ this.firstTime[i]).postln;
-					
+
 				};
 				this.looping = false;
 				"Was looping".postln;
-				
-				
-				
+
+
+
 			};
 			if(control.now < 0)
 			{
 				startTime = 0
 			}
-			{ 
+			{
 				startTime = control.now
 			};
 			this.isPlay = true;
@@ -6268,7 +6982,7 @@ GUI Parameters usable in SynthDefs
 
 			//("isPlay = " ++ isPlay).postln;
 			//runStops.value; // necessary? doesn't seem to help prob of SC input
-			
+
 			//runStops.value;
 			if(isPlay == true) {
 				this.nfontes.do { arg i;
@@ -6278,7 +6992,7 @@ GUI Parameters usable in SynthDefs
 				};
 				control.stop;
 			};
-			
+
 			if(wasplaying) {
 				{control.play}.defer(0.5); //delay necessary. may need more?
 			};
@@ -6302,7 +7016,7 @@ GUI Parameters usable in SynthDefs
 		*/
 
 				control.onStop = {
-			
+
 			if(this.autoloopval.not) {
 				//("Control now = " ++ control.now ++ " dur = " ++ this.dur).postln;
 			};
@@ -6385,7 +7099,7 @@ GUI Parameters usable in SynthDefs
 				dragStartScreen.y = x - this.halfwidth;
 				this.nfontes.do { arg i;
 					if(this.espacializador[i].notNil) {
-						
+
 						this.espacializador[i].set(\mx, this.xval[i], \my, this.yval[i]
 						);
 						//,
@@ -6416,11 +7130,11 @@ GUI Parameters usable in SynthDefs
 					Pen.fill;
 					//Pen.width = 10;
 
-					this.nfontes.do { arg i;	
+					this.nfontes.do { arg i;
 						Pen.fillColor = Color(0.8,0.2,0.9);
 						Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
 						Pen.fill;
-						(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20), 
+						(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20),
 							Font.default, Color.white);
 					};
 
@@ -6437,7 +7151,7 @@ GUI Parameters usable in SynthDefs
 					this.lastGui =  Main.elapsedTime;
 					win.refresh;
 				};
-				
+
 			} {
 
 			};
@@ -6447,15 +7161,15 @@ GUI Parameters usable in SynthDefs
 
 
 
-		win.onClose_({ 
-			
+		win.onClose_({
+
 			wdados.close;
 			waux.close;
 			this.free;
-			
+
 		});
 
-		mmcslave = CheckBox( win, Rect(197, this.width - 40, 140, 20), "Slave to MMC").action_({ arg butt;
+		mmcslave = CheckBox( win, Rect(173, this.width - 40, 140, 20), "Slave to MMC").action_({ arg butt;
 			//("Doppler is " ++ butt.value).postln;
 			if(butt.value) {
 				"Slaving transport to MMC".postln;
@@ -6468,19 +7182,19 @@ GUI Parameters usable in SynthDefs
 			//	dcheck[currentsource].valueAction = butt.value;
 		});
 
-		this.autoloop = CheckBox( win, Rect(305, this.width - 40, 140, 20), "Loop").action_({ arg butt;
+		this.autoloop = CheckBox( win, Rect(283, this.width - 40, 140, 20), "Loop").action_({ arg butt;
 			//("Doppler is " ++ butt.value).postln;
 			if(butt.value) {
 				"Looping transport".postln;
 				this.autoloopval = true;
 			} {
-				this.autoloopval = false;			
+				this.autoloopval = false;
 			};
 
 		});
 
 		this.autoloop.value = this.autoloopval;
-		
+
 		sysex  = { arg src, sysex;
 			// This should be more elaborate - other things might trigger it...fix this!
 			if(sysex[3] == 6){ var x;
@@ -6502,7 +7216,7 @@ GUI Parameters usable in SynthDefs
 					control.play;
 
 				}
-				{ sysex[4] == 68 } { var goto; 
+				{ sysex[4] == 68 } { var goto;
 					("Go to event: " ++ sysex[7] ++ "hr " ++ sysex[8] ++ "min "
 						++ sysex[9] ++ "sec and " ++ sysex[10] ++ "frames").postln;
 					goto =  (sysex[7] * 3600) + (sysex[8] * 60) + sysex[9] + (sysex[10] / 30);
