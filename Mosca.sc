@@ -207,7 +207,9 @@ Mosca {
 	//<>lncheckProxy,
 	<>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
-	<>guiflag;
+	<>guiflag,
+
+	<>firstGlobTime;
 
 
 	/////////////////////////////////////////
@@ -524,6 +526,8 @@ GUI Parameters usable in SynthDefs
 		testado = Array.newClear(this.nfontes);
 
 		clsRvtypes = "_free"; // initialise close reverb type
+		this.firstGlobTime = false; // make sure no close reverb synth is instanciated
+		                            // when setting close reverb types for the firs time
 
 		this.nfontes.do { arg i;
 			angle[i] = 0;
@@ -652,7 +656,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		//set up automationProxy for single parameters outside of the previous loop, not to be docked
-		clsrevProxy = AutomationGuiProxy.new(0);
+		clsrevProxy = AutomationGuiProxy.new(1);
 
 		headingnumboxProxy = AutomationGuiProxy.new(0.0);
 		rollnumboxProxy = AutomationGuiProxy.new(0.0);
@@ -1254,9 +1258,59 @@ GUI Parameters usable in SynthDefs
 
 		this.clsrevProxy.action_({ arg num;
 			case
-			{ num.value == 0 }{ clsRvtypes = "_free"; }
-			{ num.value == 1 }{ clsRvtypes = "_pass"; }
-			{ num.value > 1 }{ clsRvtypes = "_conv"; };
+			{ num.value == 0 }
+			{
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+			}
+			{ num.value == 1 }
+			{ clsRvtypes = "_free";
+
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+
+				if (this.firstGlobTime)
+				{
+					if(globFOATransform.isNil,
+						{ this.revGlobal = Synth.new(\revGlobalAmb_free, [\gbus, gbus, \gate, 1],
+							addAction:\addToTail).register },
+						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_free,
+							[\gbus, gbus, \gate, 1]).register });
+				};
+
+			}
+			{ num.value == 2 }
+			{ clsRvtypes = "_pass";
+
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+
+				if (this.firstGlobTime)
+				{
+					if(globFOATransform.isNil,
+						{ this.revGlobal = Synth.new(\revGlobalAmb_pass, [\gbus, gbus, \gate, 1],
+							addAction:\addToTail).register },
+						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_pass,
+							[\gbus, gbus, \gate, 1]).register });
+				};
+
+			}
+			{ num.value > 2 }
+			{ clsRvtypes = "_conv";
+
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
+
+				if (this.firstGlobTime)
+				{
+					if(globFOATransform.isNil,
+						{ this.revGlobal = Synth.new(\revGlobalAmb_conv, [\gbus, gbus, \gate, 1],
+							addAction:\addToTail).register },
+						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_conv,
+							[\gbus, gbus, \gate, 1]).register });
+				};
+
+			};
 
 			/*if (num.value > 2 && (num.value < 5)) {
 			this.setSynths(i, \rv, 1);
@@ -1273,26 +1327,26 @@ GUI Parameters usable in SynthDefs
 			};*/
 		});
 
-		this.headingnumboxProxy.action = { arg num;
+		this.headingnumboxProxy.action_({ arg num;
 			this.globFOATransform.set(\heading, num.value);
 			if (guiflag) {
 				{this.headingnumbox.value = num.value;}.defer;
 			};
-		};
+		});
 
-		this.rollnumboxProxy.action = { arg num;
+		this.rollnumboxProxy.action_({ arg num;
 			this.globFOATransform.set(\roll, num.value);
 			if (guiflag) {
 				{this.rollnumbox.value = num.value;}.defer;
 			};
-		};
+		});
 
-		this.pitchnumboxProxy.action = {arg num;
+		this.pitchnumboxProxy.action_({arg num;
 			this.globFOATransform.set(\pitch, num.value);
 			if (guiflag) {
 				{this.pitchnumbox.value = num.value;}.defer;
 			};
-		};
+		});
 
 
 
@@ -1313,9 +1367,6 @@ GUI Parameters usable in SynthDefs
 
 		this.streambuf = Array.newClear(this.nfontes);
 		this.streamrate = Array.newClear(this.nfontes);
-
-
-		//o = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		this.scInBus = Array.newClear(this.nfontes);
 		this.nfontes.do { arg x;
@@ -1358,6 +1409,7 @@ GUI Parameters usable in SynthDefs
 		// NO - DON'T PUT THIS HERE - Make a global synth with a common input bus
 
 		///////////// Functions to substitute blocks of code in SynthDefs //////////////
+
 		if (this.decoder.notNil) {
 
 			if(maxorder == 1) {
@@ -2162,8 +2214,10 @@ GUI Parameters usable in SynthDefs
 				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
 
-				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
-				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
 
@@ -2250,8 +2304,10 @@ GUI Parameters usable in SynthDefs
 				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
 				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
 
-				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
-				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
+				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value];
+				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
+					ambSigRef[3].value,
 					ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
 					ambSigRef[8].value];
 
@@ -2714,8 +2770,9 @@ GUI Parameters usable in SynthDefs
 
 
 
-				SynthDef.new("revGlobalAmb_conv",  { arg gbus;
-					var sig, convsig;
+				SynthDef.new("revGlobalAmb_conv",  { arg gbus, gate = 1;
+					var env, sig, convsig;
+					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 					sig = In.ar(gbus, 1);
 					convsig = [
 						PartConv.ar(sig, fftsize, rirWspectrum),
@@ -2723,6 +2780,7 @@ GUI Parameters usable in SynthDefs
 						PartConv.ar(sig, fftsize, rirYspectrum),
 						PartConv.ar(sig, fftsize, rirZspectrum)
 					];
+					convsig = convsig * env;
 					revGlobalAmbFunc.value(convsig, dec);
 				}).add;
 
@@ -2875,12 +2933,13 @@ GUI Parameters usable in SynthDefs
 
 		//run the makeSpatialisers function for each types of local reverbs
 
-		SynthDef.new("revGlobalAmb_pass",  { arg gbus;
-			var sig = In.ar(gbus, 1);
-			//	sig = [sig, sig, sig, sig];
+		SynthDef.new("revGlobalAmb_pass",  { arg gbus, gate = 1;
+			var env, sig = In.ar(gbus, 1);
+			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
 				this.decaytime)});
 			sig = sig / 4; // running too hot, so attenuate
+			sig = sig * env;
 			sig = FoaEncode.ar(sig, a2b);
 			revGlobalAmbFunc.value(sig, dec);
 		}).add;
@@ -2907,8 +2966,9 @@ GUI Parameters usable in SynthDefs
 
 
 
-		SynthDef.new("revGlobalAmb_free",  { arg gbus;
-			var sig, convsig;
+		SynthDef.new("revGlobalAmb_free",  { arg gbus, gate = 1;
+			var env, sig, convsig;
+			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = In.ar(gbus, 1);
 			convsig = [
 				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
@@ -2916,8 +2976,8 @@ GUI Parameters usable in SynthDefs
 				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
 				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul)
 			];
-			//SendTrig.kr(Impulse.kr(1), 0, convsig[1]); // debug
 			convsig = FoaEncode.ar(convsig, a2b);
+			convsig = convsig * env;
 			revGlobalAmbFunc.value(convsig, dec);
 		}).add;
 
@@ -3801,7 +3861,6 @@ GUI Parameters usable in SynthDefs
 
 
 
-
 		// Note: ncanais refers to number of channels in the context of
 		// files on disk
 		// ncan is number of channels for hardware or supercollider input
@@ -3810,15 +3869,19 @@ GUI Parameters usable in SynthDefs
 		// in buses 7, 8, 9 and 10.
 
 		if (this.reverb) {
-			if(revGlobalBF.isNil){
-				this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
-					addAction:\addToTail);
+			if (revGlobalBF.isNil){
+				this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
 			};
-			if(revGlobal.isNil){
-				this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus], addAction:\addToTail);
+
+			if (revGlobal.isNil && (this.clsrevProxy.value > 0)){
+				this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
+					addAction:\addToTail).register;
+
+				this.firstGlobTime = true;
 			};
 		};
-		//if (this.serport.notNil) {
+
+		//if (this.serport.notNil) { // comment out serial port prerequisit
 			if(globFOATransform.isNil && this.decoder.notNil) {
 			this.globFOATransform = Synth.new(\globDecodeSynth, [\globtbus, this.globTBus,
 				\ambixbus, this.ambixbus, \heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
@@ -4231,9 +4294,10 @@ GUI Parameters usable in SynthDefs
 						{this.lib[i] == 0}
 
 						//comment out all linear parameters
-						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i], [\inbus, mbus[i],
+						{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i],
+							[\inbus, mbus[i],
 							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -4274,9 +4338,10 @@ GUI Parameters usable in SynthDefs
 						{this.lib[i] == 0}
 
 						//comment out all linear parameters
-						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
+						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i], [\inbus, mbus[i],
+						{this.espacializador[i] = Synth.new(\espacAmbChowning++rvtypes[i],
+							[\inbus, mbus[i],
 							\gbus, gbus,
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -5955,7 +6020,7 @@ GUI Parameters usable in SynthDefs
 		////////////////////////////// Orientation //////////////
 
 
-		//if (this.serport.notNil) { //comment out the prerequisit for the serial port
+		//if (this.serport.notNil) { //comment out serial port prerequisit
 
 			this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
 			this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
@@ -6044,8 +6109,9 @@ GUI Parameters usable in SynthDefs
 		textbuf = StaticText(win, Rect(163, 150, 150, 20));
 		textbuf.string = "Close Reverb";
 		clsReverbox = PopUpMenu( win, Rect(10, 150, 150, 20));
-		clsReverbox.items = ["freeverb",
-				"allpass"] ++ this.rirList;
+		clsReverbox.items = ["no-reverb",
+			"freeverb",
+			"allpass"] ++ this.rirList;
 		// add the list of impule response if one is provided
 
 		clsReverbox.action_({ arg num;
@@ -6055,7 +6121,7 @@ GUI Parameters usable in SynthDefs
 
 			//}.defer;
 		});
-		clsReverbox.value = 0;
+		clsReverbox.value = 1;
 
 
 		/////////////////////////////////////////////////////////////////////////
