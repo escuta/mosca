@@ -3758,6 +3758,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	getFoaInsertOut {
 		|source |
 		if (source > 0) {
@@ -3768,6 +3769,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	getSoaInsertIn {
 		|source |
 		if (source > 0) {
@@ -3777,6 +3779,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	getSoaInsertOut {
 		|source |
 		if (source > 0) {
@@ -3786,6 +3789,7 @@ GUI Parameters usable in SynthDefs
 			^bus
 		}
 	}
+
 	releaseInsert {
 		|source |
 		if (source > 0) {
@@ -3804,6 +3808,7 @@ GUI Parameters usable in SynthDefs
 			this.triggerFunc[source-1] = function;
 		}
 	}
+
 	// Companion stop method
 	setStopFunc {
 		|source, function|
@@ -3811,21 +3816,20 @@ GUI Parameters usable in SynthDefs
 			this.stopFunc[source-1] = function;
 		}
 	}
+
 	clearTriggerFunc {
 		|source|
 		if (source > 0) {
 			this.triggerFunc[source-1] = nil;
 		}
 	}
+
 	clearStopFunc {
 		|source|
 		if (source > 0) {
 			this.stopFunc[source-1] = nil;
 		}
 	}
-
-
-
 
 	playAutomation {
 		this.control.play;
@@ -3838,7 +3842,15 @@ GUI Parameters usable in SynthDefs
 		this.control.play;
 	}
 
-
+	globBfmtNeeded { |i|
+		if(i == this.nfontes + 1,
+			{ false.asBoolean },
+			{ if(this.espacializador[i].isPlaying,
+				{ true.asBoolean },
+				{ this.globBfmtNeeded.value(i + 1) };
+			) };
+		);
+	}
 
 	newtocar {
 		arg i, tpos, force = false;
@@ -3953,7 +3965,7 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter);
+							this.synt[i], addAction: \addAfter).register;
 
 					} {
 
@@ -4061,7 +4073,7 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter);
+							this.synt[i], addAction: \addAfter).register;
 
 
 
@@ -4140,7 +4152,7 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 								this.revGlobalSoa,
-							addAction: \addBefore).onFree({this.espacializador[i].free;
+							addAction: \addBefore).register.onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false;
 									this.streambuf[i].free;
@@ -4160,7 +4172,8 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+								nodeMarker1,
+							addAction: \addBefore).register.onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false;
 									this.streambuf[i].free;
@@ -4194,7 +4207,8 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+							nodeMarker1,
+						addAction: \addBefore).register.onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil; this.synt[i] = nil;
 								this.playingBF[i] = false;
 								this.streambuf[i].free;
@@ -4286,7 +4300,7 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter);
+							this.synt[i], addAction: \addAfter).register;
 
 					}{
 
@@ -4425,7 +4439,7 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter);
+							this.synt[i], addAction: \addAfter).register;
 					};
 
 
@@ -4509,7 +4523,7 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 									this.revGlobalSoa,
-								addAction: \addBefore).onFree({this.espacializador[i].free;
+								addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							} {
@@ -4527,7 +4541,8 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-									nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+									nodeMarker1,
+								addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							};
@@ -4561,7 +4576,8 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+								nodeMarker1,
+							addAction: \addBefore).register.onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.playingBF[i] = false});
 
@@ -4664,7 +4680,7 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter);
+							this.synt[i], addAction: \addAfter).register;
 
 						};
 
@@ -4799,7 +4815,7 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								this.synt[i], addAction: \addAfter);
+								this.synt[i], addAction: \addAfter).register;
 						};
 
 
@@ -4872,7 +4888,7 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.busini[i]],
 										this.revGlobalSoa,
-									addAction: \addBefore).onFree({this.espacializador[i].free;
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
 
@@ -4890,7 +4906,7 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.scInBus[i] ],
 										nodeMarker2,
-									addAction: \addBefore).onFree({this.espacializador[i].free;
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								};
 							} {
@@ -4909,7 +4925,7 @@ GUI Parameters usable in SynthDefs
 										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
 										\busini, this.busini[i]],
 										nodeMarker1,
-									addAction: \addBefore).onFree({this.espacializador[i].free;
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								} {
 
@@ -4922,7 +4938,7 @@ GUI Parameters usable in SynthDefs
 										level[i],
 										\busini, this.scInBus[i] ],
 										nodeMarker1,
-									addAction: \addBefore).onFree({this.espacializador[i].free;
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 											this.espacializador[i] = nil; this.synt[i] = nil;});
 								};
 
@@ -4959,8 +4975,8 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\busini, this.busini[i]],
-									nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+									\busini, this.busini[i]], nodeMarker1,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;
 										this.playingBF[i] = false});
 							} {
@@ -4977,8 +4993,8 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\busini, this.scInBus[i] ],
-									nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+									\busini, this.scInBus[i] ], nodeMarker1,
+									addAction: \addBefore).register.onFree({this.espacializador[i].free;
 										this.espacializador[i] = nil; this.synt[i] = nil;});
 							};
 
