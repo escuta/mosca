@@ -118,7 +118,7 @@ Mosca {
 	<>dur,
 	<>plim, // distance limit from origin where processes continue to run
 	<>looping,
-	<>firstTime, <>firstGlobTime,
+	<>firstTime,
 	<>playingBF,
 	<>rawbusfuma, <>rawbusambix, <>maxorder,
 	<>decoder,
@@ -166,7 +166,6 @@ Mosca {
 
 	//<>oxbox, <>oybox, <>ozbox,
 	// <>funcs, // apparently unused
-	<>reverb,
 
 
 	<>novoplot, //<>lastx, <>lasty, // apparently unused
@@ -238,10 +237,10 @@ Mosca {
 		freeroom = 0.5, freedamp = 0.5, freemul = 1,
 		server = Server.default, decoder = nil, rawbusfuma = 0, rawbusambix = 9, maxorder = 1,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
-		guiint = 0.07, reverb = true, autoloop = false;
+		guiint = 0.07, autoloop = false;
 		^super.new.initMosca(projDir, nsources, width, dur, rir, freeroom, freedamp, freemul,
 			server, decoder, rawbusfuma, rawbusambix, maxorder, serport,
-			offsetheading, recchans, recbus, guiflag, guiint, reverb, autoloop);
+			offsetheading, recchans, recbus, guiflag, guiint, autoloop);
 	}
 
 
@@ -281,7 +280,7 @@ GUI Parameters usable in SynthDefs
 
 	initMosca { arg projDir, nsources, iwidth, idur, irir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
 		irawbusfuma, irawbusambix, imaxorder, iserport, ioffsetheading,
-		irecchans, irecbus, iguiflag, iguiint, ireverb, iautoloop;
+		irecchans, irecbus, iguiflag, iguiint, iautoloop;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
 		espacAmbOutFunc, ambixOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
 		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
@@ -337,7 +336,6 @@ GUI Parameters usable in SynthDefs
 		this.plim = 1.2;
 		this.lastGui = Main.elapsedTime;
 		this.guiInt = iguiint;
-		this.reverb = ireverb;
 		this.autoloopval = iautoloop;
 
 		this.looping = false;
@@ -526,8 +524,6 @@ GUI Parameters usable in SynthDefs
 		clsRvtypes = "_free"; // initialise close reverb type
 		clsrv = 1;
 
-		this.firstGlobTime = false; // make sure no close reverb synth is instanciated
-		                            // when setting close reverb types for the firs time
 
 		this.nfontes.do { arg i;
 			angle[i] = 0;
@@ -1257,51 +1253,65 @@ GUI Parameters usable in SynthDefs
 
 
 		this.clsrvboxProxy.action_({ arg num;
+
 			this.clsrv = num.value;
+
 			case
-			{ num.value == 0 }
+			{ num.value == 1 }
+			{ clsRvtypes = "_free"; }
+			{ num.value == 2 }
+			{ clsRvtypes = "_pass"; }
+			{ num.value > 2 }
+			{ clsRvtypes = "_conv"; };
+
+			if (num.value == 0)
 			{
 				if(revGlobal.isPlaying)
 				{ this.revGlobal.set(\gate, 0) };
-			}
-			{ num.value == 1 }
-			{ clsRvtypes = "_free";
 
-				if(revGlobal.isPlaying)
-				{ this.revGlobal.set(\gate, 0) };
+				if(revGlobalBF.isPlaying)
+				{ this.revGlobalBF.set(\gate, 0) };
 
-				if (this.firstGlobTime)
-				{
-					this.revGlobal = Synth.new(\revGlobalAmb_free, [\gbus, gbus, \gate, 1],
-						this.glbRevDecGrp).register
+				if(revGlobalSoa.isPlaying)
+				{ this.revGlobalSoa.set(\gate, 0) };
+			} {
+				if(revGlobal.isPlaying) {
+					this.revGlobal.set(\gate, 0);
+
+					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
+						this.glbRevDecGrp).register;
+				} {
+					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
+						this.glbRevDecGrp).register;
 				};
 
-			}
-			{ num.value == 2 }
-			{ clsRvtypes = "_pass";
+				if(this.globBfmtNeeded(0)) {
+					if (revGlobalBF.isPlaying) {
+						this.revGlobalBF.set(\gate, 0);
 
-				if(revGlobal.isPlaying)
-				{ this.revGlobal.set(\gate, 0) };
-
-				if (this.firstGlobTime)
-				{
-					this.revGlobal = Synth.new(\revGlobalAmb_pass, [\gbus, gbus, \gate, 1],
-						this.glbRevDecGrp).register
+						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+							[\gbfbus, gbfbus, \gate, 1], this.glbRevDecGrp).register;
+					} {
+						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+							[\gbfbus, gbfbus, \gate, 1], this.glbRevDecGrp).register;
+					};
 				};
 
-			}
-			{ num.value > 2 }
-			{ clsRvtypes = "_conv";
+				if (this.maxorder > 1) {
+					if (this.globSoaA12Needed(0)) {
+						if (revGlobalSoa.isPlaying) {
+							this.revGlobalSoa.set(\gate, 0);
 
-				if(revGlobal.isPlaying)
-				{ this.revGlobal.set(\gate, 0) };
-
-				if (this.firstGlobTime)
-				{
-					this.revGlobal = Synth.new(\revGlobalAmb_conv, [\gbus, gbus, \gate, 1],
-						this.glbRevDecGrp).register
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1],
+								this.glbRevDecGrp).register;
+						} {
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1],
+								this.glbRevDecGrp).register;
+						};
+					};
 				};
-
 			};
 
 			/*if (num.value > 2 && (num.value < 5)) {
@@ -1702,7 +1712,17 @@ GUI Parameters usable in SynthDefs
 			};
 		};
 
+		server.sync;
 
+
+		//if (this.serport.notNil) { // comment out serial port prerequisit
+		if (this.decoder.notNil) {
+
+			this.globFOATransform = Synth.new(\globDecodeSynth, [\globtbus, this.globTBus,
+				\ambixbus, this.ambixbus, \heading, 0, \roll, 0, \pitch, 0], this.glbRevDecGrp,
+			addAction: \addToTail);
+		};
+		//	};
 
 
 		makeSpatialisers = { arg rev_type;
@@ -2619,308 +2639,255 @@ GUI Parameters usable in SynthDefs
 		}; //end makeSpatialisers
 
 
-		//basic prameters for allpass filter reverb
-		this.decaytime = 1.0;
-		this.delaytime = 0.04;
-
 		this.rirList = [];
 		this.rirAfmtList = [];
 
-		if (rir != "freeverb") {
+		if (rir.notNil) {
 
-			if (rir != "allpass") {
+			// prepare list of impulse responses for close and distant reverb selection menue
+			var rirName = PathName(rir).fileNameWithoutExtension;
 
-				// prepare list of impulse responses for close and distant reverb selection menue
-				var rirName = PathName(rir).fileNameWithoutExtension;
-
-				this.rirList = [rirName];
-				this.rirAfmtList = ["A-format "++rirName++" (ATK)"]; // add A-fmt for close reveb
+			this.rirList = [rirName];
+			this.rirAfmtList = ["A-format "++rirName++" (ATK)"]; // add A-fmt for close reveb
 
 
-				rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
-				rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
-				rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
-				rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [3]);
+			rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
+			rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
+			rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
+			rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [3]);
 
 
-				bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rir);
+			bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rir);
+			server.sync;
+			bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
+			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
+			server.sync;
+
+
+			{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
+				bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+			Out.ar(0, Silent.ar);
+			}.play;
+
+
+			(bufAformat.numFrames / server.sampleRate).wait;
+
+
+			bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
+
+
+			server.sync;
+
+
+			{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
+				foa_a12_decoder_matrix),
+			bufAformat_soa_a12,
+			Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
+			Out.ar(0, Silent.ar);
+			}.play;
+
+
+			(bufAformat.numFrames / server.sampleRate).wait;
+
+			bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav",
+				sampleFormat: "int24");
+
+
+
+			server.sync;
+			rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
+			rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
+			rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
+			rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
+
+			server.sync;
+
+
+			bufsize = PartConv.calcBufSize(fftsize, rirW);
+
+			//~bufsize1=bufsize;
+
+			rirWspectrum = Buffer.alloc(server, bufsize, 1);
+			rirXspectrum = Buffer.alloc(server, bufsize, 1);
+			rirYspectrum = Buffer.alloc(server, bufsize, 1);
+			rirZspectrum = Buffer.alloc(server, bufsize, 1);
+			server.sync;
+			rirWspectrum.preparePartConv(rirW, fftsize);
+			server.sync;
+			rirXspectrum.preparePartConv(rirX, fftsize);
+			server.sync;
+			rirYspectrum.preparePartConv(rirY, fftsize);
+			server.sync;
+			rirZspectrum.preparePartConv(rirZ, fftsize);
+
+
+			server.sync;
+
+			rirFLUspectrum = Buffer.alloc(server, bufsize, 1);
+			rirFRDspectrum = Buffer.alloc(server, bufsize, 1);
+			rirBLDspectrum = Buffer.alloc(server, bufsize, 1);
+			rirBRUspectrum = Buffer.alloc(server, bufsize, 1);
+			server.sync;
+			rirFLUspectrum.preparePartConv(rirFLU, fftsize);
+			server.sync;
+			rirFRDspectrum.preparePartConv(rirFRD, fftsize);
+			server.sync;
+			rirBLDspectrum.preparePartConv(rirBLD, fftsize);
+			server.sync;
+			rirBRUspectrum.preparePartConv(rirBRU, fftsize);
+			server.sync;
+
+			rirA12 = Array.newClear(12);
+			rirA12Spectrum = Array.newClear(12);
+			12.do { arg i;
+				rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav",
+					channels: [i]);
 				server.sync;
-				bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
-				bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
+				rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
 				server.sync;
-
-
-				{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
-					bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-				Out.ar(0, Silent.ar);
-				}.play;
-
-
-				(bufAformat.numFrames / server.sampleRate).wait;
-
-
-				bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
-
-
+				rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
 				server.sync;
-
-
-				{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
-					foa_a12_decoder_matrix),
-				bufAformat_soa_a12,
-				Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
-				Out.ar(0, Silent.ar);
-				}.play;
-
-
-				(bufAformat.numFrames / server.sampleRate).wait;
-
-				bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav",
-					sampleFormat: "int24");
-
-
-
-				server.sync;
-				rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
-				rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
-				rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
-				rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
-
-				server.sync;
-
-
-				bufsize = PartConv.calcBufSize(fftsize, rirW);
-
-				//~bufsize1=bufsize;
-
-				rirWspectrum = Buffer.alloc(server, bufsize, 1);
-				rirXspectrum = Buffer.alloc(server, bufsize, 1);
-				rirYspectrum = Buffer.alloc(server, bufsize, 1);
-				rirZspectrum = Buffer.alloc(server, bufsize, 1);
-				server.sync;
-				rirWspectrum.preparePartConv(rirW, fftsize);
-				server.sync;
-				rirXspectrum.preparePartConv(rirX, fftsize);
-				server.sync;
-				rirYspectrum.preparePartConv(rirY, fftsize);
-				server.sync;
-				rirZspectrum.preparePartConv(rirZ, fftsize);
-
-
-				server.sync;
-
-				rirFLUspectrum = Buffer.alloc(server, bufsize, 1);
-				rirFRDspectrum = Buffer.alloc(server, bufsize, 1);
-				rirBLDspectrum = Buffer.alloc(server, bufsize, 1);
-				rirBRUspectrum = Buffer.alloc(server, bufsize, 1);
-				server.sync;
-				rirFLUspectrum.preparePartConv(rirFLU, fftsize);
-				server.sync;
-				rirFRDspectrum.preparePartConv(rirFRD, fftsize);
-				server.sync;
-				rirBLDspectrum.preparePartConv(rirBLD, fftsize);
-				server.sync;
-				rirBRUspectrum.preparePartConv(rirBRU, fftsize);
-				server.sync;
-
-				rirA12 = Array.newClear(12);
-				rirA12Spectrum = Array.newClear(12);
-				12.do { arg i;
-					rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav",
-						channels: [i]);
-					server.sync;
-					rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
-					server.sync;
-					rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
-					server.sync;
-				};
-				server.sync;
+			};
+			server.sync;
 
 
 
 
-				rirW.free; // don't need time domain data anymore, just needed spectral version
-				rirX.free;
-				rirY.free;
-				rirZ.free;
-				rirFLU.free;
-				rirFRD.free;
-				rirBLD.free;
-				rirBRU.free;
-				bufAformat.free;
-				bufWXYZ.free;
-				12.do { arg i;
-					rirA12[i].free;
-				};
-
-
-				server.sync;
-
-
-
-				/// START SYNTH DEFS ///////
-
-
-
-				SynthDef.new("revGlobalAmb_conv",  { arg gbus, gate = 1;
-					var env, sig, convsig;
-					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-					sig = In.ar(gbus, 1);
-					convsig = [
-						PartConv.ar(sig, fftsize, rirWspectrum),
-						PartConv.ar(sig, fftsize, rirXspectrum),
-						PartConv.ar(sig, fftsize, rirYspectrum),
-						PartConv.ar(sig, fftsize, rirZspectrum)
-					];
-					convsig = convsig * env;
-					revGlobalAmbFunc.value(convsig, dec);
-				}).add;
-
-
-				SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-					var convsig, sig = In.ar(gbfbus, 4);
-					sig = FoaDecode.ar(sig, b2a);
-					convsig = [
-						PartConv.ar(sig[0], fftsize, rirFLUspectrum),
-						PartConv.ar(sig[1], fftsize, rirFRDspectrum),
-						PartConv.ar(sig[2], fftsize, rirBLDspectrum),
-						PartConv.ar(sig[3], fftsize, rirBRUspectrum)
-					];
-					convsig = FoaEncode.ar(convsig, a2b);
-					revGlobalAmbFunc.value(convsig, dec);
-				}).add;
-
-
-				SynthDef.new("revGlobalSoaA12",  { arg soaBus;
-					var w, x, y, z, r, s, t, u, v,
-					foaSig, soaSig, tmpsig;
-					var sig = In.ar(soaBus, 9);
-
-					sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-					//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
-					tmpsig = [
-						PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]),
-						PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]),
-						PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]),
-						PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]),
-						PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]),
-						PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]),
-						PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]),
-						PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]),
-						PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]),
-						PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]),
-						PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]),
-						PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]),
-					];
-
-					tmpsig = tmpsig*4;
-					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
-					foaSig = [w, x, y, z];
-					soaSig = [w, x, y, z, r, s, t, u, v];
-					revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-				}).add;
-
-
-				//run the makeSpatialisers function for each types of local reverbs
-
-				localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-					lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
-				};
-
-				localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
-					var temp1 = p1, temp2 = p2;
-					temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-					temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-					lrev1Ref.value = temp1 * locallev;
-					lrev2Ref.value = temp2 * locallev;
-				};
-
-
-				makeSpatialisers.value(rev_type:"_conv");
-
-
-			}{
-
-				// else use allpass filters
-
-				SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-					var temp, sig = In.ar(gbfbus, 4);
-
-					sig = FoaDecode.ar(sig, b2a);
-					16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
-						this.decaytime)});
-
-					sig = FoaEncode.ar(sig, a2b);
-					revGlobalAmbFunc.value(sig, dec);
-				}).add;
-
-
-
-				SynthDef.new("revGlobalSoaA12",  { arg soaBus;
-					var w, x, y, z, r, s, t, u, v,
-					foaSig, soaSig, tmpsig;
-					var sig = In.ar(soaBus, 9);
-					sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-					16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.001,this.delaytime) }.dup(12),
-						this.decaytime)});
-					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix);
-					foaSig = [w, x, y, z];
-					soaSig = [w, x, y, z, r, s, t, u, v];
-					revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-				}).load(server);
-
+			rirW.free; // don't need time domain data anymore, just needed spectral version
+			rirX.free;
+			rirY.free;
+			rirZ.free;
+			rirFLU.free;
+			rirFRD.free;
+			rirBLD.free;
+			rirBRU.free;
+			bufAformat.free;
+			bufWXYZ.free;
+			12.do { arg i;
+				rirA12[i].free;
 			};
 
-		}{
 
-			// trying freeverb here
+			server.sync;
 
 
-			SynthDef.new("revGlobalBFormatAmb",  { arg gbfbus;
-				var convsig, sig = In.ar(gbfbus, 4);
-				sig = FoaDecode.ar(sig, b2a);
+
+			/// START SYNTH DEFS ///////
+
+
+
+			SynthDef.new("revGlobalAmb_conv",  { arg gbus, gate = 1;
+				var env, sig, convsig;
+				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+				sig = In.ar(gbus, 1);
 				convsig = [
-					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+					PartConv.ar(sig, fftsize, rirWspectrum),
+					PartConv.ar(sig, fftsize, rirXspectrum),
+					PartConv.ar(sig, fftsize, rirYspectrum),
+					PartConv.ar(sig, fftsize, rirZspectrum)
 				];
-				convsig = FoaEncode.ar(convsig, a2b);
+				convsig = convsig * env;
 				revGlobalAmbFunc.value(convsig, dec);
 			}).add;
 
-			SynthDef.new("revGlobalSoaA12",  { arg soaBus;
-				var w, x, y, z, r, s, t, u, v,
+
+			SynthDef.new("revGlobalBFormatAmb_conv",  { arg gbfbus, gate = 1;
+				var env, convsig, sig = In.ar(gbfbus, 4);
+				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+				sig = FoaDecode.ar(sig, b2a);
+				convsig = [
+					PartConv.ar(sig[0], fftsize, rirFLUspectrum),
+					PartConv.ar(sig[1], fftsize, rirFRDspectrum),
+					PartConv.ar(sig[2], fftsize, rirBLDspectrum),
+					PartConv.ar(sig[3], fftsize, rirBRUspectrum)
+				];
+				convsig = FoaEncode.ar(convsig, a2b);
+				convsig = convsig * env;
+				revGlobalAmbFunc.value(convsig, dec);
+			}).add;
+
+
+			SynthDef.new("revGlobalSoaA12_conv",  { arg soaBus, gate = 1;
+				var env, w, x, y, z, r, s, t, u, v,
 				foaSig, soaSig, tmpsig;
 				var sig = In.ar(soaBus, 9);
-
-
+				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-				//SendTrig.kr(Impulse.kr(1), 0, sig[0]); // debug
 				tmpsig = [
-					FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[4], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[5], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[6], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[7], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[8], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[9], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[10], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-					FreeVerb.ar(sig[11], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+					PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]),
+					PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]),
+					PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]),
+					PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]),
+					PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]),
+					PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]),
+					PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]),
+					PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]),
+					PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]),
+					PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]),
+					PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]),
+					PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]),
 				];
 
-				tmpsig = tmpsig*4;
+				tmpsig = tmpsig * 4 * env;
 				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
-				foaSig = [w, x, y, z];
+				foaSig = [w, x, y, z] ;
 				soaSig = [w, x, y, z, r, s, t, u, v];
 				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
 			}).add;
 
+
+			//run the makeSpatialisers function for each types of local reverbs
+
+
+			localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+				lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
+			};
+
+			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+				var temp1 = p1, temp2 = p2;
+				temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				lrev1Ref.value = temp1 * locallev;
+				lrev2Ref.value = temp2 * locallev;
+			};
+
+
+			makeSpatialisers.value(rev_type:"_conv");
+
+
 		};
 
+		// allpass reverbs
+
+		//basic prameters for allpass filter reverb
+		this.decaytime = 1.0;
+		this.delaytime = 0.04;
+
+		SynthDef.new("revGlobalBFormatAmb_pass",  { arg gbfbus, gate = 1;
+			var env, temp, sig = In.ar(gbfbus, 4);
+			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+			sig = FoaDecode.ar(sig, b2a);
+			16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
+				this.decaytime)});
+			sig = FoaEncode.ar(sig, a2b);
+			sig = sig * env;
+			revGlobalAmbFunc.value(sig, dec);
+		}).add;
+
+
+		SynthDef.new("revGlobalSoaA12_pass",  { arg soaBus, gate = 1;
+			var env, w, x, y, z, r, s, t, u, v,
+			foaSig, soaSig, tmpsig;
+			var sig = In.ar(soaBus, 9);
+			env = EnvGen.kr(Env.asr, gate, doneAction:2);
+			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+			16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.001,this.delaytime) }.dup(12),
+				this.decaytime)});
+			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix) * env;
+			foaSig = [w, x, y, z];
+			soaSig = [w, x, y, z, r, s, t, u, v];
+			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+		}).load(server);
 
 
 		//run the makeSpatialisers function for each types of local reverbs
@@ -2957,6 +2924,56 @@ GUI Parameters usable in SynthDefs
 		makeSpatialisers.value(rev_type:"_pass");
 
 
+		// freeverb defs
+
+
+		SynthDef.new("revGlobalBFormatAmb_free",  { arg gbfbus, gate = 1;
+			var env, convsig, sig = In.ar(gbfbus, 4);
+			env = EnvGen.kr(Env.asr, gate, doneAction:2);
+			sig = FoaDecode.ar(sig, b2a);
+			convsig = [
+				FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+			];
+			convsig = FoaEncode.ar(convsig, a2b);
+			convsig = convsig * env;
+			revGlobalAmbFunc.value(convsig, dec);
+		}).add;
+
+
+		SynthDef.new("revGlobalSoaA12_free",  { arg soaBus, gate = 1;
+			var env, w, x, y, z, r, s, t, u, v,
+			foaSig, soaSig, tmpsig;
+			var sig = In.ar(soaBus, 9);
+			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+			tmpsig = [
+				FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[4], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[5], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[6], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[7], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[8], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[9], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[10], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
+				FreeVerb.ar(sig[11], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
+			];
+
+			tmpsig = tmpsig * 4 * env;
+			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
+			foaSig = [w, x, y, z];
+			soaSig = [w, x, y, z, r, s, t, u, v];
+			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+		}).add;
+
+
+		//run the makeSpatialisers function for each types of local reverbs
+
 
 		SynthDef.new("revGlobalAmb_free",  { arg gbus, gate = 1;
 			var env, sig, convsig;
@@ -2990,6 +3007,7 @@ GUI Parameters usable in SynthDefs
 		makeSpatialisers.value(rev_type:"_free");
 
 
+		// function for no-reverb option
 
 		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
 		};
@@ -3833,13 +3851,23 @@ GUI Parameters usable in SynthDefs
 	}
 
 	globBfmtNeeded { |i|
-		if(i == this.nfontes + 1,
-			{ false.asBoolean },
-			{ if(this.streambuf[i].numChannels == 4 || (sombuf[i].numChannels == 4) ||  (this.ncan[i] == 4)
+		if(i == (this.nfontes + 1),
+			{ ^false.asBoolean },
+			{ if(this.playingBF[i].asBoolean && (this.synt[i].isPlaying),
+				{ ^true.asBoolean },
+				{ ^this.globBfmtNeeded(i + 1) };
+			)};
+		);
+	}
+
+	globSoaA12Needed { |i|
+		if(i == (this.nfontes + 1),
+			{ ^false.asBoolean },
+			{ if (( dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5) )
 				&& (this.espacializador[i].isPlaying),
-				{ true.asBoolean },
-				{ this.globBfmtNeeded.value(i + 1) };
-			) };
+				{ ^true.asBoolean },
+				{ ^this.globBfmtNeeded(i + 1) };
+			)};
 		);
 	}
 
@@ -3871,22 +3899,12 @@ GUI Parameters usable in SynthDefs
 		// in buses 7, 8, 9 and 10.
 
 
-		//if (this.serport.notNil) { // comment out serial port prerequisit
-		if(globFOATransform.isNil && this.decoder.notNil) {
-
-			this.globFOATransform = Synth.new(\globDecodeSynth, [\globtbus, this.globTBus,
-				\ambixbus, this.ambixbus, \heading, 0, \roll, 0, \pitch, 0], this.glbRevDecGrp,
-			addAction: \addToTail);
-		};
-		//	};
-
 		if (revGlobal.isNil && (clsrv > 0)){
 
 			this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
 				this.glbRevDecGrp).register;
 		};
 
-		this.firstGlobTime = true;
 
 		/// STREAM FROM DISK
 
@@ -3910,41 +3928,57 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 
+					this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
+						\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+						\level, level[i]],
+					this.playEspacGrp).onFree({this.espacializador[i].free;
+						this.espacializador[i] = nil; this.synt[i] = nil;
+						this.streambuf[i].free;
+					});
+
 					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								this.glbRevDecGrp);
+						if (this.maxorder > 1) {
+							if(revGlobalSoa.isPlaying.not  && (clsrv > 0)) {
+								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+									[\soaBus, soaBus, \gate, 1],
+									this.glbRevDecGrp).register;
+							} {
+								this.revGlobalSoa.set(\gate, 1);
+							};
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacAFormatVerb++dstrvtypes[i],
+								[\inbus, mbus[i],
+									\soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								this.synt[i], addAction: \addAfter).register.onFree({
+								if (this.globSoaA12Needed(0),
+									{ this.revGlobalSoa.set(\gate, 1); },
+									{ this.revGlobalSoa.set(\gate, 0); };
+								);
+							});
+
+						} {
+							this.espacializador[i] = Synth.new(\espacAFormatVerb++dstrvtypes[i],
+								[\inbus, mbus[i],
+									\soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								this.synt[i], addAction: \addAfter).register;
+
 						};
 
-							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
-								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								this.playEspacGrp).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.streambuf[i].free;
-								});
-
-						//comment out all linear parameters
-						//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i], [\inbus, mbus[i],
-
-						this.espacializador[i] = Synth.new(\espacAFormatVerb++dstrvtypes[i], [\inbus, mbus[i],
-							\soaBus, soaBus, \gbfbus, gbfbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter).register;
-
 					} {
-
-						this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
-							\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-							\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
-								this.espacializador[i] = nil; this.synt[i] = nil;
-								this.streambuf[i].free;
-							});
 
 						("HERE!!!!!!!!!!!!!!! xval = " ++ this.xval[i] ++ "yval = " ++ this.yval[i]).postln;
 
@@ -4002,45 +4036,59 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0.33;}.defer;
 					};
 
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
-
-						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
-
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								this.glbRevDecGrp);
-						};
-
 						this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
 							\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 							\level, level[i]],
-						this.playEspacGrp,
-						addAction: \addBefore).onFree({this.espacializador[i].free;
+						this.playEspacGrp).onFree({this.espacializador[i].free;
 							this.espacializador[i] = nil; this.synt[i] = nil;
 							this.streambuf[i].free;
 						});
 
-						//comment out all linear parameters
-						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i],
+					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-						this.espacializador[i] = Synth.new(\espacEstereoAFormat++dstrvtypes[i],
-							[\inbus, sbus[i],
-							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter).register;
+						if (this.maxorder > 1) {
+							if(revGlobalSoa.isPlaying.not && (clsrv > 0)) {
+								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+									[\soaBus, soaBus, \gate, 1],
+									this.glbRevDecGrp).register;
+							} {
+								this.revGlobalSoa.set(\gate, 1);
+							};
+
+							//comment out all linear parameters
+							//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i],
+
+							this.espacializador[i] = Synth.new(\espacEstereoAFormat++dstrvtypes[i],
+								[\inbus, sbus[i],
+									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								this.synt[i], addAction: \addAfter).register.onFree({
+								if (this.globSoaA12Needed(0),
+									{ this.revGlobalSoa.set(\gate, 1); },
+									{ this.revGlobalSoa.set(\gate, 0); };
+								);
+							});
+
+						} {
+
+							this.espacializador[i] = Synth.new(\espacEstereoAFormat++dstrvtypes[i],
+								[\inbus, sbus[i],
+									\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								this.synt[i], addAction: \addAfter).register;
+
+						};
 
 					} {
 						if (testado[i].not || force) {
-							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
-								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								this.playEspacGrp).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.streambuf[i].free;
-								});
 
 							//comment out all linear parameters
 							//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
@@ -4081,15 +4129,23 @@ GUI Parameters usable in SynthDefs
 					};
 
 					if (clsrv > 0) {
-						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
-							this.glbRevDecGrp);
+						if (revGlobalBF.isPlaying.not) {
+							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+								[\gbfbus, gbfbus, \gate, 1], this.glbRevDecGrp).register;
+						} {
+							this.revGlobalBF.set(\gate, 1);
+						};
 					};
+
 
 					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								this.glbRevDecGrp);
+						if(revGlobalSoa.isPlaying.not  && (clsrv > 0) && (this.maxorder > 1)) {
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1],
+								this.glbRevDecGrp).register;
+						} {
+							this.revGlobalSoa.set(\gate, 1);
 						};
 
 						//comment out all linear parameters
@@ -4109,6 +4165,10 @@ GUI Parameters usable in SynthDefs
 							this.espacializador[i] = nil; this.synt[i] = nil;
 							this.playingBF[i] = false;
 							this.streambuf[i].free;
+							if (this.globBfmtNeeded(0),
+								{ this.revGlobalBF.set(\gate, 1); },
+								{ this.revGlobalBF.set(\gate, 0); };
+							);
 						});
 
 						//comment out all linear parameters
@@ -4138,11 +4198,15 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.playEspacGrp).register.onFree({this.espacializador[i].free;
-								this.espacializador[i] = nil; this.synt[i] = nil;
-								this.playingBF[i] = false;
-								this.streambuf[i].free;
-							});
+						this.playEspacGrp).register.onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil; this.synt[i] = nil;
+							this.playingBF[i] = false;
+							this.streambuf[i].free;
+							if (this.globBfmtNeeded(0),
+								{ this.revGlobalBF.set(\gate, 1); },
+								{ this.revGlobalBF.set(\gate, 0); };
+							);
+						});
 
 						//comment out all linear parameters
 						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
@@ -4193,9 +4257,12 @@ GUI Parameters usable in SynthDefs
 
 				if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
-						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-							this.glbRevDecGrp);
+					if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
+						this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+							[\soaBus, soaBus, \gate, 1],
+							this.glbRevDecGrp).register;
+					} {
+						this.revGlobalSoa.set(\gate, 1);
 					};
 
 					if (testado[i].not || force) { // if source is testing don't relaunch synths
@@ -4323,10 +4390,12 @@ GUI Parameters usable in SynthDefs
 				};
 				if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
-
-						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-							this.glbRevDecGrp);
+					if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
+						this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+							[\soaBus, soaBus, \gate, 1],
+							this.glbRevDecGrp).register;
+					} {
+						this.revGlobalSoa.set(\gate, 1);
 					};
 
 					if (testado[i].not || force) {
@@ -4402,14 +4471,24 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 					};
 
-					// reverb for non-contracted (full b-format) component
+					if (clsrv > 0) {
+						if (revGlobalBF.isPlaying.not) {
+							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+								[\gbfbus, gbfbus, \gate, 1], this.glbRevDecGrp).register;
+						} {
+							this.revGlobalBF.set(\gate, 1);
+						};
+					};
 
 					// reverb for contracted (mono) component - and for rest too
 					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-						if(revGlobalSoa.isNil && (this.maxorder == 2)) {
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								this.glbRevDecGrp);
+						if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1],
+								this.glbRevDecGrp).register;
+						} {
+							this.revGlobalSoa.set(\gate, 1);
 						};
 
 						if (testado[i].not || force) {
@@ -4430,7 +4509,12 @@ GUI Parameters usable in SynthDefs
 							this.playEspacGrp).register.onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil;
 								this.synt[i] = nil;
-								this.playingBF[i] = false});
+								this.playingBF[i] = false;
+								if (this.globBfmtNeeded(0),
+									{ this.revGlobalBF.set(\gate, 1); },
+									{ this.revGlobalBF.set(\gate, 0); };
+								);
+							});
 
 							//comment out all linear parameters
 							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
@@ -4464,7 +4548,12 @@ GUI Parameters usable in SynthDefs
 							this.playEspacGrp).register.onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil;
 								this.synt[i] = nil;
-								this.playingBF[i] = false});
+								this.playingBF[i] = false;
+								if (this.globBfmtNeeded(0),
+									{ this.revGlobalBF.set(\gate, 1); },
+									{ this.revGlobalBF.set(\gate, 0); };
+								);
+							});
 
 							//comment out all linear parameters
 							//this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
@@ -4516,9 +4605,12 @@ GUI Parameters usable in SynthDefs
 
 					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								this.glbRevDecGrp);
+						if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1],
+								this.glbRevDecGrp).register;
+						} {
+							this.revGlobalSoa.set(\gate, 1);
 						};
 
 						if (testado[i].not || force) {
@@ -4636,9 +4728,12 @@ GUI Parameters usable in SynthDefs
 
 						if (testado[i].not || force) {
 
-							if(revGlobalSoa.isNil && (this.maxorder > 1)) {
-								this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									this.glbRevDecGrp);
+						if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
+								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+									[\soaBus, soaBus, \gate, 1],
+									this.glbRevDecGrp).register;
+							} {
+								this.revGlobalSoa.set(\gate, 1);
 							};
 
 							if (this.hwncheckProxy[i].value) {
@@ -4716,11 +4811,23 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 0;
 					};
 
+					if (clsrv > 0) {
+						if (revGlobalBF.isPlaying.not) {
+							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+								[\gbfbus, gbfbus, \gate, 1], this.glbRevDecGrp).register;
+						} {
+							this.revGlobalBF.set(\gate, 1);
+						};
+					};
+
 					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
-						if(revGlobalSoa == nil && (this.maxorder > 1)) {
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								this.glbRevDecGrp);
+						if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1],
+								this.glbRevDecGrp).register;
+						} {
+							this.revGlobalSoa.set(\gate, 1);
 						};
 
 						if (testado[i].not || force) {
@@ -4741,7 +4848,12 @@ GUI Parameters usable in SynthDefs
 									\busini, this.busini[i]],this.playEspacGrp).register.onFree({
 									this.espacializador[i].free;
 									this.espacializador[i] = nil;
-									this.synt[i] = nil;});
+									this.synt[i] = nil;
+									if (this.globBfmtNeeded(0),
+										{ this.revGlobalBF.set(\gate, 1); },
+										{ this.revGlobalBF.set(\gate, 0); };
+									);
+								});
 
 								} {
 
@@ -4760,7 +4872,12 @@ GUI Parameters usable in SynthDefs
 									\busini, this.scInBus[i] ],this.playEspacGrp).register.onFree({
 									this.espacializador[i].free;
 									this.espacializador[i] = nil;
-									this.synt[i] = nil;});
+									this.synt[i] = nil;
+									if (this.globBfmtNeeded(0),
+										{ this.revGlobalBF.set(\gate, 1); },
+										{ this.revGlobalBF.set(\gate, 0); };
+									);
+								});
 							};
 
 							//comment out all linear parameters
@@ -4799,7 +4916,12 @@ GUI Parameters usable in SynthDefs
 									this.espacializador[i].free;
 									this.espacializador[i] = nil;
 									this.synt[i] = nil;
-									this.playingBF[i] = false});
+									this.playingBF[i] = false;
+									if (this.globBfmtNeeded(0),
+										{ this.revGlobalBF.set(\gate, 1); },
+										{ this.revGlobalBF.set(\gate, 0); };
+									);
+								});
 							} {
 
 								//comment out all linear parameters
@@ -4817,7 +4939,12 @@ GUI Parameters usable in SynthDefs
 									\busini, this.scInBus[i] ], this.playEspacGrp).register.onFree({
 									this.espacializador[i].free;
 									this.espacializador[i] = nil;
-									this.synt[i] = nil;});
+									this.synt[i] = nil;
+									if (this.globBfmtNeeded(0),
+										{ this.revGlobalBF.set(\gate, 1); },
+										{ this.revGlobalBF.set(\gate, 0); };
+									);
+								});
 							};
 
 							//comment out all linear parameters
