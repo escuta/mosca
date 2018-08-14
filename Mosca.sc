@@ -2650,19 +2650,19 @@ GUI Parameters usable in SynthDefs
 			this.rirList = [rirName];
 			this.rirAfmtList = ["A-format "++rirName++" (ATK)"]; // add A-fmt for close reveb
 
+			rirW = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [0]);
+			rirX = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [1]);
+			rirY = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [2]);
+			rirZ = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [3]);
 
-			rirW = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [0]);
-			rirX = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [1]);
-			rirY = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [2]);
-			rirZ = Buffer.readChannel(server, prjDr ++ "/rir/" ++ rir, channels: [3]);
 
-
-			bufWXYZ = Buffer.read(server, prjDr ++ "/rir/" ++ rir);
+			bufWXYZ = Buffer.read(server, prjDr ++ "/rir/amb/" ++ rir);
 			server.sync;
 			bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
 			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
 			server.sync;
 
+			if (File.exists(prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav").not) {
 
 			{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2), b2a),
 				bufAformat, Phasor.ar(0, BufRateScale.kr(bufAformat), 0, BufFrames.kr(bufAformat)));
@@ -2673,11 +2673,15 @@ GUI Parameters usable in SynthDefs
 			(bufAformat.numFrames / server.sampleRate).wait;
 
 
-			bufAformat.write(prjDr ++ "/rir/rirFlu.wav", headerFormat: "wav", sampleFormat: "int24");
+			bufAformat.write(prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav",
+				headerFormat: "wav", sampleFormat: "int24");
 
 
 			server.sync;
 
+			};
+
+			if (File.exists(prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_SoaA12.wav").not) {
 
 			{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
 				foa_a12_decoder_matrix),
@@ -2689,23 +2693,27 @@ GUI Parameters usable in SynthDefs
 
 			(bufAformat.numFrames / server.sampleRate).wait;
 
-			bufAformat_soa_a12.write(prjDr ++ "/rir/rirSoaA12.wav", headerFormat: "wav",
-				sampleFormat: "int24");
-
+			bufAformat_soa_a12.write(prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_SoaA12.wav",
+				headerFormat: "wav", sampleFormat: "int24");
 
 
 			server.sync;
-			rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [0]);
-			rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [1]);
-			rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [2]);
-			rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/rirFlu.wav", channels: [3]);
+
+			};
+
+			rirFLU = Buffer.readChannel(server, prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav",
+				channels: [0]);
+			rirFRD = Buffer.readChannel(server, prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav",
+				channels: [1]);
+			rirBLD = Buffer.readChannel(server, prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav",
+				channels: [2]);
+			rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav",
+				channels: [3]);
 
 			server.sync;
-
 
 			bufsize = PartConv.calcBufSize(fftsize, rirW);
 
-			//~bufsize1=bufsize;
 
 			rirWspectrum = Buffer.alloc(server, bufsize, 1);
 			rirXspectrum = Buffer.alloc(server, bufsize, 1);
@@ -2740,7 +2748,7 @@ GUI Parameters usable in SynthDefs
 			rirA12 = Array.newClear(12);
 			rirA12Spectrum = Array.newClear(12);
 			12.do { arg i;
-				rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/rirSoaA12.wav",
+				rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_SoaA12.wav",
 					channels: [i]);
 				server.sync;
 				rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
