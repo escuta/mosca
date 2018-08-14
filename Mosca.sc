@@ -154,6 +154,7 @@ Mosca {
 
 	<>currentsource,
 	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus,
+	<>playEspacGrp, <>glbRevDecGrp,
 	<>lib, <>level, <>lp, <>dstrv, <>dstrvtypes, <>clsrv, <>clsRvtypes,
 	//comment out all linear parameters
 	//<>ln,
@@ -302,7 +303,10 @@ GUI Parameters usable in SynthDefs
 		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
 		server.sync;
 		this.globTBus = Bus.audio(server, bFormNumChan.clip(4, 9));
-		ambixbus = Bus.audio(server, bFormNumChan); // global b-format ACN-SN3D bus
+		this.ambixbus = Bus.audio(server, bFormNumChan); // global b-format ACN-SN3D bus
+		server.sync;
+		this.playEspacGrp = Group.tail;
+		this.glbRevDecGrp = Group.after(this.playEspacGrp);
 
 
 
@@ -1268,11 +1272,8 @@ GUI Parameters usable in SynthDefs
 
 				if (this.firstGlobTime)
 				{
-					if(globFOATransform.isNil,
-						{ this.revGlobal = Synth.new(\revGlobalAmb_free, [\gbus, gbus, \gate, 1],
-							addAction:\addToTail).register },
-						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_free,
-							[\gbus, gbus, \gate, 1]).register });
+					this.revGlobal = Synth.new(\revGlobalAmb_free, [\gbus, gbus, \gate, 1],
+						this.glbRevDecGrp).register
 				};
 
 			}
@@ -1284,11 +1285,8 @@ GUI Parameters usable in SynthDefs
 
 				if (this.firstGlobTime)
 				{
-					if(globFOATransform.isNil,
-						{ this.revGlobal = Synth.new(\revGlobalAmb_pass, [\gbus, gbus, \gate, 1],
-							addAction:\addToTail).register },
-						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_pass,
-							[\gbus, gbus, \gate, 1]).register });
+					this.revGlobal = Synth.new(\revGlobalAmb_pass, [\gbus, gbus, \gate, 1],
+						this.glbRevDecGrp).register
 				};
 
 			}
@@ -1300,11 +1298,8 @@ GUI Parameters usable in SynthDefs
 
 				if (this.firstGlobTime)
 				{
-					if(globFOATransform.isNil,
-						{ this.revGlobal = Synth.new(\revGlobalAmb_conv, [\gbus, gbus, \gate, 1],
-							addAction:\addToTail).register },
-						{ this.revGlobal = Synth.before(globFOATransform, \revGlobalAmb_conv,
-							[\gbus, gbus, \gate, 1]).register });
+					this.revGlobal = Synth.new(\revGlobalAmb_conv, [\gbus, gbus, \gate, 1],
+						this.glbRevDecGrp).register
 				};
 
 			};
@@ -3840,7 +3835,8 @@ GUI Parameters usable in SynthDefs
 	globBfmtNeeded { |i|
 		if(i == this.nfontes + 1,
 			{ false.asBoolean },
-			{ if(this.espacializador[i].isPlaying,
+			{ if(this.streambuf[i].numChannels == 4 || (sombuf[i].numChannels == 4) ||  (this.ncan[i] == 4)
+				&& (this.espacializador[i].isPlaying),
 				{ true.asBoolean },
 				{ this.globBfmtNeeded.value(i + 1) };
 			) };
@@ -3850,7 +3846,6 @@ GUI Parameters usable in SynthDefs
 	newtocar {
 		arg i, tpos, force = false;
 		var path = this.tfieldProxy[i].value, stdur;
-		var nodeMarker1, nodeMarker2;
 			if (this.streamdisk[i]) {
 				var sf = SoundFile.new;
 				var nchan, sframe, srate;
@@ -3875,27 +3870,24 @@ GUI Parameters usable in SynthDefs
 		// If we have ncan = 4 and busini = 7, the stream will enter
 		// in buses 7, 8, 9 and 10.
 
-		if (this.reverb) {
-			if (revGlobalBF.isNil){
-				this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus], addAction:\addToTail);
-			};
 
-			if (revGlobal.isNil && (clsrv > 0)){
-				this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
-					addAction:\addToTail).register;
-			};
+		//if (this.serport.notNil) { // comment out serial port prerequisit
+		if(globFOATransform.isNil && this.decoder.notNil) {
+
+			this.globFOATransform = Synth.new(\globDecodeSynth, [\globtbus, this.globTBus,
+				\ambixbus, this.ambixbus, \heading, 0, \roll, 0, \pitch, 0], this.glbRevDecGrp,
+			addAction: \addToTail);
+		};
+		//	};
+
+		if (revGlobal.isNil && (clsrv > 0)){
+
+			this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
+				this.glbRevDecGrp).register;
 		};
 
 		this.firstGlobTime = true;
 
-		//if (this.serport.notNil) { // comment out serial port prerequisit
-			if(globFOATransform.isNil && this.decoder.notNil) {
-			this.globFOATransform = Synth.new(\globDecodeSynth, [\globtbus, this.globTBus,
-				\ambixbus, this.ambixbus, \heading, 0, \roll, 0, \pitch, 0], addAction:\addToTail);
-			};
-		//	};
-
-		if (this.reverb) { nodeMarker1 = this.revGlobalBF } {  nodeMarker1 = this.globFOATransform};
 		/// STREAM FROM DISK
 
 		if ((path != "") && this.hwncheckProxy[i].value.not
@@ -3922,33 +3914,16 @@ GUI Parameters usable in SynthDefs
 
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								nodeMarker1, addAction:\addBefore);
-							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{ nodeMarker2 = this.globFOATransform };
+								this.glbRevDecGrp);
 						};
-
-						if(this.maxorder > 1) {
 
 							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
-								this.revGlobalSoa,
-							addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.playEspacGrp).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
-
-
-						} {
-							this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
-								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								revGlobalBF, addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.streambuf[i].free;
-								});
-
-						};
 
 						//comment out all linear parameters
 						//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i], [\inbus, mbus[i],
@@ -3966,8 +3941,7 @@ GUI Parameters usable in SynthDefs
 
 						this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
 							\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-							\level, level[i]], nodeMarker1,
-							addAction: \addBefore).onFree({this.espacializador[i].free;
+							\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil; this.synt[i] = nil;
 								this.streambuf[i].free;
 							});
@@ -4011,6 +3985,7 @@ GUI Parameters usable in SynthDefs
 					};
 					//atualizarvariaveis.value;
 					updatesourcevariables.value(i);
+
 				}
 				{ this.streambuf[i].numChannels == 2} {
 					"2 channel".postln;
@@ -4032,30 +4007,17 @@ GUI Parameters usable in SynthDefs
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								revGlobalBF, addAction:\addBefore);
-							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{  nodeMarker2 = this.globFOATransform};
-
+								this.glbRevDecGrp);
 						};
 
-						if(this.maxorder > 1) {
-							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
-								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								this.revGlobalSoa,
-							addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.streambuf[i].free;
-								});
-						} {
-							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
-								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.streambuf[i].free;
-								});
-						};
+						this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
+							\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+							\level, level[i]],
+						this.playEspacGrp,
+						addAction: \addBefore).onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil; this.synt[i] = nil;
+							this.streambuf[i].free;
+						});
 
 						//comment out all linear parameters
 						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i],
@@ -4070,14 +4032,12 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
 							this.synt[i], addAction: \addAfter).register;
 
-
-
 					} {
 						if (testado[i].not || force) {
 							this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
 								\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 								\level, level[i]],
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
+								this.playEspacGrp).onFree({this.espacializador[i].free;
 									this.espacializador[i] = nil; this.synt[i] = nil;
 									this.streambuf[i].free;
 								});
@@ -4097,8 +4057,8 @@ GUI Parameters usable in SynthDefs
 						};
 
 					};
-					updatesourcevariables.value(i);
 
+					updatesourcevariables.value(i);
 
 
 				}
@@ -4120,60 +4080,36 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 					};
 
+					if (clsrv > 0) {
+						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb, [\gbfbus, gbfbus],
+							this.glbRevDecGrp);
+					};
+
 					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
 
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								revGlobalBF, addAction:\addBefore);
-							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{  nodeMarker2 = this.globFOATransform};
-
+								this.glbRevDecGrp);
 						};
 
+						//comment out all linear parameters
+						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
 
-						if (this.maxorder > 1) {
-
-							//comment out all linear parameters
-							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
-
-							this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
-								gbfbus, \outbus,
-								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
-								\rate, 1, \tpos, tpos, \lp,
-								lp[i], \level, level[i],
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								this.revGlobalSoa,
-							addAction: \addBefore).register.onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.playingBF[i] = false;
-									this.streambuf[i].free;
-								});
-						} {
-
-							//comment out all linear parameters
-							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
-
-							this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
-								gbfbus, \outbus,
-								mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
-								\rate, 1, \tpos, tpos, \lp,
-								lp[i], \level, level[i],
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								nodeMarker1,
-							addAction: \addBefore).register.onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.playingBF[i] = false;
-									this.streambuf[i].free;
-								});
-						};
+						this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
+							gbfbus, \outbus,
+							mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+							\rate, 1, \tpos, tpos, \lp,
+							lp[i], \level, level[i],
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.playEspacGrp).register.onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil; this.synt[i] = nil;
+							this.playingBF[i] = false;
+							this.streambuf[i].free;
+						});
 
 						//comment out all linear parameters
 						//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
@@ -4202,8 +4138,7 @@ GUI Parameters usable in SynthDefs
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							nodeMarker1,
-						addAction: \addBefore).register.onFree({this.espacializador[i].free;
+							this.playEspacGrp).register.onFree({this.espacializador[i].free;
 								this.espacializador[i] = nil; this.synt[i] = nil;
 								this.playingBF[i] = false;
 								this.streambuf[i].free;
@@ -4230,6 +4165,7 @@ GUI Parameters usable in SynthDefs
 
 			};
 		};
+
 		/// END STREAM FROM DISK
 
 		// check this logic - what should override what?
@@ -4259,31 +4195,18 @@ GUI Parameters usable in SynthDefs
 
 					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-							nodeMarker1, addAction:\addBefore);
-						if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-						{  nodeMarker2 = this.globFOATransform};
-
+							this.glbRevDecGrp);
 					};
+
 					if (testado[i].not || force) { // if source is testing don't relaunch synths
 
-						if(this.maxorder > 1) {
 
-							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								this.revGlobalSoa,
-							addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil});
+						this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
+							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+							\level, level[i]],
+						this.playEspacGrp).onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil; this.synt[i] = nil});
 
-
-						} {
-							this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil});
-
-						};
 
 						//comment out all linear parameters
 						//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i], [\inbus, mbus[i],
@@ -4337,11 +4260,12 @@ GUI Parameters usable in SynthDefs
 					};
 				} {
 					if (testado[i].not || force) { // if source is testing don't relaunch synths
+
 						this.synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
 							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-							\level, level[i]], nodeMarker1,
-							addAction: \addBefore).onFree({this.espacializador[i].free;
-								this.espacializador[i] = nil; this.synt[i] = nil});
+							\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil;
+							this.synt[i] = nil});
 
 						case
 						{this.lib[i] == 0}
@@ -4402,26 +4326,16 @@ GUI Parameters usable in SynthDefs
 					if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-							nodeMarker1, addAction:\addBefore);
-						if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-						{ nodeMarker2 = this.globFOATransform };
+							this.glbRevDecGrp);
 					};
 
 					if (testado[i].not || force) {
 
-						if(this.maxorder > 1) {
-							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								this.revGlobalSoa, addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil});
-						} {
-							this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
-								\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-								\level, level[i]],
-								nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil});
-						};
+						this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
+							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+							\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil;
+							this.synt[i] = nil});
 
 						//comment out all linear parameters
 						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i], [\inbus, sbus[i],
@@ -4440,11 +4354,12 @@ GUI Parameters usable in SynthDefs
 
 				} {
 					if (testado[i].not || force) {
+
 						this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
 							\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-							\level, level[i]],
-							nodeMarker1, addAction: \addBefore).onFree({this.espacializador[i].free;
-								this.espacializador[i] = nil; this.synt[i] = nil});
+							\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil;
+							this.synt[i] = nil});
 
 						//comment out all linear parameters
 						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
@@ -4494,53 +4409,28 @@ GUI Parameters usable in SynthDefs
 
 						if(revGlobalSoa.isNil && (this.maxorder == 2)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								nodeMarker1, addAction:\addBefore);
-							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{  nodeMarker2 = this.globFOATransform};
+								this.glbRevDecGrp);
 						};
-
 
 						if (testado[i].not || force) {
 
-							if(this.maxorder > 1) {
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
 
-								//comment out all linear parameters
-								//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
-
-								this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
-									gbfbus, \outbus,
-									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-									\rate, 1, \tpos, tpos, \lp,
-									lp[i], \level, level[i],
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-									this.revGlobalSoa,
-								addAction: \addBefore).register.onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.playingBF[i] = false});
-							} {
-
-								//comment out all linear parameters
-								//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus, \gbfbus,
-
-								this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
-									gbfbus, \outbus,
-									mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-									\rate, 1, \tpos, tpos, \lp,
-									lp[i], \level, level[i],
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-									nodeMarker1,
-								addAction: \addBefore).register.onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.playingBF[i] = false});
-							};
+							this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
+								gbfbus, \outbus,
+								mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+								\rate, 1, \tpos, tpos, \lp,
+								lp[i], \level, level[i],
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.playEspacGrp).register.onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil;
+								this.synt[i] = nil;
+								this.playingBF[i] = false});
 
 							//comment out all linear parameters
 							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
@@ -4571,10 +4461,10 @@ GUI Parameters usable in SynthDefs
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								nodeMarker1,
-							addAction: \addBefore).register.onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil;
-									this.playingBF[i] = false});
+							this.playEspacGrp).register.onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil;
+								this.synt[i] = nil;
+								this.playingBF[i] = false});
 
 							//comment out all linear parameters
 							//this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i],
@@ -4591,8 +4481,8 @@ GUI Parameters usable in SynthDefs
 
 
 					};
-					updatesourcevariables.value(i);
 
+					updatesourcevariables.value(i);
 
 
 
@@ -4628,40 +4518,24 @@ GUI Parameters usable in SynthDefs
 
 						if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								nodeMarker1, addAction:\addBefore);
-							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{  nodeMarker2 = this.globFOATransform};
+								this.glbRevDecGrp);
 						};
 
 						if (testado[i].not || force) {
 							if (this.hwncheckProxy[i].value) {
-								if(this.maxorder > 1) {
-									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
-										this.busini[i],
-										\level, level[i]], this.revGlobalSoa,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								} {
-									this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
-										this.busini[i],
-										\level, level[i]], nodeMarker1,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								};
+
+								this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
+									this.busini[i],
+									\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil});
+
 							} {
-								if(this.maxorder > 1) {
-									this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
-										\busini, this.scInBus[i], // use "index" method?
-										\level, level[i]], this.revGlobalSoa,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								} {
-									this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
-										\busini, this.scInBus[i], // use "index" method?
-										\level, level[i]], nodeMarker1,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								};
+								this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
+									\busini, this.scInBus[i], // use "index" method?
+									\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil});
 							};
 
 							//comment out all linear parameters
@@ -4684,15 +4558,15 @@ GUI Parameters usable in SynthDefs
 							if (this.hwncheckProxy[i].value) {
 								this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i],
 									\busini, this.busini[i],
-									\level, level[i]], nodeMarker1,
-									addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil});
+									\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil});
 							} {
 								this.synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
 									\busini, this.scInBus[i], // use "index" method?
-									\level, level[i]], nodeMarker1,
-									addAction: \addBefore).onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil});
+									\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil});
 							};
 
 							case
@@ -4764,39 +4638,24 @@ GUI Parameters usable in SynthDefs
 
 							if(revGlobalSoa.isNil && (this.maxorder > 1)) {
 								this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-									nodeMarker1, addAction:\addBefore);
-								if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-								{  nodeMarker2 = this.globFOATransform};
+									this.glbRevDecGrp);
 							};
+
 							if (this.hwncheckProxy[i].value) {
 
-								if(this.maxorder > 1){
-									this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
-										this.busini[i],
-										\level, level[i]], this.revGlobalSoa,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								} {
-									synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
-										this.busini[i],
-										\level, level[i]], nodeMarker1,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								};
+								this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i], \busini,
+									this.busini[i],
+									\level, level[i]], this.playEspacGrp).onFree({
+									this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil});
 							} {
-								if(this.maxorder > 1){
-									this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
-										\busini, this.scInBus[i],
-										\level, level[i]], this.revGlobalSoa,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								} {
-									synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
-										\busini, this.scInBus[i],
-										\level, level[i]], nodeMarker1,
-										addAction: \addBefore).onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil});
-								};
+								this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+									\busini, this.scInBus[i],
+									\level, level[i]], this.playEspacGrp).onFree({
+									this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil});
 							};
 
 							//comment out all linear parameters
@@ -4818,15 +4677,15 @@ GUI Parameters usable in SynthDefs
 						if (this.hwncheckProxy[i].value) {
 							this.synt[i] = Synth.new(\playStereoHWBus, [\outbus, sbus[i],
 								\busini, this.busini[i],
-								\level, level[i]], nodeMarker1,
-								addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil});
+								\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil;
+								this.synt[i] = nil});
 						} {
 							this.synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
 								\busini, this.scInBus[i],
-								\level, level[i]], nodeMarker1,
-								addAction: \addBefore).onFree({this.espacializador[i].free;
-									this.espacializador[i] = nil; this.synt[i] = nil});
+								\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+								this.espacializador[i] = nil;
+								this.synt[i] = nil});
 						};
 
 						//comment out all linear parameters
@@ -4861,82 +4720,47 @@ GUI Parameters usable in SynthDefs
 
 						if(revGlobalSoa == nil && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12, [\soaBus, soaBus],
-								nodeMarker1, addAction:\addBefore);
-							if (this.reverb) { nodeMarker2 = this.revGlobalSoa }
-							{  nodeMarker2 = this.globFOATransform};
+								this.glbRevDecGrp);
 						};
 
 						if (testado[i].not || force) {
-							if(this.maxorder > 1) {
-								if (this.hwncheckProxy[i].value) {
 
-									//comment out all linear parameters
-									//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+							if (this.hwncheckProxy[i].value) {
 
-									this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
-										\outbus, mbus[i],
-										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
-										\insertFlag, this.insertFlag[i],
-										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\busini, this.busini[i]],
-										this.revGlobalSoa,
-									addAction: \addBefore).register.onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil;});
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
+
+								this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
+									\outbus, mbus[i],
+									\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\busini, this.busini[i]],this.playEspacGrp).register.onFree({
+									this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil;});
+
 								} {
 
-									//comment out all linear parameters
-									//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
+								//comment out all linear parameters
+								//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
 
-									this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
-										\outbus,
-										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-										level[i],
-										\insertFlag, this.insertFlag[i],
-										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\busini, this.scInBus[i] ],
-										nodeMarker2,
-									addAction: \addBefore).register.onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil;});
-								};
-							} {
-								if (this.hwncheckProxy[i].value) {
-
-									//comment out all linear parameters
-									//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
-
-									this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
-										\outbus, mbus[i],
-										\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
-										\insertFlag, this.insertFlag[i],
-										\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-										\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-										\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-										\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-										\busini, this.busini[i]],
-										nodeMarker1,
-									addAction: \addBefore).register.onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil;});
-								} {
-
-									//comment out all linear parameters
-									//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
-
-									this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
-										\outbus,
-										mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
-										level[i],
-										\busini, this.scInBus[i] ],
-										nodeMarker1,
-									addAction: \addBefore).register.onFree({this.espacializador[i].free;
-											this.espacializador[i] = nil; this.synt[i] = nil;});
-								};
-
+								this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
+									\outbus,
+									mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos, \level,
+									level[i],
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\busini, this.scInBus[i] ],this.playEspacGrp).register.onFree({
+									this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil;});
 							};
 
 							//comment out all linear parameters
@@ -4956,6 +4780,7 @@ GUI Parameters usable in SynthDefs
 					} {
 
 						if (testado[i].not || force) {
+
 							if (this.hwncheckProxy[i].value) {
 
 								//comment out all linear parameters
@@ -4970,10 +4795,11 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\busini, this.busini[i]], nodeMarker1,
-									addAction: \addBefore).register.onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;
-										this.playingBF[i] = false});
+									\busini, this.busini[i]], this.playEspacGrp).register.onFree({
+									this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil;
+									this.playingBF[i] = false});
 							} {
 
 								//comment out all linear parameters
@@ -4988,9 +4814,10 @@ GUI Parameters usable in SynthDefs
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
 									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\busini, this.scInBus[i] ], nodeMarker1,
-									addAction: \addBefore).register.onFree({this.espacializador[i].free;
-										this.espacializador[i] = nil; this.synt[i] = nil;});
+									\busini, this.scInBus[i] ], this.playEspacGrp).register.onFree({
+									this.espacializador[i].free;
+									this.espacializador[i] = nil;
+									this.synt[i] = nil;});
 							};
 
 							//comment out all linear parameters
