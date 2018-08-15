@@ -155,7 +155,7 @@ Mosca {
 	<>currentsource,
 	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus,
 	<>playEspacGrp, <>glbRevDecGrp,
-	<>lib, <>level, <>lp, <>dstrv, <>dstrvtypes, <>clsrv, <>clsRvtypes,
+	<>level, <>lp, <>libName, <>dstrvtypes, <>clsrv, <>clsRvtypes,
 	//comment out all linear parameters
 	//<>ln,
 	<>angslider, <>connumbox, <>cslider,
@@ -194,7 +194,8 @@ Mosca {
 
 	// NEW PROXY VARIABLES /////////////
 
-	<>rboxProxy, <>cboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy, <>dboxProxy,
+	<>rboxProxy, <>cboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy,
+	<>dboxProxy,
 	<>dpboxProxy, <>zboxProxy, <>yboxProxy, <>xboxProxy,
 	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy, <>a1boxProxy,
 	<>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
@@ -206,7 +207,11 @@ Mosca {
 	//<>lncheckProxy,
 	<>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
-	<>guiflag;
+	<>guiflag,
+
+	<>rm, <>rmslider, <>rmnumbox, <>rmbox, <>rmboxProxy, // setable local room size
+	<>dm, <>dmslider, <>dmnumbox, <>dmbox, <>dmboxProxy; // setable local dampening
+
 
 
 	/////////////////////////////////////////
@@ -407,11 +412,10 @@ GUI Parameters usable in SynthDefs
 
 
 		this.espacializador = Array.newClear(this.nfontes);
-		lib = Array.newClear(this.nfontes);
+		libName = Array.newClear(this.nfontes);
 		lp = Array.newClear(this.nfontes);
 		sp = Array.newClear(this.nfontes);
 		df = Array.newClear(this.nfontes);
-		dstrv = Array.newClear(this.nfontes);
 		dstrvtypes = Array.newClear(this.nfontes);
 		//comment out all linear parameters
 		//ln = Array.newClear(this.nfontes);
@@ -449,6 +453,8 @@ GUI Parameters usable in SynthDefs
 		//	doplev = Array.newClear(this.nfontes);
 		glev = Array.newClear(this.nfontes);
 		llev = Array.newClear(this.nfontes);
+		rm = Array.newClear(this.nfontes);
+		dm = Array.newClear(this.nfontes);
 		rlev = Array.newClear(this.nfontes);
 		dlev = Array.newClear(this.nfontes);
 		dplev = Array.newClear(this.nfontes);
@@ -472,6 +478,8 @@ GUI Parameters usable in SynthDefs
 		vbox = Array.newClear(this.nfontes);  // level
 		gbox = Array.newClear(this.nfontes); // reverberação global
 		lbox = Array.newClear(this.nfontes); // reverberação local
+		rmbox = Array.newClear(this.nfontes); // local room size
+		dmbox = Array.newClear(this.nfontes); // local dampening
 		rbox = Array.newClear(this.nfontes); // rotação de b-format
 		dbox = Array.newClear(this.nfontes); // diretividade de b-format
 		cbox = Array.newClear(this.nfontes); // contrair b-format
@@ -526,15 +534,16 @@ GUI Parameters usable in SynthDefs
 
 
 		this.nfontes.do { arg i;
+			libName[i] = "espacAmb"; // initialize original ATK encoding
 			angle[i] = 0;
 			level[i] = 0;
 			glev[i] = 0;
 			llev[i] = 0;
+			rm[i] = 0.5;
+			dm[i] = 0.5;
 			lp[i] = 0;
 			sp[i] = 0;
 			df[i] = 0;
-			this.lib[i] = 0;
-			dstrv[i] = 1;
 			dstrvtypes[i] = "_free"; // initialise distants reverbs types
 			//comment out all linear parameters
 			//ln[i] = "";
@@ -572,13 +581,14 @@ GUI Parameters usable in SynthDefs
 		yval = Array.fill(this.nfontes, 100000);
 		zval = Array.fill(this.nfontes, 0);
 
-
 		rboxProxy = Array.newClear(this.nfontes);
 		cboxProxy = Array.newClear(this.nfontes);
 		aboxProxy = Array.newClear(this.nfontes);
 		vboxProxy = Array.newClear(this.nfontes);
 		gboxProxy = Array.newClear(this.nfontes);
 		lboxProxy = Array.newClear(this.nfontes);
+		rmboxProxy = Array.newClear(this.nfontes);
+		dmboxProxy = Array.newClear(this.nfontes);
 		dboxProxy = Array.newClear(this.nfontes);
 		dpboxProxy = Array.newClear(this.nfontes);
 		zboxProxy = Array.newClear(this.nfontes);
@@ -617,6 +627,8 @@ GUI Parameters usable in SynthDefs
 			vboxProxy[x] = AutomationGuiProxy.new(0.0);
 			gboxProxy[x] = AutomationGuiProxy.new(0.0);
 			lboxProxy[x] = AutomationGuiProxy.new(0.0);
+			rmboxProxy[x]= AutomationGuiProxy.new(0.5);
+			dmboxProxy[x]= AutomationGuiProxy.new(0.5);
 			dboxProxy[x] = AutomationGuiProxy.new(0.0);
 			dpboxProxy[x] = AutomationGuiProxy.new(0.0);
 			zboxProxy[x] = AutomationGuiProxy.new(0.0);
@@ -671,10 +683,16 @@ GUI Parameters usable in SynthDefs
 		this.nfontes.do { arg i;
 
 			this.libboxProxy[i].action_({ arg num;
-				this.lib[i] = num.value;
 				if((i == currentsource) && guiflag )
 				{
 					{libnumbox.value = num.value}.defer;
+
+					case
+					{ num.value == 0 }{ libName[i] = "espacAmb"; }
+					{ num.value == 1 }{ libName[i] = "ambitools"; }
+					{ num.value == 2 }{ libName[i] = "hoaLib"; }
+					{ num.value == 3 }{ libName[i] = "ambiPanner"; };
+
 				};
 				if (guiflag) {
 					{this.libbox[i].value = num.value}.defer;
@@ -682,7 +700,6 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.dstrvboxProxy[i].action_({ arg num;
-				this.dstrv[i] = num.value;
 				if((i == currentsource) && guiflag )
 				{
 					{ dstReverbox.value = num.value }.defer;
@@ -817,7 +834,6 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-
 			lboxProxy[i].action = {arg num;
 				this.espacializador[i].set(\llev, num.value);
 				this.setSynths(i, \llev, num.value);
@@ -830,6 +846,36 @@ GUI Parameters usable in SynthDefs
 				};
 				if (guiflag) {
 					lbox[i].value = num.value;
+				};
+			};
+
+			rmboxProxy[i].action = {arg num;
+				this.espacializador[i].set(\rm, num.value);
+				this.setSynths(i, \rm, num.value);
+				this.synt[i].set(\rm, num.value);
+				rm[i] = num.value;
+				if((i == currentsource) && guiflag)
+				{
+					{rmslider.value = num.value}.defer;
+					{rmnumbox.value = num.value}.defer;
+				};
+				if (guiflag) {
+					rmbox[i].value = num.value;
+				};
+			};
+
+			dmboxProxy[i].action = {arg num;
+				this.espacializador[i].set(\dm, num.value);
+				this.setSynths(i, \dm, num.value);
+				this.synt[i].set(\dm, num.value);
+				dm[i] = num.value;
+				if((i == currentsource) && guiflag)
+				{
+					{dmslider.value = num.value}.defer;
+					{dmnumbox.value = num.value}.defer;
+				};
+				if (guiflag) {
+					dmbox[i].value = num.value;
 				};
 			};
 
@@ -1222,8 +1268,6 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-
-
 			control.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
 			control.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
 			control.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
@@ -1232,6 +1276,8 @@ GUI Parameters usable in SynthDefs
 			control.dock(this.aboxProxy[i], "angleProxy_" ++ i);
 			control.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
 			control.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
+			control.dock(this.rmboxProxy[i], "localroomProxy_" ++ i);
+			control.dock(this.dmboxProxy[i], "localdampProxy_" ++ i);
 			control.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
 			control.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
 			control.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
@@ -2640,7 +2686,7 @@ GUI Parameters usable in SynthDefs
 
 
 		this.rirList = [];
-		this.rirAfmtList = [];
+		this.rirAfmtList = ["A-format freeverb  (ATK)", "A-format allpass    (ATK)"];
 
 		if (rir.notNil) {
 
@@ -2648,7 +2694,7 @@ GUI Parameters usable in SynthDefs
 			var rirName = PathName(rir).fileNameWithoutExtension;
 
 			this.rirList = [rirName];
-			this.rirAfmtList = ["A-format "++rirName++" (ATK)"]; // add A-fmt for close reveb
+			this.rirAfmtList ++ ["A-format "++rirName++" (ATK)"]; // add A-fmt for close reveb
 
 			rirW = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [0]);
 			rirX = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [1]);
@@ -2721,13 +2767,12 @@ GUI Parameters usable in SynthDefs
 			rirZspectrum = Buffer.alloc(server, bufsize, 1);
 			server.sync;
 			rirWspectrum.preparePartConv(rirW, fftsize);
-			server.sync;
+			//server.sync;
 			rirXspectrum.preparePartConv(rirX, fftsize);
-			server.sync;
+			//server.sync;
 			rirYspectrum.preparePartConv(rirY, fftsize);
-			server.sync;
+			//server.sync;
 			rirZspectrum.preparePartConv(rirZ, fftsize);
-
 
 			server.sync;
 
@@ -2737,12 +2782,13 @@ GUI Parameters usable in SynthDefs
 			rirBRUspectrum = Buffer.alloc(server, bufsize, 1);
 			server.sync;
 			rirFLUspectrum.preparePartConv(rirFLU, fftsize);
-			server.sync;
+			//server.sync;
 			rirFRDspectrum.preparePartConv(rirFRD, fftsize);
-			server.sync;
+			//server.sync;
 			rirBLDspectrum.preparePartConv(rirBLD, fftsize);
-			server.sync;
+			//server.sync;
 			rirBRUspectrum.preparePartConv(rirBRU, fftsize);
+
 			server.sync;
 
 			rirA12 = Array.newClear(12);
@@ -2750,13 +2796,14 @@ GUI Parameters usable in SynthDefs
 			12.do { arg i;
 				rirA12[i] = Buffer.readChannel(server, prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_SoaA12.wav",
 					channels: [i]);
-				server.sync;
+				//server.sync;
 				rirA12Spectrum[i] = Buffer.alloc(server, bufsize, 1);
 				server.sync;
 				rirA12Spectrum[i].preparePartConv(rirA12[i], fftsize);
 				server.sync;
 			};
-			server.sync;
+
+			//server.sync;
 
 
 
@@ -2997,6 +3044,14 @@ GUI Parameters usable in SynthDefs
 			convsig = convsig * env;
 			revGlobalAmbFunc.value(convsig, dec);
 		}).add;
+
+
+		server.sync;
+
+		this.revGlobal = Synth.new(\revGlobalAmb_free, [\gbus, gbus, \gate, 1],
+			this.glbRevDecGrp).register;
+
+
 
 		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
 			lrevRef.value = FreeVerb.ar(p * locallev, mix: 1, room: freeroom, damp: freedamp,
@@ -3396,6 +3451,8 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \dopamnt, dplev[source]);
 				this.setSynths(source, \glev, glev[source]);
 				this.setSynths(source, \llev, llev[source]);
+				this.setSynths(source, \rm, rm[source]);
+				this.setSynths(source, \dm, dm[source]);
 				this.setSynths(source, \mx, this.xval[source]);
 				this.setSynths(source, \my, this.yval[source]);
 				this.setSynths(source, \mz, this.zval[source]);
@@ -3438,6 +3495,8 @@ GUI Parameters usable in SynthDefs
 						\dopamnt, dplev[i],
 						\glev, glev[i],
 						\llev, llev[i],
+						\rm, rm[i],
+						\dm, dm[i],
 						//\mx, xbox[i].value,
 						//\my, ybox[i].value,
 						//\mz, zbox[i].value,
@@ -3461,6 +3520,8 @@ GUI Parameters usable in SynthDefs
 						\dopamnt, dplev[i],
 						\glev, glev[i],
 						\llev, llev[i],
+						\rm, rm[i],
+						\dm, dm[i],
 						//\mx, xbox[i].value,
 						//\my, ybox[i].value,
 
@@ -3499,6 +3560,8 @@ GUI Parameters usable in SynthDefs
 					\dopamnt, dplev[source],
 					\glev, glev[source],
 					\llev, llev[source],
+					\rm, rm[source],
+					\dm, dm[source],
 					\mx, this.xval[source],
 					\my, this.yval[source],
 					\mz, this.zval[source],
@@ -3515,6 +3578,8 @@ GUI Parameters usable in SynthDefs
 					\dopamnt, dplev[source],
 					\glev, glev[source],
 					\llev, llev[source],
+					\rm, rm[source],
+					\dm, dm[source],
 					\mx, this.xval[source],
 					\my, this.yval[source],
 					\mz, this.zval[source],
@@ -3871,7 +3936,8 @@ GUI Parameters usable in SynthDefs
 	globSoaA12Needed { |i|
 		if(i == (this.nfontes + 1),
 			{ ^false.asBoolean },
-			{ if (( dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5) )
+			{ if ((this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+				|| (this.dstrvboxProxy[i].value > 5))
 				&& (this.espacializador[i].isPlaying),
 				{ ^true.asBoolean },
 				{ ^this.globBfmtNeeded(i + 1) };
@@ -3907,13 +3973,6 @@ GUI Parameters usable in SynthDefs
 		// in buses 7, 8, 9 and 10.
 
 
-		if (revGlobal.isNil && (clsrv > 0)){
-
-			this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1],
-				this.glbRevDecGrp).register;
-		};
-
-
 		/// STREAM FROM DISK
 
 		if ((path != "") && this.hwncheckProxy[i].value.not
@@ -3944,7 +4003,8 @@ GUI Parameters usable in SynthDefs
 						this.streambuf[i].free;
 					});
 
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 						if (this.maxorder > 1) {
 							if(revGlobalSoa.isPlaying.not  && (clsrv > 0)) {
@@ -3990,39 +4050,18 @@ GUI Parameters usable in SynthDefs
 
 						("HERE!!!!!!!!!!!!!!! xval = " ++ this.xval[i] ++ "yval = " ++ this.yval[i]).postln;
 
-						case
-						{this.lib[i] == 0}
-
 						//comment out all linear parameters
 						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i],
 
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++dstrvtypes[i], [\inbus, mbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 1}
-						{this.espacializador[i] = Synth.new(\ambitoolsChowning++dstrvtypes[i],
+						this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
 							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 2}
-						{this.espacializador[i] = Synth.new(\hoaLibChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 3}
-						{this.espacializador[i] = Synth.new(\ambiPannerChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						};
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter);
 
 					};
 					//atualizarvariaveis.value;
@@ -4052,7 +4091,8 @@ GUI Parameters usable in SynthDefs
 							this.streambuf[i].free;
 						});
 
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 						if (this.maxorder > 1) {
 							if(revGlobalSoa.isPlaying.not && (clsrv > 0)) {
@@ -4146,7 +4186,8 @@ GUI Parameters usable in SynthDefs
 					};
 
 
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 						if(revGlobalSoa.isPlaying.not  && (clsrv > 0) && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -4263,7 +4304,8 @@ GUI Parameters usable in SynthDefs
 					connumbox.value = 1;
 				};
 
-				if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 					if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -4297,40 +4339,18 @@ GUI Parameters usable in SynthDefs
 
 					}{
 
-						case
-						{this.lib[i] == 0}
-
 						//comment out all linear parameters
 						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++dstrvtypes[i],
+						this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
 							[\inbus, mbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 1}
-						{this.espacializador[i] = Synth.new(\ambitoolsChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 2}
-						{this.espacializador[i] = Synth.new(\hoaLibChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 3}
-						{this.espacializador[i] = Synth.new(\ambiPannerChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						};
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter);
 
 					};
 				} {
@@ -4342,40 +4362,18 @@ GUI Parameters usable in SynthDefs
 							this.espacializador[i] = nil;
 							this.synt[i] = nil});
 
-						case
-						{this.lib[i] == 0}
-
 						//comment out all linear parameters
 						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
-						{this.espacializador[i] = Synth.new(\espacAmbChowning++dstrvtypes[i],
+						this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
 							[\inbus, mbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 1}
-						{this.espacializador[i] = Synth.new(\ambitoolsChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 2}
-						{this.espacializador[i] = Synth.new(\hoaLibChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						}
-						{this.lib[i] == 3}
-						{this.espacializador[i] = Synth.new(\ambiPannerChowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-							\gbus, gbus],
-						this.synt[i], addAction: \addAfter);
-						};
+								\gbus, gbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter);
 
 					};
 
@@ -4396,7 +4394,9 @@ GUI Parameters usable in SynthDefs
 					{angnumbox.value = 1.05;}.defer; // 60 degrees
 					{angslider.value = 0.33;}.defer;
 				};
-				if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 					if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
 						this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -4489,7 +4489,8 @@ GUI Parameters usable in SynthDefs
 					};
 
 					// reverb for contracted (mono) component - and for rest too
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 						if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -4611,7 +4612,8 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 						if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -4669,40 +4671,18 @@ GUI Parameters usable in SynthDefs
 									this.synt[i] = nil});
 							};
 
-							case
-							{this.lib[i] == 0}
-
 							//comment out all linear parameters
 							//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
-							{this.espacializador[i] = Synth.new(\espacAmbChowning++dstrvtypes[i],
+							this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
 								[\inbus, mbus[i],
-								\gbus, gbus,
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter);
-							}
-							{this.lib[i] == 1}
-							{this.espacializador[i] = Synth.new(\ambitoolsChowning++dstrvtypes[i],
-								[\inbus, mbus[i],
-								\gbus, gbus],
-							this.synt[i], addAction: \addAfter);
-							}
-							{this.lib[i] == 2}
-							{this.espacializador[i] = Synth.new(\hoaLibChowning++dstrvtypes[i],
-								[\inbus, mbus[i],
-								\gbus, gbus],
-							this.synt[i], addAction: \addAfter);
-							}
-							{this.lib[i] == 3}
-							{this.espacializador[i] = Synth.new(\ambiPannerChowning++dstrvtypes[i],
-								[\inbus, mbus[i],
-								\gbus, gbus],
-							this.synt[i], addAction: \addAfter);
-							};
+									\gbus, gbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+								this.synt[i], addAction: \addAfter);
 
 						};
 
@@ -4732,7 +4712,8 @@ GUI Parameters usable in SynthDefs
 						connumbox.value = 1;
 					};
 
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 						if (testado[i].not || force) {
 
@@ -4828,7 +4809,8 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					if (dstrv[i] == 3 || (dstrv[i] == 4) || (dstrv[i] > 5)) {
+					if (this.dstrvboxProxy[i].value == 3 || (this.dstrvboxProxy[i].value == 4)
+						|| (this.dstrvboxProxy[i].value > 5)) {
 
 						if(revGlobalSoa.isPlaying.not && (clsrv > 0) && (this.maxorder > 1)) {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -5821,9 +5803,9 @@ GUI Parameters usable in SynthDefs
 		m.action = { arg menu;
 			currentsource = menu.value;
 
-			libnumbox.value = this.lib[currentsource];
+			libnumbox.value = this.libboxProxy[currentsource].value;
 
-			dstReverbox.value = this.dstrv[currentsource];
+			dstReverbox.value = this.dstrvboxProxy[currentsource].value;
 
 			if(lp[currentsource] == 1){loopcheck.value = true}{loopcheck.value = false};
 
@@ -5845,6 +5827,10 @@ GUI Parameters usable in SynthDefs
 			gslider.value = glev[currentsource];
 			lnumbox.value = llev[currentsource];
 			lslider.value = llev[currentsource];
+			rmslider.value = rm[currentsource];
+			rmnumbox.value = rm[currentsource];
+			dmslider.value = dm[currentsource];
+			dmnumbox.value = dm[currentsource];
 			rslider.value = (rlev[currentsource] + pi) / 2pi;
 			rnumbox.value = rlev[currentsource];
 			dirslider.value = dlev[currentsource] / (pi/2);
@@ -6125,9 +6111,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 190, 150, 20));
+		textbuf = StaticText(win, Rect(163, 230, 150, 20));
 		textbuf.string = "Distant Reverb";
-		dstReverbox = PopUpMenu( win, Rect(10, 190, 150, 20));
+		dstReverbox = PopUpMenu( win, Rect(10, 230, 150, 20));
 		dstReverbox.items = ["no-reverb",
 				"freeverb",
 				"allpass",
@@ -6144,11 +6130,11 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 210, 150, 20));
+		textbuf = StaticText(win, Rect(163, 250, 150, 20));
 		textbuf.string = "Dst. amount";
-		lnumbox = NumberBox(win, Rect(10, 210, 40, 20));
+		lnumbox = NumberBox(win, Rect(10, 250, 40, 20));
 		lnumbox.value = 0;
-		lnumbox.clipHi = pi;
+		lnumbox.clipHi = 1;
 		lnumbox.clipLo = 0;
 		lnumbox.step_(0.1);
 		lnumbox.scroll_step=0.1;
@@ -6158,7 +6144,7 @@ GUI Parameters usable in SynthDefs
 
 		};
 		// stepsize?
-		lslider = Slider.new(win, Rect(50, 210, 110, 20));
+		lslider = Slider.new(win, Rect(50, 250, 110, 20));
 		lslider.value = 0;
 		lslider.action = {arg num;
 			{lbox[currentsource].valueAction = num.value;}.defer;
@@ -6168,9 +6154,57 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 230, 150, 20));
+		textbuf = StaticText(win, Rect(163, 270, 150, 20));
+		textbuf.string = "Dst. room/delay";
+		rmnumbox = NumberBox(win, Rect(10, 270, 40, 20));
+		rmnumbox.value = 0.5;
+		rmnumbox.clipHi = 1;
+		rmnumbox.clipLo = 0;
+		rmnumbox.step_(0.1);
+		rmnumbox.scroll_step=0.1;
+		rmnumbox.align = \center;
+		rmnumbox.action = {arg num;
+			{rmbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		rmslider = Slider.new(win, Rect(50, 270, 110, 20));
+		rmslider.value = 0.5;
+		rmslider.action = {arg num;
+			{rmbox[currentsource].valueAction = num.value;}.defer;
+		};
+
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 290, 150, 20));
+		textbuf.string = "Dst. damp/decay";
+		dmnumbox = NumberBox(win, Rect(10, 290, 40, 20));
+		dmnumbox.value = 0.5;
+		dmnumbox.clipHi = 1;
+		dmnumbox.clipLo = 0;
+		dmnumbox.step_(0.1);
+		dmnumbox.scroll_step=0.1;
+		dmnumbox.align = \center;
+		dmnumbox.action = {arg num;
+			{dmbox[currentsource].valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		dmslider = Slider.new(win, Rect(50, 290, 110, 20));
+		dmslider.value = 0.5;
+		dmslider.action = {arg num;
+			{dmbox[currentsource].valueAction = num.value;}.defer;
+		};
+
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 310, 150, 20));
 		textbuf.string = "Contraction (ATK)";
-		connumbox = NumberBox(win, Rect(10, 230, 40, 20));
+		connumbox = NumberBox(win, Rect(10, 310, 40, 20));
 		connumbox.value = 0;
 		connumbox.clipHi = pi;
 		connumbox.clipLo = -pi;
@@ -6182,18 +6216,18 @@ GUI Parameters usable in SynthDefs
 
 		};
 		// stepsize?
-		cslider = Slider.new(win, Rect(50, 230, 110, 20));
+		cslider = Slider.new(win, Rect(50, 310, 110, 20));
 		cslider.value = 0;
 		cslider.action = {arg num;
 			{cbox[currentsource].valueAction = num.value;}.defer;
 			{connumbox.value = num.value;}.defer;
 		};
 
-		spreadcheck = CheckBox( win, Rect(10, 250, 80, 20), "Spread").action_({ arg butt;
+		spreadcheck = CheckBox( win, Rect(10, 330, 80, 20), "Spread").action_({ arg butt;
 			{this.spcheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		spreadcheck.value = false;
-		diffusecheck = CheckBox( win, Rect(90, 250, 80, 20), "Diffuse").action_({ arg butt;
+		diffusecheck = CheckBox( win, Rect(90, 330, 80, 20), "Diffuse").action_({ arg butt;
 			{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		diffusecheck.value = false;
@@ -6202,9 +6236,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 270, 100, 20));
+		textbuf = StaticText(win, Rect(163, 350, 100, 20));
 		textbuf.string = "Angle (stereo)";
-		angnumbox = NumberBox(win, Rect(10, 270, 40, 20));
+		angnumbox = NumberBox(win, Rect(10, 350, 40, 20));
 		angnumbox.value = 0;
 		angnumbox.clipHi = pi;
 		angnumbox.clipLo = 0;
@@ -6221,7 +6255,7 @@ GUI Parameters usable in SynthDefs
 			{angnumbox.value = 0;};
 		};
 
-		angslider = Slider.new(win, Rect(50, 270, 110, 20));
+		angslider = Slider.new(win, Rect(50, 350, 110, 20));
 		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 
 		angslider.action = {arg num;
@@ -6240,9 +6274,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 290, 150, 20));
+		textbuf = StaticText(win, Rect(163, 370, 150, 20));
 		textbuf.string = "Rotation (B-Format)";
-		rnumbox = NumberBox(win, Rect(10, 290, 40, 20));
+		rnumbox = NumberBox(win, Rect(10, 370, 40, 20));
 		rnumbox.value = 0;
 		rnumbox.clipHi = pi;
 		rnumbox.clipLo = -pi;
@@ -6254,7 +6288,7 @@ GUI Parameters usable in SynthDefs
 
 		};
 		// stepsize?
-		rslider = Slider.new(win, Rect(50, 290, 110, 20));
+		rslider = Slider.new(win, Rect(50, 370, 110, 20));
 		rslider.value = 0.5;
 		rslider.action = {arg num;
 			{rbox[currentsource].valueAction = num.value * 6.28 - pi;}.defer;
@@ -6266,9 +6300,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 310, 150, 20));
+		textbuf = StaticText(win, Rect(163, 390, 150, 20));
 		textbuf.string = "Directivity (B-Format)";
-		dirnumbox = NumberBox(win, Rect(10, 310, 40, 20));
+		dirnumbox = NumberBox(win, Rect(10, 390, 40, 20));
 		dirnumbox.value = 0;
 		dirnumbox.clipHi = pi;
 		dirnumbox.clipLo = -pi;
@@ -6279,7 +6313,7 @@ GUI Parameters usable in SynthDefs
 			{dbox[currentsource].valueAction = num.value;}.defer;
 		};
 		// stepsize?
-		dirslider = Slider.new(win, Rect(50, 310, 110, 20));
+		dirslider = Slider.new(win, Rect(50, 390, 110, 20));
 		dirslider.value = 0;
 		dirslider.action = {arg num;
 			{dbox[currentsource].valueAction = num.value * pi/2;}.defer;
@@ -6376,13 +6410,13 @@ GUI Parameters usable in SynthDefs
 		textbuf = StaticText(wdados, Rect(45, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Rv";
-		textbuf = StaticText(wdados, Rect(75, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(70, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Lp";
-		textbuf = StaticText(wdados, Rect(90, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(85, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Hw";
-		textbuf = StaticText(wdados, Rect(105, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(100, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Sc";
 
@@ -6391,31 +6425,32 @@ GUI Parameters usable in SynthDefs
 		//textbuf.font = Font(Font.defaultSansFace, 9);
 		//textbuf.string = "Ln";
 
-		textbuf = StaticText(wdados, Rect(120, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(115, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Sp";
-		textbuf = StaticText(wdados, Rect(135, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(130, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Df";
 
-		textbuf = StaticText(wdados, Rect(150, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(145, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "NCan";
-		textbuf = StaticText(wdados, Rect(175, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(170, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "SBus";
 
-		textbuf = StaticText(wdados, Rect(200, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(208, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "X";
-		textbuf = StaticText(wdados, Rect(233, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(241, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Y";
 
-		textbuf = StaticText(wdados, Rect(266, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(274, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Z";
 
+		/*
 		textbuf = StaticText(wdados, Rect(299, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "O.x";
@@ -6425,20 +6460,26 @@ GUI Parameters usable in SynthDefs
 		textbuf = StaticText(wdados, Rect(366, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "O.z";
+		*/
 
-
-		textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(350, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Lev";
-		textbuf = StaticText(wdados, Rect(425, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(375, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "DAmt";
-		textbuf = StaticText(wdados, Rect(450, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Prox";
-		textbuf = StaticText(wdados, Rect(475, 20, 50, 20));
+		textbuf = StaticText(wdados, Rect(425, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Dist";
+		textbuf = StaticText(wdados, Rect(450, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Room";
+		textbuf = StaticText(wdados, Rect(475, 20, 50, 20));
+		textbuf.font = Font(Font.defaultSansFace, 9);
+		textbuf.string = "Damp";
 		textbuf = StaticText(wdados, Rect(500, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
 		textbuf.string = "Ang";
@@ -6499,7 +6540,7 @@ GUI Parameters usable in SynthDefs
 
 		this.nfontes.do { arg i;
 
-			textbuf = StaticText(wdados, Rect(10, 40 + (i*20), 50, 20));
+			textbuf = StaticText(wdados, Rect(5, 40 + (i*20), 50, 20));
 			textbuf.font = Font(Font.defaultSansFace, 9);
 			textbuf.string = (i+1).asString;
 
@@ -6507,20 +6548,20 @@ GUI Parameters usable in SynthDefs
 
 			this.dstrvbox[i] = NumberBox.new(wdados, Rect(45, 40 + (i*20), 25, 20));
 
-			this.lpcheck[i] = CheckBox.new(wdados, Rect(75, 40 + (i*20), 40, 20));
+			this.lpcheck[i] = CheckBox.new(wdados, Rect(70, 40 + (i*20), 40, 20));
 
 			this.lpcheck[i].action_({ arg but;
 				this.lpcheckProxy[i].valueAction = but.value;
 			});
 
-			this.hwncheck[i] = CheckBox.new( wdados, Rect(90, 40 + (i*20), 40, 20));
+			this.hwncheck[i] = CheckBox.new( wdados, Rect(85, 40 + (i*20), 40, 20));
 
 			this.hwncheck[i].action_({ arg but;
 				this.hwncheckProxy[i].valueAction = but.value;
 			});
 
 
-			this.scncheck[i] = CheckBox.new( wdados, Rect(105, 40 + (i*20), 40, 20));
+			this.scncheck[i] = CheckBox.new( wdados, Rect(100, 40 + (i*20), 40, 20));
 
 			this.scncheck[i].action_({ arg but;
 				this.scncheckProxy[i].valueAction = but.value;
@@ -6536,7 +6577,7 @@ GUI Parameters usable in SynthDefs
 			});
 */
 
-			this.spcheck[i] = CheckBox.new(wdados, Rect(120, 40 + (i*20), 40, 20));
+			this.spcheck[i] = CheckBox.new(wdados, Rect(115, 40 + (i*20), 40, 20));
 
 			this.spcheck[i].action_({ arg but;
 				this.spcheckProxy[i].valueAction = but.value;
@@ -6546,32 +6587,33 @@ GUI Parameters usable in SynthDefs
 
 
 
-			this.dfcheck[i] = CheckBox.new(wdados, Rect(135, 40 + (i*20), 40, 20));
+			this.dfcheck[i] = CheckBox.new(wdados, Rect(130, 40 + (i*20), 40, 20));
 
 			this.dfcheck[i].action_({ arg but;
 				this.dfcheckProxy[i].valueAction = but.value;
 			});
 
 
-
 			/////////////////////////////////////////////////////////////////
 
 
-			this.ncanbox[i] = NumberBox(wdados, Rect(150, 40 + (i*20), 25, 20));
-			this.businibox[i] = NumberBox(wdados, Rect(175, 40 + (i*20), 25, 20));
+			this.ncanbox[i] = NumberBox(wdados, Rect(145, 40 + (i*20), 25, 20));
+			this.businibox[i] = NumberBox(wdados, Rect(170, 40 + (i*20), 25, 20));
 
-			xbox[i] = NumberBox(wdados, Rect(200, 40 + (i*20), 33, 20));
-			ybox[i] = NumberBox(wdados, Rect(233, 40+ (i*20), 33, 20));
-			zbox[i] = NumberBox(wdados, Rect(266, 40+ (i*20), 33, 20));
+			xbox[i] = NumberBox(wdados, Rect(195, 40 + (i*20), 33, 20));
+			ybox[i] = NumberBox(wdados, Rect(228, 40+ (i*20), 33, 20));
+			zbox[i] = NumberBox(wdados, Rect(261, 40+ (i*20), 33, 20));
 
 			//oxbox[i] = NumberBox(wdados, Rect(300, 40 + (i*20), 33, 20));
 			//oybox[i] = NumberBox(wdados, Rect(333, 40+ (i*20), 33, 20));
 			//ozbox[i] = NumberBox(wdados, Rect(366, 40+ (i*20), 33, 20));
 
-			vbox[i] = NumberBox(wdados, Rect(400, 40 + (i*20), 25, 20));
-			dpbox[i] = NumberBox(wdados, Rect(425, 40+ (i*20), 25, 20));
-			gbox[i] = NumberBox(wdados, Rect(450, 40+ (i*20), 25, 20));
-			lbox[i] = NumberBox(wdados, Rect(475, 40+ (i*20), 25, 20));
+			vbox[i] = NumberBox(wdados, Rect(350, 40 + (i*20), 25, 20));
+			dpbox[i] = NumberBox(wdados, Rect(375, 40+ (i*20), 25, 20));
+			gbox[i] = NumberBox(wdados, Rect(400, 40+ (i*20), 25, 20));
+			lbox[i] = NumberBox(wdados, Rect(425, 40+ (i*20), 25, 20));
+			rmbox[i] = NumberBox(wdados, Rect(450, 40+ (i*20), 25, 20));
+			dmbox[i] = NumberBox(wdados, Rect(475, 40+ (i*20), 25, 20));
 			abox[i] = NumberBox(wdados, Rect(500, 40+ (i*20), 25, 20));
 			rbox[i] = NumberBox(wdados, Rect(525, 40+ (i*20), 25, 20));
 			dbox[i] = NumberBox(wdados, Rect(550, 40+ (i*20), 25, 20));
@@ -6652,6 +6694,8 @@ GUI Parameters usable in SynthDefs
 			vbox[i].font = Font(Font.defaultSansFace, 9);
 			gbox[i].font = Font(Font.defaultSansFace, 9);
 			lbox[i].font = Font(Font.defaultSansFace, 9);
+			rmbox[i].font = Font(Font.defaultSansFace, 9);
+			dmbox[i].font = Font(Font.defaultSansFace, 9);
 			rbox[i].font = Font(Font.defaultSansFace, 9);
 			dbox[i].font = Font(Font.defaultSansFace, 9);
 			cbox[i].font = Font(Font.defaultSansFace, 9);
@@ -6733,6 +6777,10 @@ GUI Parameters usable in SynthDefs
 			gbox[i].clipLo = 0;
 			lbox[i].clipHi = 1.0;
 			lbox[i].clipLo = 0;
+			rmbox[i].clipHi = 1.0;
+			rmbox[i].clipLo = 0;
+			dmbox[i].clipHi = 1.0;
+			dmbox[i].clipLo = 0;
 
 			vbox[i].scroll_step = 0.01;
 			abox[i].scroll_step = 0.01;
@@ -6742,6 +6790,10 @@ GUI Parameters usable in SynthDefs
 			lbox[i].scroll_step = 0.01;
 			gbox[i].step = 0.01;
 			lbox[i].step = 0.01;
+			rmbox[i].scroll_step = 0.01;
+			rmbox[i].step = 0.01;
+			dmbox[i].scroll_step = 0.01;
+			dmbox[i].step = 0.01;
 
 
 			this.libbox[i].action = {arg num;
@@ -6780,6 +6832,8 @@ GUI Parameters usable in SynthDefs
 
 			gbox[i].value = 0;
 			lbox[i].value = 0;
+			rmbox[i].value = 0.5;
+			dmbox[i].value = 0.5;
 
 			gbox[i].action = {arg num;
 				this.gboxProxy[i].valueAction = num.value;
@@ -6791,7 +6845,13 @@ GUI Parameters usable in SynthDefs
 				this.lboxProxy[i].valueAction = num.value;
 			};
 
+			rmbox[i].action = {arg num;
+				this.rmboxProxy[i].valueAction = num.value;
+			};
 
+			dmbox[i].action = {arg num;
+				this.dmboxProxy[i].valueAction = num.value;
+			};
 
 			rbox[i].action = {arg num;
 				this.rboxProxy[i].valueAction = num.value;
