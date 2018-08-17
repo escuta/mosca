@@ -210,7 +210,10 @@ Mosca {
 	<>guiflag,
 
 	<>rm, <>rmslider, <>rmnumbox, <>rmbox, <>rmboxProxy, // setable local room size
-	<>dm, <>dmslider, <>dmnumbox, <>dmbox, <>dmboxProxy; // setable local dampening
+	<>dm, <>dmslider, <>dmnumbox, <>dmbox, <>dmboxProxy, // setable local dampening
+
+	<>clsrm, <>clsrmslider, <>clsrmnumbox, <>clsrmbox, <>clsrmboxProxy, // setable local room size
+	<>clsdm, <>clsdmslider, <>clsdmnumbox, <>clsdmbox, <>clsdmboxProxy; // setable local dampening
 
 
 
@@ -238,12 +241,11 @@ Mosca {
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	server;
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
-	*new { arg projDir, nsources = 1, width = 800, dur = 180, rir,
-		freeroom = 0.5, freedamp = 0.5, freemul = 1,
+	*new { arg projDir, nsources = 10, width = 800, dur = 180, rir,
 		server = Server.default, decoder = nil, rawbusfuma = 0, rawbusambix = 9, maxorder = 1,
 		serport = nil, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, autoloop = false;
-		^super.new.initMosca(projDir, nsources, width, dur, rir, freeroom, freedamp, freemul,
+		^super.new.initMosca(projDir, nsources, width, dur, rir,
 			server, decoder, rawbusfuma, rawbusambix, maxorder, serport,
 			offsetheading, recchans, recbus, guiflag, guiint, autoloop);
 	}
@@ -283,7 +285,7 @@ GUI Parameters usable in SynthDefs
 
 	}
 
-	initMosca { arg projDir, nsources, iwidth, idur, irir, ifreeroom, ifreedamp, ifreemul, iserver, idecoder,
+	initMosca { arg projDir, nsources, iwidth, idur, irir, iserver, idecoder,
 		irawbusfuma, irawbusambix, imaxorder, iserport, ioffsetheading,
 		irecchans, irecbus, iguiflag, iguiint, iautoloop;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt,
@@ -293,7 +295,6 @@ GUI Parameters usable in SynthDefs
 		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
 		reverbOutFunc,
-		freeroom, freedamp, freemul,
 		bufAformat, bufAformat_soa_a12, bufWXYZ,
 		bFormNumChan = (imaxorder + 1).squared; // add the number of channels of the b format
 		                                        // Ddepending on maxorder
@@ -345,9 +346,6 @@ GUI Parameters usable in SynthDefs
 
 		this.looping = false;
 		this.rir = irir;
-		freeroom = ifreeroom;
-		freedamp = ifreedamp;
-		freemul = ifreemul;
 
 		if (this.serport.notNil) {
 
@@ -531,6 +529,8 @@ GUI Parameters usable in SynthDefs
 
 		clsRvtypes = "_free"; // initialise close reverb type
 		clsrv = 1;
+		clsrm = 0.5; // initialise close reverb room size
+		clsdm = 0.5; // initialise close reverb dampening
 
 
 		this.nfontes.do { arg i;
@@ -620,51 +620,54 @@ GUI Parameters usable in SynthDefs
 		stcheckProxy = Array.newClear(this.nfontes);
 
 
-		this.nfontes.do { arg x;
-			rboxProxy[x] = AutomationGuiProxy.new(0.0);
-			cboxProxy[x] = AutomationGuiProxy.new(0.0);
-			aboxProxy[x] = AutomationGuiProxy.new(0.0);
-			vboxProxy[x] = AutomationGuiProxy.new(0.0);
-			gboxProxy[x] = AutomationGuiProxy.new(0.0);
-			lboxProxy[x] = AutomationGuiProxy.new(0.0);
-			rmboxProxy[x]= AutomationGuiProxy.new(0.5);
-			dmboxProxy[x]= AutomationGuiProxy.new(0.5);
-			dboxProxy[x] = AutomationGuiProxy.new(0.0);
-			dpboxProxy[x] = AutomationGuiProxy.new(0.0);
-			zboxProxy[x] = AutomationGuiProxy.new(0.0);
-			yboxProxy[x] = AutomationGuiProxy.new(0.0);
-			xboxProxy[x] = AutomationGuiProxy.new(0.0);
-			a1checkProxy[x] = AutomationGuiProxy.new(false);
-			a2checkProxy[x] = AutomationGuiProxy.new(false);
-			a3checkProxy[x] = AutomationGuiProxy.new(false);
-			a4checkProxy[x] = AutomationGuiProxy.new(false);
-			a5checkProxy[x] = AutomationGuiProxy.new(false);
-			a1boxProxy[x] = AutomationGuiProxy.new(0.0);
-			a2boxProxy[x] = AutomationGuiProxy.new(0.0);
-			a3boxProxy[x] = AutomationGuiProxy.new(0.0);
-			a4boxProxy[x] = AutomationGuiProxy.new(0.0);
-			a5boxProxy[x] = AutomationGuiProxy.new(0.0);
+		this.nfontes.do { arg i;
+			rboxProxy[i] = AutomationGuiProxy.new(0.0);
+			cboxProxy[i] = AutomationGuiProxy.new(0.0);
+			aboxProxy[i] = AutomationGuiProxy.new(0.0);
+			vboxProxy[i] = AutomationGuiProxy.new(0.0);
+			gboxProxy[i] = AutomationGuiProxy.new(0.0);
+			lboxProxy[i] = AutomationGuiProxy.new(0.0);
+			rmboxProxy[i]= AutomationGuiProxy.new(0.5);
+			dmboxProxy[i]= AutomationGuiProxy.new(0.5);
+			dboxProxy[i] = AutomationGuiProxy.new(0.0);
+			dpboxProxy[i] = AutomationGuiProxy.new(0.0);
+			zboxProxy[i] = AutomationGuiProxy.new(0.0);
+			yboxProxy[i] = AutomationGuiProxy.new(0.0);
+			xboxProxy[i] = AutomationGuiProxy.new(0.0);
+			a1checkProxy[i] = AutomationGuiProxy.new(false);
+			a2checkProxy[i] = AutomationGuiProxy.new(false);
+			a3checkProxy[i] = AutomationGuiProxy.new(false);
+			a4checkProxy[i] = AutomationGuiProxy.new(false);
+			a5checkProxy[i] = AutomationGuiProxy.new(false);
+			a1boxProxy[i] = AutomationGuiProxy.new(0.0);
+			a2boxProxy[i] = AutomationGuiProxy.new(0.0);
+			a3boxProxy[i] = AutomationGuiProxy.new(0.0);
+			a4boxProxy[i] = AutomationGuiProxy.new(0.0);
+			a5boxProxy[i] = AutomationGuiProxy.new(0.0);
 
-			hwncheckProxy[x] = AutomationGuiProxy.new(false);
+			hwncheckProxy[i] = AutomationGuiProxy.new(false);
 
-			tfieldProxy[x] = AutomationGuiProxy.new("");
-			libboxProxy[x] = AutomationGuiProxy.new(0);
-			lpcheckProxy[x] = AutomationGuiProxy.new(false);
-			dstrvboxProxy[x] = AutomationGuiProxy.new(1);
-			scncheckProxy[x] = AutomationGuiProxy.new(false);
-			dfcheckProxy[x] = AutomationGuiProxy.new(false);
+			tfieldProxy[i] = AutomationGuiProxy.new("");
+			libboxProxy[i] = AutomationGuiProxy.new(0);
+			lpcheckProxy[i] = AutomationGuiProxy.new(false);
+			dstrvboxProxy[i] = AutomationGuiProxy.new(1);
+			scncheckProxy[i] = AutomationGuiProxy.new(false);
+			dfcheckProxy[i] = AutomationGuiProxy.new(false);
 			//comment out all linear parameters
-			//lncheckProxy[x] = AutomationGuiProxy.new(false);
-			spcheckProxy[x] = AutomationGuiProxy.new(false);
-			ncanboxProxy[x] = AutomationGuiProxy.new(0);
-			businiboxProxy[x] = AutomationGuiProxy.new(0);
-			stcheckProxy[x] = AutomationGuiProxy.new(false);
+			//lncheckProxy[i] = AutomationGuiProxy.new(false);
+			spcheckProxy[i] = AutomationGuiProxy.new(false);
+			ncanboxProxy[i] = AutomationGuiProxy.new(0);
+			businiboxProxy[i] = AutomationGuiProxy.new(0);
+			stcheckProxy[i] = AutomationGuiProxy.new(false);
 
 
 		};
 
 		//set up automationProxy for single parameters outside of the previous loop, not to be docked
 		clsrvboxProxy = AutomationGuiProxy.new(1);
+		clsrmboxProxy = AutomationGuiProxy.new(0.5); // cls roomsize proxy
+		clsdmboxProxy = AutomationGuiProxy.new(0.5); // cls dampening proxy
+
 
 		headingnumboxProxy = AutomationGuiProxy.new(0.0);
 		rollnumboxProxy = AutomationGuiProxy.new(0.0);
@@ -854,13 +857,12 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \rm, num.value);
 				this.synt[i].set(\rm, num.value);
 				rm[i] = num.value;
-				if((i == currentsource) && guiflag)
-				{
-					{rmslider.value = num.value}.defer;
-					{rmnumbox.value = num.value}.defer;
-				};
 				if (guiflag) {
 					rmbox[i].value = num.value;
+					if (i == currentsource) {
+						{rmslider.value = num.value}.defer;
+						{rmnumbox.value = num.value}.defer;
+					};
 				};
 			};
 
@@ -869,13 +871,12 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(i, \dm, num.value);
 				this.synt[i].set(\dm, num.value);
 				dm[i] = num.value;
-				if((i == currentsource) && guiflag)
-				{
-					{dmslider.value = num.value}.defer;
-					{dmnumbox.value = num.value}.defer;
-				};
 				if (guiflag) {
 					dmbox[i].value = num.value;
+					if (i == currentsource) {
+						{dmslider.value = num.value}.defer;
+						{dmnumbox.value = num.value}.defer;
+					};
 				};
 			};
 
@@ -1374,6 +1375,33 @@ GUI Parameters usable in SynthDefs
 			{this.dstrvbox[i].value = num.value}.defer;
 			};*/
 		});
+
+
+		clsrmboxProxy.action_({arg num;
+			if (revGlobalBF.isPlaying || revGlobalSoa.isplaying || revGlobal.isPlaying) {
+				this.glbRevDecGrp.set(\clsrm, num.value);
+			};
+			clsrm = num.value;
+			if (guiflag) {
+				{clsrmslider.value = num.value}.defer;
+				{clsrmnumbox.value = num.value}.defer;
+				//clsrmbox.value = num.value;
+			};
+		});
+
+
+		clsdmboxProxy.action_({arg num;
+			if (revGlobalBF.isPlaying || revGlobalSoa.isplaying || revGlobal.isPlaying) {
+				this.glbRevDecGrp.set(\clsdm, num.value);
+			};
+			clsdm = num.value;
+			if (guiflag) {
+				{clsdmslider.value = num.value}.defer;
+				{clsdmnumbox.value = num.value}.defer;
+				//clsdmbox.value = num.value;
+			};
+		});
+
 
 		this.headingnumboxProxy.action_({ arg num;
 			this.globFOATransform.set(\heading, num.value);
@@ -1902,7 +1930,8 @@ GUI Parameters usable in SynthDefs
 				glev = 0, llev = 0, contr=1,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+				room = 0.5, damp = 0.5;
 
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
 				ambSigSoa, ambSigFoa,
@@ -1959,7 +1988,7 @@ GUI Parameters usable in SynthDefs
 				locallev = 1 - dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -2016,7 +2045,8 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("ambitoolsChowning"++rev_type,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
-				dopamnt = 0, glev = 0, llev = 0;
+				dopamnt = 0, glev = 0, llev = 0,
+				room = 0.5, damp = 05;
 
 				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
 				globallev, locallev, gsig, fonte, intens;
@@ -2067,7 +2097,7 @@ GUI Parameters usable in SynthDefs
 				//applie distance attenuation before mixxing in reverb to keep trail off
 				p = p * sqrt(1 - dis);
 
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -2082,7 +2112,8 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("hoaLibChowning"++rev_type,  {
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
-				dopamnt = 0, glev = 0, llev = 0;
+				dopamnt = 0, glev = 0, llev = 0,
+				room = 0.5, damp = 0.5;
 
 				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
 				globallev, locallev, gsig, fonte, intens;
@@ -2134,7 +2165,7 @@ GUI Parameters usable in SynthDefs
 				//applie distance attenuation before mixxing in reverb to keep trail off
 				p = p * sqrt(1 - dis);
 
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -2151,7 +2182,8 @@ GUI Parameters usable in SynthDefs
 				dopamnt = 0, glev = 0, llev = 0;
 
 				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
-				globallev, locallev, gsig, fonte, intens;
+				globallev, locallev, gsig, fonte, intens,
+				room = 0.5, damp = 0.5;
 
 				var p;
 				var grevganho = 0.04; // needs less gain
@@ -2200,7 +2232,7 @@ GUI Parameters usable in SynthDefs
 				//applie distance attenuation before mixxing in reverb to keep trail off
 				p = p * sqrt(1 - dis);
 
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -2219,7 +2251,8 @@ GUI Parameters usable in SynthDefs
 				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
 				glev = 0, llev = 0.2,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa;
+				aFormatBusOutSoa, aFormatBusInSoa,
+				room = 0.5, damp = 0.5;
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
 				junto, rd, dopplershift, azim, dis, xatras, yatras,
 				globallev = 0.0004, locallev, gsig, fonte,
@@ -2264,7 +2297,7 @@ GUI Parameters usable in SynthDefs
 				locallev = 1 - dis;
 				locallev = locallev * Lag.kr(llev, 0.1);
 
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev);
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -2546,7 +2579,8 @@ GUI Parameters usable in SynthDefs
 				glev = 0, llev = 0, contr=1,
 				sp, df,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				aFormatBusOutSoa, aFormatBusInSoa;
+				aFormatBusOutSoa, aFormatBusInSoa,
+				room = 0.5, damp = 0.5;
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
@@ -2620,7 +2654,8 @@ GUI Parameters usable in SynthDefs
 
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev);
+				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev,
+					room, damp);
 				junto1 = p1 + lrev1Ref.value;
 				junto2 = p2 + lrev2Ref.value;
 
@@ -2756,7 +2791,7 @@ GUI Parameters usable in SynthDefs
 			rirBRU = Buffer.readChannel(server, prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav",
 				channels: [3]);
 
-			server.sync;
+			//server.sync;
 
 			bufsize = PartConv.calcBufSize(fftsize, rirW);
 
@@ -2765,7 +2800,7 @@ GUI Parameters usable in SynthDefs
 			rirXspectrum = Buffer.alloc(server, bufsize, 1);
 			rirYspectrum = Buffer.alloc(server, bufsize, 1);
 			rirZspectrum = Buffer.alloc(server, bufsize, 1);
-			server.sync;
+			//server.sync;
 			rirWspectrum.preparePartConv(rirW, fftsize);
 			//server.sync;
 			rirXspectrum.preparePartConv(rirX, fftsize);
@@ -2774,7 +2809,7 @@ GUI Parameters usable in SynthDefs
 			//server.sync;
 			rirZspectrum.preparePartConv(rirZ, fftsize);
 
-			server.sync;
+			//server.sync;
 
 			rirFLUspectrum = Buffer.alloc(server, bufsize, 1);
 			rirFRDspectrum = Buffer.alloc(server, bufsize, 1);
@@ -2789,7 +2824,7 @@ GUI Parameters usable in SynthDefs
 			//server.sync;
 			rirBRUspectrum.preparePartConv(rirBRU, fftsize);
 
-			server.sync;
+			//server.sync;
 
 			rirA12 = Array.newClear(12);
 			rirA12Spectrum = Array.newClear(12);
@@ -2861,47 +2896,51 @@ GUI Parameters usable in SynthDefs
 				revGlobalAmbFunc.value(convsig, dec);
 			}).add;
 
+			if (maxorder > 1) {
 
-			SynthDef.new("revGlobalSoaA12_conv",  { arg soaBus, gate = 1;
-				var env, w, x, y, z, r, s, t, u, v,
-				foaSig, soaSig, tmpsig;
-				var sig = In.ar(soaBus, 9);
-				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-				tmpsig = [
-					PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]),
-					PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]),
-					PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]),
-					PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]),
-					PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]),
-					PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]),
-					PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]),
-					PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]),
-					PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]),
-					PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]),
-					PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]),
-					PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]),
-				];
+				SynthDef.new("revGlobalSoaA12_conv",  { arg soaBus, gate = 1;
+					var env, w, x, y, z, r, s, t, u, v,
+					foaSig, soaSig, tmpsig;
+					var sig = In.ar(soaBus, 9);
+					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+					sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+					tmpsig = [
+						PartConv.ar(sig[0], fftsize, rirA12Spectrum[0]),
+						PartConv.ar(sig[1], fftsize, rirA12Spectrum[1]),
+						PartConv.ar(sig[2], fftsize, rirA12Spectrum[2]),
+						PartConv.ar(sig[3], fftsize, rirA12Spectrum[3]),
+						PartConv.ar(sig[4], fftsize, rirA12Spectrum[4]),
+						PartConv.ar(sig[5], fftsize, rirA12Spectrum[5]),
+						PartConv.ar(sig[6], fftsize, rirA12Spectrum[6]),
+						PartConv.ar(sig[7], fftsize, rirA12Spectrum[7]),
+						PartConv.ar(sig[8], fftsize, rirA12Spectrum[8]),
+						PartConv.ar(sig[9], fftsize, rirA12Spectrum[9]),
+						PartConv.ar(sig[10], fftsize, rirA12Spectrum[10]),
+						PartConv.ar(sig[11], fftsize, rirA12Spectrum[11]),
+					];
 
-				tmpsig = tmpsig * 4 * env;
-				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
-				foaSig = [w, x, y, z] ;
-				soaSig = [w, x, y, z, r, s, t, u, v];
-				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-			}).add;
+					tmpsig = tmpsig * 4 * env;
+					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
+					foaSig = [w, x, y, z] ;
+					soaSig = [w, x, y, z, r, s, t, u, v];
+					revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+				}).add;
+
+			};
 
 
 			//run the makeSpatialisers function for each types of local reverbs
 
 
-			localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+			localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev, room, damp |
 				lrevRef.value = PartConv.ar(p, fftsize, rirWspectrum.bufnum, locallev);
 			};
 
-			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev,
+				room, damp |
 				var temp1 = p1, temp2 = p2;
-				temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
-				temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, 1.0 * locallev);
+				temp1 = PartConv.ar(p1, fftsize, rirZspectrum.bufnum, locallev);
+				temp2 = PartConv.ar(p2, fftsize, rirZspectrum.bufnum, locallev);
 				lrev1Ref.value = temp1 * locallev;
 				lrev2Ref.value = temp2 * locallev;
 			};
@@ -2914,64 +2953,62 @@ GUI Parameters usable in SynthDefs
 
 		// allpass reverbs
 
-		//basic prameters for allpass filter reverb
-		this.decaytime = 1.0;
-		this.delaytime = 0.04;
-
-		SynthDef.new("revGlobalBFormatAmb_pass",  { arg gbfbus, gate = 1;
+		SynthDef.new("revGlobalBFormatAmb_pass",  { arg gbfbus, gate = 1, room = 0.5, damp = 0.5;
 			var env, temp, sig = In.ar(gbfbus, 4);
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = FoaDecode.ar(sig, b2a);
-			16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
-				this.decaytime)});
+			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0.01, 0.08) }.dup(4),
+				damp * 0.08)});
 			sig = FoaEncode.ar(sig, a2b);
 			sig = sig * env;
 			revGlobalAmbFunc.value(sig, dec);
 		}).add;
 
+		if (maxorder > 1) {
 
-		SynthDef.new("revGlobalSoaA12_pass",  { arg soaBus, gate = 1;
-			var env, w, x, y, z, r, s, t, u, v,
-			foaSig, soaSig, tmpsig;
-			var sig = In.ar(soaBus, 9);
-			env = EnvGen.kr(Env.asr, gate, doneAction:2);
-			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-			16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.001,this.delaytime) }.dup(12),
-				this.decaytime)});
-			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix) * env;
-			foaSig = [w, x, y, z];
-			soaSig = [w, x, y, z, r, s, t, u, v];
-			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-		}).load(server);
+			SynthDef.new("revGlobalSoaA12_pass",  { arg soaBus, gate = 1, room = 0.5, damp = 0.5;
+				var env, w, x, y, z, r, s, t, u, v,
+				foaSig, soaSig, tmpsig;
+				var sig = In.ar(soaBus, 9);
+				env = EnvGen.kr(Env.asr, gate, doneAction:2);
+				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+				16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0.001, 0.08) }.dup(12),
+					damp * 0.08)});
+				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix) * env;
+				foaSig = [w, x, y, z];
+				soaSig = [w, x, y, z, r, s, t, u, v];
+				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+			}).load(server);
 
+		};
 
 		//run the makeSpatialisers function for each types of local reverbs
 
-		SynthDef.new("revGlobalAmb_pass",  { arg gbus, gate = 1;
+		SynthDef.new("revGlobalAmb_pass",  { arg gbus, gate = 1, room = 0.5, damp = 0.5;
 			var env, sig = In.ar(gbus, 1);
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-			16.do({ sig = AllpassC.ar(sig, this.delaytime, { Rand(0.01,this.delaytime) }.dup(4),
-				this.decaytime)});
+			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0.01, 0.08) }.dup(4),
+				damp * 0.08)});
 			sig = sig / 4; // running too hot, so attenuate
 			sig = sig * env;
 			sig = FoaEncode.ar(sig, a2b);
 			revGlobalAmbFunc.value(sig, dec);
 		}).add;
 
-		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev, room, damp |
 			var temp;
 			temp = p;
-			16.do({ temp = AllpassC.ar(temp, this.delaytime, { Rand(0.001,this.delaytime) },
-				this.decaytime)});
+			16.do({ temp = AllpassC.ar(temp, 0.08, room * { Rand(0.001, 0.08) },
+				damp * 0.08)});
 			lrevRef.value = temp * locallev;
 		};
 
-		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev, room, damp |
 			var temp1 = p1, temp2 = p2;
-			16.do({ temp1 = AllpassC.ar(temp1, this.delaytime, { Rand(0.001,this.delaytime) },
-				this.decaytime)});
-			16.do({ temp2 = AllpassC.ar(temp2, this.delaytime, { Rand(0.001,this.delaytime) },
-				this.decaytime)});
+			16.do({ temp1 = AllpassC.ar(temp1, 0.08, room * { Rand(0.001, 0.08) },
+				damp * 0.08)});
+			16.do({ temp2 = AllpassC.ar(temp2, 0.08, room * { Rand(0.001, 0.08) },
+				damp * 0.08)});
 			lrev1Ref.value = temp1 * locallev;
 			lrev2Ref.value = temp2 * locallev;
 		};
@@ -2982,64 +3019,64 @@ GUI Parameters usable in SynthDefs
 		// freeverb defs
 
 
-		SynthDef.new("revGlobalBFormatAmb_free",  { arg gbfbus, gate = 1;
+		SynthDef.new("revGlobalBFormatAmb_free",  { arg gbfbus, gate = 1, room = 0.5, damp = 0.5;
 			var env, convsig, sig = In.ar(gbfbus, 4);
 			env = EnvGen.kr(Env.asr, gate, doneAction:2);
 			sig = FoaDecode.ar(sig, b2a);
 			convsig = [
-				FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
-			];
+				FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig[2], mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig[3], mix: 1, room: room, damp: damp)];
 			convsig = FoaEncode.ar(convsig, a2b);
 			convsig = convsig * env;
 			revGlobalAmbFunc.value(convsig, dec);
 		}).add;
 
+		if (maxorder > 1) {
 
-		SynthDef.new("revGlobalSoaA12_free",  { arg soaBus, gate = 1;
-			var env, w, x, y, z, r, s, t, u, v,
-			foaSig, soaSig, tmpsig;
-			var sig = In.ar(soaBus, 9);
-			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-			tmpsig = [
-				FreeVerb.ar(sig[0], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[1], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[2], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[3], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[4], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[5], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[6], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[7], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[8], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[9], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[10], mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig[11], mix: 1, room: freeroom, damp: freedamp, mul: freemul)
-			];
+			SynthDef.new("revGlobalSoaA12_free",  { arg soaBus, gate = 1, room = 0.5, damp = 0.5;
+				var env, w, x, y, z, r, s, t, u, v,
+				foaSig, soaSig, tmpsig;
+				var sig = In.ar(soaBus, 9);
+				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+				tmpsig = [
+					FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[2], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[3], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[4], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[5], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[6], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[7], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[8], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[9], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[10], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[11], mix: 1, room: room, damp: damp)];
 
-			tmpsig = tmpsig * 4 * env;
-			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
-			foaSig = [w, x, y, z];
-			soaSig = [w, x, y, z, r, s, t, u, v];
-			revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
-		}).add;
+				tmpsig = tmpsig * 4 * env;
+				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig, soa_a12_encoder_matrix);
+				foaSig = [w, x, y, z];
+				soaSig = [w, x, y, z, r, s, t, u, v];
+				revGlobalSoaOutFunc.value(soaSig, foaSig, dec);
+			}).add;
+
+		};
 
 
 		//run the makeSpatialisers function for each types of local reverbs
 
 
-		SynthDef.new("revGlobalAmb_free",  { arg gbus, gate = 1;
+		SynthDef.new("revGlobalAmb_free",  { arg gbus, gate = 1, room = 0.5, damp = 0.5;
 			var env, sig, convsig;
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = In.ar(gbus, 1);
 			convsig = [
-				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul),
-				FreeVerb.ar(sig, mix: 1, room: freeroom, damp: freedamp, mul: freemul)
-			];
+				FreeVerb.ar(sig, mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig, mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig, mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig, mix: 1, room: room, damp: damp)];
 			convsig = FoaEncode.ar(convsig, a2b);
 			convsig = convsig * env;
 			revGlobalAmbFunc.value(convsig, dec);
@@ -3053,15 +3090,15 @@ GUI Parameters usable in SynthDefs
 
 
 
-		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
-			lrevRef.value = FreeVerb.ar(p * locallev, mix: 1, room: freeroom, damp: freedamp,
-				mul: freemul);
+		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev, room = 0.5, damp = 0.5 |
+			lrevRef.value = FreeVerb.ar(p * locallev, mix: 1, room: room, damp: damp);
 		};
 
-		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev,
+			room = 0.5, damp = 0.5|
 			var temp1 = p1, temp2 = p2;
-			temp1 = FreeVerb.ar(p1 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
-			temp2 = FreeVerb.ar(p2 * locallev, mix: 1, room: freeroom, damp: freedamp, mul: freemul);
+			temp1 = FreeVerb.ar(p1 * locallev, mix: 1, room: room, damp: damp);
+			temp2 = FreeVerb.ar(p2 * locallev, mix: 1, room: room, damp: damp);
 			lrev1Ref.value = temp1 * locallev;
 			lrev2Ref.value = temp2 * locallev;
 
@@ -3072,10 +3109,10 @@ GUI Parameters usable in SynthDefs
 
 		// function for no-reverb option
 
-		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev |
+		localReverbFunc = { | lrevRef, p, fftsize, rirWspectrum, locallev, room, damp|
 		};
 
-		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev |
+		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev, room, damp |
 		};
 
 		makeSpatialisers.value(rev_type:"");
@@ -5928,6 +5965,11 @@ GUI Parameters usable in SynthDefs
 		};
 
 
+		/////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 90, 240, 20));
+		textbuf.string = "Library";
 		libnumbox = PopUpMenu( win, Rect(10, 90, 150, 20));
 		libnumbox.items = ["ATK",
 			"ambitools   (mono)",
@@ -6094,7 +6136,7 @@ GUI Parameters usable in SynthDefs
 		gnumbox.clipHi = pi;
 		gnumbox.clipLo = 0;
 		gnumbox.step_(0.1);
-		gnumbox.scroll_step=0.1;
+		gnumbox.scroll_step = 0.1;
 		gnumbox.align = \center;
 		gnumbox.action = {arg num;
 			{gbox[currentsource].valueAction = num.value;}.defer;
@@ -6105,6 +6147,54 @@ GUI Parameters usable in SynthDefs
 		gslider.value = 0;
 		gslider.action = {arg num;
 			{gbox[currentsource].valueAction = num.value;}.defer;
+		};
+
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 190, 150, 20));
+		textbuf.string = "Cls. room/delay";
+		clsrmnumbox = NumberBox(win, Rect(10, 190, 40, 20));
+		clsrmnumbox.value = 0.5;
+		clsrmnumbox.clipHi = 1;
+		clsrmnumbox.clipLo = 0;
+		clsrmnumbox.step_(0.1);
+		clsrmnumbox.scroll_step = 0.1;
+		clsrmnumbox.align = \center;
+		clsrmnumbox.action = {arg num;
+			{clsrmboxProxy.valueAction = num.value;}.defer;
+
+		};
+		// stepsize?
+		clsrmslider = Slider.new(win, Rect(50, 190, 110, 20));
+		clsrmslider.value = 0.5;
+		clsrmslider.action = {arg num;
+			{clsrmboxProxy.valueAction = num.value;}.defer;
+		};
+
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(win, Rect(163, 210, 150, 20));
+		textbuf.string = "Cls. damp/decay";
+		clsdmnumbox = NumberBox(win, Rect(10, 210, 40, 20));
+		clsdmnumbox.value = 0.5;
+		clsdmnumbox.clipHi = 1;
+		clsdmnumbox.clipLo = 0;
+		clsdmnumbox.step_(0.1);
+		clsdmnumbox.scroll_step = 0.1;
+		clsdmnumbox.align = \center;
+		clsdmnumbox.action = {arg num;
+			{clsdmboxProxy.valueAction = num.value;}.defer;
+		};
+
+		// stepsize?
+		clsdmslider = Slider.new(win, Rect(50, 210, 110, 20));
+		clsdmslider.value = 0.5;
+		clsdmslider.action = {arg num;
+			{clsdmboxProxy.valueAction = num.value;}.defer;
 		};
 
 
