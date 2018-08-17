@@ -136,7 +136,6 @@ Mosca {
 	<>autoloop,
 	<>streamdisk,
 	<>streambuf, // <>streamrate, // apparently unused
-    <>delaytime, <>decaytime, // for allpass;
 	// head tracking
 	<>trackarr, <>trackarr2, <>tracki, <>trackPort,
 	//<>track2arr, <>track2arr2, <>track2i,
@@ -2729,7 +2728,9 @@ GUI Parameters usable in SynthDefs
 			var rirName = PathName(rir).fileNameWithoutExtension;
 
 			this.rirList = [rirName];
-			this.rirAfmtList ++ ["A-format "++rirName++" (ATK)"]; // add A-fmt for close reveb
+			// add A-fmt for close reveb
+			this.rirAfmtList = this.rirAfmtList ++ ["A-format " ++ rirName ++ " (ATK)"];
+
 
 			rirW = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [0]);
 			rirX = Buffer.readChannel(server, prjDr ++ "/rir/amb/" ++ rirName ++ ".amb", channels: [1]);
@@ -2741,7 +2742,8 @@ GUI Parameters usable in SynthDefs
 			server.sync;
 			bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
 			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12); // for second order conv
-			server.sync;
+
+			//server.sync;
 
 			if (File.exists(prjDr ++ "/rir/fluSoaA12/" ++ rirName ++ "_Flu.wav").not) {
 
@@ -2858,7 +2860,7 @@ GUI Parameters usable in SynthDefs
 			};
 
 
-			server.sync;
+			//server.sync;
 
 
 
@@ -2958,7 +2960,7 @@ GUI Parameters usable in SynthDefs
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = FoaDecode.ar(sig, b2a);
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0.01, 0.08) }.dup(4),
-				damp * 0.08)});
+				damp * 2)});
 			sig = FoaEncode.ar(sig, a2b);
 			sig = sig * env;
 			revGlobalAmbFunc.value(sig, dec);
@@ -2973,7 +2975,7 @@ GUI Parameters usable in SynthDefs
 				env = EnvGen.kr(Env.asr, gate, doneAction:2);
 				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
 				16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0.001, 0.08) }.dup(12),
-					damp * 0.08)});
+					damp * 2)});
 				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix) * env;
 				foaSig = [w, x, y, z];
 				soaSig = [w, x, y, z, r, s, t, u, v];
@@ -2988,7 +2990,7 @@ GUI Parameters usable in SynthDefs
 			var env, sig = In.ar(gbus, 1);
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0.01, 0.08) }.dup(4),
-				damp * 0.08)});
+				damp * 2)});
 			sig = sig / 4; // running too hot, so attenuate
 			sig = sig * env;
 			sig = FoaEncode.ar(sig, a2b);
@@ -2999,16 +3001,16 @@ GUI Parameters usable in SynthDefs
 			var temp;
 			temp = p;
 			16.do({ temp = AllpassC.ar(temp, 0.08, room * { Rand(0.001, 0.08) },
-				damp * 0.08)});
+				damp * 2)});
 			lrevRef.value = temp * locallev;
 		};
 
 		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, fftsize, rirZspectrum, locallev, room, damp |
 			var temp1 = p1, temp2 = p2;
 			16.do({ temp1 = AllpassC.ar(temp1, 0.08, room * { Rand(0.001, 0.08) },
-				damp * 0.08)});
+				damp * 2)});
 			16.do({ temp2 = AllpassC.ar(temp2, 0.08, room * { Rand(0.001, 0.08) },
-				damp * 0.08)});
+				damp * 2)});
 			lrev1Ref.value = temp1 * locallev;
 			lrev2Ref.value = temp2 * locallev;
 		};
@@ -6206,9 +6208,7 @@ GUI Parameters usable in SynthDefs
 		dstReverbox = PopUpMenu( win, Rect(10, 230, 150, 20));
 		dstReverbox.items = ["no-reverb",
 				"freeverb",
-				"allpass",
-				"A-format freeverb  (ATK)",
-				"A-format allpass    (ATK)"] ++ this.rirList ++ this.rirAfmtList;
+				"allpass"] ++ this.rirList ++ this.rirAfmtList;
 		// add the list of impule response if one is provided
 
 		dstReverbox.action_({ arg num;
