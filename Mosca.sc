@@ -107,7 +107,7 @@ Mosca {
 	<>triggerFunc, <>stopFunc,
 	<>scInBus,
 	<>globTBus,
-	<>width, <>halfwidth, <>scale,
+	<>width, <>halfwidth, <>height, <>halfheight,
 	<>insertFlag,
 	<>aFormatBusFoa, <>aFormatBusSoa,
 	<>dur,
@@ -234,7 +234,7 @@ Mosca {
 	server;
 	classvar foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, width = 800, dur = 180, rirBank,
-		server = Server.default, decoder, rawbusfuma = 0, rawbusambix = 9, maxorder = 1,
+		server = Server.local, decoder, rawbusfuma = 0, rawbusambix = 9, maxorder = 1,
 		serport, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, autoloop = false;
 		^super.new.initMosca(projDir, nsources, width, dur, rirBank,
@@ -316,7 +316,8 @@ GUI Parameters usable in SynthDefs
 			this.width = iwidth;
 		};
 		this.halfwidth = this.width / 2;
-		this.scale = this.halfwidth; // for the moment at least
+		this.height = this.width; // on init
+		this.halfheight = this.halfwidth;
 		this.dur = idur;
 		this.maxorder = imaxorder;
 		this.serport = iserport;
@@ -521,7 +522,7 @@ GUI Parameters usable in SynthDefs
 
 		this.nfontes.do { arg i;
 			libName[i] = "espacAmb"; // initialize original ATK encoding
-			angle[i] = 0;
+			angle[i] = 1.05;
 			level[i] = 0;
 			glev[i] = 0;
 			llev[i] = 0;
@@ -537,7 +538,7 @@ GUI Parameters usable in SynthDefs
 			scn[i] = 0;
 			rlev[i] = 0;
 			dlev[i] = 0;
-			clev[i] = 0;
+			clev[i] = 1;
 			zlev[i] = 0;
 			dplev[i] = 0;
 
@@ -609,7 +610,7 @@ GUI Parameters usable in SynthDefs
 		this.nfontes.do { arg i;
 			rboxProxy[i] = AutomationGuiProxy.new(0.0);
 			cboxProxy[i] = AutomationGuiProxy.new(0.0);
-			aboxProxy[i] = AutomationGuiProxy.new(0.0);
+			aboxProxy[i] = AutomationGuiProxy.new(1.0471975511966);
 			vboxProxy[i] = AutomationGuiProxy.new(0.0);
 			gboxProxy[i] = AutomationGuiProxy.new(0.0);
 			lboxProxy[i] = AutomationGuiProxy.new(0.0);
@@ -716,13 +717,14 @@ GUI Parameters usable in SynthDefs
 			this.xboxProxy[i].action = {arg num;
 				//("Num = " ++ num.value).postln;
 				this.xval[i] = num.value;
-				if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)  ) {
-					var period = Main.elapsedTime - this.lastGui;
+				if ( guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim) ) {
+					//unused novoplot
+					//var period = Main.elapsedTime - this.lastGui;
 					{sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth)}.defer;
-					if (period > this.guiInt) {
-						this.lastGui =  Main.elapsedTime;
-						{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer;
-					};
+					//unused novoplot
+					//if (period > this.guiInt) {
+						//this.lastGui =  Main.elapsedTime;
+						//{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer; };
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
 					this.espacializador[i].set(\mx, this.xval[i]);
@@ -2748,14 +2750,34 @@ GUI Parameters usable in SynthDefs
 			bufAformat, bufAformat_soa_a12, rirA12, bufsize,
 			// prepare list of impulse responses for close and distant reverb selection menue
 
-			rirPath = PathName(rirBank ++ "/amb"),
-			rirNum = rirPath.entries.size;
+			rirPath = PathName(rirBank),
+			rirNum = 0; // initialize
 
-			rirW = Array.newClear(rirNum);
-			rirX = Array.newClear(rirNum);
-			rirY = Array.newClear(rirNum);
-			rirZ = Array.newClear(rirNum);
-			bufWXYZ = Array.newClear(rirNum);
+			rirW = [];
+			rirX = [];
+			rirY = [];
+			rirZ = [];
+			bufWXYZ = [];
+
+			rirPath.entries.do({ |item, count|
+
+				if (item.extension == "amb") {
+					rirNum = rirNum + 1;
+
+					rirName = item.fileNameWithoutExtension;
+					rirList = rirList ++ [rirName];
+
+					rirW = rirW ++ [ Buffer.readChannel(server, item.fullPath, channels: [0]) ];
+					rirX = rirX ++ [ Buffer.readChannel(server, item.fullPath, channels: [1]) ];
+					rirY = rirY ++ [ Buffer.readChannel(server, item.fullPath, channels: [2]) ];
+					rirZ = rirZ ++ [ Buffer.readChannel(server, item.fullPath, channels: [3]) ];
+
+					bufWXYZ = bufWXYZ ++ [ Buffer.read(server, item.fullPath) ];
+				};
+
+			});
+
+
 			bufAformat = Array.newClear(rirNum);
 			bufAformat_soa_a12 = Array.newClear(rirNum);
 			rirFLU = Array.newClear(rirNum);
@@ -2774,19 +2796,6 @@ GUI Parameters usable in SynthDefs
 			rirBLDspectrum = Array.newClear(rirNum);
 			rirBRUspectrum = Array.newClear(rirNum);
 
-			rirPath.entries.do({ |item, count|
-
-				rirName = item.fileNameWithoutExtension;
-				rirList = rirList ++ [rirName];
-
-				rirW[count] = Buffer.readChannel(server, item.fullPath, channels: [0]);
-				rirX[count] = Buffer.readChannel(server, item.fullPath, channels: [1]);
-				rirY[count] = Buffer.readChannel(server, item.fullPath, channels: [2]);
-				rirZ[count] = Buffer.readChannel(server, item.fullPath, channels: [3]);
-
-				bufWXYZ[count] = Buffer.read(server, item.fullPath);
-
-			});
 
 			server.sync;
 
@@ -2800,9 +2809,9 @@ GUI Parameters usable in SynthDefs
 
 				//server.sync;
 
-				if (File.exists(rirBank ++ "/fluSoaA12/" ++ item ++ "_Flu.wav").not) {
+				if (File.exists(rirBank ++ "/" ++ item ++ "_Flu.wav").not) {
 
-					("writing " ++ item ++ "_Flu.wav file in" ++ rirBank ++ "/fluSoaA12").postln;
+					("writing " ++ item ++ "_Flu.wav file in" ++ rirBank).postln;
 
 					{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ[count], loop: 0, doneAction: 2), b2a),
 						bufAformat[count], Phasor.ar(0, BufRateScale.kr(bufAformat[count]),
@@ -2812,7 +2821,7 @@ GUI Parameters usable in SynthDefs
 
 					(bufAformat[count].numFrames / server.sampleRate).wait;
 
-					bufAformat[count].write(rirBank ++ "/fluSoaA12/" ++ item ++ "_Flu.wav",
+					bufAformat[count].write(rirBank ++ "/" ++ item ++ "_Flu.wav",
 						headerFormat: "wav", sampleFormat: "int24");
 
 					"done".postln;
@@ -2820,9 +2829,9 @@ GUI Parameters usable in SynthDefs
 				};
 
 
-				if (File.exists(rirBank ++ "/fluSoaA12/" ++ item ++ "_SoaA12.wav").not) {
+				if (File.exists(rirBank ++ "/" ++ item ++ "_SoaA12.wav").not) {
 
-					("writing " ++ item ++ "_SoaA12.wav file in " ++ rirBank ++ "/fluSoaA12").postln;
+					("writing " ++ item ++ "_SoaA12.wav file in " ++ rirBank).postln;
 
 					{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ[count], loop: 0, doneAction: 2),
 						foa_a12_decoder_matrix),
@@ -2833,7 +2842,7 @@ GUI Parameters usable in SynthDefs
 
 					(bufAformat[count].numFrames / server.sampleRate).wait;
 
-					bufAformat_soa_a12[count].write(rirBank ++ "/fluSoaA12/" ++ item ++ "_SoaA12.wav",
+					bufAformat_soa_a12[count].write(rirBank ++ "/" ++ item ++ "_SoaA12.wav",
 						headerFormat: "wav", sampleFormat: "int24");
 
 					"done".postln;
@@ -2846,13 +2855,13 @@ GUI Parameters usable in SynthDefs
 
 			rirList.do({ |item, count|
 
-				rirFLU[count] = Buffer.readChannel(server, rirBank ++ "/fluSoaA12/" ++ item ++ "_Flu.wav",
+				rirFLU[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
 					channels: [0]);
-				rirFRD[count] = Buffer.readChannel(server, rirBank ++ "/fluSoaA12/" ++ item ++ "_Flu.wav",
+				rirFRD[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
 					channels: [1]);
-				rirBLD[count] = Buffer.readChannel(server, rirBank ++ "/fluSoaA12/" ++ item ++ "_Flu.wav",
+				rirBLD[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
 					channels: [2]);
-				rirBRU[count] = Buffer.readChannel(server, rirBank ++ "/fluSoaA12/" ++ item ++ "_Flu.wav",
+				rirBRU[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
 					channels: [3]);
 
 				//server.sync;
@@ -2890,8 +2899,7 @@ GUI Parameters usable in SynthDefs
 				rirA12 = Array.newClear(12);
 				rirA12Spectrum = Array2D(rirNum, 12);
 				12.do { arg i;
-					rirA12[i] = Buffer.readChannel(server, rirBank ++ "/fluSoaA12/" ++ item
-						++ "_SoaA12.wav",
+					rirA12[i] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_SoaA12.wav",
 						channels: [i]);
 					//server.sync;
 					rirA12Spectrum[count, i] = Buffer.alloc(server, bufsize[count], 1);
@@ -3002,7 +3010,7 @@ GUI Parameters usable in SynthDefs
 			};
 
 
-//			makeSpatialisers.value(rev_type:"_conv");
+			makeSpatialisers.value(rev_type:"_conv");
 
 
 		};
@@ -3760,6 +3768,9 @@ GUI Parameters usable in SynthDefs
 		};
 
 
+		server.sync;
+
+
 		if(guiflag) {
 			this.gui;
 		};
@@ -4088,7 +4099,9 @@ GUI Parameters usable in SynthDefs
 				x = case
 				{ this.streambuf[i].numChannels == 1} {
 					"1 channel".postln;
-					if (guiflag) {
+
+					// comment out automatic settings, prefer sensible deffaults
+					/*if (guiflag) {
 						{angnumbox.value = 0;}.defer;
 						{angslider.value = 0;}.defer;
 					};
@@ -4097,7 +4110,7 @@ GUI Parameters usable in SynthDefs
 					if((i == currentsource) && guiflag) {
 						cslider.value = 1;
 						connumbox.value = 1;
-					};
+					};*/
 
 					this.synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
 						\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
@@ -4211,7 +4224,9 @@ GUI Parameters usable in SynthDefs
 				{ this.streambuf[i].numChannels == 2} {
 					"2 channel".postln;
 					this.ncanais[i] = 2;
-					angle[i] = pi/2;
+
+					// comment out automatic settings, prefer sensible deffaults
+					/*angle[i] = pi/2;
 					cboxProxy[i].valueAction = 1;
 					clev[i] = 1;
 					if((i == currentsource) && guiflag) {
@@ -4221,7 +4236,7 @@ GUI Parameters usable in SynthDefs
 					if (guiflag) {
 						{angnumbox.value = 1.05;}.defer; // 60 degrees
 						{angslider.value = 0.33;}.defer;
-					};
+					};*/
 
 					this.synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
 						\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
@@ -4339,7 +4354,9 @@ GUI Parameters usable in SynthDefs
 					"4 channel".postln;
 					this.playingBF[i] = true;
 					ncanais[i] = 4;
-					angle[i] = 0;
+
+					// comment out automatic settings, prefer sensible deffaults
+					/*angle[i] = 0;
 					if (guiflag) {
 						{angnumbox.value = 0;}.defer;
 					};
@@ -4351,7 +4368,7 @@ GUI Parameters usable in SynthDefs
 					};
 					if (guiflag) {
 						{angslider.value = 0;}.defer;
-					};
+					};*/
 
 					if (clsrv > 0) {
 						if (revGlobalBF.isPlaying.not) {
@@ -4492,7 +4509,9 @@ GUI Parameters usable in SynthDefs
 			{
 				//"Am I mono?".postln;
 				ncanais[i] = 1;
-				angle[i] = 0;
+
+				// comment out automatic settings, prefer sensible deffaults
+				/*angle[i] = 0;
 				if (guiflag) {
 					{angnumbox.value = 0;}.defer;
 					{angslider.value = 0;}.defer;
@@ -4502,7 +4521,7 @@ GUI Parameters usable in SynthDefs
 				if((i == currentsource) && guiflag) {
 					cslider.value = 1;
 					connumbox.value = 1;
-				};
+				};*/
 
 				if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
@@ -4601,7 +4620,9 @@ GUI Parameters usable in SynthDefs
 
 			}
 			{if (sombuf[i].numChannels == 2) {ncanais[i] = 2; // arquivo estéreo
-				angle[i] = pi/2;
+
+				// comment out automatic settings, prefer sensible deffaults
+				/*angle[i] = pi/2;
 				cboxProxy[i].valueAction = 1;
 				clev[i] = 1;
 				if((i == currentsource) && guiflag) {
@@ -4611,7 +4632,7 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{angnumbox.value = 1.05;}.defer; // 60 degrees
 					{angslider.value = 0.33;}.defer;
-				};
+				};*/
 
 				if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
@@ -4715,7 +4736,9 @@ GUI Parameters usable in SynthDefs
 				if (sombuf[i].numChannels == 4) {
 					this.playingBF[i] = true;
 					ncanais[i] = 4;
-					angle[i] = 0;
+
+					// comment out automatic settings, prefer sensible deffaults
+					/*angle[i] = 0;
 					if (guiflag) {
 						{angnumbox.value = 0;}.defer;
 					};
@@ -4727,7 +4750,7 @@ GUI Parameters usable in SynthDefs
 					};
 					if (guiflag) {
 						{angslider.value = 0;}.defer;
-					};
+					};*/
 
 					if (clsrv > 0) {
 						if (revGlobalBF.isPlaying.not) {
@@ -4874,12 +4897,13 @@ GUI Parameters usable in SynthDefs
 				x = case
 				{ this.ncan[i] == 1 } {
 
-					cboxProxy[i].valueAction = 1;
+					// comment out automatic settings, prefer sensible deffaults
+					/*cboxProxy[i].valueAction = 1;
 					clev[i] = 1;
 					if((i == currentsource) && guiflag) {
 						cslider.value = 1;
 						connumbox.value = 1;
-					};
+					};*/
 
 					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
@@ -4996,7 +5020,9 @@ GUI Parameters usable in SynthDefs
 				}
 				{ this.ncan[i] == 2 } {
 					ncanais[i] = 0; // just in case!
-					angle[i] = pi/2;
+
+					// comment out automatic settings, prefer sensible deffaults
+					/*angle[i] = pi/2;
 					if (guiflag) {
 						{angnumbox.value = pi/2;}.defer;
 						{angslider.value = 0.5;}.defer;
@@ -5007,7 +5033,7 @@ GUI Parameters usable in SynthDefs
 					if((i == currentsource) && guiflag) {
 						cslider.value = 1;
 						connumbox.value = 1;
-					};
+					};*/
 
 					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
@@ -5124,12 +5150,13 @@ GUI Parameters usable in SynthDefs
 				}
 				{ this.ncan[i] == 4 } {
 
-					cboxProxy[i].valueAction = 0;
+					// comment out automatic settings, prefer sensible deffaults
+					/*cboxProxy[i].valueAction = 0;
 					clev[i] = 0;
 					if((i == currentsource) && guiflag) {
 						cslider.value = 0;
 						connumbox.value = 0;
-					};
+					};*/
 
 					if (clsrv > 0) {
 						if (revGlobalBF.isPlaying.not) {
@@ -5601,7 +5628,6 @@ GUI Parameters usable in SynthDefs
 		//azimuth,
 		event, brec, bplay, bload, bstream, bnodes,
 		//funcs,
-		//	,
 		//lastAutomation = nil,
 		//	loopcheck,
 		//lpcheck,
@@ -5657,15 +5683,20 @@ GUI Parameters usable in SynthDefs
 
 		//rnumbox, rslider,
 		//znumbox, zslider,
-		//zlev, // z-axis
+		//zlev,
+		zAxis,
 		bmark1, bmark2,
+
+		dialView,
+		autoView,
+		orientView,
 
 		//rlev,
 		//dlev,
 		//dplev, dpslider,
 		cnumbox,
 		//aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox,
-		zSliderHeight = this.width * 2 / 3;
+		zSliderHeight = this.height * 2 / 3;
 		dragStartScreen = Point.new;
 		//dragStartMap = Point.new;
 
@@ -5684,7 +5715,8 @@ GUI Parameters usable in SynthDefs
 
 
 		// Note there is an extreme amount repetition occurring here. See the calling function. fix
-		novoplot = {
+		// unused novoplot
+		/*novoplot = {
 			arg mx, my, i, nfnts;
 			var btest;
 			{
@@ -5711,18 +5743,19 @@ GUI Parameters usable in SynthDefs
 			}.defer;
 			{ win.refresh; }.defer;
 
-		};
+		};*/
 
 
 
 		fonte = Point.new;
-		win = Window.new("Mosca", Rect(0, this.width, this.width, this.width)).front;
+		win = Window.new("Mosca", Rect(0, this.width, this.width, this.height)).front;
 		wdados = Window.new("Data", Rect(this.width, 0, 955, (this.nfontes*20)+60 ), scroll: true);
 		wdados.userCanClose = false;
 		wdados.alwaysOnTop = true;
 
+		dialView = UserView(win, Rect(this.width - 190, 10, 180, 80));
 
-		bdados = Button(win, Rect(this.width - 100, 10, 90, 20))
+		bdados = Button(dialView, Rect(0, 0, 90, 20))
 		.states_([
 			["show data", Color.black, Color.white],
 			["hide data", Color.white, Color.blue]
@@ -5738,7 +5771,7 @@ GUI Parameters usable in SynthDefs
 		waux.alwaysOnTop = true;
 
 
-		baux = Button(win, Rect(this.width - 100, 30, 90, 20))
+		baux = Button(dialView, Rect(0, 20, 90, 20))
 		.states_([
 			["show aux", Color.black, Color.white],
 			["hide aux", Color.white, Color.blue]
@@ -5868,7 +5901,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-		btestar = Button(win, Rect(this.width - 100, 50, 90, 20))
+		btestar = Button(dialView, Rect(90, 40, 90, 20))
 		.states_([
 			["audition", Color.black, Color.white],
 			["stop", Color.white, Color.red]
@@ -5904,8 +5937,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		//brecaudio = Button(win, Rect(this.width - 190, 70, 90, 20))
-		Button(win, Rect(this.width - 190, 70, 90, 20))
+		brecaudio = Button(dialView, Rect(0, 60, 90, 20))
 		.states_([
 			["record audio", Color.red, Color.white],
 			["stop", Color.white, Color.red]
@@ -5931,7 +5963,8 @@ GUI Parameters usable in SynthDefs
 			};
 
 		});
-		blipcheck = CheckBox( win, Rect(this.width - 95, 63, 60, 40), "blips").action_({ arg butt;
+
+		blipcheck = CheckBox(dialView, Rect(95, 53, 60, 40), "blips").action_({ arg butt;
 			if(butt.value) {
 				//"Looping transport".postln;
 				//this.autoloopval = true;
@@ -5941,9 +5974,12 @@ GUI Parameters usable in SynthDefs
 
 		});
 
+
+		autoView = UserView(win, Rect(10, this.width - 45, 325, 40));
+
 		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
 
-		bsalvar = Button(win, Rect(10, this.width - 40, 80, 20))
+		bsalvar = Button(autoView, Rect(0, 20, 80, 20))
 		.states_([
 			["save auto", Color.black, Color.white],
 
@@ -5992,7 +6028,7 @@ GUI Parameters usable in SynthDefs
 					"Aborted save".postln;
                 };
             };
-            textField = GUI.textField.new(dwin, Rect(0,0,bounds.width,bounds.height));
+            textField = GUI.textField.new(dwin, Rect(0, 0, bounds.width, bounds.height));
             textField.value = preset;
             textField.action = {
                 success = true;
@@ -6072,7 +6108,7 @@ GUI Parameters usable in SynthDefs
 
 		// load automation - adapted from chooseDirectoryDialog in AutomationGui.sc
 
-		bcarregar = Button(win, Rect(90, this.width - 40, 80, 20))
+		bcarregar = Button(autoView, Rect(80, 20, 80, 20))
 		.states_([
 			["load auto", Color.black, Color.white],
 		])
@@ -6096,7 +6132,7 @@ GUI Parameters usable in SynthDefs
 					"Aborted load!".postln;
                 };
             };
-            textField = GUI.textField.new(dwin, Rect(0,0,bounds.width,bounds.height));
+            textField = GUI.textField.new(dwin, Rect(0, 0, bounds.width, bounds.height));
             textField.value = preset;
             textField.action = {
                 success = true;
@@ -6133,19 +6169,20 @@ GUI Parameters usable in SynthDefs
 			});
 		*/
 
-		this.win.drawFunc = {
+		// no longer neded since win.view.onResize method is evaluated on init
+		/*this.win.drawFunc = {
 			//paint origin
 			Pen.fillColor = Color(0.6,0.8,0.8);
-			Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+			Pen.addArc(this.halfwidth@this.halfheight, this.halfheight, 0, 2pi);
 			Pen.fill;
 
 
 			Pen.fillColor = Color.gray(0, 0.5);
-			Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
+			Pen.addArc(this.halfwidth@this.halfheight, 20, 0, 2pi);
 			Pen.fill;
 
 			//	Pen.width = 10;
-		};
+		};*/
 
 		// seleção de fontes
 		itensdemenu = Array.newClear(this.nfontes);
@@ -6191,7 +6228,8 @@ GUI Parameters usable in SynthDefs
 			dirslider.value = dlev[currentsource] / (pi/2);
 			dirnumbox.value = dlev[currentsource];
 			cslider.value = clev[currentsource];
-			zslider.value = (zlev[currentsource] + this.halfwidth) / this.width;
+			zslider.value = (zlev[currentsource] + 1) * 0.5;
+			znumbox.value = zlev[currentsource];
 
 			dpslider.value = dplev[currentsource];
 			connumbox.value = clev[currentsource];
@@ -6303,15 +6341,15 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(this.width - 90, this.halfwidth - 10, 90, 20));
-		textbuf.string = "Z-Axis";
-		znumbox = NumberBox(win, Rect(this.width - 65, ((this.width - zSliderHeight) / 2)
-			+ zSliderHeight, 60, 20));
+		zAxis = StaticText(win, Rect(this.width - 80, this.halfwidth - 10, 90, 20));
+		zAxis.string = "Z-Axis";
+		znumbox = NumberBox(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2)
+			+ zSliderHeight, 40, 20));
 		znumbox.value = 0;
 		znumbox.clipHi = 1;
 		znumbox.clipLo = -1;
-		znumbox.step_(0.1);
-		znumbox.scroll_step=0.1;
+		znumbox.step_(00.1);
+		znumbox.scroll_step_(0.01);
 		znumbox.align = \center;
 		znumbox.action = {arg num;
 			{zbox[currentsource].valueAction = num.value;}.defer;
@@ -6319,12 +6357,11 @@ GUI Parameters usable in SynthDefs
 				this.espacializador[currentsource].set(\elev, num.value);
 				this.setSynths(currentsource, \elev, num.value);
 				zlev[currentsource] = num.value;
-			}
-			{{znumbox.value = 0;}.defer;};
+			};
 		};
 
 
-		zslider = Slider.new(win, Rect(this.width - 45, ((this.width - zSliderHeight) / 2),
+		zslider = Slider.new(win, Rect(this.width - 35, ((this.width - zSliderHeight) / 2),
 			20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = {arg num;
@@ -6341,9 +6378,14 @@ GUI Parameters usable in SynthDefs
 
 		//if (this.serport.notNil) { //comment out serial port prerequisit
 
-			this.headingnumbox = NumberBox(win, Rect(this.width - 45, this.width - 65, 40, 20));
-			this.rollnumbox = NumberBox(win, Rect(this.width - 45, this.width - 45, 40, 20));
-			this.pitchnumbox = NumberBox(win, Rect(this.width - 45, this.width - 25, 40, 20));
+		    orientView = UserView(win, Rect(this.width - 85, this.height - 85, 100, 80));
+
+			this.headingnumbox = NumberBox(orientView, Rect(40, 20, 40, 20));
+				headingnumbox.align = \center;
+			this.rollnumbox = NumberBox(orientView, Rect(40, 40, 40, 20));
+				rollnumbox.align = \center;
+			this.pitchnumbox = NumberBox(orientView, Rect(40, 60, 40, 20));
+		        pitchnumbox.align = \center;
 
 			this.headingnumbox.action = {arg num;
 				this.headingnumboxProxy.valueAction = num.value;
@@ -6358,16 +6400,15 @@ GUI Parameters usable in SynthDefs
 				this.pitchnumboxProxy.valueAction = num.value;
 			};
 
-
-			textbuf = StaticText(win, Rect(this.width - 60, this.width - 65, 12, 20));
+			textbuf = StaticText(orientView, Rect(25, 20, 12, 20));
 			textbuf.string = "H:";
-			textbuf = StaticText(win, Rect(this.width - 60, this.width - 45, 10, 22));
+			textbuf = StaticText(orientView, Rect(25, 40, 10, 22));
 			textbuf.string = "R:";
-			textbuf = StaticText(win, Rect(this.width - 60, this.width - 25, 10, 22));
+			textbuf = StaticText(orientView, Rect(25, 60, 10, 22));
 			textbuf.string = "P:";
 
 
-			textbuf = StaticText(win, Rect(this.width - 45, this.width - 85, 90, 20));
+			textbuf = StaticText(orientView, Rect(37, 3, 45, 20));
 			textbuf.string = "Orient.";
 
 		//}; //comment out the prerequisit for the serial port
@@ -6382,8 +6423,8 @@ GUI Parameters usable in SynthDefs
 		volnumbox.value = 0;
 		volnumbox.clipHi = pi;
 		volnumbox.clipLo = 0;
-		volnumbox.step_(0.1);
-		volnumbox.scroll_step=0.1;
+		volnumbox.step_(0.01);
+		volnumbox.scroll_step_(0.01);
 		volnumbox.align = \center;
 		volnumbox.action = {arg num;
 			{vbox[currentsource].valueAction = num.value;}.defer;
@@ -6403,10 +6444,10 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "Doppler amount";
 		dopnumbox = NumberBox(win, Rect(10, 130, 40, 20));
 		dopnumbox.value = 0;
-		dopnumbox.clipHi = pi;
-		dopnumbox.clipLo = -pi;
-		dopnumbox.step_(0.1);
-		dopnumbox.scroll_step=0.1;
+		dopnumbox.clipHi = 1;
+		dopnumbox.clipLo = 0;
+		dopnumbox.step_(0.01);
+		dopnumbox.scroll_step_(0.01);
 		dopnumbox.align = \center;
 		dopnumbox.action = {arg num;
 			{dpbox[currentsource].valueAction = num.value;}.defer;
@@ -6450,10 +6491,10 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "Cls. amount";
 		gnumbox = NumberBox(win, Rect(10, 170, 40, 20));
 		gnumbox.value = 0;
-		gnumbox.clipHi = pi;
+		gnumbox.clipHi = 1;
 		gnumbox.clipLo = 0;
-		gnumbox.step_(0.1);
-		gnumbox.scroll_step = 0.1;
+		gnumbox.step_(0.01);
+		gnumbox.scroll_step_(0.01);
 		gnumbox.align = \center;
 		gnumbox.action = {arg num;
 			{gbox[currentsource].valueAction = num.value;}.defer;
@@ -6476,8 +6517,8 @@ GUI Parameters usable in SynthDefs
 		clsrmnumbox.value = 0.5;
 		clsrmnumbox.clipHi = 1;
 		clsrmnumbox.clipLo = 0;
-		clsrmnumbox.step_(0.1);
-		clsrmnumbox.scroll_step = 0.1;
+		clsrmnumbox.step_(0.01);
+		clsrmnumbox.scroll_step_(0.01);
 		clsrmnumbox.align = \center;
 		clsrmnumbox.action = {arg num;
 			{clsrmboxProxy.valueAction = num.value;}.defer;
@@ -6500,8 +6541,8 @@ GUI Parameters usable in SynthDefs
 		clsdmnumbox.value = 0.5;
 		clsdmnumbox.clipHi = 1;
 		clsdmnumbox.clipLo = 0;
-		clsdmnumbox.step_(0.1);
-		clsdmnumbox.scroll_step = 0.1;
+		clsdmnumbox.step_(0.01);
+		clsdmnumbox.scroll_step_(0.01);
 		clsdmnumbox.align = \center;
 		clsdmnumbox.action = {arg num;
 			{clsdmboxProxy.valueAction = num.value;}.defer;
@@ -6542,8 +6583,8 @@ GUI Parameters usable in SynthDefs
 		lnumbox.value = 0;
 		lnumbox.clipHi = 1;
 		lnumbox.clipLo = 0;
-		lnumbox.step_(0.1);
-		lnumbox.scroll_step=0.1;
+		lnumbox.step_(0.01);
+		lnumbox.scroll_step_(0.01);
 		lnumbox.align = \center;
 		lnumbox.action = {arg num;
 			{lbox[currentsource].valueAction = num.value;}.defer;
@@ -6566,8 +6607,8 @@ GUI Parameters usable in SynthDefs
 		rmnumbox.value = 0.5;
 		rmnumbox.clipHi = 1;
 		rmnumbox.clipLo = 0;
-		rmnumbox.step_(0.1);
-		rmnumbox.scroll_step=0.1;
+		rmnumbox.step_(0.01);
+		rmnumbox.scroll_step_(0.01);
 		rmnumbox.align = \center;
 		rmnumbox.action = {arg num;
 			{rmbox[currentsource].valueAction = num.value;}.defer;
@@ -6590,8 +6631,8 @@ GUI Parameters usable in SynthDefs
 		dmnumbox.value = 0.5;
 		dmnumbox.clipHi = 1;
 		dmnumbox.clipLo = 0;
-		dmnumbox.step_(0.1);
-		dmnumbox.scroll_step=0.1;
+		dmnumbox.step_(0.01);
+		dmnumbox.scroll_step_(0.01);
 		dmnumbox.align = \center;
 		dmnumbox.action = {arg num;
 			{dmbox[currentsource].valueAction = num.value;}.defer;
@@ -6611,11 +6652,11 @@ GUI Parameters usable in SynthDefs
 		textbuf = StaticText(win, Rect(163, 310, 100, 20));
 		textbuf.string = "Angle (stereo)";
 		angnumbox = NumberBox(win, Rect(10, 310, 40, 20));
-		angnumbox.value = 0;
+		angnumbox.value = 1.0471975511966;
 		angnumbox.clipHi = pi;
 		angnumbox.clipLo = 0;
-		angnumbox.step_(0.1);
-		angnumbox.scroll_step=0.1;
+		angnumbox.step_(0.01);
+		angnumbox.scroll_step_(0.01);
 		angnumbox.align = \center;
 		angnumbox.action = {arg num;
 			{abox[currentsource].valueAction = num.value;}.defer;
@@ -6623,13 +6664,12 @@ GUI Parameters usable in SynthDefs
 				this.espacializador[currentsource].set(\angle, num.value);
 				this.setSynths(currentsource, \angle, num.value);
 				angle[currentsource] = num.value;
-			}
-			{angnumbox.value = 0;};
+			};
 		};
 
 		angslider = Slider.new(win, Rect(50, 310, 110, 20));
 		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
-
+		angslider.value = 1.0471975511966 / pi;
 		angslider.action = {arg num;
 			{abox[currentsource].valueAction = num.value * pi;}.defer;
 			if((ncanais[currentsource]==2) || (this.ncan[currentsource]==2)) {
@@ -6652,8 +6692,8 @@ GUI Parameters usable in SynthDefs
 		rnumbox.value = 0;
 		rnumbox.clipHi = pi;
 		rnumbox.clipLo = -pi;
-		rnumbox.step_(0.1);
-		rnumbox.scroll_step=0.1;
+		rnumbox.step_(0.01);
+		rnumbox.scroll_step_(0.01);
 		rnumbox.align = \center;
 		rnumbox.action = {arg num;
 			{rbox[currentsource].valueAction = num.value;}.defer;
@@ -6676,10 +6716,10 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "Directivity (B-Format)";
 		dirnumbox = NumberBox(win, Rect(10, 350, 40, 20));
 		dirnumbox.value = 0;
-		dirnumbox.clipHi = pi;
-		dirnumbox.clipLo = -pi;
-		dirnumbox.step_(0.1);
-		dirnumbox.scroll_step=0.1;
+		dirnumbox.clipHi = pi * 0.5;
+		dirnumbox.clipLo = 0;
+		dirnumbox.step_(0.01);
+		dirnumbox.scroll_step_(0.01);
 		dirnumbox.align = \center;
 		dirnumbox.action = {arg num;
 			{dbox[currentsource].valueAction = num.value;}.defer;
@@ -6688,8 +6728,8 @@ GUI Parameters usable in SynthDefs
 		dirslider = Slider.new(win, Rect(50, 350, 110, 20));
 		dirslider.value = 0;
 		dirslider.action = {arg num;
-			{dbox[currentsource].valueAction = num.value * pi/2;}.defer;
-			{dirnumbox.value = num.value * pi/2;}.defer;
+			{dbox[currentsource].valueAction = num.value * pi * 0.5;}.defer;
+			{dirnumbox.value = num.value * pi * 0.5;}.defer;
 		};
 
 
@@ -6699,11 +6739,11 @@ GUI Parameters usable in SynthDefs
 		textbuf = StaticText(win, Rect(163, 370, 150, 20));
 		textbuf.string = "Contraction (ATK)";
 		connumbox = NumberBox(win, Rect(10, 370, 40, 20));
-		connumbox.value = 0;
-		connumbox.clipHi = pi;
-		connumbox.clipLo = -pi;
-		connumbox.step_(0.1);
-		connumbox.scroll_step=0.1;
+		connumbox.value = 1;
+		connumbox.clipHi = 1;
+		connumbox.clipLo = 0;
+		connumbox.step_(0.01);
+		connumbox.scroll_step_(0.01);
 		connumbox.align = \center;
 		connumbox.action = {arg num;
 			{cbox[currentsource].valueAction = num.value;}.defer;
@@ -6711,7 +6751,7 @@ GUI Parameters usable in SynthDefs
 		};
 		// stepsize?
 		cslider = Slider.new(win, Rect(50, 370, 110, 20));
-		cslider.value = 0;
+		cslider.value = 1;
 		cslider.action = {arg num;
 			{cbox[currentsource].valueAction = num.value;}.defer;
 			{connumbox.value = num.value;}.defer;
@@ -6732,7 +6772,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-		bload = Button(win, Rect(this.width - 190, 10, 90, 20))
+		bload = Button(dialView, Rect(90, 0, 90, 20))
 		.states_([
 			["load audio", Color.black, Color.white],
 		])
@@ -6770,7 +6810,7 @@ GUI Parameters usable in SynthDefs
 
 		});
 
-		bstream = Button(win, Rect(this.width - 190, 30, 90, 20))
+		bstream = Button(dialView, Rect(90, 20, 90, 20))
 		.states_([
 			["stream audio", Color.black, Color.white],
 		])
@@ -6804,7 +6844,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		bnodes = Button(win, Rect(this.width - 190, 50, 90, 20))
+		bnodes = Button(dialView, Rect(0, 40, 90, 20))
 		.states_([
 			["show nodes", Color.black, Color.white],
 		])
@@ -7234,9 +7274,7 @@ GUI Parameters usable in SynthDefs
 			};
 
 
-
-
-
+			abox[i].value = 1.0471975511966;
 
 			gbox[i].value = 0;
 			lbox[i].value = 0;
@@ -7246,8 +7284,6 @@ GUI Parameters usable in SynthDefs
 			gbox[i].action = {arg num;
 				this.gboxProxy[i].valueAction = num.value;
 			};
-
-
 
 			lbox[i].action = {arg num;
 				this.lboxProxy[i].valueAction = num.value;
@@ -7266,8 +7302,6 @@ GUI Parameters usable in SynthDefs
 			};
 
 
-
-
 			dbox[i].action = {arg num;
 				this.dboxProxy[i].valueAction = num.value;
 			};
@@ -7276,8 +7310,6 @@ GUI Parameters usable in SynthDefs
 			cbox[i].action = {arg num;
 				this.cboxProxy[i].valueAction = num.value;
 			};
-
-
 
 
 			dpbox[i].action = {arg num;
@@ -7348,8 +7380,7 @@ GUI Parameters usable in SynthDefs
 		*/
 		//~autotest = control = Automation(this.dur, showLoadSave: false, showSnapshot: false,
 		//	minTimeStep: 0.001);
-		control.front(win,
-			Rect(10, this.width - 80, 400, 22));
+		control.front(autoView, Rect(0, 0, 325, 20));
 
 
 		control.presetDir = prjDr ++ "/auto";
@@ -7517,7 +7548,8 @@ GUI Parameters usable in SynthDefs
 			buttonNumber.postln;
 			};
 		*/
-		win.view.mouseDownAction={ arg view, x, y, modifiers, buttonNumber, clickCount;
+
+		win.view.mouseDownAction = { arg view, x, y, modifiers, buttonNumber, clickCount;
 			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
 			if((mouseButton == 1) || (mouseButton == 2)) {
 				dragStartScreen.x = y - this.halfwidth;
@@ -7551,7 +7583,7 @@ GUI Parameters usable in SynthDefs
 				win.drawFunc = {
 					// big circle
 					Pen.fillColor = Color(0.6,0.8,0.8);
-					Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+					Pen.addArc(this.halfwidth@this.halfheight, this.halfheight, 0, 2pi);
 					Pen.fill;
 					//Pen.width = 10;
 
@@ -7563,11 +7595,9 @@ GUI Parameters usable in SynthDefs
 							Font.default, Color.white);
 					};
 
-
-
 					// círculo central
 					Pen.fillColor = Color.gray(0, 0.5);
-					Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
+					Pen.addArc(this.halfwidth@this.halfheight, 20, 0, 2pi);
 					Pen.fill;
 
 
@@ -7581,9 +7611,52 @@ GUI Parameters usable in SynthDefs
 
 			};
 			//		win.refresh;
-
 		};
 
+
+		win.view.onResize_({|view|
+
+			this.width = view.bounds.width;
+			this.halfwidth = this.width * 0.5;
+			this.height = view.bounds.height;
+			this.halfheight = this.height * 0.5;
+
+			win.drawFunc = {
+				// big circle
+				Pen.fillColor = Color(0.6,0.8,0.8);
+				Pen.addArc(this.halfwidth@this.halfheight,
+					this.halfheight, 0, 2pi);
+				Pen.fill;
+				//Pen.width = 10;
+
+				this.nfontes.do { arg i;
+					Pen.fillColor = Color(0.8,0.2,0.9);
+					Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
+					Pen.fill;
+					(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20),
+						Font.default, Color.white);
+				};
+
+				// círculo central
+				Pen.fillColor = Color.gray(0, 0.5);
+				Pen.addArc(this.halfwidth@this.halfheight, 20, 0, 2pi);
+				Pen.fill;
+			};
+
+			dialView.bounds_(Rect(this.width - 190, 10, 180, 80));
+
+			zSliderHeight = this.height * 2 / 3;
+			zslider.bounds_(Rect(this.width - 35, ((this.height - zSliderHeight) / 2),
+			20, zSliderHeight));
+			znumbox.bounds_(Rect(this.width - 45, ((this.height - zSliderHeight) / 2)
+			+ zSliderHeight, 40, 20));
+			zAxis.bounds_(Rect(this.width - 80, this.halfheight - 10, 90, 20));
+
+			orientView.bounds_(Rect(this.width - 85, this.height - 85, 100, 80));
+
+			autoView.bounds_(Rect(10, this.height - 45, 325, 40));
+
+		});
 
 
 		win.onClose_({
@@ -7594,7 +7667,7 @@ GUI Parameters usable in SynthDefs
 
 		});
 
-		mmcslave = CheckBox( win, Rect(173, this.width - 40, 140, 20), "Slave to MMC").action_({ arg butt;
+		mmcslave = CheckBox(autoView, Rect(163, 20, 140, 20), "Slave to MMC").action_({ arg butt;
 			//("Doppler is " ++ butt.value).postln;
 			if(butt.value) {
 				"Slaving transport to MMC".postln;
@@ -7607,7 +7680,7 @@ GUI Parameters usable in SynthDefs
 			//	dcheck[currentsource].valueAction = butt.value;
 		});
 
-		this.autoloop = CheckBox( win, Rect(283, this.width - 40, 140, 20), "Loop").action_({ arg butt;
+		this.autoloop = CheckBox(autoView, Rect(273, 20, 140, 20), "Loop").action_({ arg butt;
 			//("Doppler is " ++ butt.value).postln;
 			if(butt.value) {
 				"Looping transport".postln;
