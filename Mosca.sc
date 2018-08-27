@@ -717,30 +717,28 @@ GUI Parameters usable in SynthDefs
 			this.xboxProxy[i].action = {arg num;
 				//("Num = " ++ num.value).postln;
 				this.xval[i] = num.value;
-				if ( guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim) ) {
+				if ( guiflag) {
 					//unused novoplot
 					//var period = Main.elapsedTime - this.lastGui;
-					{sprite[i, 1] =  this.halfwidth + (num.value * -1 * this.halfwidth)}.defer;
+					{sprite[i, 0] = this.halfwidth + (num.value * this.halfheight)}.defer;
 					//unused novoplot
 					//if (period > this.guiInt) {
-						//this.lastGui =  Main.elapsedTime;
-						//{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer; };
+					//this.lastGui =  Main.elapsedTime;
+					//{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer; };
+					{this.xbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
 					this.espacializador[i].set(\mx, this.xval[i]);
 					this.setSynths(i, \mx, this.xval[i]);
 					this.synt[i].set(\mx, this.xval[i]);
 				};
-				if (guiflag) {
-					{this.xbox[i].value = num.value}.defer;
-				};
-
 			};
 
 			this.yboxProxy[i].action = {arg num;
 				this.yval[i] = num.value;
-				if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)) {
-					{sprite[i, 0] = ((num.value * this.halfwidth * -1) + this.halfwidth)}.defer;
+				if (guiflag) {
+					{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
+					{ybox[i].value = num.value}.defer;
 				};
 
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -749,10 +747,6 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \my, this.yval[i]);
 					this.synt[i].set(\my, this.yval[i]);
 				};
-				if (guiflag) {
-					{ybox[i].value = num.value}.defer;
-				};
-
 				//{oybox[i].valueAction = this.origin.y;}.defer;
 			};
 
@@ -1314,18 +1308,18 @@ GUI Parameters usable in SynthDefs
 
 					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
 						\room, clsrm, \damp, clsdm,
-						\wir, rirWspectrum[max((num.value - 3), 0)].bufnum,
-						\xir, rirXspectrum[max((num.value - 3), 0)].bufnum,
-						\yir, rirYspectrum[max((num.value - 3), 0)].bufnum,
-						\zir, rirZspectrum[max((num.value - 3), 0)].bufnum],
+						\wir, rirWspectrum[max((num.value - 3), 0)],
+						\xir, rirXspectrum[max((num.value - 3), 0)],
+						\yir, rirYspectrum[max((num.value - 3), 0)],
+						\zir, rirZspectrum[max((num.value - 3), 0)]],
 					this.glbRevDecGrp).register;
 				} {
 					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
 						\room, clsrm, \damp, clsdm,
-						\wir, rirWspectrum[max((num.value - 3), 0)].bufnum,
-						\xir, rirXspectrum[max((num.value - 3), 0)].bufnum,
-						\yir, rirYspectrum[max((num.value - 3), 0)].bufnum,
-						\zir, rirZspectrum[max((num.value - 3), 0)].bufnum],
+						\wir, rirWspectrum[max((num.value - 3), 0)],
+						\xir, rirXspectrum[max((num.value - 3), 0)],
+						\yir, rirYspectrum[max((num.value - 3), 0)],
+						\zir, rirZspectrum[max((num.value - 3), 0)]],
 					this.glbRevDecGrp).register;
 				};
 
@@ -1335,18 +1329,18 @@ GUI Parameters usable in SynthDefs
 
 						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 							[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-								\fluir, rirFLUspectrum[max((num.value - 3), 0)].bufnum,
-								\frdir, rirFRDspectrum[max((num.value - 3), 0)].bufnum,
-								\bldir, rirBLDspectrum[max((num.value - 3), 0)].bufnum,
-								\bruir, rirBRUspectrum[max((num.value - 3), 0)].bufnum],
+								\fluir, rirFLUspectrum[max((num.value - 3), 0)],
+								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
+								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
+								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
 							this.glbRevDecGrp).register;
 					} {
 						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 							[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-								\fluir, rirFLUspectrum[max((num.value - 3), 0)].bufnum,
-								\frdir, rirFRDspectrum[max((num.value - 3), 0)].bufnum,
-								\bldir, rirBLDspectrum[max((num.value - 3), 0)].bufnum,
-								\bruir, rirBRUspectrum[max((num.value - 3), 0)].bufnum],
+								\fluir, rirFLUspectrum[max((num.value - 3), 0)],
+								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
+								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
+								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
 							this.glbRevDecGrp).register;
 					};
 				};
@@ -1835,7 +1829,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("espacAmbChowning"++rev_type,  {
-				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0,
+				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
 				dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
@@ -1863,7 +1857,7 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
 
-				azim = fonte.theta;
+				azim = fonte.theta - (pi * 0.5);
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
@@ -1971,7 +1965,7 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				dis = fonte.rho;
 
-				azim = fonte.theta;
+				azim = fonte.theta - (pi * 0.5);
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
@@ -2038,7 +2032,7 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				dis = fonte.rho;
 
-				azim = fonte.theta;
+				azim = fonte.theta - (pi * 0.5);
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
@@ -2105,7 +2099,7 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				dis = fonte.rho;
 
-				azim = fonte.theta;
+				azim = fonte.theta - (pi * 0.5);
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
@@ -2179,7 +2173,7 @@ GUI Parameters usable in SynthDefs
 				fonte = Cartesian.new;
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
-				azim = fonte.theta;
+				azim = fonte.theta - (pi * 0.5);
 				el = fonte.phi;
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
@@ -2287,8 +2281,8 @@ GUI Parameters usable in SynthDefs
 				fonte = Cartesian.new;
 				fonte.set(mx, my);
 
-				azim1 = fonte.rotate(angle / -2).theta;
-				azim2 = fonte.rotate(angle / 2).theta;
+				azim1 = fonte.rotate(angle / -2).theta - (pi * 0.5);
+				azim2 = fonte.rotate(angle / 2).theta - (pi * 0.5);
 				fonte.set(mx, my, mz);
 				el = fonte.phi;
 
@@ -2433,7 +2427,7 @@ GUI Parameters usable in SynthDefs
 			fonte.set(mx, my, mz);
 			dis = 1 - fonte.rho;
 
-			azim = fonte.theta;
+			azim = fonte.theta - (pi * 0.5);
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]);
 			dis = Select.kr(dis > 1, [dis, 1]);
@@ -2532,7 +2526,7 @@ GUI Parameters usable in SynthDefs
 			fonte = Cartesian.new;
 			fonte.set(mx, my, mz);
 			dis = 1 - fonte.rho;
-			azim = fonte.theta;
+			azim = fonte.theta - (pi * 0.5);
 			el = fonte.phi;
 			dis = Select.kr(dis < 0, [dis, 0]);
 			dis = Select.kr(dis > 1, [dis, 1]);
@@ -2635,8 +2629,8 @@ GUI Parameters usable in SynthDefs
 			fonte = Cartesian.new;
 			fonte.set(mx, my);
 
-			azim1 = fonte.rotate(angle / -2).theta;
-			azim2 = fonte.rotate(angle / 2).theta;
+			azim1 = fonte.rotate(angle / -2).theta - (pi * 0.5);
+			azim2 = fonte.rotate(angle / 2).theta - (pi * 0.5);
 
 			fonte.set(mx, my, mz);
 			el = fonte.phi;
@@ -3013,6 +3007,21 @@ GUI Parameters usable in SynthDefs
 			makeSpatialisers.value(rev_type:"_conv");
 
 
+		} {
+
+			// empty arrays for SynthDefs, in case no rir banks are provided
+			rirFLUspectrum = Array.newClear(3);
+			rirFRDspectrum = Array.newClear(3);
+			rirBLDspectrum = Array.newClear(3);
+			rirBRUspectrum = Array.newClear(3);
+
+			rirA12Spectrum = Array2D(3, 12);
+
+			rirWspectrum = Array.newClear(4);
+			rirXspectrum = Array.newClear(4);
+			rirYspectrum = Array.newClear(4);
+			rirZspectrum = Array.newClear(4);
+
 		};
 
 		// allpass reverbs
@@ -3233,7 +3242,7 @@ GUI Parameters usable in SynthDefs
 				fonte.set(mx, my, mz);
 				dis = 1 - fonte.rho;
 				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
-				azim = fonte.theta; // ângulo (azimuth) de deslocamento
+				azim = fonte.theta - (pi * 0.5); // ângulo (azimuth) de deslocamento
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				playerRef = Ref(0);
@@ -3823,9 +3832,9 @@ GUI Parameters usable in SynthDefs
 		this.pitchnumboxProxy.valueAction = p;
 		this.nfontes.do { arg i;
 
-			if (guiflag && (this.xval[i].abs < this.plim) && (this.yval[i].abs < this.plim)) {
-				sprite[i, 1] = ((xval[i] * this.halfwidth * -1) + this.halfwidth);
-				sprite[i, 0] = ((yval[i] * this.halfwidth * -1) + this.halfwidth);
+			if (guiflag) {
+				sprite[i, 0] = this.halfwidth + (xval[i] * this.halfheight);
+				sprite[i, 1] = this.halfheight - (yval[i] * this.halfheight);
 			};
 
 			if(this.espacializador[i].notNil) {
@@ -3836,9 +3845,6 @@ GUI Parameters usable in SynthDefs
 			};
 
 		};
-
-
-
 
 	}
 
@@ -4126,10 +4132,10 @@ GUI Parameters usable in SynthDefs
 							if (revGlobalBF.isPlaying.not) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 									this.glbRevDecGrp).register;
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -4252,10 +4258,10 @@ GUI Parameters usable in SynthDefs
 							if (revGlobalBF.isPlaying.not) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 									this.glbRevDecGrp).register;
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -4374,10 +4380,10 @@ GUI Parameters usable in SynthDefs
 						if (revGlobalBF.isPlaying.not) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 								this.glbRevDecGrp).register;
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -4529,10 +4535,10 @@ GUI Parameters usable in SynthDefs
 						if (revGlobalBF.isPlaying.not) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 								this.glbRevDecGrp).register;
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -4640,10 +4646,10 @@ GUI Parameters usable in SynthDefs
 						if (revGlobalBF.isPlaying.not) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 								this.glbRevDecGrp).register;
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -4756,10 +4762,10 @@ GUI Parameters usable in SynthDefs
 						if (revGlobalBF.isPlaying.not) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 								this.glbRevDecGrp).register;
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -4911,10 +4917,10 @@ GUI Parameters usable in SynthDefs
 							if (revGlobalBF.isPlaying.not) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 									this.glbRevDecGrp).register;
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -5041,10 +5047,10 @@ GUI Parameters usable in SynthDefs
 							if (revGlobalBF.isPlaying.not) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 									this.glbRevDecGrp).register;
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -5162,10 +5168,10 @@ GUI Parameters usable in SynthDefs
 						if (revGlobalBF.isPlaying.not) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)].bufnum,
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)].bufnum,
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)].bufnum],
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 								this.glbRevDecGrp).register;
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -7200,7 +7206,6 @@ GUI Parameters usable in SynthDefs
 			// gradually pinching these and putting up above
 
 			this.xbox[i].action = {arg num;
-
 				this.xboxProxy[i].valueAction = num.value;
 			};
 
@@ -7577,8 +7582,8 @@ GUI Parameters usable in SynthDefs
 		win.view.mouseMoveAction = {|view, x, y, modifiers| [x, y];
 			if(mouseButton == 0) { // left button
 				var period = Main.elapsedTime - this.lastGui;
-				xbox[currentsource].valueAction = (this.halfwidth - y) / this.halfwidth;
-				ybox[currentsource].valueAction = ((x - this.halfwidth) * -1) / this.halfwidth;
+				xbox[currentsource].valueAction = (x - this.halfwidth) / this.halfheight;
+				ybox[currentsource].valueAction = (this.halfheight - y) / this.halfheight;
 
 				win.drawFunc = {
 					// big circle
@@ -7630,6 +7635,8 @@ GUI Parameters usable in SynthDefs
 				//Pen.width = 10;
 
 				this.nfontes.do { arg i;
+					sprite[i, 0] = this.halfwidth + (xval[i] * this.halfheight);
+					sprite[i, 1] = this.halfheight - (yval[i] * this.halfheight);
 					Pen.fillColor = Color(0.8,0.2,0.9);
 					Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
 					Pen.fill;
