@@ -137,7 +137,7 @@ Mosca {
 	<>headingnumboxProxy, <>rollnumboxProxy, <>pitchnumboxProxy,
 	<>headingOffset,
 	<>troutine, <>kroutine, <>watcher,
-	<>xval, <>yval, <>zval,
+	<>cartval, <>spheval,
 	<>recchans, <>recbus,
 	// <>mark1, <>mark2,	// 4 number arrays for marker data // apparently unused
 
@@ -162,7 +162,7 @@ Mosca {
 
 
 	<>novoplot, //<>lastx, <>lasty, // apparently unused
-	<>lastz, <>zlev, <>znumbox, <>zslider,
+	<>zlev, <>znumbox, <>zslider,
 	<>volslider, <>volnumbox, <>glev, <>gslider, <>gnumbox, <>lslider,
 	<>lnumbox, <>llev, <>rnumbox, <>rslider, <>rlev, <>dlev,
 	<>dirnumbox, <>dirslider, <>dplev, <>dpslider, <>dopnumbox,
@@ -255,9 +255,9 @@ GUI Parameters usable in SynthDefs
 \\angle | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
 \\glev | Global/Close reverb level | 0 - 1 |
 \\llev | Local/Distant reverb level | 0 - 1 |
-\\mx | X coord | -1 - 1 |
-\\my | Y coord | -1 - 1 |
-\\mz | Z coord | -1 - 1 |
+\\azim | azimuth coord | -3.14 - 3.14 |
+\\elev | elevation coord | -3.14 - 3.14 |
+\\radius | spherical radius | 0 - 1 |
 \\rotAngle | B-format rotation angle | -3.14 - 3.14 |
 \\directang | B-format directivity | 0 - 1.57 |
 \\contr | Contraction: fade between WXYZ & W | 0 - 1 |
@@ -458,7 +458,6 @@ GUI Parameters usable in SynthDefs
 		ybox = Array.newClear(this.nfontes);
 		//lastx = Array.newClear(this.nfontes); // apparently unused
 		// lasty = Array.newClear(this.nfontes); // apparently unused
-		lastz = Array.newClear(this.nfontes);
 		abox = Array.newClear(this.nfontes); // ângulo
 		vbox = Array.newClear(this.nfontes);  // level
 		gbox = Array.newClear(this.nfontes); // reverberação global
@@ -564,9 +563,8 @@ GUI Parameters usable in SynthDefs
 		// these proxies behave like GUI elements. They eneable
 		// the use of Automation without a GUI
 
-		xval = Array.fill(this.nfontes, 100000);
-		yval = Array.fill(this.nfontes, 100000);
-		zval = Array.fill(this.nfontes, 0);
+		cartval = Array.fill(this.nfontes, Cartesian(-12, -12, 0));
+		spheval = Array.fill(this.nfontes, {|i| cartval[i].asSpherical});
 
 		rboxProxy = Array.newClear(this.nfontes);
 		cboxProxy = Array.newClear(this.nfontes);
@@ -716,7 +714,8 @@ GUI Parameters usable in SynthDefs
 
 			this.xboxProxy[i].action = {arg num;
 				//("Num = " ++ num.value).postln;
-				this.xval[i] = num.value;
+				this.cartval[i].x_(num.value);
+				this.spheval[i] = this.cartval[i].asSpherical;
 				if ( guiflag) {
 					//unused novoplot
 					//var period = Main.elapsedTime - this.lastGui;
@@ -725,41 +724,58 @@ GUI Parameters usable in SynthDefs
 					//if (period > this.guiInt) {
 					//this.lastGui =  Main.elapsedTime;
 					//{novoplot.value(num.value, ybox[i], i, this.nfontes)}.defer; };
-					{this.xbox[i].value = num.value}.defer;
+					{this.cartval[i].x = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
-					this.espacializador[i].set(\mx, this.xval[i]);
-					this.setSynths(i, \mx, this.xval[i]);
-					this.synt[i].set(\mx, this.xval[i]);
+					this.espacializador[i].set(\azim, this.spheval[i].theta);
+					this.setSynths(i, \azim, this.spheval[i].theta);
+					this.synt[i].set(\azim, this.spheval[i].theta);
+					this.espacializador[i].set(\elev, this.spheval[i].phi);
+					this.setSynths(i, \elev, this.spheval[i].phi);
+					this.synt[i].set(\elev, this.spheval[i].phi);
+					this.espacializador[i].set(\radius, this.spheval[i].rho);
+					this.setSynths(i, \radius, this.spheval[i].rho);
+					this.synt[i].set(\radius, this.spheval[i].rho);
 				};
 			};
 
 			this.yboxProxy[i].action = {arg num;
-				this.yval[i] = num.value;
+				this.cartval[i].y_(num.value);
+				this.spheval[i] = this.cartval[i].asSpherical;
 				if (guiflag) {
 					{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
-					{ybox[i].value = num.value}.defer;
+					{this.cartval[i].y = num.value}.defer;
 				};
-
 				if(this.espacializador[i].notNil || this.playingBF[i]){
-
-					this.espacializador[i].set(\my, this.yval[i]);
-					this.setSynths(i, \my, this.yval[i]);
-					this.synt[i].set(\my, this.yval[i]);
+					this.espacializador[i].set(\azim, this.spheval[i].theta);
+					this.setSynths(i, \azim, this.spheval[i].theta);
+					this.synt[i].set(\azim, this.spheval[i].theta);
+					this.espacializador[i].set(\elev, this.spheval[i].phi);
+					this.setSynths(i, \elev, this.spheval[i].phi);
+					this.synt[i].set(\elev, this.spheval[i].phi);
+					this.espacializador[i].set(\radius, this.spheval[i].rho);
+					this.setSynths(i, \radius, this.spheval[i].rho);
+					this.synt[i].set(\radius, this.spheval[i].rho);
 				};
-				//{oybox[i].valueAction = this.origin.y;}.defer;
 			};
 
 			this.zboxProxy[i].action = {arg num;
-				lastz[i] = num.value;
-				this.espacializador[i].set(\mz, num.value);
-				this.zval[i] = num.value;
-				if (this.zval[i] > 1) {this.zval[i] = 1};
-				if (this.zval[i] < -1) {this.zval[i] = -1};
+				this.cartval[i].z_(num.value);
+				this.spheval[i] = this.cartval[i].asSpherical;
 
-				this.setSynths(i, \mz, this.zval[i]);
-				this.synt[i].set(\mz, this.zval[i]);
-				zlev[i] = this.zval[i];
+				if(this.espacializador[i].notNil || this.playingBF[i]){
+					this.espacializador[i].set(\azim, this.spheval[i].theta);
+					this.setSynths(i, \azim, this.spheval[i].theta);
+					this.synt[i].set(\azim, this.spheval[i].theta);
+					this.espacializador[i].set(\elev, this.spheval[i].phi);
+					this.setSynths(i, \elev, this.spheval[i].phi);
+					this.synt[i].set(\elev, this.spheval[i].phi);
+					this.espacializador[i].set(\radius, this.spheval[i].rho);
+					this.setSynths(i, \radius, this.spheval[i].rho);
+					this.synt[i].set(\radius, this.spheval[i].rho);
+				};
+
+				zlev[i] = this.cartval[i].z;
 				if((i == currentsource) && guiflag)
 				{
 					{zslider.value = (num.value + 1) / 2}.defer;
@@ -1205,9 +1221,9 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.ncanboxProxy[i].action = {arg num;
-				this.espacializador[i].set(\mz, num.value);
-				this.setSynths(i, \mz, num.value);
-				this.synt[i].set(\mz, num.value);
+				this.espacializador[i].set(\elev, this.spheval[i].phi);
+				this.setSynths(i, \elev, this.spheval[i].phi);
+				this.synt[i].set(\elev, this.spheval[i].phi);
 				this.ncan[i] = num.value;
 				if((i == currentsource) && guiflag )
 				{
@@ -1221,9 +1237,9 @@ GUI Parameters usable in SynthDefs
 			};
 
 			this.businiboxProxy[i].action = {arg num;
-				this.espacializador[i].set(\mz, num.value);
-				this.setSynths(i, \mz, num.value);
-				this.synt[i].set(\mz, num.value);
+				this.espacializador[i].set(\elev, this.spheval[i].phi);
+				this.setSynths(i, \elev, this.spheval[i].phi);
+				this.synt[i].set(\elev, this.spheval[i].phi);
 				this.busini[i] = num.value;
 				if((i == currentsource) && guiflag)
 				{
@@ -1829,7 +1845,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("espacAmbChowning"++rev_type,  {
-				arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
+				arg inbus, gbus, soaBus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr=1,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
@@ -1839,8 +1855,8 @@ GUI Parameters usable in SynthDefs
 
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
 				ambSigSoa, ambSigFoa,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,
-				globallev, locallev, gsig, fonte,
+				junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				globallev, locallev, gsig,
 				intens,
 				spread, diffuse, omni,
 				soa_a12_sig;
@@ -1849,16 +1865,12 @@ GUI Parameters usable in SynthDefs
 				var w, x, y, z, r, s, t, u, v;
 				var ambSigRef = Ref(0);
 				var lrevRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
 				contr = Lag.kr(contr, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
+				dis = 1 - radius;
 
-				azim = fonte.theta - (pi * 0.5);
-				el = fonte.phi;
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 
@@ -1898,8 +1910,8 @@ GUI Parameters usable in SynthDefs
 
 				// do second order encoding
 				//comment out all linear parameters
-				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+				//prepareAmbSigFunc.value(ambSigRef, junto, az, el, intens: intens, dis: dis);
+				ambSigRef.value = FMHEncode0.ar(junto, az, ele, intens);
 
 				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value];
 				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
@@ -1912,7 +1924,7 @@ GUI Parameters usable in SynthDefs
 				junto = Select.ar(df, [omni, diffuse]);
 				junto = Select.ar(sp, [junto, spread]);
 
-				ambSigFoa = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+				ambSigFoa = FoaTransform.ar(junto, 'push', 1.5707963267949 * contr, az, ele, intens);
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
@@ -1948,25 +1960,21 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ambitoolsChowning"++rev_type,  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 05, wir;
 
-				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
-				globallev, locallev, gsig, fonte, intens;
+				var ambSig,junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens;
 
 				var p;
 				var grevganho = 0.04; // needs less gain
 				var lrevRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = fonte.rho;
+				dis = radius;
 
-				azim = fonte.theta - (pi * 0.5);
-				el = fonte.phi;
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				p = In.ar(inbus, 1);
@@ -2006,7 +2014,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOAEncoder.ar(this.maxorder, junto, azim, el,
+				ambSig	 = HOAEncoder.ar(this.maxorder, junto, az, ele,
 					plane_spherical:1, radius: dis * 50);
 
 				ambixOutFunc.value(ambSig);
@@ -2015,25 +2023,20 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("hoaLibChowning"++rev_type,  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, wir;
 
-				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
-				globallev, locallev, gsig, fonte, intens;
+				var ambSig,junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens;
 
 				var p;
 				var grevganho = 0.04; // needs less gain
 				var lrevRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = fonte.rho;
+				dis = radius;
 
-				azim = fonte.theta - (pi * 0.5);
-				el = fonte.phi;
+				az = azim - 1.5707963267949;
+				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				p = In.ar(inbus, 1);
@@ -2074,7 +2077,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOALibEnc3D.ar(this.maxorder, junto, azim, el, -18);
+				ambSig	 = HOALibEnc3D.ar(this.maxorder, junto, az, ele, -18);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
@@ -2082,25 +2085,21 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ambiPannerChowning"++rev_type,  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0;
 
-				var ambSig,junto, rd, dopplershift, azim, dis, xatras, yatras,
-				globallev, locallev, gsig, fonte, intens,
+				var ambSig,junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens,
 				room = 0.5, damp = 0.5, wir;
 
 				var p;
 				var grevganho = 0.04; // needs less gain
 				var lrevRef = Ref(0);
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = fonte.rho;
+				dis = radius;
 
-				azim = fonte.theta - (pi * 0.5);
-				el = fonte.phi;
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				p = In.ar(inbus, 1);
@@ -2141,7 +2140,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOAmbiPanner.ar(this.maxorder, junto, azim, el, -18);
+				ambSig	 = HOAmbiPanner.ar(this.maxorder, junto, az, ele, -18);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
@@ -2152,29 +2151,26 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("espacAmb2Chowning"++rev_type,  {
-				arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				glev = 0, llev = 0.2,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
 				room = 0.5, damp = 0.5, wir;
 
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
-				junto, rd, dopplershift, azim, dis, xatras, yatras,
-				globallev = 0.0004, locallev, gsig, fonte,
+				junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				globallev = 0.0004, locallev, gsig,
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
 				var lrev,
 				intens;
 				var ambSigRef = Ref(0);
 				var lrevRef = Ref(0);
 				var grevganho = 0.20;
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
-				azim = fonte.theta - (pi * 0.5);
-				el = fonte.phi;
+				dis = 1 - radius;
+
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 
@@ -2208,7 +2204,7 @@ GUI Parameters usable in SynthDefs
 
 				//comment out all linear parameters
 				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-				ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+				ambSigRef.value = FMHEncode0.ar(junto, az, ele, intens);
 
 				ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
 					ambSigRef[3].value];
@@ -2247,7 +2243,8 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("espacEstereoChowning"++rev_type,  {
-				arg el = 0, inbus, gbus, soaBus, mx = -5000, my = -5000, mz = 0, angle = 1.05,
+				arg inbus, gbus, soaBus, azim = 0, elev = 0, radius = 0,
+				angle = 1.05,
 				dopamnt = 0,
 				glev = 0, llev = 0, contr=1,
 				sp, df,
@@ -2258,12 +2255,12 @@ GUI Parameters usable in SynthDefs
 				var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
 				w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
 				w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
-				junto, rd, dopplershift, azim, dis,
+				junto, rd, dopplershift, az, ele, dis,
 				junto1, azim1,
 				junto2, azim2,
 				omni1, spread1, diffuse1,
 				omni2, spread2, diffuse2,
-				globallev = 0.0001, locallev, gsig, fonte,
+				globallev = 0.0001, locallev, gsig,
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
 				var lrev,
 				intens;
@@ -2272,24 +2269,18 @@ GUI Parameters usable in SynthDefs
 				var soaSigRRef = Ref(0);
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
-
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-
 				contr = Lag.kr(contr, 0.1);
-				fonte = Cartesian.new;
-				fonte.set(mx, my);
 
-				azim1 = fonte.rotate(angle / -2).theta - (pi * 0.5);
-				azim2 = fonte.rotate(angle / 2).theta - (pi * 0.5);
-				fonte.set(mx, my, mz);
-				el = fonte.phi;
-
-				dis = 1 - fonte.rho;
-
+				dis = 1 - radius;
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
+
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
+
+				azim1 = az - (angle * dis);
+				azim2 = az + (angle * dis);
 				p = In.ar(inbus, 2);
 
 				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
@@ -2336,8 +2327,8 @@ GUI Parameters usable in SynthDefs
 				//comment out all linear parameters
 				//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 				//prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
-				soaSigLRef.value = FMHEncode0.ar(junto1, azim1, el, intens);
-				soaSigRRef.value = FMHEncode0.ar(junto2, azim2, el, intens);
+				soaSigLRef.value = FMHEncode0.ar(junto1, azim1, ele, intens);
+				soaSigRRef.value = FMHEncode0.ar(junto2, azim2, ele, intens);
 
 				ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
 					soaSigLRef[3].value, soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value,
@@ -2361,8 +2352,9 @@ GUI Parameters usable in SynthDefs
 				junto2 = Select.ar(df, [omni2, diffuse2]);
 				junto2 = Select.ar(sp, [junto2, spread2]);
 
-				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
-				FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
+				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', 1.5707963267949 * contr,
+					azim1, ele, intens) +
+				FoaTransform.ar(junto2, 'push', 1.5707963267949 * contr, azim2, ele, intens);
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
@@ -2399,7 +2391,7 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("espacAFormatVerb",  {
-			arg el = 0, inbus, gbus, soaBus, mx = 0, my = 0, mz = 0,
+			arg inbus, gbus, soaBus, azim = 0, elev = 0, radius = 0,
 			dopamnt = 0,
 			glev = 0, llev = 0, contr = 1,
 			gbfbus,
@@ -2410,8 +2402,8 @@ GUI Parameters usable in SynthDefs
 			aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed;
 
 			var p, ambSigSoa, ambSigFoa,
-			junto, rd, dopplershift, azim, dis, xatras, yatras,
-			globallev, locallev, gsig, fonte,
+			junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+			globallev, locallev, gsig,
 			intens,
 			omni, spread, diffuse,
 			soa_a12_sig;
@@ -2419,16 +2411,12 @@ GUI Parameters usable in SynthDefs
 			var lrev;
 			var grevganho = 0.04; // needs less gain
 			var ambSigRef = Ref(0);
-			mx = Lag.kr(mx, 0.1);
-			my = Lag.kr(my, 0.1);
-			mz = Lag.kr(mz, 0.1);
 			contr = Lag.kr(contr, 0.1);
-			fonte = Cartesian.new;
-			fonte.set(mx, my, mz);
-			dis = 1 - fonte.rho;
+			dis = 1 - radius;
 
-			azim = fonte.theta - (pi * 0.5);
-			el = fonte.phi;
+			az = azim - 1.5707963267949;
+			az = CircleRamp.kr(az, 0.1, -pi, pi);
+			ele = Lag.kr(elev, 0.1);
 			dis = Select.kr(dis < 0, [dis, 0]);
 			dis = Select.kr(dis > 1, [dis, 1]);
 
@@ -2462,7 +2450,7 @@ GUI Parameters usable in SynthDefs
 			// do second order encoding
 			//comment out all linear parameters
 			//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-			ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+			ambSigRef.value = FMHEncode0.ar(junto, az, ele, intens);
 
 			omni = FoaEncode.ar(junto, foaEncoderOmni);
 			spread = FoaEncode.ar(junto, foaEncoderSpread);
@@ -2470,7 +2458,7 @@ GUI Parameters usable in SynthDefs
 			junto = Select.ar(df, [omni, diffuse]);
 			junto = Select.ar(sp, [junto, spread]);
 
-			ambSigFoa = FoaTransform.ar(junto, 'push', pi/2*contr, azim, el, intens);
+			ambSigFoa = FoaTransform.ar(junto, 'push', 1.5707963267949 * contr, az, ele, intens);
 
 			ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
 				ambSigRef[4].value, ambSigRef[5].value, ambSigRef[6].value, ambSigRef[7].value,
@@ -2509,25 +2497,22 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("espacAmb2AFormat",  {
-			arg el = 0, inbus, gbus, mx = -5000, my = -5000, mz = 0,
+			arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 			glev = 0, llev = 0.2, soaBus,
 			insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 			aFormatBusOutSoa, aFormatBusInSoa;
 			var w, x, y, z, r, s, t, u, v, p, ambSigSoa, ambSigFoa,
 			aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
-			junto, rd, dopplershift, azim, dis, xatras, yatras,
-			globallev = 0.0004, locallev, gsig, fonte;
+			junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+			globallev = 0.0004, locallev, gsig;
 			var lrev, intens;
 			var grevganho = 0.20;
 			var ambSigRef = Ref(0);
-			mx = Lag.kr(mx, 0.1);
-			my = Lag.kr(my, 0.1);
-			mz = Lag.kr(mz, 0.1);
-			fonte = Cartesian.new;
-			fonte.set(mx, my, mz);
-			dis = 1 - fonte.rho;
-			azim = fonte.theta - (pi * 0.5);
-			el = fonte.phi;
+			dis = 1 - radius;
+
+			az = azim - 1.5707963267949;
+			az = CircleRamp.kr(az, 0.1, -pi, pi);
+			ele = Lag.kr(elev, 0.1);
 			dis = Select.kr(dis < 0, [dis, 0]);
 			dis = Select.kr(dis > 1, [dis, 1]);
 
@@ -2558,7 +2543,7 @@ GUI Parameters usable in SynthDefs
 
 			//comment out all linear parameters
 			//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
-			ambSigRef.value = FMHEncode0.ar(junto, azim, el, intens);
+			ambSigRef.value = FMHEncode0.ar(junto, az, ele, intens);
 
 			ambSigFoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value,
 				ambSigRef[3].value];
@@ -2602,7 +2587,7 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("espacEstereoAFormat",  {
-			arg el = 0, inbus, gbus, soaBus, gbfbus, mx = -5000, my = -5000, mz = 0,
+			arg inbus, gbus, soaBus, gbfbus, azim = 0, elev = 0, radius = 0,
 			angle = 1.05, dopamnt = 0, sp, df,
 			glev = 0, llev = 0, contr=1,
 			insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
@@ -2611,33 +2596,29 @@ GUI Parameters usable in SynthDefs
 			var w, x, y, z, r, s, t, u, v, p, ambSigSoa,
 			w1, x1, y1, z1, r1, s1, t1, u1, v1, p1, ambSigSoa1,
 			w2, x2, y2, z2, r2, s2, t2, u2, v2, p2, ambSigSoa2, ambSigSoa1plus2, ambSigFoa1plus2,
-			junto, rd, dopplershift, azim, dis,
+			junto, rd, dopplershift, az, ele, dis,
 			junto1, azim1,
 			junto2, azim2,
 			omni1, spread1, diffuse1,
 			omni2, spread2, diffuse2,
 			intens,
-			globallev = 0.0001, locallev, gsig, fonte;
+			globallev = 0.0001, locallev, gsig;
 			var lrev;
 			var grevganho = 0.20;
 			var soaSigLRef = Ref(0);
 			var soaSigRRef = Ref(0);
-			mx = Lag.kr(mx, 0.1);
-			my = Lag.kr(my, 0.1);
-			mz = Lag.kr(mz, 0.1);
 			contr = Lag.kr(contr, 0.1);
-			fonte = Cartesian.new;
-			fonte.set(mx, my);
 
-			azim1 = fonte.rotate(angle / -2).theta - (pi * 0.5);
-			azim2 = fonte.rotate(angle / 2).theta - (pi * 0.5);
-
-			fonte.set(mx, my, mz);
-			el = fonte.phi;
-
-			dis = 1 - fonte.rho;
+			dis = 1 - radius;
 			dis = Select.kr(dis < 0, [dis, 0]);
 			dis = Select.kr(dis > 1, [dis, 1]);
+
+			az = azim - 1.5707963267949;
+			az = CircleRamp.kr(az, 0.1, -pi, pi);
+			ele = Lag.kr(elev, 0.1);
+
+			azim1 = az - (angle * dis);
+			azim2 = az + (angle * dis);
 
 			p = In.ar(inbus, 2);
 			p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
@@ -2677,8 +2658,8 @@ GUI Parameters usable in SynthDefs
 			//comment out all linear parameters
 			//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
 			//prepareAmbSigFunc.value(soaSigRRef, junto2, azim2, el, intens: intens, dis: dis);
-			soaSigLRef.value = FMHEncode0.ar(junto1, azim1, el, intens);
-			soaSigRRef.value = FMHEncode0.ar(junto2, azim2, el, intens);
+			soaSigLRef.value = FMHEncode0.ar(junto1, azim1, ele, intens);
+			soaSigRRef.value = FMHEncode0.ar(junto2, azim2, ele, intens);
 
 			ambSigSoa1 = [soaSigLRef[0].value, soaSigLRef[1].value, soaSigLRef[2].value,
 				soaSigLRef[3].value, soaSigLRef[4].value, soaSigLRef[5].value, soaSigLRef[6].value,
@@ -2700,8 +2681,9 @@ GUI Parameters usable in SynthDefs
 			junto2 = Select.ar(df, [omni2, diffuse2]);
 			junto2 = Select.ar(sp, [junto2, spread2]);
 
-			ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', pi/2*contr, azim1, el, intens) +
-			FoaTransform.ar(junto2, 'push', pi/2*contr, azim2, el, intens);
+			ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', 1.5707963267949 * contr, azim1,
+				ele, intens) +
+			FoaTransform.ar(junto2, 'push', 1.5707963267949 * contr, azim2, ele, intens);
 
 			ambSigSoa1plus2 = ambSigSoa1 + ambSigSoa2;
 
@@ -3221,7 +3203,8 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				mx = 0, my = 0, mz = 0, gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+				azim = 0, elev = 0, radius = 0,
+				gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
 				busini,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa;
@@ -3229,20 +3212,16 @@ GUI Parameters usable in SynthDefs
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 
-				azim, dis = 1, fonte, globallev, locallev,
+				az, ele, dis, globallev, locallev,
 				gsig, lsig, rd, dopplershift,
 				intens;
 				var grevganho = 0.20;
+				dis = 1 - radius;
 
-				mx = Lag.kr(mx, 0.1);
-				my = Lag.kr(my, 0.1);
-				mz = Lag.kr(mz, 0.1);
-
-				fonte = Cartesian.new;
-				fonte.set(mx, my, mz);
-				dis = 1 - fonte.rho;
-				pushang = (1 - dis) * pi / 2; // degree of sound field displacement
-				azim = fonte.theta - (pi * 0.5); // ângulo (azimuth) de deslocamento
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
+				pushang = (1 - dis) * 1.5707963267949; // degree of sound field displacement
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				playerRef = Ref(0);
@@ -3271,7 +3250,7 @@ GUI Parameters usable in SynthDefs
 				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
 							Lag.kr(level, 0.1) * intens * (1 - contr));
 
-				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, azim);
+				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, az, ele);
 
 				// convert to A-format and send to a-format out busses
 				aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
@@ -3556,10 +3535,9 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \llev, llev[source]);
 				this.setSynths(source, \rm, rm[source]);
 				this.setSynths(source, \dm, dm[source]);
-				this.setSynths(source, \mx, this.xval[source]);
-				this.setSynths(source, \my, this.yval[source]);
-				this.setSynths(source, \mz, this.zval[source]);
-
+				this.setSynths(source, \azim, this.spheval[source].theta);
+				this.setSynths(source, \elev, this.spheval[source].phi);
+				this.setSynths(source, \radius, this.spheval[source].rho);
 
 				//	this.setSynths(source, \sp, sp[source]);
 				//	this.setSynths(source, \df, df[source]);
@@ -3603,9 +3581,9 @@ GUI Parameters usable in SynthDefs
 						//\mx, xbox[i].value,
 						//\my, ybox[i].value,
 						//\mz, zbox[i].value,
-						\mx, this.xval[i],
-						\my, this.yval[i],
-						\mz, this.zval[i],
+						\azim, this.spheval[i].theta,
+						\elev, this.spheval[i].phi,
+						\radius, this.spheval[i].rho,
 						//\xoffset, this.xoffset[i],
 						//\yoffset, this.yoffset[i],
 						\sp, sp[i],
@@ -3630,9 +3608,9 @@ GUI Parameters usable in SynthDefs
 
 						// ERROR HERE?
 						//						\mz, zbox[i].value,
-						\mz, this.zval[i],
-						\mx, this.xval[i],
-						\my, this.yval[i],
+						\azim, this.spheval[i].theta,
+						\elev, this.spheval[i].phi,
+						\radius, this.spheval[i].rho,
 						//\xoffset, this.xoffset[i],
 						//\yoffset, this.yoffset[i],
 						//\mz, this.zval[i].value,
@@ -3665,9 +3643,9 @@ GUI Parameters usable in SynthDefs
 					\llev, llev[source],
 					\rm, rm[source],
 					\dm, dm[source],
-					\mx, this.xval[source],
-					\my, this.yval[source],
-					\mz, this.zval[source],
+					\azim, this.spheval[source].theta,
+					\elev, this.spheval[source].phi,
+					\radius, this.spheval[source].rho,
 					\sp, sp[source],
 					\df, df[source];
 				);
@@ -3683,15 +3661,14 @@ GUI Parameters usable in SynthDefs
 					\llev, llev[source],
 					\rm, rm[source],
 					\dm, dm[source],
-					\mx, this.xval[source],
-					\my, this.yval[source],
-					\mz, this.zval[source],
+					\azim, this.spheval[source].theta,
+					\elev, this.spheval[source].phi,
+					\radius, this.spheval[source].rho,
 					\sp, sp[source],
 					\df, df[source];
 				);
 			};
 		};
-
 
 
 
@@ -3709,7 +3686,7 @@ GUI Parameters usable in SynthDefs
 							|| (this.hwncheckProxy[i].value && (this.ncan[i]>0)) ) {
 							var source = Point.new;  // should use cartesian but it's giving problems
 							//source.set(this.xval[i] + this.xoffset[i], this.yval[i] + this.yoffset[i]);
-							source.set(this.xval[i], this.yval[i]);
+							source.set(this.cartval[i].x, this.cartval[i].y);
 							//("testado = " ++ testado[i]).postln;
 							//("distance " ++ i ++ " = " ++ source.rho).postln;
 								if (source.rho > this.plim) {
@@ -3833,15 +3810,18 @@ GUI Parameters usable in SynthDefs
 		this.nfontes.do { arg i;
 
 			if (guiflag) {
-				sprite[i, 0] = this.halfwidth + (xval[i] * this.halfheight);
-				sprite[i, 1] = this.halfheight - (yval[i] * this.halfheight);
+				sprite[i, 0] = this.halfwidth + (this.cartval[i].x * this.halfheight);
+				sprite[i, 1] = this.halfheight - (this.cartval[i].y * this.halfheight);
 			};
 
 			if(this.espacializador[i].notNil) {
 
-				this.espacializador[i].set(\mx, this.xval[i], \my, this.yval[i]);
-				this.setSynths(i, \mx, this.xval[i], \my, this.yval[i]);
-				this.synt[i].set(\mx, this.xval[i], \my, this.yval[i]);
+				this.espacializador[i].set(\azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
+					\radius, this.spheval[i].rho);
+				this.setSynths(i, \azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
+					\radius, this.spheval[i].rho);
+				this.synt[i].set(\azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
+					\radius, this.spheval[i].rho);
 			};
 
 		};
@@ -7562,16 +7542,16 @@ GUI Parameters usable in SynthDefs
 				this.nfontes.do { arg i;
 					if(this.espacializador[i].notNil) {
 
-						this.espacializador[i].set(\mx, this.xval[i], \my, this.yval[i]
-						);
+						this.espacializador[i].set(\azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
+							\radius, this.spheval[i].rho);
 						//,
 						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
-						this.setSynths(i, \mx, this.xval[i], \my, this.yval[i]
-						);
+						this.setSynths(i, \azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
+							\radius, this.spheval[i].rho);
 						//,
 						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
-						this.synt[i].set(\mx, this.xval[i], \my, this.yval[i]
-						);
+						this.synt[i].set(\azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
+							\radius, this.spheval[i].rho);
 						//,
 						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
 					};
@@ -7635,8 +7615,8 @@ GUI Parameters usable in SynthDefs
 				//Pen.width = 10;
 
 				this.nfontes.do { arg i;
-					sprite[i, 0] = this.halfwidth + (xval[i] * this.halfheight);
-					sprite[i, 1] = this.halfheight - (yval[i] * this.halfheight);
+					sprite[i, 0] = this.halfwidth + (this.cartval[i].x * this.halfheight);
+					sprite[i, 1] = this.halfheight - (this.cartval[i].y * this.halfheight);
 					Pen.fillColor = Color(0.8,0.2,0.9);
 					Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
 					Pen.fill;
