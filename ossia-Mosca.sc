@@ -152,29 +152,27 @@
 			this.ossiacart[i].unit_(OSSIA_position.cart3D);
 
 			this.ossiacart[i].callback_({arg num;
+				var period = Main.elapsedTime - this.lastGui;
 				this.cartval[i].x_(num[0].value);
-				xboxProxy[i].value = num[0].value;
 				this.cartval[i].y_(num[1].value);
-				yboxProxy[i].value = num[1].value;
 				this.cartval[i].z_(num[2].value);
-				zboxProxy[i].value = num[2].value;
 				zlev[i] = this.cartval[i].z;
 				this.spheval[i] = this.cartval[i].asSpherical;
-				if (guiflag) {
-					var period = Main.elapsedTime - this.lastGui;
-					{sprite[i, 0] = this.halfwidth + (num[0].value * this.halfheight)}.defer;
-					{sprite[i, 1] = this.halfheight - (num[1].value * this.halfheight)}.defer;
-					if (period > this.guiInt) {
-						this.lastGui =  Main.elapsedTime;
-						novoplot.value;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					xboxProxy[i].value = num[0].value;
+					yboxProxy[i].value = num[1].value;
+					zboxProxy[i].value = num[2].value;
+					if (guiflag) {
+						{ this.xbox[i].value = num[0].value }.defer;
+						{ this.ybox[i].value = num[1].value }.defer;
+						{ this.zbox[i].value = num[2].value }.defer;
 						if(i == currentsource) {
-							{zslider.value = (num[2].value + 1) / 2}.defer;
-							{znumbox.value = num[2].value}.defer;
+							{ zslider.value = (num[2].value + 1) / 2 }.defer;
+							{ znumbox.value = num[2].value }.defer;
 						};
+						novoplot.value;
 					};
-					{this.xbox[i].value = num[0].value}.defer;
-					{this.ybox[i].value = num[1].value}.defer;
-					{this.zbox[i].value = num[2].value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
 					this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -245,7 +243,8 @@
 				{ num.value == 0 }{ libName[i] = "ATK"; }
 				{ num.value == 1 }{ libName[i] = "ambitools"; }
 				{ num.value == 2 }{ libName[i] = "hoaLib"; }
-				{ num.value == 3 }{ libName[i] = "ambiPanner"; };
+				{ num.value == 3 }{ libName[i] = "ambiPanner"; }
+				{ num.value == 4 }{ libName[i] = "VBAP"; };
 				libboxProxy[i].value = num.value;
 				if (guiflag) {
 					{this.libbox[i].value = num.value}.defer;

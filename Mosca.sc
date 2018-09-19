@@ -146,7 +146,7 @@ Mosca {
 	// MOVED FROM the the gui method/////////////////////////
 
 	<>currentsource,
-	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus,
+	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus, <>nonambibus,
 	<>playEspacGrp, <>glbRevDecGrp,
 	<>level, <>lp, <>libName, <>dstrvtypes, <>clsrv, <>clsRvtypes,
 	//comment out all linear parameters
@@ -228,6 +228,8 @@ Mosca {
 	rirList,
 	b2a, a2b,
 	blips,
+	numoutputs,
+	radius_max,
     vbap_buffer,
 	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
 	cart, spher, foa_a12_decoder_matrix,
@@ -292,9 +294,9 @@ GUI Parameters usable in SynthDefs
 		revGlobalSoaOutFunc,
 		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
-		reverbOutFunc, adjustOutFunc,
+		reverbOutFunc, nonAmbiFunc,
 		bFormNumChan = (imaxorder + 1).squared; // add the number of channels of the b format
-		                                        // Ddepending on maxorder
+		                                        // depending on maxorder
 		server = iserver;
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
@@ -681,7 +683,8 @@ GUI Parameters usable in SynthDefs
 					{ num.value == 0 }{ libName[i] = "ATK"; }
 					{ num.value == 1 }{ libName[i] = "ambitools"; }
 					{ num.value == 2 }{ libName[i] = "hoaLib"; }
-					{ num.value == 3 }{ libName[i] = "ambiPanner"; };
+					{ num.value == 3 }{ libName[i] = "ambiPanner"; }
+					{ num.value == 4 }{ libName[i] = "VBAP"; };
 					if (guiflag) {
 						{this.libbox[i].value = num.value}.defer;
 						if(i == currentsource) {
@@ -726,7 +729,7 @@ GUI Parameters usable in SynthDefs
 					this.spheval[i] = this.cartval[i].asSpherical;
 					if ( guiflag) {
 						var period = Main.elapsedTime - this.lastGui;
-						{sprite[i, 0] = this.halfwidth + (num.value * this.halfheight)}.defer;
+						//{sprite[i, 0] = this.halfwidth + (num.value * this.halfheight)}.defer;
 						if (period > this.guiInt) {
 							this.lastGui =  Main.elapsedTime;
 							{novoplot.value}.defer;
@@ -755,7 +758,7 @@ GUI Parameters usable in SynthDefs
 					this.spheval[i] = this.cartval[i].asSpherical;
 					if (guiflag) {
 						var period = Main.elapsedTime - this.lastGui;
-						{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
+						//{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
 						if (period > this.guiInt) {
 							this.lastGui =  Main.elapsedTime;
 							{novoplot.value}.defer;
@@ -1806,7 +1809,11 @@ GUI Parameters usable in SynthDefs
 
 		if (speaker_array.notNil) {
 
-			var numoutputs, dimention, vbap_setup, radiusses, max_radius, adjust,
+			var max_func, dimention, vbap_setup, radiusses, adjust;
+
+			numoutputs = speaker_array.size;
+
+			this.nonambibus = outbus;
 
 			max_func = { |x|
 				var rep = 0;
@@ -1815,8 +1822,6 @@ GUI Parameters usable in SynthDefs
 						{ rep = item };
 				) };
 				rep };
-
-			numoutputs = speaker_array.size;
 
 			radiusses = Array.newFrom(speaker_array).collect({ |val| val[2]});
 
@@ -1828,17 +1833,18 @@ GUI Parameters usable in SynthDefs
 			{ speaker_array[0].size == 3 }
 			{ dimention = 3;
 
-				max_radius = max_func.value(radiusses);
+				radius_max = max_func.value(radiusses);
 
 				adjust = Array.fill(numoutputs, { |i|
-					[(max_radius - radiusses[i]) / 334, max_radius/radiusses[i]];
+					[(radius_max - radiusses[i]) / 334, radius_max/radiusses[i]];
 				});
 			};
 
-
-			adjustOutFunc = { |sig|
-				Array.fill(numoutputs, { |i| DelayN.ar(sig[i],
+			nonAmbiFunc = { |sig|
+				var in = In.ar(nonambibus, numoutputs);
+				in = Array.fill(numoutputs, { |i| DelayN.ar(in[i],
 					delaytime:adjust[i][0], mul:adjust[i][1]) });
+				sig = sig + in;
 			};
 
 			speaker_array.collect({ |val| val.pop });
@@ -1847,12 +1853,32 @@ GUI Parameters usable in SynthDefs
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-
 		} {
-			adjustOutFunc = { |sig|
+
+			var numoutputs, vbap_setup;
+
+			numoutputs = 18;
+
+			this.nonambibus = Bus.audio(server, numoutputs);
+
+			vbap_setup = VBAPSpeakerArray( 3,
+				[[-45, 50], [-135, 50], [135, 50], [45, 50], [-30, 20], [-90, 20],
+				[-150, 20], [150, 20], [90, 20], [30, 20], [-22.5, -3], [-67.5, -3], [-112.5, -3],
+				[-157.5, -3], [157.5, -3], [112.5, -3], [67.5, -3], [22.5, -3]] );
+			//emulate the dome at "Le SCRIME" (scrime.u-bordeaux.fr)
+
+			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
+
+			radius_max = 2.829;
+
+			nonAmbiFunc = { |sig|
 				sig;
 			}
+
 		};
+
+
+
 
 		if (decoder.notNil) {
 
@@ -1870,7 +1896,8 @@ GUI Parameters usable in SynthDefs
 			{ if (this.serport.notNil) {
 				SynthDef.new("globDecodeSynth",  { arg globtbus=0, ambixbus=0,
 					heading=0, roll=0, pitch=0, sub = 1;
-					var ambixsig, sig = In.ar(globtbus, 4);
+					var ambixsig, sig;
+					sig = In.ar(globtbus, 4);
 					ambixsig = In.ar(ambixbus, 4);
 					ambixsig = FoaEncode.ar(ambixsig, FoaEncoderMatrix.newAmbix1);
 					sig = sig + ambixsig;
@@ -1878,17 +1905,20 @@ GUI Parameters usable in SynthDefs
 						Lag.kr(roll, 0.01),
 						Lag.kr(pitch, 0.01));
 					sig = FoaDecode.ar(sig, decoder);
+					nonAmbiFunc.value(sig);
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
 				}).add;
 			} {
 				SynthDef.new("globDecodeSynth",  { arg globtbus=0, ambixbus=0,
 					heading=0, roll=0, pitch=0, sub = 1;
-					var ambixsig, sig = In.ar(globtbus, 4);
+					var ambixsig, sig;
+					sig = In.ar(globtbus, 4);
 					ambixsig = In.ar(ambixbus, 4);
 					ambixsig = FoaEncode.ar(ambixsig, FoaEncoderMatrix.newAmbix1);
 					sig = sig + ambixsig;
 					sig = FoaDecode.ar(sig, decoder);
+					nonAmbiFunc.value(sig);
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
 				}).add;
@@ -1898,12 +1928,14 @@ GUI Parameters usable in SynthDefs
 			{ this.maxorder == 2 }
 			{ SynthDef("globDecodeSynth", {
 				arg globtbus=0, lf_hf=0, xover=400, sub = 1;
-				var ambixsig, sig = In.ar(globtbus, 9);
+				var ambixsig, sig;
+				sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
 				sig = sig + ambixsig;
 				sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
 					sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
+				nonAmbiFunc.value(sig);
 				subOutFunc.value(sig, sub);
 				Out.ar(outbus, sig);
 			}).add;
@@ -1912,13 +1944,15 @@ GUI Parameters usable in SynthDefs
 			{ this.maxorder == 3 }
 			{ SynthDef("globDecodeSynth", {
 				arg globtbus=0, lf_hf=0, xover=400, sub = 1;
-				var ambixsig, sig = In.ar(globtbus, 9);
+				var ambixsig, sig;
+				sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
 				sig = sig + ambixsig;
 				sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
 					sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
 					sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
+				nonAmbiFunc.value(sig);
 				subOutFunc.value(sig, sub);
 				Out.ar(outbus, sig);
 			}).add;
@@ -1927,7 +1961,8 @@ GUI Parameters usable in SynthDefs
 			{ this.maxorder == 4 }
 			{ SynthDef("globDecodeSynth", {
 				arg globtbus=0, lf_hf=0, xover=400, sub = 1;
-				var ambixsig, sig = In.ar(globtbus, 9);
+				var ambixsig, sig;
+				sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
 				sig = sig + ambixsig;
@@ -1936,6 +1971,7 @@ GUI Parameters usable in SynthDefs
 					sig[12], sig[13], sig[14],sig[15], sig[16], sig[17], sig[18],
 					sig[19], sig[20], sig[21], sig[22], sig[23], sig[24],
 					0, lf_hf, xover:xover);
+				nonAmbiFunc.value(sig);
 				subOutFunc.value(sig, sub);
 				Out.ar(outbus, sig);
 			}).add;
@@ -1944,7 +1980,8 @@ GUI Parameters usable in SynthDefs
 			{ this.maxorder == 5 }
 			{ SynthDef("globDecodeSynth", {
 				arg globtbus=0, lf_hf=0, xover=400, sub = 1;
-				var ambixsig, sig = In.ar(globtbus, 9);
+				var ambixsig, sig;
+				sig = In.ar(globtbus, 9);
 				ambixsig = In.ar(ambixbus, bFormNumChan);
 				sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D);
 				sig = sig + ambixsig;
@@ -1957,6 +1994,7 @@ GUI Parameters usable in SynthDefs
 					sig[26], sig[27], sig[28], sig[29], sig[30], sig[31],
 					sig[32], sig[33], sig[34], sig[35],
 					0, lf_hf, xover:xover);
+				nonAmbiFunc.value(sig);
 				subOutFunc.value(sig, sub);
 				Out.ar(outbus, sig);
 			}).add;
@@ -2117,7 +2155,7 @@ GUI Parameters usable in SynthDefs
 				// Doppler
 				rd = dis * 340;
 				rd = Lag.kr(rd, 1.0);
-				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				dopplershift = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 				p = dopplershift;
 
 				// Global reverberation & intensity
@@ -2149,8 +2187,8 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOAEncoder.ar(this.maxorder, junto, az, ele,
-					plane_spherical:1, radius: dis * 50);
+				ambSig = HOAEncoder.ar(this.maxorder, junto, az, ele,
+					plane_spherical:1, radius: VarLag.kr(dis.squared * 50), speaker_radius: radius_max);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
@@ -2212,7 +2250,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOALibEnc3D.ar(this.maxorder, junto, az, ele, -18);
+				ambSig = HOALibEnc3D.ar(this.maxorder, junto, az, ele, 0);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
@@ -2275,11 +2313,74 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig	 = HOAmbiPanner.ar(this.maxorder, junto, az, ele, -18);
+				ambSig = HOAmbiPanner.ar(this.maxorder, junto, az, ele, 0);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
 
+
+
+
+			SynthDef.new("VBAPChowning"++rev_type,  {
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				dopamnt = 0, glev = 0, llev = 0;
+
+				var sig, junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens,
+				room = 0.5, damp = 0.5, wir;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				dis = radius;
+
+				az = (azim - 1.5707963267949) * 57.295779513082; // convert to degrees
+				az = CircleRamp.kr(az, 0.1, -180, 180);
+				ele = Lag.kr(elev * 57.295779513082, 0.1); // convert to degrees
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				sig = VBAP.ar(numoutputs, junto, vbap_buffer.bufnum, az, ele, 0);
+
+				Out.ar(nonambibus, sig);
+			}).load(server);
 
 
 			// This second version of espacAmb is used with contracted B-format sources
@@ -2518,7 +2619,7 @@ GUI Parameters usable in SynthDefs
 			}).load(server);
 
 
-			SynthDef.new("ambitoolsEstereoChowning"++rev_type,  {
+			SynthDef.new("ambitoolsStereoChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
@@ -2588,7 +2689,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("hoaLibEstereoChowning"++rev_type,  {
+			SynthDef.new("hoaLibStereoChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
@@ -2658,7 +2759,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("ambiPannerEstereoChowning"++rev_type,  {
+			SynthDef.new("ambiPannerStereoChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0;
@@ -2724,6 +2825,76 @@ GUI Parameters usable in SynthDefs
 				HOAmbiPanner.ar(this.maxorder, junto, azim2, ele, -25);
 
 				ambixOutFunc.value(ambSig);
+			}).load(server);
+
+
+
+			SynthDef.new("VBAPStereoChowning"++rev_type,  {
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				angle = 1.05,
+				dopamnt = 0, glev = 0, llev = 0;
+
+				var sig,junto, rd, dopplershift, az, azim1, azim2, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens,
+				room = 0.5, damp = 0.5, wir;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				dis = 1 - radius;
+
+				az = (azim - 1.5707963267949) * 57.295779513082; // convert to degrees
+				azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -180, 180);
+				azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -180, 180);
+
+				dis = radius;
+
+				ele = Lag.kr(elev * 57.295779513082, 0.1);
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * sqrt(1 - dis);
+
+				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				sig = VBAP.ar(numoutputs, junto, vbap_buffer.bufnum, azim1, ele, 0) +
+				VBAP.ar(numoutputs, junto, vbap_buffer.bufnum, azim2, ele, 0);
+
+				Out.ar(nonambibus, sig);
 			}).load(server);
 
 
@@ -4150,10 +4321,10 @@ GUI Parameters usable in SynthDefs
 		this.pitchnumboxProxy.valueAction = p;
 		this.nfontes.do { arg i;
 
-			if (guiflag) {
+			/*if (guiflag) {
 				sprite[i, 0] = this.halfwidth + (this.cartval[i].x * this.halfheight);
 				sprite[i, 1] = this.halfheight - (this.cartval[i].y * this.halfheight);
-			};
+			};*/
 
 			if(this.espacializador[i].notNil) {
 
@@ -6048,32 +6219,58 @@ GUI Parameters usable in SynthDefs
 		dialView = UserView(win, Rect(this.width - 190, 10, 180, 80));
 
 		novoplot = {
-			win.drawFunc = {
 
-				Pen.fillColor = Color(0.6,0.8,0.8);
-				Pen.addArc(this.halfwidth@this.halfheight, this.halfheight, 0, 2pi);
-				Pen.fill;
+			{
+				win.drawFunc = {
 
-				this.nfontes.do { |i|
-					Pen.fillColor = Color(0.8,0.2,0.9);
-					Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
+					Pen.fillColor = Color(0.6,0.8,0.8);
+					Pen.addArc(this.halfwidth@this.halfheight, this.halfheight, 0, 2pi);
 					Pen.fill;
-					(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10,
-						sprite[i, 1] - 10, 20, 20),
-					Font.default, Color.white);
+
+					this.nfontes.do { |i|
+						{sprite[i, 0] = this.halfwidth + (this.cartval[i].x * this.halfheight)}.defer;
+						{sprite[i, 1] = this.halfheight - (this.cartval[i].y * this.halfheight)}.defer;
+						Pen.fillColor = Color(0.8,0.2,0.9);
+						Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
+						Pen.fill;
+						(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10,
+							sprite[i, 1] - 10, 20, 20),
+						Font.default, Color.white);
+					};
 
 					Pen.fillColor = Color.gray(0, 0.5);
 					Pen.addArc(this.halfwidth@this.halfheight, 20, 0, 2pi);
 					Pen.fill;
 				};
 
-			};
+			}.defer;
 
-			win.refresh;
-
+			{win.refresh}.defer;
 		};
 
-
+		/*novoplot = {
+			arg mx, my, i, nfnts;
+			var btest;
+			{
+				win.drawFunc = {
+					Pen.fillColor = Color(0.6,0.8,0.8);
+					Pen.addArc(this.halfwidth@this.halfwidth, this.halfwidth, 0, 2pi);
+					Pen.fill;
+					nfnts.do { arg ind;
+						Pen.fillColor = Color(0.8,0.2,0.9);
+						Pen.addArc(sprite[ind, 0]@sprite[ind, 1], 20, 0, 2pi);
+						Pen.fill;
+						(ind + 1).asString.drawCenteredIn(Rect(sprite[ind, 0] - 10,
+							sprite[ind, 1] - 10, 20, 20),
+						Font.default, Color.white);
+					};
+					Pen.fillColor = Color.gray(0, 0.5);
+					Pen.addArc(this.halfwidth@this.halfwidth, 20, 0, 2pi);
+					Pen.fill;
+				}
+			}.defer;
+			{ win.refresh; }.defer;
+		};*/
 
 		// fonte = Point.new; // apparently unused
 		wdados = Window.new("Data", Rect(this.width, 0, 955, (this.nfontes*20)+60 ), scroll: true);
@@ -7950,13 +8147,6 @@ GUI Parameters usable in SynthDefs
 			this.height = view.bounds.height;
 			this.halfheight = this.height * 0.5;
 
-			this.nfontes.do { arg i;
-				sprite[i, 0] = this.halfwidth + (this.cartval[i].x * this.halfheight);
-				sprite[i, 1] = this.halfheight - (this.cartval[i].y * this.halfheight);
-			};
-
-			novoplot.value;
-
 			dialView.bounds_(Rect(this.width - 190, 10, 180, 80));
 
 			zSliderHeight = this.height * 2 / 3;
@@ -7969,6 +8159,8 @@ GUI Parameters usable in SynthDefs
 			orientView.bounds_(Rect(this.width - 265, this.height - 85, 265, 100));
 
 			autoView.bounds_(Rect(10, this.height - 45, 325, 40));
+
+			novoplot.value;
 
 		});
 
