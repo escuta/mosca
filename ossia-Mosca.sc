@@ -24,120 +24,141 @@
 		this.ossiaspre = Array.newClear(this.nfontes);
 
 		this.ossiacls = OSSIA_Parameter(ossiaParent, "Close_Reverb", Integer,
-				[0, (2 + rirList.size)], 0, 'clip',
-				critical:true, repetition_filter:true);
+			[0, (2 + rirList.size)], 0, 'clip',
+			critical:true, repetition_filter:true);
 
-			this.ossiacls.callback_({arg num;
+		this.ossiacls.callback_({arg num;
 
-				this.clsrv = num.value;
-				case
-				{ num.value == 1 }
-				{ clsRvtypes = "_free"; }
-				{ num.value == 2 }
-				{ clsRvtypes = "_pass"; }
-				{ num.value > 2 }
-				{ clsRvtypes = "_conv"; };
+			this.clsrv = num.value;
+			case
+			{ num.value == 1 }
+			{ clsRvtypes = "_free"; }
+			{ num.value == 2 }
+			{ clsRvtypes = "_pass"; }
+			{ num.value > 2 }
+			{ clsRvtypes = "_conv"; };
 
-				clsrvboxProxy.value = num.value;
+			clsrvboxProxy.value = num.value;
 
-				if (num.value == 0)
-				{
-					if(revGlobal.isPlaying)
-					{ this.revGlobal.set(\gate, 0) };
+			if (num.value == 0)
+			{
+				if(revGlobal.isPlaying)
+				{ this.revGlobal.set(\gate, 0) };
 
-					if(revGlobalBF.isPlaying)
-					{ this.revGlobalBF.set(\gate, 0) };
+				if(revGlobalBF.isPlaying)
+				{ this.revGlobalBF.set(\gate, 0) };
 
-					if(revGlobalSoa.isPlaying)
-					{ this.revGlobalSoa.set(\gate, 0) };
+				if(revGlobalSoa.isPlaying)
+				{ this.revGlobalSoa.set(\gate, 0) };
+
+			} {
+
+				if (convert_fuma && this.convertor.isPlaying.not) {
+					this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+						target:this.glbRevDecGrp).register;
+				};
+
+				if(revGlobal.isPlaying) {
+					this.revGlobal.set(\gate, 0);
+
+					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
+						\room, clsrm, \damp, clsdm,
+						\wir, rirWspectrum[max((num.value - 3), 0)],
+						\xir, rirXspectrum[max((num.value - 3), 0)],
+						\yir, rirYspectrum[max((num.value - 3), 0)],
+						\zir, rirZspectrum[max((num.value - 3), 0)]],
+					this.glbRevDecGrp).register.onFree({
+						if (convert_fuma && this.converterNeeded(0)) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor.set(\gate, 0);
+						};
+					});
+
 				} {
-					if(revGlobal.isPlaying) {
-						this.revGlobal.set(\gate, 0);
+					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
+						\room, clsrm, \damp, clsdm,
+						\wir, rirWspectrum[max((num.value - 3), 0)],
+						\xir, rirXspectrum[max((num.value - 3), 0)],
+						\yir, rirYspectrum[max((num.value - 3), 0)],
+						\zir, rirZspectrum[max((num.value - 3), 0)]],
+					this.glbRevDecGrp).register.onFree({
+						if (convert_fuma && this.converterNeeded(0)) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor.set(\gate, 0);
+						};
+					});
 
-						this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
-							\room, clsrm, \damp, clsdm,
-							\wir, rirWspectrum[max((num.value - 3), 0)],
-							\xir, rirXspectrum[max((num.value - 3), 0)],
-							\yir, rirYspectrum[max((num.value - 3), 0)],
-							\zir, rirZspectrum[max((num.value - 3), 0)]],
-						this.glbRevDecGrp).register;
+				};
+
+				if(this.globBfmtNeeded(0)) {
+					if (revGlobalBF.isPlaying) {
+						this.revGlobalBF.set(\gate, 0);
+
+						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+							[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+								\fluir, rirFLUspectrum[max((num.value - 3), 0)],
+								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
+								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
+								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
+							this.glbRevDecGrp).register;
 					} {
-						this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
-							\room, clsrm, \damp, clsdm,
-							\wir, rirWspectrum[max((num.value - 3), 0)],
-							\xir, rirXspectrum[max((num.value - 3), 0)],
-							\yir, rirYspectrum[max((num.value - 3), 0)],
-							\zir, rirZspectrum[max((num.value - 3), 0)]],
-						this.glbRevDecGrp).register;
+						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+							[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+								\fluir, rirFLUspectrum[max((num.value - 3), 0)],
+								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
+								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
+								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
+							this.glbRevDecGrp).register;
 					};
+				};
 
-					if(this.globBfmtNeeded(0)) {
-						if (revGlobalBF.isPlaying) {
-							this.revGlobalBF.set(\gate, 0);
+				if (this.maxorder > 1) {
+					if (this.globSoaA12Needed(0)) {
+						if (revGlobalSoa.isPlaying) {
+							this.revGlobalSoa.set(\gate, 0);
 
-							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((num.value - 3), 0)],
-									\frdir, rirFRDspectrum[max((num.value - 3), 0)],
-									\bldir, rirBLDspectrum[max((num.value - 3), 0)],
-									\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
+									\a0ir, rirA12Spectrum[max((num.value - 3), 0), 0],
+									\a1ir, rirA12Spectrum[max((num.value - 3), 0), 1],
+									\a2ir, rirA12Spectrum[max((num.value - 3), 0), 2],
+									\a3ir, rirA12Spectrum[max((num.value - 3), 0), 3],
+									\a4ir, rirA12Spectrum[max((num.value - 3), 0), 4],
+									\a5ir, rirA12Spectrum[max((num.value - 3), 0), 5],
+									\a6ir, rirA12Spectrum[max((num.value - 3), 0), 6],
+									\a7ir, rirA12Spectrum[max((num.value - 3), 0), 7],
+									\a8ir, rirA12Spectrum[max((num.value - 3), 0), 8],
+									\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
+									\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
+									\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
 								this.glbRevDecGrp).register;
 						} {
-							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((num.value - 3), 0)],
-									\frdir, rirFRDspectrum[max((num.value - 3), 0)],
-									\bldir, rirBLDspectrum[max((num.value - 3), 0)],
-									\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
+									\a0ir, rirA12Spectrum[max((num.value - 3), 0), 0],
+									\a1ir, rirA12Spectrum[max((num.value - 3), 0), 1],
+									\a2ir, rirA12Spectrum[max((num.value - 3), 0), 2],
+									\a3ir, rirA12Spectrum[max((num.value - 3), 0), 3],
+									\a4ir, rirA12Spectrum[max((num.value - 3), 0), 4],
+									\a5ir, rirA12Spectrum[max((num.value - 3), 0), 5],
+									\a6ir, rirA12Spectrum[max((num.value - 3), 0), 6],
+									\a7ir, rirA12Spectrum[max((num.value - 3), 0), 7],
+									\a8ir, rirA12Spectrum[max((num.value - 3), 0), 8],
+									\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
+									\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
+									\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
 								this.glbRevDecGrp).register;
 						};
 					};
-
-					if (this.maxorder > 1) {
-						if (this.globSoaA12Needed(0)) {
-							if (revGlobalSoa.isPlaying) {
-								this.revGlobalSoa.set(\gate, 0);
-
-								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
-									[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
-										\a0ir, rirA12Spectrum[max((num.value - 3), 0), 0],
-										\a1ir, rirA12Spectrum[max((num.value - 3), 0), 1],
-										\a2ir, rirA12Spectrum[max((num.value - 3), 0), 2],
-										\a3ir, rirA12Spectrum[max((num.value - 3), 0), 3],
-										\a4ir, rirA12Spectrum[max((num.value - 3), 0), 4],
-										\a5ir, rirA12Spectrum[max((num.value - 3), 0), 5],
-										\a6ir, rirA12Spectrum[max((num.value - 3), 0), 6],
-										\a7ir, rirA12Spectrum[max((num.value - 3), 0), 7],
-										\a8ir, rirA12Spectrum[max((num.value - 3), 0), 8],
-										\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
-										\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
-										\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-									this.glbRevDecGrp).register;
-							} {
-								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
-									[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
-										\a0ir, rirA12Spectrum[max((num.value - 3), 0), 0],
-										\a1ir, rirA12Spectrum[max((num.value - 3), 0), 1],
-										\a2ir, rirA12Spectrum[max((num.value - 3), 0), 2],
-										\a3ir, rirA12Spectrum[max((num.value - 3), 0), 3],
-										\a4ir, rirA12Spectrum[max((num.value - 3), 0), 4],
-										\a5ir, rirA12Spectrum[max((num.value - 3), 0), 5],
-										\a6ir, rirA12Spectrum[max((num.value - 3), 0), 6],
-										\a7ir, rirA12Spectrum[max((num.value - 3), 0), 7],
-										\a8ir, rirA12Spectrum[max((num.value - 3), 0), 8],
-										\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
-										\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
-										\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-									this.glbRevDecGrp).register;
-							};
-						};
-					};
 				};
+			};
 
-				if (guiflag) {
-					{ clsReverbox.value = num.value }.defer;
-				};
-			});
+			if (guiflag) {
+				{ clsReverbox.value = num.value }.defer;
+			};
+		});
 
 
 
@@ -235,16 +256,21 @@
 			});
 
 
-			this.ossialib[i] = OSSIA_Parameter(this.ossiasrc[i], "Library", Integer, [0, 4], 0, 'clip',
+			this.ossialib[i] = OSSIA_Parameter(this.ossiasrc[i], "Library", Integer, [0, 4], 3, 'clip',
 				critical:true, repetition_filter:true);
 
 			this.ossialib[i].callback_({arg num;
 				case
-				{ num.value == 0 }{ libName[i] = "ATK"; }
-				{ num.value == 1 }{ libName[i] = "ambitools"; }
-				{ num.value == 2 }{ libName[i] = "hoaLib"; }
-				{ num.value == 3 }{ libName[i] = "ambiPanner"; }
-				{ num.value == 4 }{ libName[i] = "VBAP"; };
+				{ num.value == 0 }
+				{ libName[i] = "ambitools" }
+				{ num.value == 1 }
+				{ libName[i] = "hoaLib" }
+				{ num.value == 2 }
+				{ libName[i] = "ambiPanner" }
+				{ num.value == 3 }
+				{ libName[i] = "ATK"}
+				{ num.value == 4 }
+				{ libName[i] = "VBAP" };
 				libboxProxy[i].value = num.value;
 				if (guiflag) {
 					{this.libbox[i].value = num.value}.defer;
