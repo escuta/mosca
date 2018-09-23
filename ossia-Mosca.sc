@@ -53,9 +53,13 @@
 
 			} {
 
-				if (convert_fuma && this.convertor.isPlaying.not) {
-					this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-						target:this.glbRevDecGrp).register;
+				if (convert_fuma) {
+					if (this.convertor.isPlaying) {
+						this.convertor.set(\gate, 1);
+					} {
+						this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+							target:this.glbRevDecGrp).register;
+					};
 				};
 
 				if(revGlobal.isPlaying) {
@@ -68,10 +72,12 @@
 						\yir, rirYspectrum[max((num.value - 3), 0)],
 						\zir, rirZspectrum[max((num.value - 3), 0)]],
 					this.glbRevDecGrp).register.onFree({
-						if (convert_fuma && this.converterNeeded(0)) {
-							this.convertor.set(\gate, 1);
-						} {
-							this.convertor.set(\gate, 0);
+						if (this.convertor.isPlaying) {
+							if (convert_fuma) {
+								if (this.converterNeeded(0).not) {
+									this.convertor.set(\gate, 0);
+								};
+							};
 						};
 					});
 
@@ -83,10 +89,12 @@
 						\yir, rirYspectrum[max((num.value - 3), 0)],
 						\zir, rirZspectrum[max((num.value - 3), 0)]],
 					this.glbRevDecGrp).register.onFree({
-						if (convert_fuma && this.converterNeeded(0)) {
-							this.convertor.set(\gate, 1);
-						} {
-							this.convertor.set(\gate, 0);
+						if (this.convertor.isPlaying) {
+							if (convert_fuma) {
+								if (this.converterNeeded(0).not) {
+									this.convertor.set(\gate, 0);
+								};
+							};
 						};
 					});
 
@@ -325,7 +333,8 @@
 
 
 
-			this.ossiaclsam[i] = OSSIA_Parameter(this.ossiasrc[i], "Cls._Afmt._amount", Float, [0, 1], 0, 'clip',
+			this.ossiaclsam[i] = OSSIA_Parameter(this.ossiasrc[i], "Cls._Afmt._amount", Float,
+				[0, 1], 0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
 			this.ossiaclsam[i].unit_(OSSIA_gain.linear);
@@ -448,7 +457,7 @@
 
 			this.ossiaangle[i].callback_({arg num;
 				angle[i] = num.value;
-				if((this.ncanais[i]==2) || (this.ncan[i]==2)){
+				if(this.espacializador[i].notNil) {
 					this.espacializador[i].set(\angle, num.value);
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
