@@ -1439,8 +1439,10 @@ GUI Parameters usable in SynthDefs
 							\xir, rirXspectrum[max((num.value - 3), 0)],
 							\yir, rirYspectrum[max((num.value - 3), 0)],
 							\zir, rirZspectrum[max((num.value - 3), 0)]],
-						this.glbRevDecGrp).onFree({
-							this.revGlobal = nil;
+						this.glbRevDecGrp).register.onFree({
+							if (this.revGlobal.isPlaying.not) {
+								this.revGlobal = nil;
+							};
 							if (this.convertor.notNil) {
 								if (convert_fuma) {
 									if (this.converterNeeded(0).not) {
@@ -1457,8 +1459,10 @@ GUI Parameters usable in SynthDefs
 							\xir, rirXspectrum[max((num.value - 3), 0)],
 							\yir, rirYspectrum[max((num.value - 3), 0)],
 							\zir, rirZspectrum[max((num.value - 3), 0)]],
-						this.glbRevDecGrp).onFree({
-							this.revGlobal = nil;
+						this.glbRevDecGrp).register.onFree({
+							if (this.revGlobal.isPlaying.not) {
+								this.revGlobal = nil;
+							};
 							if (this.convertor.notNil) {
 								if (convert_fuma) {
 									if (this.converterNeeded(0).not) {
@@ -1480,8 +1484,10 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 									\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 									\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-								this.glbRevDecGrp).onFree({
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalBF.isPlaying.not) {
 								this.revGlobalBF = nil;
+								};
 								if (this.convertor.notNil) {
 									if (convert_fuma) {
 										if (this.converterNeeded(0).not) {
@@ -1498,8 +1504,10 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 									\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 									\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalBF = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalBF.isPlaying.not) {
+									this.revGlobalBF = nil;
+								};
 								if (this.convertor.notNil) {
 									if (convert_fuma) {
 										if (this.converterNeeded(0).not) {
@@ -1888,7 +1896,7 @@ GUI Parameters usable in SynthDefs
 
 			if (suboutbus.notNil) {
 				subOutFunc = { |signal, sublevel|
-					var subOut = Mix.ar(signal) * 0.55 * sublevel;
+					var subOut = Mix.ar(signal) * sublevel;
 					Out.ar(suboutbus, signal);
 				};
 			} {
@@ -1917,7 +1925,7 @@ GUI Parameters usable in SynthDefs
 							Lag.kr(pitch, 0.01));
 						sig = FoaDecode.ar(sig, decoder);
 						nonAmbiFunc.value(sig);
-						subOutFunc.value(sig, sub);
+						subOutFunc.value(sig, sub * 0.55);
 						Out.ar(outbus, sig);
 					}).add;
 				} {
@@ -1926,7 +1934,7 @@ GUI Parameters usable in SynthDefs
 						sig = In.ar(this.globTBus, 4);
 						sig = FoaDecode.ar(sig, decoder);
 						nonAmbiFunc.value(sig);
-						subOutFunc.value(sig, sub);
+						subOutFunc.value(sig, sub * 0.55);
 						Out.ar(outbus, sig);
 					}).add;
 				}
@@ -1952,6 +1960,7 @@ GUI Parameters usable in SynthDefs
 						sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
 					subOutFunc.value(sig, sub);
+					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			}
@@ -1977,6 +1986,7 @@ GUI Parameters usable in SynthDefs
 						sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
 					subOutFunc.value(sig, sub);
+					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			}
@@ -2004,6 +2014,7 @@ GUI Parameters usable in SynthDefs
 						0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
 					subOutFunc.value(sig, sub);
+					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			}
@@ -2035,6 +2046,7 @@ GUI Parameters usable in SynthDefs
 						0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
 					subOutFunc.value(sig, sub);
+					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			};
@@ -4756,23 +4768,6 @@ GUI Parameters usable in SynthDefs
 		arg i, tpos, force = false;
 		var path = this.tfieldProxy[i].value, stdur;
 
-		// set convert and dstrv variables when stynths are lauched
-		// for the tracking functions ( to stay relevant
-
-		case
-		{ libboxProxy[i].value == 0 }
-		{ convert[i] = convert_ambix; }
-		{ libboxProxy[i].value == 1 }
-		{ convert[i] = convert_ambix; }
-		{ libboxProxy[i].value == 2 }
-		{ convert[i] = convert_ambix; }
-		{ libboxProxy[i].value == 3 }
-		{ convert[i] = convert_fuma; }
-		{ libboxProxy[i].value == 4 }
-		{ convert[i] = convert_direct; };
-
-		dstrv[i] = dstrvboxProxy[i].value;
-
 		if (this.streamdisk[i]) {
 			var sf = SoundFile.new;
 			var nchan, sframe, srate;
@@ -4833,7 +4828,12 @@ GUI Parameters usable in SynthDefs
 
 						libboxProxy[i].valueAction = 3;
 
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
+
 						lib[i] = 3;
+						dstrv[i] = 3;
+						convert[i] = convert_fuma;
 
 						if (convert_fuma) {
 							if (this.convertor.notNil) {
@@ -4851,11 +4851,13 @@ GUI Parameters usable in SynthDefs
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
 									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-									this.glbRevDecGrp).onFree({
-									this.revGlobalBF = nil;
+										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalBF.isPlaying.not) {
+										this.revGlobalBF = nil;
+									};
 								});
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -4877,8 +4879,10 @@ GUI Parameters usable in SynthDefs
 											\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 											\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 											\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-										this.glbRevDecGrp).onFree({
-										this.revGlobalSoa = nil;
+										this.glbRevDecGrp).register.onFree({
+										if (this.revGlobalSoa.isPlaying.not) {
+											this.revGlobalSoa = nil;
+										};
 									});
 								} {
 									this.revGlobalSoa.set(\gate, 1);
@@ -4918,8 +4922,27 @@ GUI Parameters usable in SynthDefs
 						});
 
 					} {
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
 
-						lib[i] = libboxProxy[i].value;
+						case
+						{ libboxProxy[i].value == 0 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 1 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 2 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 3 }
+						{ convert[i] = convert_fuma;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 4 }
+						{ convert[i] = convert_direct;
+							lib[i] = libboxProxy[i].value; };
+
+						dstrv[i] = dstrvboxProxy[i].value;
 
 						if (convert[i]) {
 
@@ -4985,6 +5008,7 @@ GUI Parameters usable in SynthDefs
 					// comment out automatic settings, prefer sensible deffaults
 					/*angle[i] = pi/2;
 					cboxProxy[i].valueAction = 1;
+										};
 					clev[i] = 1;
 					if((i == currentsource) && guiflag) {
 						cslider.value = 1;
@@ -5007,7 +5031,12 @@ GUI Parameters usable in SynthDefs
 
 						libboxProxy[i].valueAction = 3;
 
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
+
 						lib[i] = 3;
+						dstrv[i] = 3;
+						convert[i] = convert_fuma;
 
 						if (convert_fuma) {
 							if (this.convertor.notNil) {
@@ -5028,8 +5057,10 @@ GUI Parameters usable in SynthDefs
 										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-									this.glbRevDecGrp).onFree({
-									this.revGlobalBF = nil;
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalBF.isPlaying.not) {
+										this.revGlobalBF = nil;
+									};
 								});
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -5051,8 +5082,10 @@ GUI Parameters usable in SynthDefs
 											\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 											\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 											\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-										this.glbRevDecGrp).onFree({
-										this.revGlobalSoa = nil;
+										this.glbRevDecGrp).register.onFree({
+										if (this.revGlobalSoa.isPlaying.not) {
+											this.revGlobalSoa = nil;
+										};
 									});
 								} {
 									this.revGlobalSoa.set(\gate, 1);
@@ -5094,8 +5127,27 @@ GUI Parameters usable in SynthDefs
 						});
 
 					} {
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
 
-						lib[i] = libboxProxy[i].value;
+						case
+						{ libboxProxy[i].value == 0 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 1 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 2 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 3 }
+						{ convert[i] = convert_fuma;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 4 }
+						{ convert[i] = convert_direct;
+							lib[i] = libboxProxy[i].value; };
+
+						dstrv[i] = dstrvboxProxy[i].value;
 
 						if (convert[i]) {
 
@@ -5174,13 +5226,22 @@ GUI Parameters usable in SynthDefs
 
 					libboxProxy[i].valueAction = 3;
 
-					lib[i] = 3;
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-					if (convert_fuma && this.convertor.isNil) {
-						this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-							target:this.glbRevDecGrp).onFree({
-							this.convertor = nil;
-						});
+					lib[i] = 3;
+					convert[i] = convert_fuma;
+					dstrv[i] = dstrvboxProxy[i].value;
+
+					if (convert_fuma) {
+						if (this.convertor.notNil) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
+							});
+						};
 					};
 
 					this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
@@ -5207,8 +5268,10 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalBF = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalBF.isPlaying.not) {
+									this.revGlobalBF = nil;
+								};
 							});
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -5232,8 +5295,10 @@ GUI Parameters usable in SynthDefs
 											\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 											\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 											\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-										this.glbRevDecGrp).onFree({
-										this.revGlobalSoa = nil;
+										this.glbRevDecGrp).register.onFree({
+										if (this.revGlobalSoa.isPlaying.not) {
+											this.revGlobalSoa = nil;
+										};
 									});
 								} {
 									this.revGlobalSoa.set(\gate, 1);
@@ -5309,6 +5374,7 @@ GUI Parameters usable in SynthDefs
 					};
 
 				};
+
 				updatesourcevariables.value(i);
 			};
 
@@ -5354,13 +5420,22 @@ GUI Parameters usable in SynthDefs
 
 					libboxProxy[i].valueAction = 3;
 
-					lib[i] = 3;
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-					if (convert_fuma && this.convertor.isNil) {
-						this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-							target:this.glbRevDecGrp).onFree({
-							this.convertor = nil;
-						});
+					lib[i] = 3;
+					dstrv[i] = 3;
+					convert[i] = convert_fuma;
+
+					if (convert_fuma) {
+						if (this.convertor.notNil) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
+							});
+						};
 					};
 
 					if (clsrv > 0) {
@@ -5371,75 +5446,95 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalBF = nil;
+								this.glbRevDecGrp).register.onFree({
+							if (this.revGlobalBF.isPlaying.not) {
+									this.revGlobalBF = nil;
+								};
 							});
 						} {
 							this.revGlobalBF.set(\gate, 1);
 						};
-					};
 
-					if (this.maxorder > 1) {
-						if (revGlobalSoa.isNil) {
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
-								[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
-									\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
-									\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
-									\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
-									\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
-									\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
-									\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
-									\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
-									\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
-									\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
-									\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
-									\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalSoa = nil;
-							});
-						} {
-							this.revGlobalSoa.set(\gate, 1);
+						if (this.maxorder > 1) {
+							if(revGlobalSoa.isNil) {
+								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+									[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
+										\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
+										\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
+										\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
+										\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
+										\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
+										\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
+										\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
+										\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
+										\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
+										\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
+										\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
+										\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalSoa.isPlaying.not) {
+										this.revGlobalSoa = nil;
+									};
+								});
+							} {
+								this.revGlobalSoa.set(\gate, 1);
+							};
 						};
 					};
 
 					//comment out all linear parameters
-					//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i], [\inbus, mbus[i],
+					//this.espacializador[i] = Synth.new(\espacAFormatVerb++ln[i],
 
-					this.espacializador[i] = Synth.new(\espacAFormatVerb, [\inbus, mbus[i],
-						\soaBus, soaBus, \gbfbus, gbfbus,
-						\insertFlag, this.insertFlag[i], \contr, clev[i],
-						\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-						\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-						\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-						\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-					this.synt[i], addAction: \addAfter).onFree({
-						if (this.globSoaA12Needed(0)) {
-							if (this.revGlobalSoa.notNil) {
-								this.revGlobalSoa.set(\gate, 1);
-							} {
+					this.espacializador[i] = Synth.new(\espacAFormatVerb,
+						[\inbus, mbus[i], \angle, angle[i],
+							\soaBus, soaBus, \gbfbus, gbfbus, \contr, clev[i],
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.synt[i], addAction: \addAfter).onFree({
+						if (this.revGlobalSoa.notNil) {
+							if (this.globSoaA12Needed(0).not) {
 								this.revGlobalSoa.set(\gate, 0);
 							};
 						};
-						if (this.globBfmtNeeded(0)) {
-							if (this.revGlobalBF.notNil) {
-								this.revGlobalBF.set(\gate, 1);
-							} {
+						if (this.revGlobalBF.notNil) {
+							if (this.globBfmtNeeded(0).not) {
 								this.revGlobalBF.set(\gate, 0);
 							};
 						};
-						if (convert_fuma && this.converterNeeded(0)) {
-							if (this.convertor.notNil) {
-								this.convertor.set(\gate, 1);
-							} {
-								this.convertor.set(\gate, 0);
+						if (this.convertor.notNil) {
+							if (convert_fuma) {
+								if (this.converterNeeded(0).not) {
+									this.convertor.set(\gate, 0);
+								};
 							};
 						};
 					});
 
 				} {
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-					lib[i] = libboxProxy[i].value;
+					case
+					{ libboxProxy[i].value == 0 }
+					{ convert[i] = convert_ambix;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 1 }
+					{ convert[i] = convert_ambix;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 2 }
+					{ convert[i] = convert_ambix;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 3 }
+					{ convert[i] = convert_fuma;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 4 }
+					{ convert[i] = convert_direct;
+						lib[i] = libboxProxy[i].value; };
+
+					dstrv[i] = dstrvboxProxy[i].value;
 
 					if (convert[i]) {
 
@@ -5524,13 +5619,22 @@ GUI Parameters usable in SynthDefs
 
 					libboxProxy[i].valueAction = 3;
 
-					lib[i] = 3;
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-					if (convert_fuma && this.convertor.isNil) {
-						this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-							target:this.glbRevDecGrp).onFree({
-							this.convertor = nil;
-						});
+					lib[i] = 3;
+					dstrv[i] = 3;
+					convert[i] = convert_fuma;
+
+					if (convert_fuma) {
+						if (this.convertor.notNil) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
+							});
+						};
 					};
 
 					if (clsrv > 0) {
@@ -5541,8 +5645,10 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalBF = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalBF.isPlaying.not) {
+									this.revGlobalBF = nil;
+								};
 							});
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -5565,8 +5671,10 @@ GUI Parameters usable in SynthDefs
 									\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 									\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 									\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalSoa = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalSoa.isPlaying.not) {
+									this.revGlobalSoa = nil;
+								};
 							});
 						} {
 							this.revGlobalSoa.set(\gate, 1);
@@ -5605,8 +5713,27 @@ GUI Parameters usable in SynthDefs
 					});
 
 				} {
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-					lib[i] = libboxProxy[i].value;
+					case
+					{ libboxProxy[i].value == 0 }
+					{ convert[i] = convert_ambix;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 1 }
+					{ convert[i] = convert_ambix;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 2 }
+					{ convert[i] = convert_ambix;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 3 }
+					{ convert[i] = convert_fuma;
+						lib[i] = libboxProxy[i].value; }
+					{ libboxProxy[i].value == 4 }
+					{ convert[i] = convert_direct;
+						lib[i] = libboxProxy[i].value; };
+
+					dstrv[i] = dstrvboxProxy[i].value;
 
 					if (convert[i]) {
 
@@ -5688,13 +5815,22 @@ GUI Parameters usable in SynthDefs
 
 					libboxProxy[i].valueAction = 3;
 
-					lib[i] = 3;
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-					if (convert_fuma && this.convertor.isNil) {
-						this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-							target:this.glbRevDecGrp).onFree({
-							this.convertor = nil;
-						});
+					lib[i] = 3;
+					convert[i] = convert_fuma;
+					dstrv[i] = dstrvboxProxy[i].value;
+
+					if (convert_fuma) {
+						if (this.convertor.notNil) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
+							});
+						};
 					};
 
 					this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
@@ -5721,8 +5857,10 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalBF = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalBF.isPlaying.not) {
+									this.revGlobalBF = nil;
+								};
 							});
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -5730,6 +5868,8 @@ GUI Parameters usable in SynthDefs
 
 						// reverb for contracted (mono) component - and for rest too
 						if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
+
+							dstrv[i] = 3;
 
 							if (this.maxorder > 1) {
 								if(revGlobalSoa.isNil) {
@@ -5747,8 +5887,10 @@ GUI Parameters usable in SynthDefs
 											\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 											\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 											\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-										this.glbRevDecGrp).onFree({
-										this.revGlobalSoa = nil;
+										this.glbRevDecGrp).register.onFree({
+										if (this.revGlobalSoa.isPlaying.not) {
+											this.revGlobalSoa = nil;
+										};
 									});
 								} {
 									this.revGlobalSoa.set(\gate, 1);
@@ -5876,13 +6018,22 @@ GUI Parameters usable in SynthDefs
 
 						libboxProxy[i].valueAction = 3;
 
-						lib[i] = 3;
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
 
-						if (convert_fuma && this.convertor.isNil) {
-							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-								target:this.glbRevDecGrp).onFree({
-								this.convertor = nil;
-							});
+						lib[i] = 3;
+						dstrv[i] = 3;
+						convert[i] = convert_fuma;
+
+						if (convert_fuma) {
+							if (this.convertor.notNil) {
+								this.convertor.set(\gate, 1);
+							} {
+								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+									target:this.glbRevDecGrp).onFree({
+									this.convertor = nil;
+								});
+							};
 						};
 
 						if (clsrv > 0) {
@@ -5893,8 +6044,10 @@ GUI Parameters usable in SynthDefs
 										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-									this.glbRevDecGrp).onFree({
-									this.revGlobalBF = nil;
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalBF.isPlaying.not) {
+										this.revGlobalBF = nil;
+									};
 								});
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -5917,8 +6070,10 @@ GUI Parameters usable in SynthDefs
 										\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 										\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 										\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-									this.glbRevDecGrp).onFree({
-									this.revGlobalSoa = nil;
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalSoa.isPlaying.not) {
+										this.revGlobalSoa = nil;
+									};
 								});
 							} {
 								this.revGlobalSoa.set(\gate, 1);
@@ -5956,8 +6111,27 @@ GUI Parameters usable in SynthDefs
 						});
 
 					} {
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
 
-						lib[i] = libboxProxy[i].value;
+						case
+						{ libboxProxy[i].value == 0 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 1 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 2 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 3 }
+						{ convert[i] = convert_fuma;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 4 }
+						{ convert[i] = convert_direct;
+							lib[i] = libboxProxy[i].value; };
+
+						dstrv[i] = dstrvboxProxy[i].value;
 
 						if (convert[i]) {
 
@@ -6056,13 +6230,22 @@ GUI Parameters usable in SynthDefs
 
 						libboxProxy[i].valueAction = 3;
 
-						lib[i] = 3;
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
 
-						if (convert_fuma && this.convertor.isNil) {
-							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-								target:this.glbRevDecGrp).onFree({
-								this.convertor = nil;
-							});
+						lib[i] = 3;
+						dstrv[i] = 3;
+						convert[i] = convert_fuma;
+
+						if (convert_fuma) {
+							if (this.convertor.notNil) {
+								this.convertor.set(\gate, 1);
+							} {
+								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+									target:this.glbRevDecGrp).onFree({
+									this.convertor = nil;
+								});
+							};
 						};
 
 						if (clsrv > 0) {
@@ -6073,8 +6256,10 @@ GUI Parameters usable in SynthDefs
 										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-									this.glbRevDecGrp).onFree({
-									this.revGlobalBF = nil;
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalBF.isPlaying.not) {
+										this.revGlobalBF = nil;
+									};
 								});
 							} {
 								this.revGlobalBF.set(\gate, 1);
@@ -6096,8 +6281,10 @@ GUI Parameters usable in SynthDefs
 											\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 											\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 											\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-										this.glbRevDecGrp).onFree({
-										this.revGlobalSoa = nil;
+										this.glbRevDecGrp).register.onFree({
+										if (this.revGlobalSoa.isPlaying.not) {
+											this.revGlobalSoa = nil;
+										};
 									});
 								} {
 									this.revGlobalSoa.set(\gate, 1);
@@ -6137,8 +6324,27 @@ GUI Parameters usable in SynthDefs
 						});
 
 					} {
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
 
-						lib[i] = libboxProxy[i].value;
+						case
+						{ libboxProxy[i].value == 0 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 1 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 2 }
+						{ convert[i] = convert_ambix;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 3 }
+						{ convert[i] = convert_fuma;
+							lib[i] = libboxProxy[i].value; }
+						{ libboxProxy[i].value == 4 }
+						{ convert[i] = convert_direct;
+							lib[i] = libboxProxy[i].value; };
+
+						dstrv[i] = dstrvboxProxy[i].value;
 
 						if (convert[i]) {
 
@@ -6206,6 +6412,27 @@ GUI Parameters usable in SynthDefs
 					connumbox.value = 0;
 					};*/
 
+
+					libboxProxy[i].valueAction = 3;
+
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
+
+					lib[i] = 3;
+					dstrv[i] = dstrvboxProxy[i].value;
+					convert[i] = convert_fuma;
+
+					if (convert_fuma) {
+						if (this.convertor.notNil) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
+							});
+						};
+					};
+
 					if (this.hwncheckProxy[i].value) {
 
 						//comment out all linear parameters
@@ -6253,8 +6480,10 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalBF = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalBF.isPlaying.not) {
+									this.revGlobalBF = nil;
+								};
 							});
 						} {
 							this.revGlobalBF.set(\gate, 1);
@@ -6263,16 +6492,7 @@ GUI Parameters usable in SynthDefs
 
 					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-						libboxProxy[i].valueAction = 3;
-
-						lib[i] = 3;
-
-						if (convert_fuma && this.convertor.isNil) {
-							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-								target:this.glbRevDecGrp).onFree({
-								this.convertor = nil;
-							});
-						};
+						dstrv[i] = 3;
 
 						if (this.maxorder > 1) {
 							if (revGlobalSoa.isNil) {
@@ -6290,8 +6510,10 @@ GUI Parameters usable in SynthDefs
 										\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
 										\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
 										\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-									this.glbRevDecGrp).onFree({
-									this.revGlobalSoa = nil;
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalSoa.isPlaying.not) {
+										this.revGlobalSoa = nil;
+									};
 								});
 							} {
 								this.revGlobalSoa.set(\gate, 1);

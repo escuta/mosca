@@ -75,8 +75,10 @@
 						\xir, rirXspectrum[max((num.value - 3), 0)],
 						\yir, rirYspectrum[max((num.value - 3), 0)],
 						\zir, rirZspectrum[max((num.value - 3), 0)]],
-					this.glbRevDecGrp).onFree({
-						this.revGlobal = nil;
+					this.glbRevDecGrp).register.onFree({
+						if (this.revGlobal.isPlaying.not) {
+							this.revGlobal = nil;
+						};
 						if (this.convertor.notNil) {
 							if (convert_fuma) {
 								if (this.converterNeeded(0).not) {
@@ -93,8 +95,10 @@
 						\xir, rirXspectrum[max((num.value - 3), 0)],
 						\yir, rirYspectrum[max((num.value - 3), 0)],
 						\zir, rirZspectrum[max((num.value - 3), 0)]],
-					this.glbRevDecGrp).onFree({
-						this.revGlobal = nil;
+					this.glbRevDecGrp).register.onFree({
+						if (this.revGlobal.isPlaying.not) {
+							this.revGlobal = nil;
+						};
 						if (this.convertor.notNil) {
 							if (convert_fuma) {
 								if (this.converterNeeded(0).not) {
@@ -116,8 +120,10 @@
 								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-							this.glbRevDecGrp).onFree({
+							this.glbRevDecGrp).register.onFree({
+						if (this.revGlobalBF.isPlaying.not) {
 							this.revGlobalBF = nil;
+						};
 							if (this.convertor.notNil) {
 								if (convert_fuma) {
 									if (this.converterNeeded(0).not) {
@@ -134,8 +140,10 @@
 								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-							this.glbRevDecGrp).onFree({
-							this.revGlobalBF = nil;
+							this.glbRevDecGrp).register.onFree({
+							if (this.revGlobalBF.isPlaying.not) {
+								this.revGlobalBF = nil;
+							};
 							if (this.convertor.notNil) {
 								if (convert_fuma) {
 									if (this.converterNeeded(0).not) {
@@ -167,8 +175,10 @@
 									\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
 									\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
 									\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalSoa = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalSoa.isPlaying.not) {
+									this.revGlobalSoa = nil;
+								};
 							});
 
 						} {
@@ -186,8 +196,10 @@
 									\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
 									\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
 									\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-								this.glbRevDecGrp).onFree({
-								this.revGlobalSoa = nil;
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalSoa.isPlaying.not) {
+									this.revGlobalSoa = nil;
+								};
 							});
 						};
 					};
