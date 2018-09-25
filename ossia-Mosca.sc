@@ -29,7 +29,10 @@
 
 		this.ossiacls.callback_({arg num;
 
+			clsrvboxProxy.value = num.value;
+
 			this.clsrv = num.value;
+
 			case
 			{ num.value == 1 }
 			{ clsRvtypes = "_free"; }
@@ -38,31 +41,32 @@
 			{ num.value > 2 }
 			{ clsRvtypes = "_conv"; };
 
-			clsrvboxProxy.value = num.value;
-
 			if (num.value == 0)
 			{
-				if(revGlobal.isPlaying)
+				if (revGlobal.notNil)
 				{ this.revGlobal.set(\gate, 0) };
 
-				if(revGlobalBF.isPlaying)
+				if (revGlobalBF.notNil)
 				{ this.revGlobalBF.set(\gate, 0) };
 
-				if(revGlobalSoa.isPlaying)
+				if (revGlobalSoa.notNil)
 				{ this.revGlobalSoa.set(\gate, 0) };
 
 			} {
 
 				if (convert_fuma) {
-					if (this.convertor.isPlaying) {
+					if (this.convertor.notNil) {
 						this.convertor.set(\gate, 1);
 					} {
 						this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-							target:this.glbRevDecGrp).register;
+							target:this.glbRevDecGrp).onFree({
+							this.convertor = nil;
+						});
 					};
 				};
 
-				if(revGlobal.isPlaying) {
+				if (revGlobal.notNil) {
+
 					this.revGlobal.set(\gate, 0);
 
 					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
@@ -71,8 +75,9 @@
 						\xir, rirXspectrum[max((num.value - 3), 0)],
 						\yir, rirYspectrum[max((num.value - 3), 0)],
 						\zir, rirZspectrum[max((num.value - 3), 0)]],
-					this.glbRevDecGrp).register.onFree({
-						if (this.convertor.isPlaying) {
+					this.glbRevDecGrp).onFree({
+						this.revGlobal = nil;
+						if (this.convertor.notNil) {
 							if (convert_fuma) {
 								if (this.converterNeeded(0).not) {
 									this.convertor.set(\gate, 0);
@@ -88,8 +93,9 @@
 						\xir, rirXspectrum[max((num.value - 3), 0)],
 						\yir, rirYspectrum[max((num.value - 3), 0)],
 						\zir, rirZspectrum[max((num.value - 3), 0)]],
-					this.glbRevDecGrp).register.onFree({
-						if (this.convertor.isPlaying) {
+					this.glbRevDecGrp).onFree({
+						this.revGlobal = nil;
+						if (this.convertor.notNil) {
 							if (convert_fuma) {
 								if (this.converterNeeded(0).not) {
 									this.convertor.set(\gate, 0);
@@ -100,8 +106,8 @@
 
 				};
 
-				if(this.globBfmtNeeded(0)) {
-					if (revGlobalBF.isPlaying) {
+				if (this.globBfmtNeeded(0)) {
+					if (revGlobalBF.notNil) {
 						this.revGlobalBF.set(\gate, 0);
 
 						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
@@ -110,7 +116,17 @@
 								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-							this.glbRevDecGrp).register;
+							this.glbRevDecGrp).onFree({
+							this.revGlobalBF = nil;
+							if (this.convertor.notNil) {
+								if (convert_fuma) {
+									if (this.converterNeeded(0).not) {
+										this.convertor.set(\gate, 0);
+									};
+								};
+							};
+						});
+
 					} {
 						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 							[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
@@ -118,13 +134,23 @@
 								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 								\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-							this.glbRevDecGrp).register;
+							this.glbRevDecGrp).onFree({
+							this.revGlobalBF = nil;
+							if (this.convertor.notNil) {
+								if (convert_fuma) {
+									if (this.converterNeeded(0).not) {
+										this.convertor.set(\gate, 0);
+									};
+								};
+							};
+						});
+
 					};
 				};
 
 				if (this.maxorder > 1) {
 					if (this.globSoaA12Needed(0)) {
-						if (revGlobalSoa.isPlaying) {
+						if (revGlobalSoa.notNil) {
 							this.revGlobalSoa.set(\gate, 0);
 
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -141,7 +167,10 @@
 									\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
 									\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
 									\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-								this.glbRevDecGrp).register;
+								this.glbRevDecGrp).onFree({
+								this.revGlobalSoa = nil;
+							});
+
 						} {
 							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
 								[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
@@ -157,7 +186,9 @@
 									\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
 									\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
 									\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-								this.glbRevDecGrp).register;
+								this.glbRevDecGrp).onFree({
+								this.revGlobalSoa = nil;
+							});
 						};
 					};
 				};

@@ -1407,27 +1407,29 @@ GUI Parameters usable in SynthDefs
 
 				if (num.value == 0)
 				{
-					if (revGlobal.isPlaying)
+					if (revGlobal.notNil)
 					{ this.revGlobal.set(\gate, 0) };
 
-					if (revGlobalBF.isPlaying)
+					if (revGlobalBF.notNil)
 					{ this.revGlobalBF.set(\gate, 0) };
 
-					if (revGlobalSoa.isPlaying)
+					if (revGlobalSoa.notNil)
 					{ this.revGlobalSoa.set(\gate, 0) };
 
 				} {
 
 					if (convert_fuma) {
-						if (this.convertor.isPlaying) {
+						if (this.convertor.notNil) {
 							this.convertor.set(\gate, 1);
 						} {
 							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-								target:this.glbRevDecGrp).register;
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
+							});
 						};
 					};
 
-					if (revGlobal.isPlaying) {
+					if (revGlobal.notNil) {
 
 						this.revGlobal.set(\gate, 0);
 
@@ -1437,8 +1439,9 @@ GUI Parameters usable in SynthDefs
 							\xir, rirXspectrum[max((num.value - 3), 0)],
 							\yir, rirYspectrum[max((num.value - 3), 0)],
 							\zir, rirZspectrum[max((num.value - 3), 0)]],
-						this.glbRevDecGrp).register.onFree({
-							if (this.convertor.isPlaying) {
+						this.glbRevDecGrp).onFree({
+							this.revGlobal = nil;
+							if (this.convertor.notNil) {
 								if (convert_fuma) {
 									if (this.converterNeeded(0).not) {
 										this.convertor.set(\gate, 0);
@@ -1454,8 +1457,9 @@ GUI Parameters usable in SynthDefs
 							\xir, rirXspectrum[max((num.value - 3), 0)],
 							\yir, rirYspectrum[max((num.value - 3), 0)],
 							\zir, rirZspectrum[max((num.value - 3), 0)]],
-						this.glbRevDecGrp).register.onFree({
-							if (this.convertor.isPlaying) {
+						this.glbRevDecGrp).onFree({
+							this.revGlobal = nil;
+							if (this.convertor.notNil) {
 								if (convert_fuma) {
 									if (this.converterNeeded(0).not) {
 										this.convertor.set(\gate, 0);
@@ -1467,7 +1471,7 @@ GUI Parameters usable in SynthDefs
 					};
 
 					if (this.globBfmtNeeded(0)) {
-						if (revGlobalBF.isPlaying) {
+						if (revGlobalBF.notNil) {
 							this.revGlobalBF.set(\gate, 0);
 
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
@@ -1476,8 +1480,9 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 									\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 									\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-								this.glbRevDecGrp).register.onFree({
-								if (this.convertor.isPlaying) {
+								this.glbRevDecGrp).onFree({
+								this.revGlobalBF = nil;
+								if (this.convertor.notNil) {
 									if (convert_fuma) {
 										if (this.converterNeeded(0).not) {
 											this.convertor.set(\gate, 0);
@@ -1493,13 +1498,23 @@ GUI Parameters usable in SynthDefs
 									\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 									\bldir, rirBLDspectrum[max((num.value - 3), 0)],
 									\bruir, rirBRUspectrum[max((num.value - 3), 0)]],
-								this.glbRevDecGrp).register;
+								this.glbRevDecGrp).onFree({
+								this.revGlobalBF = nil;
+								if (this.convertor.notNil) {
+									if (convert_fuma) {
+										if (this.converterNeeded(0).not) {
+											this.convertor.set(\gate, 0);
+										};
+									};
+								};
+							});
+
 						};
 					};
 
 					if (this.maxorder > 1) {
 						if (this.globSoaA12Needed(0)) {
-							if (revGlobalSoa.isPlaying) {
+							if (revGlobalSoa.notNil) {
 								this.revGlobalSoa.set(\gate, 0);
 
 								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
@@ -1516,7 +1531,10 @@ GUI Parameters usable in SynthDefs
 										\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
 										\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
 										\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-									this.glbRevDecGrp).register;
+									this.glbRevDecGrp).onFree({
+									this.revGlobalSoa = nil;
+								});
+
 							} {
 								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
 									[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
@@ -1532,7 +1550,9 @@ GUI Parameters usable in SynthDefs
 										\a9ir, rirA12Spectrum[max((num.value - 3), 0), 9],
 										\a10ir, rirA12Spectrum[max((num.value - 3), 0), 10],
 										\a11ir, rirA12Spectrum[max((num.value - 3), 0), 11]],
-									this.glbRevDecGrp).register;
+									this.glbRevDecGrp).onFree({
+									this.revGlobalSoa = nil;
+								});
 							};
 						};
 					};
@@ -2411,7 +2431,7 @@ GUI Parameters usable in SynthDefs
 				//applie distance attenuation before mixxing in reverb to keep trail off
 				p = p * (1 - dis).squared;
 
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
+				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -2476,7 +2496,7 @@ GUI Parameters usable in SynthDefs
 				//applie distance attenuation before mixxing in reverb to keep trail off
 				p = p * (1 - dis).squared;
 
-				localReverbFunc.value(lrevRef, p, fftsize, rirWspectrum, locallev, room, damp);
+				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -2693,10 +2713,10 @@ GUI Parameters usable in SynthDefs
 				junto2 = Select.ar(df, [omni2, diffuse2]);
 				junto2 = Select.ar(sp, [junto2, spread2]);
 
-				ambSigFoa1plus2 = (FoaTransform.ar(junto1, 'push', 1.5707963267949 * contr,
-					azim1, ele, intens) * 0.056) +
-				(FoaTransform.ar(junto2, 'push', 1.5707963267949 * contr,
-					azim2, ele, intens) * 0.056);
+				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', 1.5707963267949 * contr,
+					azim1, ele, intens) +
+				FoaTransform.ar(junto2, 'push', 1.5707963267949 * contr,
+					azim2, ele, intens);
 
 				dis = (1 - dis) * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
@@ -2796,9 +2816,9 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig	 = HOAEncoder.ar(this.maxorder, junto1, azim1, ele, gain: -25,
+				sig	 = HOAEncoder.ar(this.maxorder, junto1, azim1, ele,
 					plane_spherical:1, radius: VarLag.kr(dis.squared * 50)) +
-				HOAEncoder.ar(this.maxorder, junto2, azim2, ele, gain: -25,
+				HOAEncoder.ar(this.maxorder, junto2, azim2, ele,
 					plane_spherical:1, radius: VarLag.kr(dis.squared * 50));
 
 				ambixOutFunc.value(sig);
@@ -2876,8 +2896,8 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig	 = HOALibEnc3D.ar(this.maxorder, junto1, azim1, ele, -25) +
-				HOALibEnc3D.ar(this.maxorder, junto2, azim2, ele, -25);
+				sig	 = HOALibEnc3D.ar(this.maxorder, junto1, azim1, ele) +
+				HOALibEnc3D.ar(this.maxorder, junto2, azim2, ele);
 
 				ambixOutFunc.value(sig);
 			}).load(server);
@@ -2954,8 +2974,8 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig	 = HOAmbiPanner.ar(this.maxorder, junto1, azim1, ele, -25) +
-				HOAmbiPanner.ar(this.maxorder, junto2, azim2, ele, -25);
+				sig	 = HOAmbiPanner.ar(this.maxorder, junto1, azim1, ele) +
+				HOAmbiPanner.ar(this.maxorder, junto2, azim2, ele);
 
 				ambixOutFunc.value(sig);
 			}).load(server);
@@ -3034,8 +3054,8 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig = (VBAP.ar(numoutputs, junto1, vbap_buffer.bufnum, azim1, ele, contr) * 0.056) +
-				(VBAP.ar(numoutputs, junto2, vbap_buffer.bufnum, azim2, ele, contr) * 0.056);
+				sig = VBAP.ar(numoutputs, junto1, vbap_buffer.bufnum, azim1, ele, contr) +
+				VBAP.ar(numoutputs, junto2, vbap_buffer.bufnum, azim2, ele, contr);
 
 				Out.ar(nonambibus, sig);
 			}).load(server);
@@ -4815,23 +4835,27 @@ GUI Parameters usable in SynthDefs
 						lib[i] = 3;
 
 						if (convert_fuma) {
-							if (this.convertor.isPlaying) {
+							if (this.convertor.notNil) {
 								this.convertor.set(\gate, 1);
 							} {
 								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-									target:this.glbRevDecGrp).register;
+									target:this.glbRevDecGrp).onFree({
+									this.convertor = nil;
+								});
 							};
 						};
 
 						if (clsrv > 0) {
-							if (revGlobalBF.isPlaying.not) {
+							if (revGlobalBF.isNil) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
 									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
 									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-									this.glbRevDecGrp).register;
+									this.glbRevDecGrp).onFree({
+									this.revGlobalBF = nil;
+								})
 							} {
 								this.revGlobalBF.set(\gate, 1);
 							};
