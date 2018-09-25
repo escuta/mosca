@@ -2142,7 +2142,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("ATKChowning"++rev_type,  {
 				arg inbus, gbus, soaBus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, sp, df,
-				glev = 0, llev = 0, contr=1,
+				glev = 0, llev = 0, contr = 1,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
@@ -2201,7 +2201,7 @@ GUI Parameters usable in SynthDefs
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
-				junto = p + lrevRef.value;
+				junto = (p + lrevRef.value) * 3.5; // match other spatializers gain
 
 				// do second order encoding
 				//comment out all linear parameters
@@ -2270,7 +2270,7 @@ GUI Parameters usable in SynthDefs
 				az = azim - 1.5707963267949;
 				az = CircleRamp.kr(az, 0.1, -pi, pi);
 				ele = Lag.kr(elev, 0.1);
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				dis = Select.kr(dis < (radius_max * 0.05), [ dis, (radius_max * 0.05) ]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				p = In.ar(inbus, 1);
 
@@ -2309,7 +2309,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig = HOAEncoder.ar(this.maxorder, junto, az, ele,
+				ambSig = HOAEncoder.ar(this.maxorder, junto, az, ele, 6,
 					plane_spherical:1, radius: VarLag.kr(dis.squared * 50), speaker_radius: radius_max);
 
 				ambixOutFunc.value(ambSig);
@@ -2373,7 +2373,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig = HOALibEnc3D.ar(this.maxorder, junto, az, ele, 0);
+				ambSig = HOALibEnc3D.ar(this.maxorder, junto, az, ele, 8);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
@@ -2436,7 +2436,7 @@ GUI Parameters usable in SynthDefs
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				ambSig = HOAmbiPanner.ar(this.maxorder, junto, az, ele, 0);
+				ambSig = HOAmbiPanner.ar(this.maxorder, junto, az, ele, 8);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
@@ -2485,7 +2485,7 @@ GUI Parameters usable in SynthDefs
 				globallev = Select.kr(globallev < 0, [globallev, 0]);
 
 				globallev = globallev * Lag.kr(glev, 0.1);
-				gsig = p * globallev;
+				gsig = (p * globallev);
 
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 
@@ -2494,14 +2494,15 @@ GUI Parameters usable in SynthDefs
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
 				//applie distance attenuation before mixxing in reverb to keep trail off
-				p = p * (1 - dis).squared;
+				p = p * (1 - dis).squared * 1.5; // match other spatializers gain
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig = VBAP.ar(numoutputs, junto, vbap_buffer.bufnum, az, ele, (1 - contr) * 100);
+				sig = VBAP.ar(numoutputs, junto, vbap_buffer.bufnum,
+					az, ele, (1 - contr) * 100);
 
 				Out.ar(nonambibus, sig);
 			}).load(server);
@@ -2560,7 +2561,7 @@ GUI Parameters usable in SynthDefs
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
-				junto = p + lrevRef.value;
+				junto = (p + lrevRef.value) * 3.5; // match other spatializers gain
 
 				//comment out all linear parameters
 				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
@@ -2682,8 +2683,8 @@ GUI Parameters usable in SynthDefs
 				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, zir, locallev,
 					room, damp);
 
-				junto1 = p1 + lrev1Ref.value;
-				junto2 = p2 + lrev2Ref.value;
+				junto1 = (p1 + lrev1Ref.value) * 2; // match other spatializers gain
+				junto2 = (p2 + lrev2Ref.value) * 2; // match other spatializers gain
 
 				//comment out all linear parameters
 				//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
@@ -2770,7 +2771,7 @@ GUI Parameters usable in SynthDefs
 				dis = radius;
 
 				ele = Lag.kr(elev, 0.1);
-				dis = Select.kr(dis < 0.001, [dis, 0.001]);
+				dis = Select.kr(dis < (radius_max * 0.05), [ dis, (radius_max * 0.05) ]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 
 				p = In.ar(inbus, 2);
@@ -2896,8 +2897,8 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig	 = HOALibEnc3D.ar(this.maxorder, junto1, azim1, ele) +
-				HOALibEnc3D.ar(this.maxorder, junto2, azim2, ele);
+				sig	 = HOALibEnc3D.ar(this.maxorder, junto1, azim1, ele, 2) +
+				HOALibEnc3D.ar(this.maxorder, junto2, azim2, ele, 2);
 
 				ambixOutFunc.value(sig);
 			}).load(server);
@@ -2974,8 +2975,8 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig	 = HOAmbiPanner.ar(this.maxorder, junto1, azim1, ele) +
-				HOAmbiPanner.ar(this.maxorder, junto2, azim2, ele);
+				sig	 = HOAmbiPanner.ar(this.maxorder, junto1, azim1, ele, 2) +
+				HOAmbiPanner.ar(this.maxorder, junto2, azim2, ele, 2);
 
 				ambixOutFunc.value(sig);
 			}).load(server);
@@ -3120,7 +3121,7 @@ GUI Parameters usable in SynthDefs
 			// Local reverberation
 			locallev = 1 - dis;
 			locallev = locallev  * Lag.kr(llev, 0.1);
-			junto = p;
+			junto = p * 3.5; // match other spatializers gain
 
 			// do second order encoding
 			//comment out all linear parameters
@@ -3214,7 +3215,7 @@ GUI Parameters usable in SynthDefs
 			locallev = 1 - dis;
 			locallev = locallev * Lag.kr(llev, 0.1);
 
-			junto = p ;
+			junto = p * 3.5; // match other spatializers gain
 
 			//comment out all linear parameters
 			//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
@@ -3324,8 +3325,8 @@ GUI Parameters usable in SynthDefs
 
 			locallev = locallev  * Lag.kr(llev, 0.1);
 
-			junto1 = p1;
-			junto2 = p2;
+			junto1 = p1 * 2; // match other spatializers gain
+			junto2 = p2 * 2; // match other spatializers gain
 
 			//comment out all linear parameters
 			//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
