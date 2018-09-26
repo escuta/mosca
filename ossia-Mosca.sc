@@ -23,6 +23,7 @@
 		this.ossiactr = Array.newClear(this.nfontes);
 		this.ossiasprea = Array.newClear(this.nfontes);
 		this.ossiadiff = Array.newClear(this.nfontes);
+		this.ossiaback = Array.fill(this.nfontes, {true});
 
 
 		this.ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Afmt._Reverb", Integer,
@@ -79,7 +80,18 @@
 
 
 			this.ossiasphe[i] = OSSIA_Parameter(this.ossiasrc[i], "Spherical", OSSIA_vec3f,
-				default_value:[0, 0, 20], critical:allCrtitical, repetition_filter:true);
+				default_value:[20, 0, 0], critical:allCrtitical, repetition_filter:true);
+
+			this.ossiasphe[i].unit_(OSSIA_position.spherical);
+
+			this.ossiasphe[i].callback_({arg num;
+				spheval[i].rho_(num.value[0].clip(0, 20));
+				spheval[i].theta_(num.value[1].wrap(-pi, pi) + 1.5707963267949);
+				spheval[i].phi_(num.value[2].fold(-1.5707963267949, 1.5707963267949));
+				if (this.ossiaback) {
+					this.ossiacart[i].v_(spheval[i].asCartesian.asArray);
+				};
+			});
 
 
 			this.ossiaaud[i] = OSSIA_Parameter(this.ossiasrc[i], "audition", Boolean,

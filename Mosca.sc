@@ -212,7 +212,7 @@ Mosca {
 	<>ossiasrc, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib, <>ossialev, <>ossiadp,
 	<>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst, <>ossiadstam,
 	<>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
-	<>ossiasprea, <>ossiadiff;
+	<>ossiasprea, <>ossiadiff, <>ossiaback;
 
 
 
@@ -583,7 +583,7 @@ GUI Parameters usable in SynthDefs
 		// these proxies behave like GUI elements. They eneable
 		// the use of Automation without a GUI
 
-		cartval = Array.fill(this.nfontes, {Cartesian(-20, -20, 0)} );
+		cartval = Array.fill(this.nfontes, {Cartesian(0, 20, 0)} );
 		spheval = Array.fill(this.nfontes, {|i| cartval[i].asSpherical} );
 
 		rboxProxy = Array.newClear(this.nfontes);
@@ -746,15 +746,29 @@ GUI Parameters usable in SynthDefs
 
 
 			this.xboxProxy[i].action = {arg num;
+				var sphe, sphetest;
 				this.cartval[i].x_(num.value);
-				this.spheval[i] = this.cartval[i].asSpherical;
+				sphe = this.cartval[i].asSpherical;
+				if (this.ossiacart.notNil) {
+					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
+					if (this.ossiasphe[i].v != sphetest) {
+						this.ossiaback_(false);
+						this.ossiasphe[i].v_(sphetest);
+						this.ossiaback_(true);
+					};
+					if (this.ossiacart[i].v[0] != num.value) {
+						this.ossiacart[i].v_([num.value, yboxProxy[i].value, zboxProxy[i].value]);
+					};
+				} {
+					this.spheval[i] = sphe;
+				};
 				if ( guiflag) {
 					var period = Main.elapsedTime - this.lastGui;
 					//{sprite[i, 0] = this.halfwidth + (num.value * this.halfheight)}.defer;
 					if (period > this.guiInt) {
 						this.lastGui =  Main.elapsedTime;
-						{novoplot.value}.defer;
 						{this.xbox[i].value = num.value}.defer;
+						novoplot.value;
 					};
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
@@ -768,23 +782,32 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \radius, this.spheval[i].rho);
 					this.synt[i].set(\radius, this.spheval[i].rho);
 				};
-				if (this.ossiacart.notNil) {
-					if (this.ossiacart[i].v[0] != num.value) {
-						this.ossiacart[i].v_([num.value, yboxProxy[i].value, zboxProxy[i].value]);
-					};
-				};
 			};
 
 			this.yboxProxy[i].action = {arg num;
+				var sphe, sphetest;
 				this.cartval[i].y_(num.value);
-				this.spheval[i] = this.cartval[i].asSpherical;
+				sphe = this.cartval[i].asSpherical;
+				if (this.ossiacart.notNil) {
+					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
+					if (this.ossiasphe[i].v != sphetest) {
+						this.ossiaback_(false);
+						this.ossiasphe[i].v_(sphetest);
+						this.ossiaback_(true);
+					};
+					if (this.ossiacart[i].v[1] != num.value) {
+						this.ossiacart[i].v_([xboxProxy[i].value, num.value, zboxProxy[i].value]);
+					};
+				} {
+					this.spheval[i] = sphe;
+				};
 				if (guiflag) {
 					var period = Main.elapsedTime - this.lastGui;
 					//{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
 					if (period > this.guiInt) {
 						this.lastGui =  Main.elapsedTime;
-						{novoplot.value}.defer;
 						{this.ybox[i].value = num.value}.defer;
+						novoplot.value;
 					};
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -797,23 +820,38 @@ GUI Parameters usable in SynthDefs
 					this.espacializador[i].set(\radius, this.spheval[i].rho);
 					this.setSynths(i, \radius, this.spheval[i].rho);
 					this.synt[i].set(\radius, this.spheval[i].rho);
-				};
-				if (this.ossiacart.notNil) {
-					if (this.ossiacart[i].v[1] != num.value) {
-						this.ossiacart[i].v_([xboxProxy[i].value, num.value, zboxProxy[i].value]);
-					};
 				};
 			};
 
 			this.zboxProxy[i].action = {arg num;
+				var sphe, sphetest;
 				this.cartval[i].z_(num.value);
 				this.spheval[i] = this.cartval[i].asSpherical;
+				sphe = this.cartval[i].asSpherical;
+				if (this.ossiacart.notNil) {
+					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
+					if (this.ossiasphe[i].v != sphetest) {
+						this.ossiaback_(false);
+						this.ossiasphe[i].v_(sphetest);
+						this.ossiaback_(true);
+					};
+					if (this.ossiacart[i].v[2] != num.value) {
+						this.ossiacart[i].v_([xboxProxy[i].value, yboxProxy[i].value, num.value]);
+					};
+				} {
+					this.spheval[i] = sphe;
+				};
 				zlev[i] = this.cartval[i].z;
 				if (guiflag) {
-					{zbox[i].value = num.value}.defer;
-					if(i == currentsource) {
-						{zslider.value = (num.value + 1) / 2}.defer;
-						{znumbox.value = num.value}.defer;
+					var period = Main.elapsedTime - this.lastGui;
+					//{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
+					if (period > this.guiInt) {
+						{zbox[i].value = num.value}.defer;
+						if(i == currentsource) {
+							{zslider.value = (num.value + 1) / 2}.defer;
+							{znumbox.value = num.value}.defer;
+						};
+						novoplot.value;
 					};
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -826,11 +864,6 @@ GUI Parameters usable in SynthDefs
 					this.espacializador[i].set(\radius, this.spheval[i].rho);
 					this.setSynths(i, \radius, this.spheval[i].rho);
 					this.synt[i].set(\radius, this.spheval[i].rho);
-				};
-				if (this.ossiacart.notNil) {
-					if (this.ossiacart[i].v[2] != num.value) {
-						this.ossiacart[i].v_([xboxProxy[i].value, yboxProxy[i].value, num.value]);
-					};
 				};
 			};
 
@@ -7247,7 +7280,7 @@ GUI Parameters usable in SynthDefs
 				}
 				}.defer;
 			} {
-				if(but.value == 1)
+				if (but.value == 1)
 				{
 					this.ossiaaud[currentsource].v_(true);
 				} {
