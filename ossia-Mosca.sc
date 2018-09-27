@@ -23,7 +23,7 @@
 		this.ossiactr = Array.newClear(this.nfontes);
 		this.ossiasprea = Array.newClear(this.nfontes);
 		this.ossiadiff = Array.newClear(this.nfontes);
-		this.ossiaback = Array.fill(this.nfontes, {true});
+		this.ossiaback = true;
 
 
 		this.ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Afmt._Reverb", Integer,

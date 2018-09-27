@@ -826,7 +826,6 @@ GUI Parameters usable in SynthDefs
 			this.zboxProxy[i].action = {arg num;
 				var sphe, sphetest;
 				this.cartval[i].z_(num.value);
-				this.spheval[i] = this.cartval[i].asSpherical;
 				sphe = this.cartval[i].asSpherical;
 				if (this.ossiacart.notNil) {
 					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
@@ -6049,14 +6048,17 @@ GUI Parameters usable in SynthDefs
 			};
 
 			};
-			if(control.doRecord == false){
+
+			// what is the meaning of the folowing condition?
+			// why is it only evaluated when files are loaded and not stremaed?
+
+			/*if(control.doRecord == false){
 				if (guiflag) {
 					{	xboxProxy[i].valueAction = xbox[i].value;
 						yboxProxy[i].valueAction = ybox[i].value;
 					}.defer;
 				};
-
-			};
+			};*/
 
 		} {
 
