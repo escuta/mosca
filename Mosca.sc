@@ -136,6 +136,8 @@ Mosca {
 	//<>track2arr, <>track2arr2, <>track2i,
 	<>headingnumbox, <>rollnumbox, <>pitchnumbox,
 	<>headingnumboxProxy, <>rollnumboxProxy, <>pitchnumboxProxy,
+	<>oxnumbox, <>oynumbox, <>oznumbox,
+	<>oxnumboxProxy, <>oynumboxProxy, <>oznumboxProxy,
 	<>headingOffset,
 	<>troutine, <>kroutine, <>watcher,
 	<>cartval, <>spheval,
@@ -673,10 +675,13 @@ GUI Parameters usable in SynthDefs
 		clsrmboxProxy = AutomationGuiProxy.new(0.5); // cls roomsize proxy
 		clsdmboxProxy = AutomationGuiProxy.new(0.5); // cls dampening proxy
 
-
-		headingnumboxProxy = AutomationGuiProxy.new(0.0);
-		rollnumboxProxy = AutomationGuiProxy.new(0.0);
 		pitchnumboxProxy = AutomationGuiProxy.new(0.0);
+		rollnumboxProxy = AutomationGuiProxy.new(0.0);
+		headingnumboxProxy = AutomationGuiProxy.new(0.0);
+
+		oxnumboxProxy = AutomationGuiProxy.new(0.0);
+		oynumboxProxy = AutomationGuiProxy.new(0.0);
+		oznumboxProxy = AutomationGuiProxy.new(0.0);
 
 		this.control = Automation(this.dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
@@ -1666,11 +1671,10 @@ GUI Parameters usable in SynthDefs
 			};
 		});
 
-
-		this.headingnumboxProxy.action_({ arg num;
-			this.globDec.set(\heading, num.value);
+		this.pitchnumboxProxy.action_({arg num;
+			this.globDec.set(\pitch, num.value);
 			if (guiflag) {
-				{this.headingnumbox.value = num.value;}.defer;
+				{this.pitchnumbox.value = num.value;}.defer;
 			};
 		});
 
@@ -1681,14 +1685,12 @@ GUI Parameters usable in SynthDefs
 			};
 		});
 
-		this.pitchnumboxProxy.action_({arg num;
-			this.globDec.set(\pitch, num.value);
+		this.headingnumboxProxy.action_({ arg num;
+			this.globDec.set(\heading, num.value);
 			if (guiflag) {
-				{this.pitchnumbox.value = num.value;}.defer;
+				{this.headingnumbox.value = num.value;}.defer;
 			};
 		});
-
-
 
 		///////////////////////////////////////////////////
 
@@ -4564,9 +4566,9 @@ GUI Parameters usable in SynthDefs
 
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
-		this.headingnumboxProxy.valueAction = h;
-		this.rollnumboxProxy.valueAction = r;
 		this.pitchnumboxProxy.valueAction = p;
+		this.rollnumboxProxy.valueAction = r;
+		this.headingnumboxProxy.valueAction = h;
 		this.nfontes.do { arg i;
 
 			/*if (guiflag) {
@@ -7733,40 +7735,56 @@ GUI Parameters usable in SynthDefs
 
 		//if (this.serport.notNil) { //comment out serial port prerequisit
 
-		    orientView = UserView(win, Rect(this.width - 265, this.height - 85, 265, 100));
+		orientView = UserView(win, Rect(this.width - 265, this.height - 85, 265, 100));
 
-			this.headingnumbox = NumberBox(orientView, Rect(220, 20, 40, 20));
-				headingnumbox.align = \center;
-			this.rollnumbox = NumberBox(orientView, Rect(220, 40, 40, 20));
-				rollnumbox.align = \center;
-			this.pitchnumbox = NumberBox(orientView, Rect(220, 60, 40, 20));
-		        pitchnumbox.align = \center;
+		this.pitchnumbox = NumberBox(orientView, Rect(220, 60, 40, 20));
+		pitchnumbox.align = \center;
+		this.rollnumbox = NumberBox(orientView, Rect(220, 40, 40, 20));
+		rollnumbox.align = \center;
+		this.headingnumbox = NumberBox(orientView, Rect(220, 20, 40, 20));
+		headingnumbox.align = \center;
 
-			this.headingnumbox.action = {arg num;
-				this.headingnumboxProxy.valueAction = num.value;
-			};
-
-
-			this.rollnumbox.action = {arg num;
-				this.rollnumboxProxy.valueAction = num.value;
-			};
 
 			this.pitchnumbox.action = {arg num;
 				this.pitchnumboxProxy.valueAction = num.value;
 			};
 
-			textbuf = StaticText(orientView, Rect(205, 20, 12, 20));
-			textbuf.string = "H:";
-			textbuf = StaticText(orientView, Rect(205, 40, 10, 22));
-			textbuf.string = "R:";
-			textbuf = StaticText(orientView, Rect(205, 60, 10, 22));
-			textbuf.string = "P:";
+			this.rollnumbox.action = {arg num;
+				this.rollnumboxProxy.valueAction = num.value;
+			};
 
+			this.headingnumbox.action = {arg num;
+				this.headingnumboxProxy.valueAction = num.value;
+			};
+
+			textbuf = StaticText(orientView, Rect(205, 20, 12, 22));
+			textbuf.string = "P:";
+			textbuf = StaticText(orientView, Rect(205, 40, 12, 22));
+			textbuf.string = "R:";
+			textbuf = StaticText(orientView, Rect(205, 60, 12, 22));
+			textbuf.string = "H:";
 
 			textbuf = StaticText(orientView, Rect(217, 0, 45, 20));
 			textbuf.string = "Orient.";
 
 		//}; //comment out the prerequisit for the serial port
+
+		this.oxnumbox = NumberBox(orientView, Rect(160, 60, 40, 20));
+		oxnumbox.align = \center;
+		this.oynumbox = NumberBox(orientView, Rect(160, 40, 40, 20));
+		oynumbox.align = \center;
+		this.oznumbox = NumberBox(orientView, Rect(160, 20, 40, 20));
+		oznumbox.align = \center;
+
+		textbuf = StaticText(orientView, Rect(145, 20, 12, 22));
+		textbuf.string = "X:";
+		textbuf = StaticText(orientView, Rect(145, 40, 12, 22));
+		textbuf.string = "Y:";
+		textbuf = StaticText(orientView, Rect(145, 60, 12, 22));
+		textbuf.string = "Z:";
+
+		textbuf = StaticText(orientView, Rect(155, 0, 47, 20));
+		textbuf.string = "Origine";
 
 
 		////////////////////////////////////////////////////////////
