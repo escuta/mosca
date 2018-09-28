@@ -2249,7 +2249,7 @@ GUI Parameters usable in SynthDefs
 				dis = Select.kr(dis > 1, [dis, 1]);
 
 				// high freq attenuation
-				p = In.ar(inbus, 1);
+				p = In.ar(inbus, 1) * 3.5; // match other spatializers gain
 				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 				// Doppler
 				rd = dis * 340;
@@ -2280,7 +2280,7 @@ GUI Parameters usable in SynthDefs
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
-				junto = (p + lrevRef.value) * 3.5; // match other spatializers gain
+				junto = (p + lrevRef.value);
 
 				// do second order encoding
 				//comment out all linear parameters
@@ -2542,7 +2542,7 @@ GUI Parameters usable in SynthDefs
 				ele = Lag.kr(elev * 57.295779513082, 0.1); // convert to degrees
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
-				p = In.ar(inbus, 1);
+				p = In.ar(inbus, 1) * 1.5; // match other spatializers gain
 				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 				// Doppler
@@ -2573,7 +2573,7 @@ GUI Parameters usable in SynthDefs
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
 				//applie distance attenuation before mixxing in reverb to keep trail off
-				p = p * (1 - dis).squared * 1.5; // match other spatializers gain
+				p = p * (1 - dis).squared;
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
@@ -2616,7 +2616,7 @@ GUI Parameters usable in SynthDefs
 				dis = Select.kr(dis > 1, [dis, 1]);
 
 				// high freq attenuation
-				p = In.ar(inbus, 1);
+				p = In.ar(inbus, 1) * 3.5; // match other spatializers gain
 				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 				// Reverberação global
@@ -2641,7 +2641,7 @@ GUI Parameters usable in SynthDefs
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
-				junto = (p + lrevRef.value) * 3.5; // match other spatializers gain
+				junto = (p + lrevRef.value);
 
 				//comment out all linear parameters
 				//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
@@ -2719,8 +2719,10 @@ GUI Parameters usable in SynthDefs
 				azim1 = az - (angle * dis);
 				azim2 = az + (angle * dis);
 
-				p = In.ar(inbus, 2);
+				p = In.ar(inbus, 2) * 2; // match other spatializers gain
 				p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
+
+				dis = radius;
 
 				// ele = Lag.kr(elev, 0.1);
 				ele = elev;
@@ -2764,8 +2766,8 @@ GUI Parameters usable in SynthDefs
 				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, zir, locallev,
 					room, damp);
 
-				junto1 = (p1 + lrev1Ref.value) * 2; // match other spatializers gain
-				junto2 = (p2 + lrev2Ref.value) * 2; // match other spatializers gain
+				junto1 = (p1 + lrev1Ref.value);
+				junto2 = (p2 + lrev2Ref.value);
 
 				//comment out all linear parameters
 				//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
@@ -3179,7 +3181,7 @@ GUI Parameters usable in SynthDefs
 			dis = Select.kr(dis > 1, [dis, 1]);
 
 			// high freq attenuation
-			p = In.ar(inbus, 1);
+			p = In.ar(inbus, 1) * 3.5; // match other spatializers gain
 			p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 			// Doppler
 			rd = dis * 340;
@@ -3203,7 +3205,7 @@ GUI Parameters usable in SynthDefs
 			// Local reverberation
 			locallev = dis;
 			locallev = locallev  * Lag.kr(llev, 0.1);
-			junto = p * 3.5; // match other spatializers gain
+			junto = p;
 
 			// do second order encoding
 			//comment out all linear parameters
@@ -3276,7 +3278,7 @@ GUI Parameters usable in SynthDefs
 			dis = Select.kr(dis > 1, [dis, 1]);
 
 			// high freq attenuation
-			p = In.ar(inbus, 1);
+			p = In.ar(inbus, 1) * 3.5; // match other spatializers gain
 			//p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 			// Reverberação global
@@ -3298,7 +3300,7 @@ GUI Parameters usable in SynthDefs
 			locallev = dis;
 			locallev = locallev * Lag.kr(llev, 0.1);
 
-			junto = p * 3.5; // match other spatializers gain
+			junto = p;
 
 			//comment out all linear parameters
 			//prepareAmbSigFunc.value(ambSigRef, junto, azim, el, intens: intens, dis: dis);
@@ -3374,7 +3376,7 @@ GUI Parameters usable in SynthDefs
 			azim2 = az + (angle * dis);
 
 
-			p = In.ar(inbus, 2);
+			p = In.ar(inbus, 2) * 2; // match other spatializers gain
 			p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
 
 			dis = radius;
@@ -3413,8 +3415,8 @@ GUI Parameters usable in SynthDefs
 
 			locallev = locallev  * Lag.kr(llev, 0.1);
 
-			junto1 = p1 * 2; // match other spatializers gain
-			junto2 = p2 * 2; // match other spatializers gain
+			junto1 = p1;
+			junto2 = p2;
 
 			//comment out all linear parameters
 			//prepareAmbSigFunc.value(soaSigLRef, junto1, azim1, el, intens: intens, dis: dis);
