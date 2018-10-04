@@ -5,6 +5,8 @@
 		var ossiaParent = OSSIA_Node(parentNode, "Mosca");
 
 		this.ossiasrc = Array.newClear(this.nfontes);
+		this.ossiaorient = Array.newClear(this.nfontes);
+		this.ossiaorigine = Array.newClear(this.nfontes);
 		this.ossiacart = Array.newClear(this.nfontes);
 		this.ossiasphe = Array.newClear(this.nfontes);
 		this.ossialoop = Array.newClear(this.nfontes);
@@ -25,6 +27,44 @@
 		this.ossiadiff = Array.newClear(this.nfontes);
 		this.ossiaback = true;
 
+		this.ossiaorigine = OSSIA_Parameter(ossiaParent, "Origine", OSSIA_vec3f,
+			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 0, 0],
+			bounding_mode:'wrap', critical:allCrtitical, repetition_filter:true);
+
+		this.ossiaorigine.unit_(OSSIA_position.cart3D);
+
+		this.ossiaorigine.callback_({arg num;
+
+			if (oxnumboxProxy.value != num[0].value) {
+				oxnumboxProxy.valueAction = num[0].value;
+			};
+			if (oynumboxProxy.value != num[1].value) {
+				oynumboxProxy.valueAction = num[1].value;
+			};
+			if (oznumboxProxy.value != num[2].value) {
+				oznumboxProxy.valueAction = num[2].value;
+			};
+
+		});
+
+		this.ossiaorient = OSSIA_Parameter(ossiaParent, "Orentation", OSSIA_vec3f,
+			[-pi, pi], 'wrap', critical:allCrtitical, repetition_filter:true);
+
+		//this.ossiaorient.unit_(OSSIA_orientation.euler);
+
+		this.ossiaorient.callback_({arg num;
+
+			if (pitchnumboxProxy.value != num[0].value) {
+				pitchnumboxProxy.valueAction = num[0].value;
+			};
+			if (rollnumboxProxy.value != num[1].value) {
+				rollnumboxProxy.valueAction = num[1].value;
+			};
+			if (headingnumboxProxy.value != num[2].value) {
+				headingnumboxProxy.valueAction = num[2].value;
+			};
+
+		});
 
 		this.ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Afmt._Reverb", Integer,
 			[0, (2 + rirList.size)], 0, 'clip', critical:true, repetition_filter:true);
@@ -89,7 +129,8 @@
 				spheval[i].theta_(num.value[1].wrap(-pi, pi) + 1.5707963267949);
 				spheval[i].phi_(num.value[2].fold(-1.5707963267949, 1.5707963267949));
 				if (this.ossiaback) {
-					this.ossiacart[i].v_(spheval[i].asCartesian.asArray);
+					this.ossiacart[i].v_(spheval[i].rotate(pitch).tilt(roll).tumble(heading)
+						.asCartesian.asArray);
 				};
 			});
 

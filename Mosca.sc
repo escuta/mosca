@@ -131,13 +131,15 @@ Mosca {
 	<>autoloop,
 	<>streamdisk,
 	<>streambuf, // <>streamrate, // apparently unused
+	<>origine,
+	<>oxnumbox, <>oynumbox, <>oznumbox,
+	<>oxnumboxProxy, <>oynumboxProxy, <>oznumboxProxy,
+	<>pitch, <>pitchnumbox, <>pitchnumboxProxy,
+	<>roll, <>rollnumbox, <>rollnumboxProxy,
+	<>heading, <>headingnumbox, <>headingnumboxProxy,
 	// head tracking
 	<>trackarr, <>trackarr2, <>tracki, <>trackPort,
 	//<>track2arr, <>track2arr2, <>track2i,
-	<>headingnumbox, <>rollnumbox, <>pitchnumbox,
-	<>headingnumboxProxy, <>rollnumboxProxy, <>pitchnumboxProxy,
-	<>oxnumbox, <>oynumbox, <>oznumbox,
-	<>oxnumboxProxy, <>oynumboxProxy, <>oznumboxProxy,
 	<>headingOffset,
 	<>troutine, <>kroutine, <>watcher,
 	<>cartval, <>spheval,
@@ -211,9 +213,9 @@ Mosca {
 	<>clsrm, <>clsrmslider, <>clsrmnumbox, <>clsrmbox, <>clsrmboxProxy, // setable global room size
 	<>clsdm, <>clsdmslider, <>clsdmnumbox, <>clsdmbox, <>clsdmboxProxy, // setable global dampening
 
-	<>ossiasrc, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib, <>ossialev, <>ossiadp,
-	<>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst, <>ossiadstam,
-	<>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
+	<>ossiasrc, <>ossiaorient, <>ossiaorigine, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib,
+	<>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst,
+	<>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
 	<>ossiasprea, <>ossiadiff, <>ossiaback;
 
 
@@ -449,7 +451,7 @@ GUI Parameters usable in SynthDefs
 		//		xoffset = Array.fill(this.nfontes, 0);
 		//		yoffset = Array.fill(this.nfontes, 0);
 		this.synt = Array.newClear(this.nfontes);
-		sprite = Array2D.new(this.nfontes, 2);
+		//sprite = Array2D.new(this.nfontes, 2);
 		// funcs = Array.newClear(this.nfontes); // apparently unused
 		angle = Array.newClear(this.nfontes); // ângulo dos canais estereofônicos
 		zlev = Array.newClear(this.nfontes);
@@ -532,6 +534,12 @@ GUI Parameters usable in SynthDefs
 
 		testado = Array.newClear(this.nfontes);
 
+		origine = Cartesian();
+
+		pitch = 0;
+		roll = 0;
+		heading = 0;
+
 		clsRvtypes = ""; // initialise close reverb type
 		clsrv = 0;
 		clsrm = 0.5; // initialise close reverb room size
@@ -571,8 +579,8 @@ GUI Parameters usable in SynthDefs
 			this.streamdisk[i] = false;
 			this.ncan[i] = 0;
 			this.busini[i] = 0;
-			sprite[i, 0] = -20;
-			sprite[i, 1] = -20;
+			//sprite[i, 0] = 20;
+			//sprite[i, 1] = 0;
 			testado[i] = false;
 			this.playingBF[i] = false;
 			this.firstTime[i] = true;
@@ -675,13 +683,13 @@ GUI Parameters usable in SynthDefs
 		clsrmboxProxy = AutomationGuiProxy.new(0.5); // cls roomsize proxy
 		clsdmboxProxy = AutomationGuiProxy.new(0.5); // cls dampening proxy
 
-		pitchnumboxProxy = AutomationGuiProxy.new(0.0);
-		rollnumboxProxy = AutomationGuiProxy.new(0.0);
-		headingnumboxProxy = AutomationGuiProxy.new(0.0);
-
 		oxnumboxProxy = AutomationGuiProxy.new(0.0);
 		oynumboxProxy = AutomationGuiProxy.new(0.0);
 		oznumboxProxy = AutomationGuiProxy.new(0.0);
+
+		pitchnumboxProxy = AutomationGuiProxy.new(0.0);
+		rollnumboxProxy = AutomationGuiProxy.new(0.0);
+		headingnumboxProxy = AutomationGuiProxy.new(0.0);
 
 		this.control = Automation(this.dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
@@ -724,10 +732,20 @@ GUI Parameters usable in SynthDefs
 
 			this.dstrvboxProxy[i].action_({ arg num;
 				case
-				{ num.value == 0 }{ dstrvtypes[i] = ""; }
-				{ num.value == 1 }{ dstrvtypes[i] = "_free"; }
-				{ num.value == 2 }{ dstrvtypes[i] = "_pass"; }
-				{ num.value >= 4 }{ dstrvtypes[i] = "_conv"; };
+				{ num.value == 0 }
+				{ dstrvtypes[i] = "";
+					this.setSynths(i, \rv, 0); }
+				{ num.value == 1 }
+				{ dstrvtypes[i] = "_free";
+					this.setSynths(i, \rv, 0); }
+				{ num.value == 2 }
+				{ dstrvtypes[i] = "_pass";
+					this.setSynths(i, \rv, 0); }
+				{ num.value == 3 }
+				{ this.setSynths(i, \rv, 1); }
+				{ num.value >= 4 }
+				{ dstrvtypes[i] = "_conv";
+					this.setSynths(i, \rv, 0); };
 
 				if (guiflag) {
 					{this.dstrvbox[i].value = num.value}.defer;
@@ -752,9 +770,11 @@ GUI Parameters usable in SynthDefs
 
 			this.xboxProxy[i].action = {arg num;
 				var sphe, sphetest;
-				this.cartval[i].x_(num.value);
-				sphe = this.cartval[i].asSpherical;
-				if (this.ossiacart.notNil) {
+				this.cartval[i].x_(num.value - origine.x);
+				sphe = this.cartval[i].asSpherical.rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+				if (this.ossiacart.isNil) {
+					this.spheval[i] = sphe;
+				} {
 					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
 					if (this.ossiasphe[i].v != sphetest) {
 						this.ossiaback_(false);
@@ -764,17 +784,15 @@ GUI Parameters usable in SynthDefs
 					if (this.ossiacart[i].v[0] != num.value) {
 						this.ossiacart[i].v_([num.value, yboxProxy[i].value, zboxProxy[i].value]);
 					};
-				} {
-					this.spheval[i] = sphe;
 				};
 				if ( guiflag) {
 					var period = Main.elapsedTime - this.lastGui;
 					//{sprite[i, 0] = this.halfwidth + (num.value * this.halfheight)}.defer;
 					if (period > this.guiInt) {
 						this.lastGui =  Main.elapsedTime;
-						{this.xbox[i].value = num.value}.defer;
-						novoplot.value;
+						{novoplot.value;}.defer;
 					};
+					{this.xbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
 					this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -791,9 +809,11 @@ GUI Parameters usable in SynthDefs
 
 			this.yboxProxy[i].action = {arg num;
 				var sphe, sphetest;
-				this.cartval[i].y_(num.value);
-				sphe = this.cartval[i].asSpherical;
-				if (this.ossiacart.notNil) {
+				this.cartval[i].y_(num.value - origine.y);
+				sphe = this.cartval[i].asSpherical.rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+				if (this.ossiacart.isNil) {
+					this.spheval[i] = sphe;
+				} {
 					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
 					if (this.ossiasphe[i].v != sphetest) {
 						this.ossiaback_(false);
@@ -803,17 +823,15 @@ GUI Parameters usable in SynthDefs
 					if (this.ossiacart[i].v[1] != num.value) {
 						this.ossiacart[i].v_([xboxProxy[i].value, num.value, zboxProxy[i].value]);
 					};
-				} {
-					this.spheval[i] = sphe;
 				};
 				if (guiflag) {
 					var period = Main.elapsedTime - this.lastGui;
 					//{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
 					if (period > this.guiInt) {
 						this.lastGui =  Main.elapsedTime;
-						{this.ybox[i].value = num.value}.defer;
-						novoplot.value;
+						{novoplot.value;}.defer;
 					};
+					{this.ybox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
 					this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -830,9 +848,11 @@ GUI Parameters usable in SynthDefs
 
 			this.zboxProxy[i].action = {arg num;
 				var sphe, sphetest;
-				this.cartval[i].z_(num.value);
-				sphe = this.cartval[i].asSpherical;
-				if (this.ossiacart.notNil) {
+				this.cartval[i].z_(num.value - origine.z);
+				sphe = this.cartval[i].asSpherical.rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+				if (this.ossiacart.isNil) {
+					this.spheval[i] = sphe;
+				} {
 					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
 					if (this.ossiasphe[i].v != sphetest) {
 						this.ossiaback_(false);
@@ -842,21 +862,16 @@ GUI Parameters usable in SynthDefs
 					if (this.ossiacart[i].v[2] != num.value) {
 						this.ossiacart[i].v_([xboxProxy[i].value, yboxProxy[i].value, num.value]);
 					};
-				} {
-					this.spheval[i] = sphe;
 				};
-				zlev[i] = this.cartval[i].z;
+				zlev[i] = this.spheval[i].z;
 				if (guiflag) {
 					var period = Main.elapsedTime - this.lastGui;
 					//{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
 					if (period > this.guiInt) {
-						{zbox[i].value = num.value}.defer;
-						if(i == currentsource) {
-							{zslider.value = (num.value + 1) / 2}.defer;
-							{znumbox.value = num.value}.defer;
-						};
-						novoplot.value;
+						this.lastGui =  Main.elapsedTime;
+						{novoplot.value;}.defer;
 					};
+					{zbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
 					this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -1671,26 +1686,387 @@ GUI Parameters usable in SynthDefs
 			};
 		});
 
-		this.pitchnumboxProxy.action_({arg num;
-			this.globDec.set(\pitch, num.value);
+
+		this.oxnumboxProxy.action_({arg num;
+
+			if (this.ossiaorigine.isNil) {
+
+				this.nfontes.do {arg i;
+					this.spheval[i] = (cartval[i].x_(cartval[i].x - num.value
+						+ origine.x)).asSpherical.
+					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+			} {
+
+				this.ossiaorigine.v_([num.value, this.oynumboxProxy.value, this.oznumboxProxy.value]);
+				this.ossiaback = false;
+
+				this.nfontes.do { arg i;
+					var sphe = (cartval[i].x_(cartval[i].x - num.value
+						+ origine.x)).asSpherical.
+					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+					this.ossiasphe[i].v_([sphe.rho,
+						sphe.theta - 1.5707963267949, sphe.phi]);
+
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+
+				this.ossiaback = true;
+
+			};
+
+			origine.x_(num.value);
+
 			if (guiflag) {
+				var period = Main.elapsedTime - this.lastGui;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					{novoplot.value;}.defer;
+				};
+				{this.oxnumbox.value = num.value;}.defer;
+			};
+		});
+
+
+
+		this.oynumboxProxy.action_({arg num;
+
+			if (this.ossiaorigine.isNil) {
+
+				this.nfontes.do {arg i;
+					this.spheval[i] = (cartval[i].y_(cartval[i].y - num.value
+						+ origine.y)).asSpherical.
+					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+			} {
+
+				this.ossiaorigine.v_([this.oxnumboxProxy.value, num.value, this.oznumboxProxy.value]);
+				this.ossiaback = false;
+
+				this.nfontes.do { arg i;
+					var sphe = (cartval[i].y_(cartval[i].y - num.value
+						+ origine.y)).asSpherical.
+					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+					this.ossiasphe[i].v_([sphe.rho,
+						sphe.theta - 1.5707963267949, sphe.phi]);
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+
+				this.ossiaback = true;
+
+			};
+
+			origine.y_(num.value);
+
+			if (guiflag) {
+				var period = Main.elapsedTime - this.lastGui;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					{novoplot.value;}.defer;
+				};
+				{this.oynumbox.value = num.value;}.defer;
+			};
+		});
+
+
+		this.oznumboxProxy.action_({arg num;
+
+			if (this.ossiaorigine.isNil) {
+
+				this.nfontes.do {arg i;
+					var sphe = this.spheval[i];
+					this.spheval[i] = (cartval[i].z_(cartval[i].z - num.value
+						+ origine.z)).asSpherical.
+					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+			} {
+
+				this.ossiaorigine.v_([this.oxnumboxProxy.value, this.oynumboxProxy.value, num.value]);
+				this.ossiaback = false;
+
+				this.nfontes.do { arg i;
+					var sphe = (cartval[i].z_(cartval[i].z - num.value
+						+ origine.z)).asSpherical.
+					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+					this.ossiasphe[i].v_([sphe.rho,
+						sphe.theta - 1.5707963267949, sphe.phi]);
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+
+				this.ossiaback = true;
+
+			};
+
+			origine.z_(num.value);
+
+			if (guiflag) {
+				var period = Main.elapsedTime - this.lastGui;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					{novoplot.value;}.defer;
+				};
+				{this.oznumbox.value = num.value;}.defer;
+			};
+		});
+
+
+
+		this.pitchnumboxProxy.action_({arg num;
+
+			if (this.ossiaorient.isNil) {
+
+				this.nfontes.do {arg i;
+					this.spheval[i] = this.spheval[i].rotate(pitch - num.value);
+
+					this.zlev[i] = this.spheval[i].z;
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+			} {
+
+				this.ossiaorient.v_([num.value, this.rollnumboxProxy.value, this.headingnumboxProxy.value]);
+				this.ossiaback = false;
+
+				this.nfontes.do { arg i;
+					var rot = this.spheval[i].rotate(pitch - num.value);
+					this.ossiasphe[i].v_([rot.rho,
+						rot.theta - 1.5707963267949, rot.phi]);
+
+					this.zlev[i] = this.spheval[i].z;
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+
+				this.ossiaback = true;
+
+			};
+
+			pitch = num.value;
+
+			if (guiflag) {
+				var period = Main.elapsedTime - this.lastGui;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					{novoplot.value;}.defer;
+				};
 				{this.pitchnumbox.value = num.value;}.defer;
 			};
 		});
 
+
 		this.rollnumboxProxy.action_({ arg num;
-			this.globDec.set(\roll, num.value);
+
+			if (this.ossiaorient.isNil) {
+
+				this.nfontes.do {arg i;
+					this.spheval[i] = this.spheval[i].tilt(roll - num.value);
+
+					this.zlev[i] = this.spheval[i].z;
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+			} {
+
+				this.ossiaorient.v_([this.pitchnumboxProxy.value, num.value, this.headingnumboxProxy.value]);
+				this.ossiaback = false;
+
+				this.nfontes.do { arg i;
+					var rot = this.spheval[i].tilt(roll - num.value);
+					this.ossiasphe[i].v_([rot.rho,
+						rot.theta - 1.5707963267949, rot.phi]);
+
+					this.zlev[i] = this.spheval[i].z;
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+
+				this.ossiaback = true;
+
+			};
+
+			roll = num.value;
+
 			if (guiflag) {
+				var period = Main.elapsedTime - this.lastGui;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					{novoplot.value;}.defer;
+				};
 				{this.rollnumbox.value = num.value;}.defer;
 			};
 		});
 
+
 		this.headingnumboxProxy.action_({ arg num;
-			this.globDec.set(\heading, num.value);
+			if (this.ossiaorient.isNil) {
+
+				this.nfontes.do { arg i;
+					this.spheval[i] = this.spheval[i].tumble(heading - num.value);
+
+					this.zlev[i] = this.spheval[i].z;
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+			} {
+
+				this.ossiaorient.v_([this.pitchnumboxProxy.value, this.rollnumboxProxy.value, num.value]);
+				this.ossiaback = false;
+
+				this.nfontes.do { arg i;
+					var rot = this.spheval[i].tumble(heading - num.value);
+					this.ossiasphe[i].v_([rot.rho,
+						rot.theta - 1.5707963267949, rot.phi]);
+
+					this.zlev[i] = this.spheval[i].z;
+
+					if(this.espacializador[i].notNil || this.playingBF[i]) {
+						this.espacializador[i].set(\azim, this.spheval[i].theta);
+						this.setSynths(i, \azim, this.spheval[i].theta);
+						this.synt[i].set(\azim, this.spheval[i].theta);
+						this.espacializador[i].set(\elev, this.spheval[i].phi);
+						this.setSynths(i, \elev, this.spheval[i].phi);
+						this.synt[i].set(\elev, this.spheval[i].phi);
+						this.espacializador[i].set(\radius, this.spheval[i].rho);
+						this.setSynths(i, \radius, this.spheval[i].rho);
+						this.synt[i].set(\radius, this.spheval[i].rho);
+					};
+				};
+
+				this.ossiaback = true;
+
+			};
+
+			heading = num.value;
+
 			if (guiflag) {
+				var period = Main.elapsedTime - this.lastGui;
+				if (period > this.guiInt) {
+					this.lastGui =  Main.elapsedTime;
+					{novoplot.value;}.defer;
+				};
 				{this.headingnumbox.value = num.value;}.defer;
 			};
 		});
+
 
 		///////////////////////////////////////////////////
 
@@ -7061,14 +7437,22 @@ GUI Parameters usable in SynthDefs
 					Pen.fill;
 
 					this.nfontes.do { |i|
-						{sprite[i, 0] = this.halfwidth + (this.cartval[i].x * this.halfheight)}.defer;
-						{sprite[i, 1] = this.halfheight - (this.cartval[i].y * this.halfheight)}.defer;
-						Pen.fillColor = Color(0.8,0.2,0.9);
-						Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
+						var x, y;
+						var topView = this.spheval[i];
+						var lev = this.spheval[i].z;
+						var color = lev * 0.2;
+						{x = this.halfwidth + (topView.x * this.halfheight)}.defer;
+						{y = this.halfheight - (topView.y * this.halfheight)}.defer;
+						Pen.fillColor = Color(0.8 + color, 0.2, 0.9);
+						Pen.addArc(x@y, 20, 0, 2pi);
 						Pen.fill;
-						(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10,
-							sprite[i, 1] - 10, 20, 20),
+						(i + 1).asString.drawCenteredIn(Rect(x - 10, y - 10, 20, 20),
 						Font.default, Color.white);
+
+						if(i == currentsource) {
+							{zslider.value = (lev + 1) * 0.5}.defer;
+							{znumbox.value = lev}.defer;
+						};
 					};
 
 					Pen.fillColor = Color.gray(0, 0.5);
@@ -7078,7 +7462,7 @@ GUI Parameters usable in SynthDefs
 
 			}.defer;
 
-			{win.refresh}.defer;
+			{ win.refresh }.defer;
 		};
 
 		/*novoplot = {
@@ -7110,7 +7494,7 @@ GUI Parameters usable in SynthDefs
 		wdados.userCanClose = false;
 		wdados.alwaysOnTop = true;
 
-		bdados = Button(dialView, Rect(0, 0, 90, 20))
+		bdados = Button(dialView, Rect(90, 20, 90, 20))
 		.states_([
 			["show data", Color.black, Color.white],
 			["hide data", Color.white, Color.blue]
@@ -7126,7 +7510,7 @@ GUI Parameters usable in SynthDefs
 		waux.alwaysOnTop = true;
 
 
-		baux = Button(dialView, Rect(0, 20, 90, 20))
+		baux = Button(dialView, Rect(90, 40, 90, 20))
 		.states_([
 			["show aux", Color.black, Color.white],
 			["hide aux", Color.white, Color.blue]
@@ -7256,7 +7640,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-		btestar = Button(dialView, Rect(90, 40, 90, 20))
+		btestar = Button(dialView, Rect(0, 60, 90, 20))
 		.states_([
 			["audition", Color.black, Color.white],
 			["stop", Color.white, Color.red]
@@ -7296,7 +7680,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		brecaudio = Button(dialView, Rect(0, 60, 90, 20))
+		brecaudio = Button(dialView, Rect(0, 0, 90, 20))
 		.states_([
 			["record audio", Color.red, Color.white],
 			["stop", Color.white, Color.red]
@@ -7323,7 +7707,7 @@ GUI Parameters usable in SynthDefs
 
 		});
 
-		blipcheck = CheckBox(dialView, Rect(95, 53, 60, 40), "blips").action_({ arg butt;
+		blipcheck = CheckBox(dialView, Rect(95, 3, 60, 15), "blips").action_({ arg butt;
 			if(butt.value) {
 				//"Looping transport".postln;
 				//this.autoloopval = true;
@@ -7707,16 +8091,11 @@ GUI Parameters usable in SynthDefs
 		znumbox.value = 0;
 		znumbox.clipHi = 1;
 		znumbox.clipLo = -1;
-		znumbox.step_(00.1);
+		znumbox.step_(0.01);
 		znumbox.scroll_step_(0.01);
 		znumbox.align = \center;
 		znumbox.action = {arg num;
-			{zbox[currentsource].valueAction = num.value;}.defer;
-			if(ncanais[currentsource]==2)   {
-				this.espacializador[currentsource].set(\elev, num.value);
-				this.setSynths(currentsource, \elev, num.value);
-				zlev[currentsource] = num.value;
-			};
+			{zslider.valueAction = (num.value * 2) -1;}.defer;
 		};
 
 
@@ -7724,10 +8103,18 @@ GUI Parameters usable in SynthDefs
 			20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = {arg num;
-			{znumbox.value = (0.5 - num.value) * -2;}.defer;
-			{zbox[currentsource].valueAction = znumbox.value;}.defer;
-			{zlev[currentsource] = znumbox.value;}.defer;
+			var scale = (0.5 - num.value) * -2;
 
+			this.cartval[currentsource].x_(this.spheval[currentsource].x);
+			this.cartval[currentsource].y_(this.spheval[currentsource].y);
+			this.cartval[currentsource].z_(scale);
+
+			this.cartval[currentsource] = this.cartval[currentsource]
+			.tumble(heading).tilt(roll).rotate(pitch);
+
+			xbox[currentsource].valueAction = this.cartval[currentsource].x + origine.x;
+			ybox[currentsource].valueAction = this.cartval[currentsource].y + origine.y;
+			zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
 
 		};
 
@@ -7739,44 +8126,78 @@ GUI Parameters usable in SynthDefs
 
 		orientView = UserView(win, Rect(this.width - 265, this.height - 85, 265, 100));
 
-		this.pitchnumbox = NumberBox(orientView, Rect(220, 60, 40, 20));
+		this.pitchnumbox = NumberBox(orientView, Rect(220, 20, 40, 20));
 		pitchnumbox.align = \center;
+		pitchnumbox.clipHi = pi;
+		pitchnumbox.clipLo = -pi;
+		pitchnumbox.step_(0.01);
+		pitchnumbox.scroll_step_(0.01);
+
 		this.rollnumbox = NumberBox(orientView, Rect(220, 40, 40, 20));
 		rollnumbox.align = \center;
-		this.headingnumbox = NumberBox(orientView, Rect(220, 20, 40, 20));
+		rollnumbox.clipHi = pi;
+		rollnumbox.clipLo = -pi;
+		rollnumbox.step_(0.01);
+		rollnumbox.scroll_step_(0.01);
+
+		this.headingnumbox = NumberBox(orientView, Rect(220, 60, 40, 20));
 		headingnumbox.align = \center;
+		headingnumbox.clipHi = pi;
+		headingnumbox.clipLo = -pi;
+		headingnumbox.step_(0.01);
+		headingnumbox.scroll_step_(0.01);
 
 
-			this.pitchnumbox.action = {arg num;
-				this.pitchnumboxProxy.valueAction = num.value;
-			};
+		this.pitchnumbox.action = {arg num;
+			this.pitchnumboxProxy.valueAction = num.value;
+		};
 
-			this.rollnumbox.action = {arg num;
-				this.rollnumboxProxy.valueAction = num.value;
-			};
+		this.rollnumbox.action = {arg num;
+			this.rollnumboxProxy.valueAction = num.value;
+		};
 
-			this.headingnumbox.action = {arg num;
-				this.headingnumboxProxy.valueAction = num.value;
-			};
+		this.headingnumbox.action = {arg num;
+			this.headingnumboxProxy.valueAction = num.value;
+		};
 
-			textbuf = StaticText(orientView, Rect(205, 20, 12, 22));
-			textbuf.string = "P:";
-			textbuf = StaticText(orientView, Rect(205, 40, 12, 22));
-			textbuf.string = "R:";
-			textbuf = StaticText(orientView, Rect(205, 60, 12, 22));
-			textbuf.string = "H:";
+		textbuf = StaticText(orientView, Rect(205, 20, 12, 22));
+		textbuf.string = "P:";
+		textbuf = StaticText(orientView, Rect(205, 40, 12, 22));
+		textbuf.string = "R:";
+		textbuf = StaticText(orientView, Rect(205, 60, 12, 22));
+		textbuf.string = "H:";
 
-			textbuf = StaticText(orientView, Rect(217, 0, 45, 20));
-			textbuf.string = "Orient.";
+		textbuf = StaticText(orientView, Rect(217, 0, 45, 20));
+		textbuf.string = "Orient.";
 
 		//}; //comment out the prerequisit for the serial port
 
-		this.oxnumbox = NumberBox(orientView, Rect(160, 60, 40, 20));
+		this.oxnumbox = NumberBox(orientView, Rect(160, 20, 40, 20));
 		oxnumbox.align = \center;
+		oxnumbox.step_(0.01);
+		oxnumbox.scroll_step_(0.01);
+
 		this.oynumbox = NumberBox(orientView, Rect(160, 40, 40, 20));
 		oynumbox.align = \center;
-		this.oznumbox = NumberBox(orientView, Rect(160, 20, 40, 20));
+		oynumbox.step_(0.01);
+		oynumbox.scroll_step_(0.01);
+
+		this.oznumbox = NumberBox(orientView, Rect(160, 60, 40, 20));
 		oznumbox.align = \center;
+		oznumbox.step_(0.01);
+		oznumbox.scroll_step_(0.01);
+
+		this.oxnumbox.action = {arg num;
+			this.oxnumboxProxy.valueAction = num.value;
+		};
+
+		this.oynumbox.action = {arg num;
+			this.oynumboxProxy.valueAction = num.value;
+		};
+
+		this.oznumbox.action = {arg num;
+			this.oznumboxProxy.valueAction = num.value;
+		};
 
 		textbuf = StaticText(orientView, Rect(145, 20, 12, 22));
 		textbuf.string = "X:";
@@ -7886,7 +8307,7 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(orientView, Rect(43, 40, 150, 20));
+		textbuf = StaticText(orientView, Rect(43, 40, 100, 20));
 		textbuf.string = "room/delay";
 		clsrmnumbox = NumberBox(orientView, Rect(0, 40, 40, 20));
 		clsrmnumbox.value = 0.5;
@@ -7910,7 +8331,7 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(orientView, Rect(43, 60, 150, 20));
+		textbuf = StaticText(orientView, Rect(43, 60, 100, 20));
 		textbuf.string = "damp/decay";
 		clsdmnumbox = NumberBox(orientView, Rect(0, 60, 40, 20));
 		clsdmnumbox.value = 0.5;
@@ -8147,7 +8568,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-		bload = Button(dialView, Rect(90, 0, 90, 20))
+		bload = Button(dialView, Rect(0, 20, 90, 20))
 		.states_([
 			["load audio", Color.black, Color.white],
 		])
@@ -8185,7 +8606,7 @@ GUI Parameters usable in SynthDefs
 
 		});
 
-		bstream = Button(dialView, Rect(90, 20, 90, 20))
+		bstream = Button(dialView, Rect(0, 40, 90, 20))
 		.states_([
 			["stream audio", Color.black, Color.white],
 		])
@@ -8219,7 +8640,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		bnodes = Button(dialView, Rect(0, 40, 90, 20))
+		bnodes = Button(dialView, Rect(90, 60, 90, 20))
 		.states_([
 			["show nodes", Color.black, Color.white],
 		])
@@ -8933,6 +9354,7 @@ GUI Parameters usable in SynthDefs
 				dragStartScreen.y = x - this.halfwidth;
 				this.nfontes.do { arg i;
 					("" ++ i ++ " " ++ this.cartval[i]).postln;
+					("" ++ i ++ " " ++ this.spheval[i]).postln;
 					if(this.espacializador[i].notNil) {
 
 						this.espacializador[i].set(\azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
@@ -8953,38 +9375,21 @@ GUI Parameters usable in SynthDefs
 		};
 
 		win.view.mouseMoveAction = {|view, x, y, modifiers|
-			var period = Main.elapsedTime - this.lastGui;
-			//[x, y];
-			if(mouseButton == 0) { // left button
-				xbox[currentsource].valueAction = (x - this.halfwidth) / this.halfheight;
-				ybox[currentsource].valueAction = (this.halfheight - y) / this.halfheight;
+			var point;
 
-				/*win.drawFunc = {
-					// big circle
-					Pen.fillColor = Color(0.6,0.8,0.8);
-					Pen.addArc(this.halfwidth@this.halfheight, this.halfheight, 0, 2pi);
-					Pen.fill;
-					//Pen.width = 10;
+			if (mouseButton == 0) { // left button
 
-					this.nfontes.do { arg i;
-						Pen.fillColor = Color(0.8,0.2,0.9);
-						Pen.addArc(sprite[i, 0]@sprite[i, 1], 20, 0, 2pi);
-						Pen.fill;
-						(i + 1).asString.drawCenteredIn(Rect(sprite[i, 0] - 10, sprite[i, 1] - 10, 20, 20),
-							Font.default, Color.white);
-					};
+				this.cartval[currentsource].x_((x - this.halfwidth) / this.halfheight);
+				this.cartval[currentsource].y_((this.halfheight - y) / this.halfheight);
+				this.cartval[currentsource].z_((this.zslider.value * 2) - 1);
 
-					// círculo central
-					Pen.fillColor = Color.gray(0, 0.5);
-					Pen.addArc(this.halfwidth@this.halfheight, 20, 0, 2pi);
-					Pen.fill;
+				this.cartval[currentsource] = this.cartval[currentsource]
+				.tumble(heading).tilt(roll).rotate(pitch);
 
-				};*/
+				xbox[currentsource].valueAction = this.cartval[currentsource].x + origine.x;
+				ybox[currentsource].valueAction = this.cartval[currentsource].y + origine.y;
+				zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
 
-			};
-			if (period > this.guiInt) {
-				this.lastGui =  Main.elapsedTime;
-				{novoplot.value}.defer;
 			};
 
 		};
@@ -9010,7 +9415,7 @@ GUI Parameters usable in SynthDefs
 
 			autoView.bounds_(Rect(10, this.height - 45, 325, 40));
 
-			novoplot.value;
+			{novoplot.value;}.defer;
 
 		});
 
