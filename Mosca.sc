@@ -213,10 +213,10 @@ Mosca {
 	<>clsrm, <>clsrmslider, <>clsrmnumbox, <>clsrmbox, <>clsrmboxProxy, // setable global room size
 	<>clsdm, <>clsdmslider, <>clsdmnumbox, <>clsdmbox, <>clsdmboxProxy, // setable global dampening
 
-	<>ossiasrc, <>ossiaorient, <>ossiaorigine, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib,
-	<>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst,
-	<>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
-	<>ossiasprea, <>ossiadiff, <>ossiaback;
+	<>ossiasrc, <>ossiaorient, <>ossiaorigine, <>ossiaplay, <>ossiatrasportLoop, <>ossiacart, <>ossiarec,
+	<>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib, <>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam,
+	<>ossiaclsdel, <>ossiaclsdec, <>ossiadst, <>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle,
+	<>ossiarot, <>ossiadir, <>ossiactr, <>ossiaspread, <>ossiadiff, <>ossiaback;
 
 
 
@@ -7260,6 +7260,7 @@ GUI Parameters usable in SynthDefs
 		this.watcher.stop;
 
 		this.globTBus.free;
+		this.ambixbus.free;
 		this.nfontes.do { arg x;
 			this.espacializador[x].free;
 			this.aFormatBusFoa[0,x].free;
@@ -7268,7 +7269,7 @@ GUI Parameters usable in SynthDefs
 			this.aFormatBusSoa[1,x].free;
 			this.mbus[x].free;
 			this.sbus[x].free;
-			//	bfbus.[x].free;
+			//      bfbus.[x].free;
 			this.sombuf[x].free;
 			this.streambuf[x].free;
 			this.synt[x].free;
@@ -7291,38 +7292,38 @@ GUI Parameters usable in SynthDefs
 			this.globDec.free
 		};
 
-
 		this.gbus.free;
 		this.gbfbus.free;
 
-		if(this.rirWspectrum.notNil){
-			this.rirWspectrum.free; };
-		if(this.rirXspectrum.notNil){
-			this.rirXspectrum.free;};
-		if(this.rirYspectrum.notNil){
-			this.rirYspectrum.free;};
-		if(this.rirZspectrum.notNil){
-			this.rirZspectrum.free;};
-		if(this.rirFRDspectrum.notNil){
-			this.rirFRDspectrum.free;};
-		if(this.rirBLDspectrum.notNil){
-			this.rirBLDspectrum.free;};
-		if(this.rirFLUspectrum.notNil){
-			this.rirFLUspectrum.free;};
-		if(this.rirBRUspectrum.notNil){
-			this.rirBRUspectrum.free;};
-		this.soaBus.free;
 		if (this.maxorder > 1) {
-			12.do { arg i;
-				if(rirA12Spectrum[i].notNil){
-					rirA12Spectrum[i].free;};
+			this.soaBus.free;
+		};
+
+		rirList.do { |item, count|
+			rirWspectrum[count].free;
+			rirXspectrum[count].free;
+			rirYspectrum[count].free;
+			rirZspectrum[count].free;
+			rirFRDspectrum[count].free;
+			rirBLDspectrum[count].free;
+			rirFLUspectrum[count].free;
+			rirBRUspectrum[count].free;
+			if (this.maxorder > 1) {
+				12.do { arg i;
+					rirA12Spectrum[count, i].free;
+				};
 			};
 		};
+
 		foaEncoderOmni.free;
 		foaEncoderSpread.free;
 		foaEncoderDiffuse.free;
 		b2a.free;
 		a2b.free;
+
+		this.playEspacGrp.free;
+		this.glbRevDecGrp.free;
+
 	}
 
 
@@ -7670,8 +7671,7 @@ GUI Parameters usable in SynthDefs
 				}
 				}.defer;
 			} {
-				if (but.value == 1)
-				{
+				if (but.value == 1) {
 					this.ossiaaud[currentsource].v_(true);
 				} {
 					this.ossiaaud[currentsource].v_(false);
@@ -8579,6 +8579,9 @@ GUI Parameters usable in SynthDefs
 
 			Dialog.openPanel(
 				control.stopRecording;
+				if (this.ossiarec.notNil) {
+					this.ossiarec.v_(false);
+				};
 				//control.stop;
 
 
@@ -8616,6 +8619,9 @@ GUI Parameters usable in SynthDefs
 
 			Dialog.openPanel(
 				control.stopRecording;
+				if (this.ossiarec.notNil) {
+					this.ossiarec.v_(false);
+				};
 				//control.stop;
 				//control.seek;
 				{
@@ -9225,6 +9231,11 @@ GUI Parameters usable in SynthDefs
 			};
 			this.isPlay = true;
 			//runTriggers.value;
+
+			if (this.ossiaplay.notNil) {
+				this.ossiaplay.v_(true);
+			};
+
 		};
 
 
@@ -9267,7 +9278,7 @@ GUI Parameters usable in SynthDefs
 		};
 		*/
 
-				control.onStop = {
+		this.control.onStop = {
 
 			if(this.autoloopval.not) {
 				//("Control now = " ++ control.now ++ " dur = " ++ this.dur).postln;
@@ -9294,6 +9305,10 @@ GUI Parameters usable in SynthDefs
 				( "Did not stop. dur = " ++ this.dur ++ " now = " ++ this.control.now).postln;
 				this.looping = true;
 				this.control.play;
+			};
+
+			if (this.ossiaplay.notNil) {
+				this.ossiaplay.v_(false);
 			};
 		};
 
@@ -9449,6 +9464,10 @@ GUI Parameters usable in SynthDefs
 			} {
 				this.autoloopval = false;
 			};
+
+			if (this.ossiatrasportLoop.notNil) {
+				this.ossiatrasportLoop.v_(butt.value);
+			}
 
 		});
 

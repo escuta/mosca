@@ -3,6 +3,7 @@
 	ossia { |parentNode, allCrtitical = false, mirrorTree, paramDepth|
 
 		var ossiaParent = OSSIA_Node(parentNode, "Mosca");
+		var ossiaAutomation, ossiaSeek;
 
 		this.ossiasrc = Array.newClear(this.nfontes);
 		this.ossiaorient = Array.newClear(this.nfontes);
@@ -23,7 +24,7 @@
 		this.ossiarot = Array.newClear(this.nfontes);
 		this.ossiadir = Array.newClear(this.nfontes);
 		this.ossiactr = Array.newClear(this.nfontes);
-		this.ossiasprea = Array.newClear(this.nfontes);
+		this.ossiaspread = Array.newClear(this.nfontes);
 		this.ossiadiff = Array.newClear(this.nfontes);
 		this.ossiaback = true;
 
@@ -84,17 +85,49 @@
 			};
 		});
 
+		ossiaAutomation = OSSIA_Node(ossiaParent, "Aoutmation_Quarck");
 
+		this.ossiaplay = OSSIA_Parameter(ossiaAutomation, "Play", Boolean,
+			critical:true, repetition_filter:true);
 
-		this.ossiaclsdec = OSSIA_Parameter(ossiaParent, "Cls._damp_decay", Float,
-			[0, 1], 0.5, 'clip', critical:allCrtitical, repetition_filter:true);
-
-		this.ossiaclsdec.callback_({arg num;
-			if (clsdmboxProxy.value != num.value) {
-				clsdmboxProxy.valueAction = num.value;
+		this.ossiaplay.callback_({ arg but;
+			if (but) {
+				if (this.isPlay.not) {
+					this.control.play; };
+			} {
+				if (this.isPlay) {
+					this.control.stop; };
 			};
 		});
 
+		this.ossiatrasportLoop = OSSIA_Parameter(ossiaAutomation, "Loop", Boolean,
+			critical:true, repetition_filter:true);
+
+		this.ossiatrasportLoop.callback_({ arg but;
+			if (this.autoloop.value != but.value) {
+				this.autoloop.valueAction = but.value;
+			};
+		});
+
+		ossiaSeek = OSSIA_Parameter(ossiaAutomation, "Seek_time", Float, [0, this.dur], 0, 'wrap',
+				critical:true, repetition_filter:true);
+
+		ossiaSeek.unit_(OSSIA_time.second);
+
+		ossiaSeek.callback_({arg num;
+			this.control.seek(num.value);
+		});
+
+        this.ossiarec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,
+			critical:true, repetition_filter:true);
+
+		this.ossiarec.callback_({ arg but;
+			if (but.value) {
+				this.control.enableRecording;
+			} {
+				this.control.stopRecording;
+			}
+		});
 
 		this.nfontes.do({ |i|
 
@@ -311,10 +344,10 @@
 			});
 
 
-			this.ossiasprea[i] = OSSIA_Parameter(this.ossiasrc[i], "Spread_(ATK)", Boolean,
+			this.ossiaspread[i] = OSSIA_Parameter(this.ossiasrc[i], "Spread_(ATK)", Boolean,
 				critical:true, repetition_filter:true);
 
-			this.ossiasprea[i].callback_({ arg but;
+			this.ossiaspread[i].callback_({ arg but;
 				if (spcheckProxy[i].value != but.value) {
 					//spcheckProxy[i].valueAction = but.value;
 				};
