@@ -7491,7 +7491,7 @@ GUI Parameters usable in SynthDefs
 		};*/
 
 		// fonte = Point.new; // apparently unused
-		wdados = Window.new("Data", Rect(this.width, 0, 955, (this.nfontes*20)+60 ), scroll: true);
+		wdados = Window.new("Data", Rect(this.width, 0, 960, (this.nfontes*20)+60 ), scroll: true);
 		wdados.userCanClose = false;
 		wdados.alwaysOnTop = true;
 
@@ -7856,8 +7856,8 @@ GUI Parameters usable in SynthDefs
 			["load auto", Color.black, Color.white],
 		])
 		.action_({
-			var title="Select Automation directory", onSuccess, onFailure=nil,
-			preset=nil, bounds,  dwin, textField, success=false;
+			var title = "Select Automation directory", onSuccess, onFailure = nil,
+			preset = nil, bounds, dwin, textField, success = false;
 
 			bounds = Rect(100,300,300,30);
 			if(prjDr.isNil && this.lastAutomation.isNil) {
@@ -7993,11 +7993,11 @@ GUI Parameters usable in SynthDefs
 
 			if(testado[currentsource]) {  // don't change button if we are playing via automation
 				// only if it is being played/streamed manually
-				if (this.synt[currentsource] == nil){
-					btestar.value = 0;
-				} {
+			//	if (this.synt[currentsource] == nil){
+			//		btestar.value = 0;
+			//	} {
 					btestar.value = 1;
-				};
+			//	};
 			} {
 				btestar.value = 0;
 			};
@@ -8790,7 +8790,7 @@ GUI Parameters usable in SynthDefs
 
 		this.nfontes.do { arg i;
 
-			textbuf = StaticText(wdados, Rect(5, 40 + (i*20), 50, 20));
+			textbuf = StaticText(wdados, Rect(2, 40 + (i*20), 50, 20));
 			textbuf.font = Font(Font.defaultSansFace, 9);
 			textbuf.string = (i+1).asString;
 
@@ -8832,8 +8832,6 @@ GUI Parameters usable in SynthDefs
 			this.spcheck[i].action_({ arg but;
 				this.spcheckProxy[i].valueAction = but.value;
 			});
-
-
 
 
 
@@ -8927,6 +8925,9 @@ GUI Parameters usable in SynthDefs
 				this.stcheckProxy[i].valueAction = but.value;
 			};
 
+			textbuf = StaticText(wdados, Rect(940, 40 + (i*20), 50, 20));
+			textbuf.font = Font(Font.defaultSansFace, 9);
+			textbuf.string = (i+1).asString;
 
 			this.libbox[i].font = Font(Font.defaultSansFace, 9);
 			this.dstrvbox[i].font = Font(Font.defaultSansFace, 9);

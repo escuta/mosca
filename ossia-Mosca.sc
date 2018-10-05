@@ -3,7 +3,7 @@
 	ossia { |parentNode, allCrtitical = false, mirrorTree, paramDepth|
 
 		var ossiaParent = OSSIA_Node(parentNode, "Mosca");
-		var ossiaAutomation, ossiaSeek;
+		var ossiaAutomation, ossiaSeek, ossiaMasterPlay;
 
 		this.ossiasrc = Array.newClear(this.nfontes);
 		this.ossiaorient = Array.newClear(this.nfontes);
@@ -11,8 +11,8 @@
 		this.ossiacart = Array.newClear(this.nfontes);
 		this.ossiasphe = Array.newClear(this.nfontes);
 		this.ossialoop = Array.newClear(this.nfontes);
-		this.ossiaaud = Array.newClear(this.nfontes);
 		this.ossialib = Array.newClear(this.nfontes);
+		this.ossiaaud = Array.newClear(this.nfontes);
 		this.ossialev = Array.newClear(this.nfontes);
 		this.ossiadp = Array.newClear(this.nfontes);
 		this.ossiaclsam = Array.newClear(this.nfontes);
@@ -27,6 +27,16 @@
 		this.ossiaspread = Array.newClear(this.nfontes);
 		this.ossiadiff = Array.newClear(this.nfontes);
 		this.ossiaback = true;
+
+
+		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
+			critical:true);
+
+		ossiaMasterPlay.callback_({ arg num;
+			this.nfontes.do({ |i|
+				this.ossiaaud[i].v_(num.value);
+			});
+		});
 
 		this.ossiaorigine = OSSIA_Parameter(ossiaParent, "Origine", OSSIA_vec3f,
 			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 0, 0],
@@ -168,6 +178,16 @@
 			});
 
 
+			this.ossialib[i] = OSSIA_Parameter(this.ossiasrc[i], "Library", Integer, [0, 4], 3, 'clip',
+				critical:true, repetition_filter:true);
+
+			this.ossialib[i].callback_({arg num;
+				if (libboxProxy[i].value != num.value) {
+					libboxProxy[i].valueAction = num.value;
+				};
+			});
+
+
 			this.ossiaaud[i] = OSSIA_Parameter(this.ossiasrc[i], "audition", Boolean,
 				critical:true, repetition_filter:true);
 
@@ -191,22 +211,13 @@
 				};
 			});
 
+
 			this.ossialoop[i] = OSSIA_Parameter(this.ossiasrc[i], "loop", Boolean,
 				critical:true, repetition_filter:true);
 
 			this.ossialoop[i].callback_({ arg but;
 				if (this.lpcheckProxy[i].value != but.value) {
 					this.lpcheckProxy[i].valueAction = but.value;
-				};
-			});
-
-
-			this.ossialib[i] = OSSIA_Parameter(this.ossiasrc[i], "Library", Integer, [0, 4], 3, 'clip',
-				critical:true, repetition_filter:true);
-
-			this.ossialib[i].callback_({arg num;
-				if (libboxProxy[i].value != num.value) {
-					libboxProxy[i].valueAction = num.value;
 				};
 			});
 
