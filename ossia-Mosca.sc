@@ -59,9 +59,10 @@
 		});
 
 		this.ossiaorient = OSSIA_Parameter(ossiaParent, "Orentation", OSSIA_vec3f,
-			[-pi, pi], 'wrap', critical:allCrtitical, repetition_filter:true);
+			domain:[[-pi, -pi, -pi], [pi, pi, pi]], default_value:[0, 0, 0],
+			bounding_mode:'wrap', critical:allCrtitical, repetition_filter:true);
 
-		//this.ossiaorient.unit_(OSSIA_orientation.euler);
+		this.ossiaorient.unit_(OSSIA_orientation.euler);
 
 		this.ossiaorient.callback_({arg num;
 
@@ -163,6 +164,7 @@
 
 
 			this.ossiasphe[i] = OSSIA_Parameter(this.ossiasrc[i], "Spherical", OSSIA_vec3f,
+				domain:[[0, -pi, -1.5707963267949], [20, pi, 1.5707963267949]],
 				default_value:[20, 0, 0], critical:allCrtitical, repetition_filter:true);
 
 			this.ossiasphe[i].unit_(OSSIA_position.spherical);

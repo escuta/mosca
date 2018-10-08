@@ -166,7 +166,7 @@ Mosca {
 	// <>funcs, // apparently unused
 
 
-	<>novoplot, // <>lastx, <>lasty, // apparently unused
+	//<>novoplot, // <>lastx, <>lasty, // apparently unused
 	<>zlev, <>znumbox, <>zslider,
 	<>volslider, <>volnumbox, <>glev, <>gslider, <>gnumbox, <>lslider,
 	<>lnumbox, <>llev, <>rnumbox, <>rslider, <>rlev, <>dlev,
@@ -242,6 +242,7 @@ Mosca {
     vbap_buffer,
 	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
 	cart, spher, foa_a12_decoder_matrix,
+	novoplot, novoqueue,
 
 	//o, //debugging
 	prjDr;
@@ -786,12 +787,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 				if ( guiflag) {
-					var period = Main.elapsedTime - this.lastGui;
-					//{sprite[i, 0] = this.halfwidth + (num.value * this.halfheight)}.defer;
-					if (period > this.guiInt) {
-						this.lastGui =  Main.elapsedTime;
-						{novoplot.value;}.defer;
-					};
+					novoqueue.value;
 					{this.xbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
@@ -825,12 +821,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 				if (guiflag) {
-					var period = Main.elapsedTime - this.lastGui;
-					//{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
-					if (period > this.guiInt) {
-						this.lastGui =  Main.elapsedTime;
-						{novoplot.value;}.defer;
-					};
+					novoqueue.value;
 					{this.ybox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -865,12 +856,7 @@ GUI Parameters usable in SynthDefs
 				};
 				zlev[i] = this.spheval[i].z;
 				if (guiflag) {
-					var period = Main.elapsedTime - this.lastGui;
-					//{sprite[i, 1] = this.halfheight - (num.value * this.halfheight)}.defer;
-					if (period > this.guiInt) {
-						this.lastGui =  Main.elapsedTime;
-						{novoplot.value;}.defer;
-					};
+					novoqueue.value;
 					{zbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -1353,9 +1339,9 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.spcheck[i].value = but.value}.defer;
 				};
-				if (this.ossiasprea.notNil) {
-					if (this.ossiasprea[i].v != but.value.asBoolean) {
-						this.ossiasprea[i].v_(but.value.asBoolean);
+				if (this.ossiaspread.notNil) {
+					if (this.ossiaspread[i].v != but.value.asBoolean) {
+						this.ossiaspread[i].v_(but.value.asBoolean);
 					};
 				};
 			});
@@ -1741,11 +1727,7 @@ GUI Parameters usable in SynthDefs
 			origine.x_(num.value);
 
 			if (guiflag) {
-				var period = Main.elapsedTime - this.lastGui;
-				if (period > this.guiInt) {
-					this.lastGui =  Main.elapsedTime;
-					{novoplot.value;}.defer;
-				};
+				novoqueue.value;
 				{this.oxnumbox.value = num.value;}.defer;
 			};
 		});
@@ -1805,11 +1787,7 @@ GUI Parameters usable in SynthDefs
 			origine.y_(num.value);
 
 			if (guiflag) {
-				var period = Main.elapsedTime - this.lastGui;
-				if (period > this.guiInt) {
-					this.lastGui =  Main.elapsedTime;
-					{novoplot.value;}.defer;
-				};
+				novoqueue.value;
 				{this.oynumbox.value = num.value;}.defer;
 			};
 		});
@@ -1869,11 +1847,7 @@ GUI Parameters usable in SynthDefs
 			origine.z_(num.value);
 
 			if (guiflag) {
-				var period = Main.elapsedTime - this.lastGui;
-				if (period > this.guiInt) {
-					this.lastGui =  Main.elapsedTime;
-					{novoplot.value;}.defer;
-				};
+				novoqueue.value;
 				{this.oznumbox.value = num.value;}.defer;
 			};
 		});
@@ -1933,11 +1907,7 @@ GUI Parameters usable in SynthDefs
 			pitch = num.value;
 
 			if (guiflag) {
-				var period = Main.elapsedTime - this.lastGui;
-				if (period > this.guiInt) {
-					this.lastGui =  Main.elapsedTime;
-					{novoplot.value;}.defer;
-				};
+				novoqueue.value;
 				{this.pitchnumbox.value = num.value;}.defer;
 			};
 		});
@@ -1996,11 +1966,7 @@ GUI Parameters usable in SynthDefs
 			roll = num.value;
 
 			if (guiflag) {
-				var period = Main.elapsedTime - this.lastGui;
-				if (period > this.guiInt) {
-					this.lastGui =  Main.elapsedTime;
-					{novoplot.value;}.defer;
-				};
+				novoqueue.value;
 				{this.rollnumbox.value = num.value;}.defer;
 			};
 		});
@@ -2058,11 +2024,7 @@ GUI Parameters usable in SynthDefs
 			heading = num.value;
 
 			if (guiflag) {
-				var period = Main.elapsedTime - this.lastGui;
-				if (period > this.guiInt) {
-					this.lastGui =  Main.elapsedTime;
-					{novoplot.value;}.defer;
-				};
+				novoqueue.value;
 				{this.headingnumbox.value = num.value;}.defer;
 			};
 		});
@@ -7428,6 +7390,14 @@ GUI Parameters usable in SynthDefs
 
 		dialView = UserView(win, Rect(this.width - 190, 10, 180, 80));
 
+		novoqueue = {
+			var period = Main.elapsedTime - this.lastGui;
+			if (period > this.guiInt) {
+				this.lastGui =  Main.elapsedTime;
+				novoplot.value;
+			};
+		};
+
 		novoplot = {
 
 			{
@@ -7445,9 +7415,9 @@ GUI Parameters usable in SynthDefs
 						{x = this.halfwidth + (topView.x * this.halfheight)}.defer;
 						{y = this.halfheight - (topView.y * this.halfheight)}.defer;
 						Pen.fillColor = Color(0.8 + color, 0.2, 0.9);
-						Pen.addArc(x@y, 20, 0, 2pi);
+						Pen.addArc(x@y, 14, 0, 2pi);
 						Pen.fill;
-						(i + 1).asString.drawCenteredIn(Rect(x - 10, y - 10, 20, 20),
+						(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
 						Font.default, Color.white);
 
 						if(i == currentsource) {
@@ -7457,13 +7427,13 @@ GUI Parameters usable in SynthDefs
 					};
 
 					Pen.fillColor = Color.gray(0, 0.5);
-					Pen.addArc(this.halfwidth@this.halfheight, 20, 0, 2pi);
+					Pen.addArc(this.halfwidth@this.halfheight, 14, 0, 2pi);
 					Pen.fill;
 				};
 
 			}.defer;
 
-			{ win.refresh }.defer;
+			win.refresh;
 		};
 
 		/*novoplot = {
@@ -9431,7 +9401,7 @@ GUI Parameters usable in SynthDefs
 
 			autoView.bounds_(Rect(10, this.height - 45, 325, 40));
 
-			{novoplot.value;}.defer;
+			novoplot.value;
 
 		});
 
