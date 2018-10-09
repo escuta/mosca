@@ -146,18 +146,18 @@
 
 			this.ossiacart[i] = OSSIA_Parameter(this.ossiasrc[i], "Cartesian", OSSIA_vec3f,
 				domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 20, 0],
-				bounding_mode:'wrap', critical:allCrtitical, repetition_filter:true);
+				critical:allCrtitical, repetition_filter:true);
 
 			this.ossiacart[i].unit_(OSSIA_position.cart3D);
 
 			this.ossiacart[i].callback_({arg num;
-				if (xboxProxy[i].value != num[0].value) {
+				if (xboxProxy[i].value !== num[0].value) {
 					xboxProxy[i].valueAction = num[0].value;
 				};
-				if (yboxProxy[i].value != num[1].value) {
+				if (yboxProxy[i].value !== num[1].value) {
 					yboxProxy[i].valueAction = num[1].value;
 				};
-				if (zboxProxy[i].value != num[2].value) {
+				if (zboxProxy[i].value !== num[2].value) {
 					zboxProxy[i].valueAction = num[2].value;
 				};
 			});
@@ -170,7 +170,7 @@
 			this.ossiasphe[i].unit_(OSSIA_position.spherical);
 
 			this.ossiasphe[i].callback_({arg num;
-				spheval[i].rho_(num.value[0].clip(0, 20));
+				spheval[i].rho_(num.value[0]);
 				spheval[i].theta_(num.value[1].wrap(-pi, pi) + 1.5707963267949);
 				spheval[i].phi_(num.value[2].fold(-1.5707963267949, 1.5707963267949));
 				if (this.ossiaback) {

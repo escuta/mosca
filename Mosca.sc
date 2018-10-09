@@ -787,7 +787,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 				if ( guiflag) {
-					novoqueue.value;
+					{novoqueue.value;}.defer;
 					{this.xbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]) {
@@ -821,7 +821,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 				if (guiflag) {
-					novoqueue.value;
+					{novoqueue.value;}.defer;
 					{this.ybox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -856,7 +856,7 @@ GUI Parameters usable in SynthDefs
 				};
 				zlev[i] = this.spheval[i].z;
 				if (guiflag) {
-					novoqueue.value;
+					{novoqueue.value;}.defer;
 					{zbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || this.playingBF[i]){
@@ -1727,7 +1727,7 @@ GUI Parameters usable in SynthDefs
 			origine.x_(num.value);
 
 			if (guiflag) {
-				novoqueue.value;
+				{novoqueue.value;}.defer;
 				{this.oxnumbox.value = num.value;}.defer;
 			};
 		});
@@ -1787,7 +1787,7 @@ GUI Parameters usable in SynthDefs
 			origine.y_(num.value);
 
 			if (guiflag) {
-				novoqueue.value;
+				{novoqueue.value;}.defer;
 				{this.oynumbox.value = num.value;}.defer;
 			};
 		});
@@ -1847,7 +1847,7 @@ GUI Parameters usable in SynthDefs
 			origine.z_(num.value);
 
 			if (guiflag) {
-				novoqueue.value;
+				{novoqueue.value;}.defer;
 				{this.oznumbox.value = num.value;}.defer;
 			};
 		});
@@ -1907,7 +1907,7 @@ GUI Parameters usable in SynthDefs
 			pitch = num.value;
 
 			if (guiflag) {
-				novoqueue.value;
+				{novoqueue.value;}.defer;
 				{this.pitchnumbox.value = num.value;}.defer;
 			};
 		});
@@ -1966,7 +1966,7 @@ GUI Parameters usable in SynthDefs
 			roll = num.value;
 
 			if (guiflag) {
-				novoqueue.value;
+				{novoqueue.value;}.defer;
 				{this.rollnumbox.value = num.value;}.defer;
 			};
 		});
@@ -2024,7 +2024,7 @@ GUI Parameters usable in SynthDefs
 			heading = num.value;
 
 			if (guiflag) {
-				novoqueue.value;
+				{novoqueue.value;}.defer;
 				{this.headingnumbox.value = num.value;}.defer;
 			};
 		});
@@ -7328,6 +7328,7 @@ GUI Parameters usable in SynthDefs
 		//ncanbox, businibox,
 		mouseButton, dragStartScreen,
 		//novoplot,
+		period,
 		//runTriggers, runStops, runTrigger, runStop,
 
 		//dopnumbox,
@@ -7365,6 +7366,7 @@ GUI Parameters usable in SynthDefs
 		//dlev,
 		//dplev, dpslider,
 		cnumbox,
+		//plotlock = true,
 		//aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox,
 		zSliderHeight = this.height * 2 / 3;
 		dragStartScreen = Point.new;
@@ -7388,52 +7390,52 @@ GUI Parameters usable in SynthDefs
 
 		win = Window.new("Mosca", Rect(0, this.width, this.width, this.height)).front;
 
-		dialView = UserView(win, Rect(this.width - 190, 10, 180, 80));
+		win.drawFunc = {
+
+			Pen.fillColor = Color(0.6,0.8,0.8);
+			Pen.addArc(this.halfwidth@this.halfheight, this.halfheight, 0, 2pi);
+			Pen.fill;
+
+			this.nfontes.do { |i|
+				var x, y;
+				var topView = this.spheval[i];
+				var lev = this.spheval[i].z;
+				var color = lev * 0.2;
+				{x = this.halfwidth + (topView.x * this.halfheight)}.defer;
+				{y = this.halfheight - (topView.y * this.halfheight)}.defer;
+				Pen.fillColor = Color(0.8 + color, 0.2, 0.9);
+				Pen.addArc(x@y, 14, 0, 2pi);
+				Pen.fill;
+				(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
+					Font.default, Color.white);
+			};
+
+			Pen.fillColor = Color.gray(0, 0.5);
+			Pen.addArc(this.halfwidth@this.halfheight, 14, 0, 2pi);
+			Pen.fill;
+
+		};
+
 
 		novoqueue = {
-			var period = Main.elapsedTime - this.lastGui;
-			if (period > this.guiInt) {
+			period = Main.elapsedTime - this.lastGui;
+			if ((period > this.guiInt) /*&& plotlock*/) {
 				this.lastGui =  Main.elapsedTime;
-				novoplot.value;
+				{ novoplot.value; }.defer(this.guiInt);
 			};
 		};
 
 		novoplot = {
 
-			{
-				win.drawFunc = {
+			//plotlock = false;
 
-					Pen.fillColor = Color(0.6,0.8,0.8);
-					Pen.addArc(this.halfwidth@this.halfheight, this.halfheight, 0, 2pi);
-					Pen.fill;
+			{ zslider.value = (this.spheval[currentsource].z + 1) * 0.5; }.defer;
+			{ znumbox.value = this.spheval[currentsource].z; }.defer;
 
-					this.nfontes.do { |i|
-						var x, y;
-						var topView = this.spheval[i];
-						var lev = this.spheval[i].z;
-						var color = lev * 0.2;
-						{x = this.halfwidth + (topView.x * this.halfheight)}.defer;
-						{y = this.halfheight - (topView.y * this.halfheight)}.defer;
-						Pen.fillColor = Color(0.8 + color, 0.2, 0.9);
-						Pen.addArc(x@y, 14, 0, 2pi);
-						Pen.fill;
-						(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
-						Font.default, Color.white);
+			{ win.refresh; }.defer;
 
-						if(i == currentsource) {
-							{zslider.value = (lev + 1) * 0.5}.defer;
-							{znumbox.value = lev}.defer;
-						};
-					};
+			//plotlock = true;
 
-					Pen.fillColor = Color.gray(0, 0.5);
-					Pen.addArc(this.halfwidth@this.halfheight, 14, 0, 2pi);
-					Pen.fill;
-				};
-
-			}.defer;
-
-			win.refresh;
 		};
 
 		/*novoplot = {
@@ -7464,6 +7466,8 @@ GUI Parameters usable in SynthDefs
 		wdados = Window.new("Data", Rect(this.width, 0, 960, (this.nfontes*20)+60 ), scroll: true);
 		wdados.userCanClose = false;
 		wdados.alwaysOnTop = true;
+
+		dialView = UserView(win, Rect(this.width - 190, 10, 180, 80));
 
 		bdados = Button(dialView, Rect(90, 20, 90, 20))
 		.states_([
