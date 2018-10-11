@@ -3,7 +3,7 @@
 	ossia { |parentNode, allCrtitical = false, mirrorTree, paramDepth|
 
 		var ossiaParent = OSSIA_Node(parentNode, "Mosca");
-		var ossiaAutomation, ossiaSeek, ossiaMasterPlay;
+		var ossiaAutomation, ossiaMasterPlay;
 
 		this.ossiasrc = Array.newClear(this.nfontes);
 		this.ossiaorient = Array.newClear(this.nfontes);
@@ -120,13 +120,15 @@
 			};
 		});
 
-		ossiaSeek = OSSIA_Parameter(ossiaAutomation, "Seek_time", Float, [0, this.dur], 0, 'wrap',
+		this.ossiatransport = OSSIA_Parameter(ossiaAutomation, "Transport", Float, [0, this.dur], 0, 'wrap',
 				critical:true, repetition_filter:true);
 
-		ossiaSeek.unit_(OSSIA_time.second);
+		this.ossiatransport.unit_(OSSIA_time.second);
 
-		ossiaSeek.callback_({arg num;
-			this.control.seek(num.value);
+		this.ossiatransport.callback_({arg num;
+			if (this.ossiaseekback) {
+				this.control.seek(num.value);
+			};
 		});
 
         this.ossiarec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,

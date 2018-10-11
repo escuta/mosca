@@ -213,10 +213,11 @@ Mosca {
 	<>clsrm, <>clsrmslider, <>clsrmnumbox, <>clsrmbox, <>clsrmboxProxy, // setable global room size
 	<>clsdm, <>clsdmslider, <>clsdmnumbox, <>clsdmbox, <>clsdmboxProxy, // setable global dampening
 
-	<>ossiasrc, <>ossiaorient, <>ossiaorigine, <>ossiaplay, <>ossiatrasportLoop, <>ossiacart, <>ossiarec,
-	<>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib, <>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam,
-	<>ossiaclsdel, <>ossiaclsdec, <>ossiadst, <>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle,
-	<>ossiarot, <>ossiadir, <>ossiactr, <>ossiaspread, <>ossiadiff, <>ossiaback;
+	<>ossiasrc, <>ossiaorient, <>ossiaorigine, <>ossiaplay, <>ossiatrasportLoop, <>ossiatransport,
+	<>ossiaseekback, <>ossiarec, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib,
+	<>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst,
+	<>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
+	<>ossiaspread, <>ossiadiff, <>ossiaback;
 
 
 
@@ -4294,7 +4295,6 @@ GUI Parameters usable in SynthDefs
 				//SendTrig.kr(Impulse.kr(1), 101,  tpos); // debugging
 				playerRef = Ref(0);
 				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
-
 				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
@@ -4825,6 +4825,7 @@ GUI Parameters usable in SynthDefs
 
 								};
 							};
+
 						}.defer;   // CHECK THIS DEFER
 				});
 
@@ -4841,6 +4842,11 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
+				if (isPlay && this.ossiatransport.notNil) {
+					this.ossiaseekback = false;
+					this.ossiatransport.v_(this.control.now);
+					this.ossiaseekback = true;
+				};
 
 			});
 		});
@@ -7326,7 +7332,7 @@ GUI Parameters usable in SynthDefs
 		//ncannumbox, busininumbox, // for streams. ncan = number of channels (1, 2 or 4)
 		// busini = initial bus number in range starting with "0"
 		//ncanbox, businibox,
-		mouseButton, dragStartScreen,
+		mouseButton, //dragStartScreen,
 		//novoplot,
 		period,
 		//runTriggers, runStops, runTrigger, runStop,
@@ -7369,7 +7375,7 @@ GUI Parameters usable in SynthDefs
 		//plotlock = true,
 		//aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox,
 		zSliderHeight = this.height * 2 / 3;
-		dragStartScreen = Point.new;
+		//dragStartScreen = Point.new;
 		//dragStartMap = Point.new;
 
 		//////// Huge lot declarations removed //////////
@@ -9214,7 +9220,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-		this.control.onSeek = {
+		this.control.onSeek = { |time|
 			/*
 			var wasplaying = isPlay;
 
@@ -9235,6 +9241,13 @@ GUI Parameters usable in SynthDefs
 				{control.play}.defer(0.5); //delay necessary. may need more?
 			};
 			*/
+
+			if (time == 0) {
+				this.ossiaseekback = false;
+				this.ossiatransport.v_(0);
+				this.ossiaseekback = true;
+			};
+
 		};
 
 		/*this.control.onStop = {
@@ -9340,8 +9353,8 @@ GUI Parameters usable in SynthDefs
 		win.view.mouseDownAction = { arg view, x, y, modifiers, buttonNumber, clickCount;
 			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
 			if((mouseButton == 1) || (mouseButton == 2)) {
-				dragStartScreen.x = y - this.halfwidth;
-				dragStartScreen.y = x - this.halfwidth;
+				//dragStartScreen.x = y - this.halfwidth;
+				//dragStartScreen.y = x - this.halfwidth;
 				this.nfontes.do { arg i;
 					("" ++ i ++ " " ++ this.cartval[i]).postln;
 					("" ++ i ++ " " ++ this.spheval[i]).postln;
@@ -9361,7 +9374,18 @@ GUI Parameters usable in SynthDefs
 						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
 					};
 				};
-			};
+			} {
+				this.cartval[currentsource].x_((x - this.halfwidth) / this.halfheight);
+				this.cartval[currentsource].y_((this.halfheight - y) / this.halfheight);
+				this.cartval[currentsource].z_((this.zslider.value * 2) - 1);
+
+				this.cartval[currentsource] = this.cartval[currentsource]
+				.tumble(heading).tilt(roll).rotate(pitch);
+
+				xbox[currentsource].valueAction = this.cartval[currentsource].x + origine.x;
+				ybox[currentsource].valueAction = this.cartval[currentsource].y + origine.y;
+				zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
+			}
 		};
 
 		win.view.mouseMoveAction = {|view, x, y, modifiers|
