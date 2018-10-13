@@ -3,7 +3,7 @@
 	ossia { |parentNode, allCrtitical = false, mirrorTree, paramDepth|
 
 		var ossiaParent = OSSIA_Node(parentNode, "Mosca");
-		var ossiaAutomation, ossiaMasterPlay;
+		var ossiaAutomation, ossiaMasterPlay, ossiaMasterLib, ossiaMasterRev;
 
 		this.ossiasrc = Array.newClear(this.nfontes);
 		this.ossiaorient = Array.newClear(this.nfontes);
@@ -26,7 +26,9 @@
 		this.ossiactr = Array.newClear(this.nfontes);
 		this.ossiaspread = Array.newClear(this.nfontes);
 		this.ossiadiff = Array.newClear(this.nfontes);
-		this.ossiaback = true;
+		this.ossiaseekback = true;
+		this.ossiaCartBack = true;
+		this.ossiaSpheBack = true;
 
 
 		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
@@ -35,6 +37,24 @@
 		ossiaMasterPlay.callback_({ arg num;
 			this.nfontes.do({ |i|
 				this.ossiaaud[i].v_(num.value);
+			});
+		});
+
+		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", Integer,
+			critical:true);
+
+		ossiaMasterLib.callback_({ arg num;
+			this.nfontes.do({ |i|
+				this.ossialib[i].v_(num.value);
+			});
+		});
+
+		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Dst._Reverb_all", Integer,
+			critical:true);
+
+		ossiaMasterRev.callback_({ arg num;
+			this.nfontes.do({ |i|
+				this.ossiadst[i].v_(num.value);
 			});
 		});
 
@@ -153,13 +173,13 @@
 			this.ossiacart[i].unit_(OSSIA_position.cart3D);
 
 			this.ossiacart[i].callback_({arg num;
-				if (xboxProxy[i].value !== num[0].value) {
+				if (xboxProxy[i].value != num[0].value) {
 					xboxProxy[i].valueAction = num[0].value;
 				};
-				if (yboxProxy[i].value !== num[1].value) {
+				if (yboxProxy[i].value != num[1].value) {
 					yboxProxy[i].valueAction = num[1].value;
 				};
-				if (zboxProxy[i].value !== num[2].value) {
+				if (zboxProxy[i].value != num[2].value) {
 					zboxProxy[i].valueAction = num[2].value;
 				};
 			});
@@ -175,10 +195,12 @@
 				spheval[i].rho_(num.value[0]);
 				spheval[i].theta_(num.value[1].wrap(-pi, pi) + 1.5707963267949);
 				spheval[i].phi_(num.value[2].fold(-1.5707963267949, 1.5707963267949));
-				if (this.ossiaback) {
+				this.ossiaSpheBack = false;
+				if (this.ossiaCartBack) {
 					this.ossiacart[i].v_(spheval[i].rotate(pitch).tilt(roll).tumble(heading)
 						.asCartesian.asArray);
 				};
+				this.ossiaSpheBack = true;
 			});
 
 

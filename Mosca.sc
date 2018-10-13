@@ -217,7 +217,7 @@ Mosca {
 	<>ossiaseekback, <>ossiarec, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib,
 	<>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst,
 	<>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
-	<>ossiaspread, <>ossiadiff, <>ossiaback;
+	<>ossiaspread, <>ossiadiff, <>ossiaCartBack, <>ossiaSpheBack;
 
 
 
@@ -777,11 +777,11 @@ GUI Parameters usable in SynthDefs
 				if (this.ossiacart.isNil) {
 					this.spheval[i] = sphe;
 				} {
-					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
-					if (this.ossiasphe[i].v != sphetest) {
-						this.ossiaback_(false);
+					sphetest = [sphe.rho, (sphe.theta - 1.5707963267949).wrap(-pi, pi), sphe.phi];
+					if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphetest)) {
+						this.ossiaCartBack_(false);
 						this.ossiasphe[i].v_(sphetest);
-						this.ossiaback_(true);
+						this.ossiaCartBack_(true);
 					};
 					if (this.ossiacart[i].v[0] != num.value) {
 						this.ossiacart[i].v_([num.value, yboxProxy[i].value, zboxProxy[i].value]);
@@ -811,11 +811,11 @@ GUI Parameters usable in SynthDefs
 				if (this.ossiacart.isNil) {
 					this.spheval[i] = sphe;
 				} {
-					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
-					if (this.ossiasphe[i].v != sphetest) {
-						this.ossiaback_(false);
+					sphetest = [sphe.rho, (sphe.theta - 1.5707963267949).wrap(-pi, pi), sphe.phi];
+					if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphetest)) {
+						this.ossiaCartBack_(false);
 						this.ossiasphe[i].v_(sphetest);
-						this.ossiaback_(true);
+						this.ossiaCartBack_(true);
 					};
 					if (this.ossiacart[i].v[1] != num.value) {
 						this.ossiacart[i].v_([xboxProxy[i].value, num.value, zboxProxy[i].value]);
@@ -845,11 +845,11 @@ GUI Parameters usable in SynthDefs
 				if (this.ossiacart.isNil) {
 					this.spheval[i] = sphe;
 				} {
-					sphetest = [sphe.rho, sphe.theta - 1.5707963267949, sphe.phi];
-					if (this.ossiasphe[i].v != sphetest) {
-						this.ossiaback_(false);
+					sphetest = [sphe.rho, (sphe.theta - 1.5707963267949).wrap(-pi, pi), sphe.phi];
+					if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphetest)) {
+						this.ossiaCartBack_(false);
 						this.ossiasphe[i].v_(sphetest);
-						this.ossiaback_(true);
+						this.ossiaCartBack_(true);
 					};
 					if (this.ossiacart[i].v[2] != num.value) {
 						this.ossiacart[i].v_([xboxProxy[i].value, yboxProxy[i].value, num.value]);
@@ -1683,6 +1683,8 @@ GUI Parameters usable in SynthDefs
 						+ origine.x)).asSpherical.
 					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
 
+					this.zlev[i] = this.spheval[i].z;
+
 					if(this.espacializador[i].notNil || this.playingBF[i]) {
 						this.espacializador[i].set(\azim, this.spheval[i].theta);
 						this.setSynths(i, \azim, this.spheval[i].theta);
@@ -1698,15 +1700,17 @@ GUI Parameters usable in SynthDefs
 			} {
 
 				this.ossiaorigine.v_([num.value, this.oynumboxProxy.value, this.oznumboxProxy.value]);
-				this.ossiaback = false;
+				this.ossiaCartBack = false;
 
 				this.nfontes.do { arg i;
 					var sphe = (cartval[i].x_(cartval[i].x - num.value
 						+ origine.x)).asSpherical.
 					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
-					this.ossiasphe[i].v_([sphe.rho,
-						sphe.theta - 1.5707963267949, sphe.phi]);
 
+					this.ossiasphe[i].v_([sphe.rho,
+						(sphe.theta - 1.5707963267949).wrap(-pi, pi), sphe.phi]);
+
+					this.zlev[i] = this.spheval[i].z;
 
 					if(this.espacializador[i].notNil || this.playingBF[i]) {
 						this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -1721,7 +1725,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				this.ossiaback = true;
+				this.ossiaCartBack = true;
 
 			};
 
@@ -1744,6 +1748,8 @@ GUI Parameters usable in SynthDefs
 						+ origine.y)).asSpherical.
 					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
 
+					this.zlev[i] = this.spheval[i].z;
+
 					if(this.espacializador[i].notNil || this.playingBF[i]) {
 						this.espacializador[i].set(\azim, this.spheval[i].theta);
 						this.setSynths(i, \azim, this.spheval[i].theta);
@@ -1759,14 +1765,17 @@ GUI Parameters usable in SynthDefs
 			} {
 
 				this.ossiaorigine.v_([this.oxnumboxProxy.value, num.value, this.oznumboxProxy.value]);
-				this.ossiaback = false;
+				this.ossiaCartBack = false;
 
 				this.nfontes.do { arg i;
 					var sphe = (cartval[i].y_(cartval[i].y - num.value
 						+ origine.y)).asSpherical.
 					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+
 					this.ossiasphe[i].v_([sphe.rho,
-						sphe.theta - 1.5707963267949, sphe.phi]);
+						(sphe.theta - 1.5707963267949).wrap(-pi, pi), sphe.phi]);
+
+					this.zlev[i] = this.spheval[i].z;
 
 					if(this.espacializador[i].notNil || this.playingBF[i]) {
 						this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -1781,7 +1790,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				this.ossiaback = true;
+				this.ossiaCartBack = true;
 
 			};
 
@@ -1804,6 +1813,8 @@ GUI Parameters usable in SynthDefs
 						+ origine.z)).asSpherical.
 					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
 
+					this.zlev[i] = this.spheval[i].z;
+
 					if(this.espacializador[i].notNil || this.playingBF[i]) {
 						this.espacializador[i].set(\azim, this.spheval[i].theta);
 						this.setSynths(i, \azim, this.spheval[i].theta);
@@ -1819,14 +1830,17 @@ GUI Parameters usable in SynthDefs
 			} {
 
 				this.ossiaorigine.v_([this.oxnumboxProxy.value, this.oynumboxProxy.value, num.value]);
-				this.ossiaback = false;
+				this.ossiaCartBack = false;
 
 				this.nfontes.do { arg i;
 					var sphe = (cartval[i].z_(cartval[i].z - num.value
 						+ origine.z)).asSpherical.
 					rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+
 					this.ossiasphe[i].v_([sphe.rho,
-						sphe.theta - 1.5707963267949, sphe.phi]);
+						(sphe.theta - 1.5707963267949).wrap(-pi, pi), sphe.phi]);
+
+					this.zlev[i] = this.spheval[i].z;
 
 					if(this.espacializador[i].notNil || this.playingBF[i]) {
 						this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -1841,7 +1855,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				this.ossiaback = true;
+				this.ossiaCartBack = true;
 
 			};
 
@@ -1879,12 +1893,13 @@ GUI Parameters usable in SynthDefs
 			} {
 
 				this.ossiaorient.v_([num.value, this.rollnumboxProxy.value, this.headingnumboxProxy.value]);
-				this.ossiaback = false;
+				this.ossiaCartBack = false;
 
 				this.nfontes.do { arg i;
 					var rot = this.spheval[i].rotate(pitch - num.value);
+
 					this.ossiasphe[i].v_([rot.rho,
-						rot.theta - 1.5707963267949, rot.phi]);
+						(rot.theta - 1.5707963267949).wrap(-pi, pi), rot.phi]);
 
 					this.zlev[i] = this.spheval[i].z;
 
@@ -1901,7 +1916,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				this.ossiaback = true;
+				this.ossiaCartBack = true;
 
 			};
 
@@ -1938,12 +1953,13 @@ GUI Parameters usable in SynthDefs
 			} {
 
 				this.ossiaorient.v_([this.pitchnumboxProxy.value, num.value, this.headingnumboxProxy.value]);
-				this.ossiaback = false;
+				this.ossiaCartBack = false;
 
 				this.nfontes.do { arg i;
 					var rot = this.spheval[i].tilt(roll - num.value);
+
 					this.ossiasphe[i].v_([rot.rho,
-						rot.theta - 1.5707963267949, rot.phi]);
+						(rot.theta - 1.5707963267949).wrap(-pi, pi), rot.phi]);
 
 					this.zlev[i] = this.spheval[i].z;
 
@@ -1960,7 +1976,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				this.ossiaback = true;
+				this.ossiaCartBack = true;
 
 			};
 
@@ -1996,12 +2012,13 @@ GUI Parameters usable in SynthDefs
 			} {
 
 				this.ossiaorient.v_([this.pitchnumboxProxy.value, this.rollnumboxProxy.value, num.value]);
-				this.ossiaback = false;
+				this.ossiaCartBack = false;
 
 				this.nfontes.do { arg i;
 					var rot = this.spheval[i].tumble(heading - num.value);
+
 					this.ossiasphe[i].v_([rot.rho,
-						rot.theta - 1.5707963267949, rot.phi]);
+						(rot.theta - 1.5707963267949).wrap(-pi, pi), rot.phi]);
 
 					this.zlev[i] = this.spheval[i].z;
 
@@ -2018,7 +2035,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				this.ossiaback = true;
+				this.ossiaCartBack = true;
 
 			};
 
@@ -7166,6 +7183,11 @@ GUI Parameters usable in SynthDefs
 			if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
 				i.postln;
 				newpath.postln;
+
+				if (this.ossiasrc.notNil) {
+					this.ossiasrc[i].description = newpath;
+				};
+
 				this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf;
 					"Loaded file".postln;
 				});
@@ -7435,8 +7457,9 @@ GUI Parameters usable in SynthDefs
 
 			//plotlock = false;
 
-			{ zslider.value = (this.spheval[currentsource].z + 1) * 0.5; }.defer;
-			{ znumbox.value = this.spheval[currentsource].z; }.defer;
+			{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
+			{ zslider.value = (this.zlev[currentsource] + 1) * 0.5; }.defer;
+			{ znumbox.value = this.zlev[currentsource]; }.defer;
 
 			{ win.refresh; }.defer;
 
