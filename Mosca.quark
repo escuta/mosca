@@ -13,6 +13,7 @@
 			"MathLib",
 			"Automation",
 			"XML",
-			"atk-sc3"
+			"atk-sc3",
+                        "SC-HOA"
 			]
 )

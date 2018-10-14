@@ -26,6 +26,9 @@
 		this.ossiactr = Array.newClear(this.nfontes);
 		this.ossiaspread = Array.newClear(this.nfontes);
 		this.ossiadiff = Array.newClear(this.nfontes);
+		this.ossiarate = Array.newClear(this.nfontes);
+		this.ossiawin = Array.newClear(this.nfontes);
+		this.ossiarand = Array.newClear(this.nfontes);
 		this.ossiaseekback = true;
 		this.ossiaCartBack = true;
 		this.ossiaSpheBack = true;
@@ -40,8 +43,10 @@
 			});
 		});
 
-		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", Integer,
-			critical:true);
+		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", Integer, [0, spatList.size],
+				3, 'clip', critical:true);
+
+		ossiaMasterLib.description_(spatList.asString);
 
 		ossiaMasterLib.callback_({ arg num;
 			this.nfontes.do({ |i|
@@ -49,8 +54,13 @@
 			});
 		});
 
-		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Dst._Reverb_all", Integer,
-			critical:true);
+		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Dst._Reverb_all", Integer, [0, (2 + rirList.size)],
+				0, 'clip', critical:true);
+
+		ossiaMasterRev.description_((["no-reverb",
+			"freeverb",
+			"allpass",
+			"A-format"] ++ rirList).asString);
 
 		ossiaMasterRev.callback_({ arg num;
 			this.nfontes.do({ |i|
@@ -101,6 +111,10 @@
 		this.ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Afmt._Reverb", Integer,
 			[0, (2 + rirList.size)], 0, 'clip', critical:true, repetition_filter:true);
 
+		this.ossiacls.description_((["no-reverb",
+			"freeverb",
+			"allpass"] ++ rirList).asString);
+
 		this.ossiacls.callback_({arg num;
 			if (clsrvboxProxy.value != num.value) {
 				clsrvboxProxy.valueAction = num.value;
@@ -113,6 +127,15 @@
 		this.ossiaclsdel.callback_({arg num;
 			if (clsrmboxProxy.value != num.value) {
 				clsrmboxProxy.valueAction = num.value;
+			};
+		});
+
+		this.ossiaclsdec = OSSIA_Parameter(ossiaParent, "Cls._damp_decay", Float,
+			[0, 1], 0.5, 'clip', critical:allCrtitical, repetition_filter:true);
+
+		this.ossiaclsdec.callback_({arg num;
+			if (clsdmboxProxy.value != num.value) {
+				clsdmboxProxy.valueAction = num.value;
 			};
 		});
 
@@ -204,8 +227,10 @@
 			});
 
 
-			this.ossialib[i] = OSSIA_Parameter(this.ossiasrc[i], "Library", Integer, [0, 4], 3, 'clip',
-				critical:true, repetition_filter:true);
+			this.ossialib[i] = OSSIA_Parameter(this.ossiasrc[i], "Library", Integer, [0, spatList.size],
+				3, 'clip', critical:true, repetition_filter:true);
+
+			this.ossialib[i].description_(spatList.asString);
 
 			this.ossialib[i].callback_({arg num;
 				if (libboxProxy[i].value != num.value) {
@@ -221,7 +246,7 @@
 				if(isPlay.not) {
 					if(num)
 					{
-						this.firstTime[i] = true;
+						firstTime[i] = true;
 						testado[i] = true;
 						if (guiflag && (i == currentsource))
 						{btestar.value = 1};
@@ -289,6 +314,10 @@
 				[0, (3 + rirList.size)], 0, 'clip',
 				critical:true, repetition_filter:true);
 
+			this.ossiadst[i].description_((["no-reverb",
+				"freeverb",
+				"allpass", "A-format"] ++ rirList).asString);
+
 			this.ossiadst[i].callback_({arg num;
 				if (dstrvboxProxy[i].value != num.value) {
 					dstrvboxProxy[i].valueAction = num.value;
@@ -334,9 +363,11 @@
 
 
 
-			this.ossiaangle[i] = OSSIA_Parameter(this.ossiasrc[i], "Angle_(stereo)", Float,
+			this.ossiaangle[i] = OSSIA_Parameter(this.ossiasrc[i], "Angle", Float,
 				[0, pi], 1.05, 'clip',
 				critical:allCrtitical, repetition_filter:true);
+
+			this.ossiaangle[i].description_("Stereo");
 
 			this.ossiaangle[i].callback_({arg num;
 				if (aboxProxy[i].value != num.value) {
@@ -346,9 +377,11 @@
 
 
 
-			this.ossiarot[i] = OSSIA_Parameter(this.ossiasrc[i], "Rotation_(B-Format)", Float,
+			this.ossiarot[i] = OSSIA_Parameter(this.ossiasrc[i], "Rotation", Float,
 				[-pi, pi], 0, 'wrap',
 				critical:allCrtitical, repetition_filter:true);
+
+			this.ossiarot[i].description_("B-Format");
 
 			this.ossiarot[i].callback_({arg num;
 				if (rboxProxy[i].value != num.value) {
@@ -358,9 +391,11 @@
 
 
 
-			this.ossiadir[i] = OSSIA_Parameter(this.ossiasrc[i], "Diretivity_(B-Format)", Float,
+			this.ossiadir[i] = OSSIA_Parameter(this.ossiasrc[i], "Diretivity", Float,
 				[0, pi * 0.5], 0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
+
+			this.ossiadir[i].description_("B-Format");
 
 			this.ossiadir[i].callback_({arg num;
 				if (dboxProxy[i].value != num.value) {
@@ -369,37 +404,82 @@
 			});
 
 
-
-			this.ossiactr[i] = OSSIA_Parameter(this.ossiasrc[i], "Contraction_(ATK & B-Format)", Float,
-				[0, 1], 1, 'clip',
-				critical:allCrtitical, repetition_filter:true);
-
-			this.ossiactr[i].callback_({arg num;
-				if (cboxProxy[i].value != num.value) {
-					cboxProxy[i].valueAction = num.value
-				};
-			});
-
-
-			this.ossiaspread[i] = OSSIA_Parameter(this.ossiasrc[i], "Spread_(ATK)", Boolean,
+			this.ossiaspread[i] = OSSIA_Parameter(this.ossiasrc[i], "Spread", Boolean,
 				critical:true, repetition_filter:true);
+
+			this.ossiaspread[i].description_("ATK");
 
 			this.ossiaspread[i].callback_({ arg but;
 				if (spcheckProxy[i].value != but.value) {
-					//spcheckProxy[i].valueAction = but.value;
+					spcheckProxy[i].valueAction = but.value;
 				};
 			});
 
 
-			this.ossiadiff[i] = OSSIA_Parameter(this.ossiasrc[i], "Diffuse_(ATK)", Boolean,
+			this.ossiadiff[i] = OSSIA_Parameter(this.ossiasrc[i], "Diffuse", Boolean,
 				critical:true, repetition_filter:true);
+
+			this.ossiadiff[i].description_("ATK");
 
 			this.ossiadiff[i].callback_({ arg but;
 				if (dfcheckProxy[i].value != but.value) {
-					//dfcheckProxy[i].valueAction = but.value;
+					dfcheckProxy[i].valueAction = but.value;
 				};
 			});
 
+
+			this.ossiactr[i] = OSSIA_Parameter(this.ossiasrc[i], "Contraction", Float,
+				[0, 1], 1, 'clip',
+				critical:allCrtitical, repetition_filter:true);
+
+			this.ossiactr[i].description_("B-Format, JoshGrain & VBAP");
+
+			this.ossiactr[i].callback_({arg but;
+				if (cboxProxy[i].value != but.value) {
+					cboxProxy[i].valueAction = but.value
+				};
+			});
+
+
+			this.ossiarate[i] = OSSIA_Parameter(this.ossiasrc[i], "Grain_rate", Float,
+				[1, 60], 10, 'clip',
+				critical:allCrtitical, repetition_filter:true);
+
+			this.ossiarate[i].unit_(OSSIA_time.frequency);
+			this.ossiarate[i].description_("JoshGrain");
+
+			this.ossiarate[i].callback_({arg but;
+				if (rateboxProxy[i].value != but.value) {
+					rateboxProxy[i].valueAction = but.value
+				};
+			});
+
+
+			this.ossiawin[i] = OSSIA_Parameter(this.ossiasrc[i], "Window_size", Float,
+				[0, 0.2], 0.1, 'clip',
+				critical:allCrtitical, repetition_filter:true);
+
+			this.ossiawin[i].unit_(OSSIA_time.second);
+			this.ossiawin[i].description_("JoshGrain");
+
+			this.ossiawin[i].callback_({arg but;
+				if (winboxProxy[i].value != but.value) {
+					winboxProxy[i].valueAction = but.value
+				};
+			});
+
+
+			this.ossiarand[i] = OSSIA_Parameter(this.ossiasrc[i], "Randomize_window", Float,
+				[0, 1], 0, 'clip',
+				critical:allCrtitical, repetition_filter:true);
+
+			this.ossiarand[i].description_("JoshGrain");
+
+			this.ossiarand[i].callback_({arg but;
+				if (randboxProxy[i].value != but.value) {
+					randboxProxy[i].valueAction = but.value
+				};
+			});
 
 		});
 
