@@ -212,7 +212,7 @@ Mosca {
 	<>ossiaseekback, <>ossiarec, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib,
 	<>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst,
 	<>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
-	<>ossiaspread, <>ossiadiff, <>ossiaCartBack, <>ossiaSpheBack, <>ossiawin, <>ossiarate, <>ossiarand;
+	<>ossiaspread, <>ossiadiff, <>ossiaCartBack, <>ossiaSpheBack, <>ossiarate, <>ossiawin, <>ossiarand;
 
 
 
@@ -225,7 +225,9 @@ Mosca {
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum, rirA12Spectrum,
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 	rirList,
-	spatList = #["ambitools","hoaLib","ambiPanner","ATK","JoshGrain","VBAP"],
+	spatList = #["ambitools","hoaLib","ambiPanner","AmbIEM","ATK","JoshGrain","VBAP"], // list of spat lib
+	lastSN3D = 3, // last SN3D lib index
+	lastFUMA = 5, // last FUMA lib index
 	b2a, a2b,
 	blips,
 	maxorder,
@@ -308,6 +310,7 @@ GUI Parameters usable in SynthDefs
 		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
 		reverbOutFunc, nonAmbiFunc,
+		iemConvert, iemStereoConvert,
 		bFormNumChan = (imaxorder + 1).squared; // add the number of channels of the b format
 		                                        // depending on maxorder
 		server = iserver;
@@ -554,8 +557,8 @@ GUI Parameters usable in SynthDefs
 		clsdm = 0.5; // initialise close reverb dampening
 
 		this.nfontes.do { arg i;
-			libName[i] = spatList[3]; // initialize original ATK encoding
-			lib[i] = 3;
+			libName[i] = spatList[lastSN3D + 1]; // initialize original ATK encoding
+			lib[i] = lastSN3D + 1;
 			dstrv[i] = 0;
 			convert[i] = false;
 			angle[i] = 1.05;
@@ -676,7 +679,7 @@ GUI Parameters usable in SynthDefs
 			hwncheckProxy[i] = AutomationGuiProxy.new(false);
 
 			tfieldProxy[i] = AutomationGuiProxy.new("");
-			libboxProxy[i] = AutomationGuiProxy.new(3);
+			libboxProxy[i] = AutomationGuiProxy.new(lastSN3D + 1);
 			lpcheckProxy[i] = AutomationGuiProxy.new(false);
 			dstrvboxProxy[i] = AutomationGuiProxy.new(0);
 			scncheckProxy[i] = AutomationGuiProxy.new(false);
@@ -1335,6 +1338,9 @@ GUI Parameters usable in SynthDefs
 					this.espacializador[i].set(\df, 0);
 					this.synt[i].set(\sp, 1);
 					this.setSynths(i, \ls, 1);
+					if (this.ossiadiff.notNil) {
+						this.ossiadiff[i].v_(false);
+					};
 				} {
 					sp[i] = 0;
 					this.espacializador[i].set(\sp, 0);
@@ -1364,7 +1370,10 @@ GUI Parameters usable in SynthDefs
 					this.espacializador[i].set(\sp, 0);
 					this.synt[i].set(\df, 1);
 					this.setSynths(i, \df, 1);
-				}{
+					if (this.ossiaspread.notNil) {
+						this.ossiaspread[i].v_(false);
+					};
+				} {
 					df[i] = 0;
 					this.espacializador[i].set(\df, 0);
 					this.synt[i].set(\df, 0);
@@ -2390,6 +2399,17 @@ GUI Parameters usable in SynthDefs
 			{ convert_fuma = false;
 				convert_ambix = true;
 
+				iemConvert = { |in, azi = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi1O.ar(in, azi, elev, level);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3],ambSig[1]]);
+				};
+
+				iemStereoConvert = { |in1, azi1= 0, in2, azi2 = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi1O.ar(in1, azi1, elev, level) +
+					PanAmbi1O.ar(in2, azi2, elev, level);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3],ambSig[1]]);
+				};
+
 				SynthDef.new("ambiConverter", { arg gate = 1;
 					var ambixsig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
@@ -2426,6 +2446,21 @@ GUI Parameters usable in SynthDefs
 			{ convert_fuma = true;
 				convert_ambix = false;
 
+				iemConvert = { |in, azi = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi2O.ar(in, azi = 0, elev = 0, level = 1);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3],
+						ambSig[1],ambSig[5],ambSig[7],
+						ambSig[8],ambSig[6],ambSig[4]]);
+				};
+
+				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi2O.ar(in1, azi1, elev, level) +
+					PanAmbi2O.ar(in2, azi2, elev, level);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3],
+						ambSig[1],ambSig[5],ambSig[7],
+						ambSig[8],ambSig[6],ambSig[4]]);
+				};
+
 				SynthDef.new("ambiConverter", { arg gate = 1;
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
@@ -2450,6 +2485,23 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 3 }
 			{ convert_fuma = true;
 				convert_ambix = false;
+
+				iemConvert = { |in, azi, elev, level|
+					var ambSig = PanAmbi3O.ar(in, azi = 0, elev = 0, level = 1);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
+						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
+						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
+						ambSig[15],ambSig[13],ambSig[11],ambSig[9]]);
+				};
+
+				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi3O.ar(in1, azi1, elev, level) +
+					PanAmbi3O.ar(in1, azi1, elev, level);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
+						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
+						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
+						ambSig[15],ambSig[13],ambSig[11],ambSig[9]]);
+				};
 
 				SynthDef.new("ambiConverter", { arg gate = 1;
 					var sig, env;
@@ -2476,6 +2528,23 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 4 }
 			{ convert_fuma = true;
 				convert_ambix = false;
+
+				iemConvert = { |in, azi, elev, level|
+					var ambSig = PanAmbi3O.ar(in, azi = 0, elev = 0, level = 1);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
+						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
+						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
+						ambSig[15],ambSig[13],ambSig[11],ambSig[9]]);
+				};
+
+				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi3O.ar(in1, azi1, elev, level) +
+					PanAmbi3O.ar(in1, azi1, elev, level);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
+						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
+						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
+						ambSig[15],ambSig[13],ambSig[11],ambSig[9]]);
+				};
 
 				SynthDef.new("ambiConverter", { arg gate = 1;
 					var sig, env;
@@ -2504,6 +2573,23 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 5 }
 			{ convert_fuma = true;
 				convert_ambix = false;
+
+				iemConvert = { |in, azi= 0, elev = 0, level = 1|
+					var ambSig = PanAmbi3O.ar(in, azi, elev, level);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
+						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
+						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
+						ambSig[15],ambSig[13],ambSig[11],ambSig[9]]);
+				};
+
+				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi3O.ar(in1, azi1, elev, level) +
+					PanAmbi3O.ar(in1, azi1, elev, level);
+					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
+						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
+						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
+						ambSig[15],ambSig[13],ambSig[11],ambSig[9]]);
+				};
 
 				SynthDef.new("ambiConverter", { arg gate = 1;
 					var sig, env;
@@ -2806,7 +2892,7 @@ GUI Parameters usable in SynthDefs
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
 				ambSig = MonoGrainBF.ar(junto, winsize, grainrate, winrand, az, 1 - contr,
 					ele, 1 - contr, rho:VarLag.kr((dis.squared * 50) / radius_max),
-					mul: 1 + (0.5 - (winsize)) + (1 - (grainrate / 40)) );
+					mul: 1 + (0.5 - winsize) + (1 - (grainrate / 40)) );
 
 				espacAmbOutFunc.value(ambSig, ambSig);
 			}).load(server);
@@ -2818,7 +2904,7 @@ GUI Parameters usable in SynthDefs
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 05, wir;
 
-				var ambSig,junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				var ambSig, junto, rd, dopplershift, az, ele, dis, xatras, yatras,
 				globallev, locallev, gsig, intens;
 
 				var p;
@@ -2874,6 +2960,65 @@ GUI Parameters usable in SynthDefs
 				ambixOutFunc.value(ambSig);
 			}).load(server);
 
+
+			SynthDef.new("AmbIEMChowning"++rev_type,  {
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				dopamnt = 0, glev = 0, llev = 0,
+				room = 0.5, damp = 0.5, wir;
+
+				var junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens;
+
+				var p;
+				var grevganho = 0.04; // needs less gain
+				var lrevRef = Ref(0);
+				dis = radius;
+
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				p = In.ar(inbus, 1);
+				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev  * Lag.kr(llev, 0.1);
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * (1 - dis).squared;
+
+				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
+
+				junto = p + lrevRef.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				iemConvert.value(junto, az, ele, 2);
+			}).load(server);
 
 
 			SynthDef.new("hoaLibChowning"++rev_type,  {
@@ -3310,6 +3455,91 @@ GUI Parameters usable in SynthDefs
 
 
 
+			SynthDef.new("JoshGrainStereoChowning"++rev_type,  {
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				angle = 1.05,
+				dopamnt = 0, glev = 0, llev = 0,
+				room = 0.5, damp = 0.5, zir,
+				contr = 1, grainrate = 10, winsize = 0.1, winrand = 0;
+
+				var sig, junto1, junto2, rd, dopplershift,
+				az, azim1, azim2, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens;
+
+				var p, p1, p2;
+				var grevganho = 0.04; // needs less gain
+				var lrev1Ref =  Ref(0);
+				var lrev2Ref =  Ref(0);
+				dis = 1 - radius;
+
+				az = azim - 1.5707963267949;
+				//azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
+				//azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
+				azim1 = az - (angle * dis);
+				azim2 = az + (angle * dis);
+
+				dis = radius;
+
+				//ele = Lag.kr(elev, 0.1);
+				ele = elev;
+				dis = Select.kr(dis < (radius_max * 0.05), [ dis, (radius_max * 0.05) ]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				p = In.ar(inbus, 2);
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				gsig = Mix.new(p) / 2 * globallev;
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * (1 - dis);
+
+				p1 = p[0];
+				p2 = p[1];
+
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev * Lag.kr(llev, 0.1);
+
+				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, zir, locallev,
+					room, damp);
+
+				junto1 = p1 + lrev1Ref.value;
+				junto2 = p2 + lrev2Ref.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+
+				sig = MonoGrainBF.ar(junto1, winsize, grainrate, winrand, azim1, 1 - contr,
+					ele, 1 - contr, rho:VarLag.kr((dis.squared * 50) / radius_max),
+					mul: 1 + (0.3 - winsize) + (1 - (grainrate / 40)) ) +
+				MonoGrainBF.ar(junto2, winsize, grainrate, winrand, azim2, 1 - contr,
+					ele, 1 - contr, rho:VarLag.kr((dis.squared * 50) / radius_max),
+					mul: 1 + (0.3 - winsize) + (1 - (grainrate / 40)) );
+
+				espacAmbEstereoOutFunc.value(sig, sig);
+			}).load(server);
+
+
 
 			SynthDef.new("ambitoolsStereoChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
@@ -3388,6 +3618,79 @@ GUI Parameters usable in SynthDefs
 				ambixOutFunc.value(sig);
 			}).load(server);
 
+
+			SynthDef.new("AmbIEMStereoChowning"++rev_type,  {
+				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				angle = 1.05,
+				dopamnt = 0, glev = 0, llev = 0,
+				room = 0.5, damp = 0.5, zir;
+
+				var junto1, junto2, rd, dopplershift,
+				az, azim1, azim2, ele, dis, xatras, yatras,
+				globallev, locallev, gsig, intens;
+
+				var p, p1, p2;
+				var grevganho = 0.04; // needs less gain
+				var lrev1Ref =  Ref(0);
+				var lrev2Ref =  Ref(0);
+				dis = 1 - radius;
+
+				az = azim - 1.5707963267949;
+				azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
+				azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
+
+				p = In.ar(inbus, 2);
+				p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
+
+				dis = radius;
+
+				ele = Lag.kr(elev, 0.1);
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+
+				// Doppler
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = dopplershift;
+
+				// Global reverberation & intensity
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = globallev / 3; // scale it so that it values 1 close to origin
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+
+				globallev = globallev * Lag.kr(glev, 0.1);
+				gsig = p * globallev;
+
+				gsig = Mix.new(p) / 2 * globallev;
+				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+
+				//applie distance attenuation before mixxing in reverb to keep trail off
+				p = p * (1 - dis).squared;
+
+				p1 = p[0];
+				p2 = p[1];
+
+				// Local reverberation
+				locallev = dis;
+				locallev = locallev * Lag.kr(llev, 0.1);
+
+				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, zir, locallev,
+					room, damp);
+
+				junto1 = p1 + lrev1Ref.value;
+				junto2 = p2 + lrev2Ref.value;
+
+				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				iemStereoConvert.value(junto1, azim1, junto2, azim2, ele);
+			}).load(server);
 
 
 			SynthDef.new("hoaLibStereoChowning"++rev_type,  {
@@ -5317,7 +5620,7 @@ GUI Parameters usable in SynthDefs
 		if (i == this.nfontes) {
 			^false.asBoolean;
 		} {
-			if ( (this.lib[i].value > 5) // pass ambisonic libs
+			if ( (this.lib[i].value > (lastFUMA +1)) // pass ambisonic libs
 				&& this.espacializador[i].notNil ) {
 				^true.asBoolean;
 			} {
@@ -5405,12 +5708,12 @@ GUI Parameters usable in SynthDefs
 
 					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-						libboxProxy[i].valueAction = 3;
+						libboxProxy[i].valueAction = lastSN3D + 1;
 
 						// set lib, convert and dstrv variables when stynths are lauched
 						// for the tracking functions to stay relevant
 
-						lib[i] = 3;
+						lib[i] = lastSN3D + 1;
 						dstrv[i] = 3;
 						convert[i] = convert_fuma;
 
@@ -5507,11 +5810,11 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= 2) }
+						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
 						{ convert[i] = convert_ambix; }
-						{ (libboxProxy[i].value >= 3) && (libboxProxy[i].value <= 4) }
+						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
-						{ libboxProxy[i].value >= 5 }
+						{ libboxProxy[i].value >= (lastFUMA + 1) }
 						{ convert[i] = convert_direct; };
 
 						dstrv[i] = dstrvboxProxy[i].value;
@@ -5530,7 +5833,7 @@ GUI Parameters usable in SynthDefs
 
 						if (speaker_array.isNil) {
 
-							if ((this.libboxProxy[i].value > 4) && this.nonAmbi2FuMa.isNil) {
+							if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
 								this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 									target:this.glbRevDecGrp).onFree({
 									this.nonAmbi2FuMa = nil;
@@ -5602,12 +5905,12 @@ GUI Parameters usable in SynthDefs
 
 					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-						libboxProxy[i].valueAction = 3;
+						libboxProxy[i].valueAction = lastSN3D + 1;
 
 						// set lib, convert and dstrv variables when stynths are lauched
 						// for the tracking functions to stay relevant
 
-						lib[i] = 3;
+						lib[i] = lastSN3D + 1;
 						dstrv[i] = 3;
 						convert[i] = convert_fuma;
 
@@ -5706,11 +6009,11 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= 2) }
+						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
 						{ convert[i] = convert_ambix; }
-						{ (libboxProxy[i].value >= 3) && (libboxProxy[i].value <= 4) }
+						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
-						{ libboxProxy[i].value >= 5 }
+						{ libboxProxy[i].value >= (lastFUMA + 1) }
 						{ convert[i] = convert_direct; };
 
 						dstrv[i] = dstrvboxProxy[i].value;
@@ -5729,7 +6032,7 @@ GUI Parameters usable in SynthDefs
 
 						if (speaker_array.isNil) {
 
-							if ((this.libboxProxy[i].value > 4) && this.nonAmbi2FuMa.isNil) {
+							if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
 								this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 									target:this.glbRevDecGrp).onFree({
 									this.nonAmbi2FuMa = nil;
@@ -5791,12 +6094,12 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 					};*/
 
-					libboxProxy[i].valueAction = 3;
+					libboxProxy[i].valueAction = lastSN3D + 1;
 
-					// set lib, convert and dstrv variables when stynths are lauched
-					// for the tracking functions to stay relevant
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
 
-					lib[i] = 3;
+					lib[i] = lastSN3D + 1;
 					convert[i] = convert_fuma;
 					dstrv[i] = dstrvboxProxy[i].value;
 
@@ -5986,12 +6289,12 @@ GUI Parameters usable in SynthDefs
 
 				if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-					libboxProxy[i].valueAction = 3;
+					libboxProxy[i].valueAction = lastSN3D + 1;
 
 					// set lib, convert and dstrv variables when stynths are lauched
 					// for the tracking functions to stay relevant
 
-					lib[i] = 3;
+					lib[i] = lastSN3D + 1;
 					dstrv[i] = 3;
 					convert[i] = convert_fuma;
 
@@ -6087,13 +6390,13 @@ GUI Parameters usable in SynthDefs
 
 					lib[i] = libboxProxy[i].value;
 
-						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= 2) }
-						{ convert[i] = convert_ambix; }
-						{ (libboxProxy[i].value >= 3) && (libboxProxy[i].value <= 4) }
-						{ convert[i] = convert_fuma; }
-						{ libboxProxy[i].value >= 5 }
-						{ convert[i] = convert_direct; };
+					case
+					{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+					{ convert[i] = convert_ambix; }
+					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+					{ convert[i] = convert_fuma; }
+					{ libboxProxy[i].value >= (lastFUMA + 1) }
+					{ convert[i] = convert_direct; };
 
 					dstrv[i] = dstrvboxProxy[i].value;
 
@@ -6111,7 +6414,7 @@ GUI Parameters usable in SynthDefs
 
 					if (speaker_array.isNil) {
 
-						if ((this.libboxProxy[i].value > 4) && this.nonAmbi2FuMa.isNil) {
+						if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
 							this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 								target:this.glbRevDecGrp).onFree({
 								this.nonAmbi2FuMa = nil;
@@ -6179,12 +6482,12 @@ GUI Parameters usable in SynthDefs
 
 				if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-					libboxProxy[i].valueAction = 3;
+					libboxProxy[i].valueAction = lastSN3D + 1;
 
 					// set lib, convert and dstrv variables when stynths are lauched
 					// for the tracking functions to stay relevant
 
-					lib[i] = 3;
+					lib[i] = lastSN3D + 1;
 					dstrv[i] = 3;
 					convert[i] = convert_fuma;
 
@@ -6280,13 +6583,13 @@ GUI Parameters usable in SynthDefs
 
 					lib[i] = libboxProxy[i].value;
 
-						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= 2) }
-						{ convert[i] = convert_ambix; }
-						{ (libboxProxy[i].value >= 3) && (libboxProxy[i].value <= 4) }
-						{ convert[i] = convert_fuma; }
-						{ libboxProxy[i].value >= 5 }
-						{ convert[i] = convert_direct; };
+					case
+					{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+					{ convert[i] = convert_ambix; }
+					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+					{ convert[i] = convert_fuma; }
+					{ libboxProxy[i].value >= (lastFUMA + 1) }
+					{ convert[i] = convert_direct; };
 
 					dstrv[i] = dstrvboxProxy[i].value;
 
@@ -6304,7 +6607,7 @@ GUI Parameters usable in SynthDefs
 
 					if (speaker_array.isNil) {
 
-						if ((this.libboxProxy[i].value > 4) && this.nonAmbi2FuMa.isNil) {
+						if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
 							this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 								target:this.glbRevDecGrp).onFree({
 								this.nonAmbi2FuMa = nil;
@@ -6369,12 +6672,12 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 					};*/
 
-					libboxProxy[i].valueAction = 3;
+					libboxProxy[i].valueAction = lastSN3D + 1;
 
 					// set lib, convert and dstrv variables when stynths are lauched
 					// for the tracking functions to stay relevant
 
-					lib[i] = 3;
+					lib[i] = lastSN3D + 1;
 					convert[i] = convert_fuma;
 					dstrv[i] = dstrvboxProxy[i].value;
 
@@ -6576,12 +6879,12 @@ GUI Parameters usable in SynthDefs
 
 					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-						libboxProxy[i].valueAction = 3;
+						libboxProxy[i].valueAction = lastSN3D + 1;
 
 						// set lib, convert and dstrv variables when stynths are lauched
 						// for the tracking functions to stay relevant
 
-						lib[i] = 3;
+						lib[i] = lastSN3D + 1;
 						dstrv[i] = 3;
 						convert[i] = convert_fuma;
 
@@ -6677,11 +6980,11 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= 2) }
+						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
 						{ convert[i] = convert_ambix; }
-						{ (libboxProxy[i].value >= 3) && (libboxProxy[i].value <= 4) }
+						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
-						{ libboxProxy[i].value >= 5 }
+						{ libboxProxy[i].value >= (lastFUMA + 1) }
 						{ convert[i] = convert_direct; };
 
 						dstrv[i] = dstrvboxProxy[i].value;
@@ -6700,7 +7003,7 @@ GUI Parameters usable in SynthDefs
 
 						if (speaker_array.isNil) {
 
-							if ((this.libboxProxy[i].value > 4) && this.nonAmbi2FuMa.isNil) {
+							if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
 								this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 									target:this.glbRevDecGrp).onFree({
 									this.nonAmbi2FuMa = nil;
@@ -6782,12 +7085,12 @@ GUI Parameters usable in SynthDefs
 
 					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-						libboxProxy[i].valueAction = 3;
+						libboxProxy[i].valueAction = lastSN3D + 1;
 
 						// set lib, convert and dstrv variables when stynths are lauched
 						// for the tracking functions to stay relevant
 
-						lib[i] = 3;
+						lib[i] = lastSN3D + 1;
 						dstrv[i] = 3;
 						convert[i] = convert_fuma;
 
@@ -6884,11 +7187,11 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= 2) }
+						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
 						{ convert[i] = convert_ambix; }
-						{ (libboxProxy[i].value >= 3) && (libboxProxy[i].value <= 4) }
+						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
-						{ libboxProxy[i].value >= 5 }
+						{ libboxProxy[i].value >= (lastFUMA + 1) }
 						{ convert[i] = convert_direct; };
 
 						dstrv[i] = dstrvboxProxy[i].value;
@@ -6905,9 +7208,9 @@ GUI Parameters usable in SynthDefs
 							};
 						};
 
-						if (this.libboxProxy[i].value > 4) {
+						if (speaker_array.isNil) {
 
-							if (speaker_array.isNil && this.nonAmbi2FuMa.isNil) {
+							if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
 								this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 									target:this.glbRevDecGrp).onFree({
 									this.nonAmbi2FuMa = nil;
@@ -6961,12 +7264,12 @@ GUI Parameters usable in SynthDefs
 					};*/
 
 
-					libboxProxy[i].valueAction = 3;
+					libboxProxy[i].valueAction = lastSN3D + 1;
 
 					// set lib, convert and dstrv variables when stynths are lauched
 					// for the tracking functions to stay relevant
 
-					lib[i] = 3;
+					lib[i] = lastSN3D + 1;
 					dstrv[i] = dstrvboxProxy[i].value;
 					convert[i] = convert_fuma;
 
@@ -8191,7 +8494,7 @@ GUI Parameters usable in SynthDefs
 		libnumbox.action_({ arg num;
 			{this.libbox[currentsource].valueAction = num.value;}.defer;
 		});
-		libnumbox.value = 3;
+		libnumbox.value = lastSN3D + 1;
 
 
 		/////////////////////////////////////////////////////////
@@ -8649,6 +8952,7 @@ GUI Parameters usable in SynthDefs
 			{this.spcheck[currentsource].valueAction = butt.value;}.defer;
 		});
 		spreadcheck.value = false;
+
 		diffusecheck = CheckBox( win, Rect(90, 310, 80, 20), "Diffuse").action_({ arg butt;
 			{this.dfcheck[currentsource].valueAction = butt.value;}.defer;
 		});
@@ -8708,13 +9012,13 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(163, 370, 200, 20));
-		textbuf.string = "Grain Win.size (JoshGrain)";
+		textbuf.string = "Window size (JoshGrain)";
 		winumbox = NumberBox(win, Rect(10, 370, 40, 20));
 		winumbox.value = 0.1;
 		winumbox.clipHi = 0.2;
 		winumbox.clipLo = 0;
-		winumbox.step_(0.001);
-		winumbox.scroll_step_(0.001);
+		winumbox.step_(0.01);
+		winumbox.scroll_step_(0.01);
 		winumbox.align = \center;
 		winumbox.action = {arg num;
 			{winbox[currentsource].valueAction = num.value;}.defer;
@@ -8731,7 +9035,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(163, 390, 200, 20));
-		textbuf.string = "Grain Rand.win (JoshGrain)";
+		textbuf.string = "Rand. win. (JoshGrain)";
 		randnumbox = NumberBox(win, Rect(10, 390, 40, 20));
 		randnumbox.value = 0;
 		randnumbox.clipHi = 1;
@@ -9262,7 +9566,7 @@ GUI Parameters usable in SynthDefs
 			this.libbox[i].action = {arg num;
 				this.libboxProxy[i].valueAction = num.value;
 			};
-			libbox[i].value = 3;
+			libbox[i].value = lastSN3D;
 
 			this.dstrvbox[i].action = {arg num;
 				this.dstrvboxProxy[i].valueAction = num.value;

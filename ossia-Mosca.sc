@@ -44,7 +44,7 @@
 		});
 
 		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", Integer, [0, spatList.size],
-				3, 'clip', critical:true);
+				lastSN3D + 1, 'clip', critical:true);
 
 		ossiaMasterLib.description_(spatList.asString);
 
@@ -228,7 +228,7 @@
 
 
 			this.ossialib[i] = OSSIA_Parameter(this.ossiasrc[i], "Library", Integer, [0, spatList.size],
-				3, 'clip', critical:true, repetition_filter:true);
+				lastSN3D + 1, 'clip', critical:true, repetition_filter:true);
 
 			this.ossialib[i].description_(spatList.asString);
 
