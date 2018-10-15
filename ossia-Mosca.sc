@@ -146,10 +146,10 @@
 
 		this.ossiaplay.callback_({ arg but;
 			if (but) {
-				if (this.isPlay.not) {
+				if (isPlay.not) {
 					this.control.play; };
 			} {
-				if (this.isPlay) {
+				if (isPlay) {
 					this.control.stop; };
 			};
 		});
@@ -169,7 +169,7 @@
 		this.ossiatransport.unit_(OSSIA_time.second);
 
 		this.ossiatransport.callback_({arg num;
-			if (this.ossiaseekback) {
+			if (this.ossiaseekback && (mmcslave !== 0)) {
 				this.control.seek(num.value);
 			};
 		});

@@ -1496,14 +1496,18 @@ GUI Parameters usable in SynthDefs
 			control.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
 			control.dock(this.vboxProxy[i], "levelProxy_" ++ i);
 			control.dock(this.dpboxProxy[i], "dopamtProxy_" ++ i);
-			control.dock(this.aboxProxy[i], "angleProxy_" ++ i);
 			control.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
+			control.dock(this.dstrvboxProxy[i], "localrevkindProxy_" ++ i);
 			control.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
 			control.dock(this.rmboxProxy[i], "localroomProxy_" ++ i);
 			control.dock(this.dmboxProxy[i], "localdampProxy_" ++ i);
+			control.dock(this.aboxProxy[i], "angleProxy_" ++ i);
 			control.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
 			control.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
 			control.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
+			control.dock(this.rateboxProxy[i], "grainrateProxy_" ++ i);
+			control.dock(this.winboxProxy[i], "windowsizeProxy_" ++ i);
+			control.dock(this.randboxProxy[i], "randomwindowProxy_" ++ i);
 			control.dock(this.a1boxProxy[i], "aux1Proxy_" ++ i);
 			control.dock(this.a2boxProxy[i], "aux2Proxy_" ++ i);
 			control.dock(this.a3boxProxy[i], "aux3Proxy_" ++ i);
@@ -1515,10 +1519,8 @@ GUI Parameters usable in SynthDefs
 			control.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
 			control.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
 			//control.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
+
 		};
-
-
-		///// these next few are not to be docked
 
 
 		this.clsrvboxProxy.action_({ arg num;
@@ -1705,7 +1707,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		clsrmboxProxy.action_({arg num;
+		this.clsrmboxProxy.action_({arg num;
 
 			this.glbRevDecGrp.set(\room, num.value);
 
@@ -1724,7 +1726,7 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		clsdmboxProxy.action_({arg num;
+		this.clsdmboxProxy.action_({arg num;
 
 			this.glbRevDecGrp.set(\damp, num.value);
 
@@ -2117,6 +2119,17 @@ GUI Parameters usable in SynthDefs
 		});
 
 
+		control.dock(this.clsrvboxProxy, "globrevkindProxy");
+		control.dock(this.clsrmboxProxy, "localroomProxy");
+		control.dock(this.clsdmboxProxy, "localdampProxy");
+		control.dock(this.oxnumboxProxy, "oxProxy");
+		control.dock(this.oynumboxProxy, "oyProxy");
+		control.dock(this.oznumboxProxy, "ozProxy");
+		control.dock(this.pitchnumboxProxy, "pitchProxy");
+		control.dock(this.rollnumboxProxy, "rollProxy");
+		control.dock(this.headingnumboxProxy, "headingProxy");
+
+
 		///////////////////////////////////////////////////
 
 
@@ -2447,7 +2460,7 @@ GUI Parameters usable in SynthDefs
 				convert_ambix = false;
 
 				iemConvert = { |in, azi = 0, elev = 0, level = 1|
-					var ambSig = PanAmbi2O.ar(in, azi = 0, elev = 0, level = 1);
+					var ambSig = PanAmbi2O.ar(in, azi, elev, level);
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3],
 						ambSig[1],ambSig[5],ambSig[7],
 						ambSig[8],ambSig[6],ambSig[4]]);
@@ -2486,8 +2499,8 @@ GUI Parameters usable in SynthDefs
 			{ convert_fuma = true;
 				convert_ambix = false;
 
-				iemConvert = { |in, azi, elev, level|
-					var ambSig = PanAmbi3O.ar(in, azi = 0, elev = 0, level = 1);
+				iemConvert = { |in, azi = 0, elev = 0, level|
+					var ambSig = PanAmbi3O.ar(in, azi, elev, level);
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
 						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
 						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
@@ -2529,8 +2542,8 @@ GUI Parameters usable in SynthDefs
 			{ convert_fuma = true;
 				convert_ambix = false;
 
-				iemConvert = { |in, azi, elev, level|
-					var ambSig = PanAmbi3O.ar(in, azi = 0, elev = 0, level = 1);
+				iemConvert = { |in, azi = 0, elev = 0, level = 1|
+					var ambSig = PanAmbi3O.ar(in, azi, elev, level);
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
 						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
 						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
@@ -2574,7 +2587,7 @@ GUI Parameters usable in SynthDefs
 			{ convert_fuma = true;
 				convert_ambix = false;
 
-				iemConvert = { |in, azi= 0, elev = 0, level = 1|
+				iemConvert = { |in, azi = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi3O.ar(in, azi, elev, level);
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
 						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
@@ -9793,7 +9806,7 @@ GUI Parameters usable in SynthDefs
 			};
 			*/
 
-			if (time == 0) {
+			if ((time == 0) && ossiatransport.notNil) {
 				this.ossiaseekback = false;
 				this.ossiatransport.v_(0);
 				this.ossiaseekback = true;
