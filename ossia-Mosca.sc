@@ -169,7 +169,7 @@
 		this.ossiatransport.unit_(OSSIA_time.second);
 
 		this.ossiatransport.callback_({arg num;
-			if (this.ossiaseekback && (mmcslave !== 0)) {
+			if (this.ossiaseekback) {
 				this.control.seek(num.value);
 			};
 		});
