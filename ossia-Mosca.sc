@@ -139,7 +139,7 @@
 			};
 		});
 
-		ossiaAutomation = OSSIA_Node(ossiaParent, "Aoutmation_Quarck");
+		ossiaAutomation = OSSIA_Node(ossiaParent, "Automation_Quarck");
 
 		this.ossiaplay = OSSIA_Parameter(ossiaAutomation, "Play", Boolean,
 			critical:true, repetition_filter:true);
@@ -243,23 +243,9 @@
 				critical:true, repetition_filter:true);
 
 			this.ossiaaud[i].callback_({ arg num;
-				if(isPlay.not) {
-					if(num)
-					{
-						firstTime[i] = true;
-						testado[i] = true;
-						if (guiflag && (i == currentsource))
-						{btestar.value = 1};
-					} {
-						runStop.value(i);
-						this.synt[i].free;
-						this.synt[i] = nil;
-						testado[i] = false;
-						if (guiflag && (i == currentsource))
-						{btestar.value = 0};
-						("stopping Source " ++ (i + 1)).postln;
-					};
-				};
+				this.auditionFunc(currentsource, num.value);
+				if (guiflag && (i == currentsource)) {
+					btestar.value = num.value.asInteger};
 			});
 
 

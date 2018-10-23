@@ -5359,6 +5359,25 @@ GUI Parameters usable in SynthDefs
 
 	} // end initMosca
 
+	auditionFunc { |source, bool|
+		if(isPlay.not) {
+			if(bool) {
+				firstTime[source] = true;
+				//runTrigger.value(currentsource); - watcher does this now
+				//tocar.value(currentsource, 0); // needed only by SC input
+				//- and probably by HW - causes duplicates with file
+				// as file playback is handled by the "watcher" routine
+				testado[source] = true;
+			} {
+				runStop.value(source);
+				this.synt[source].free;
+				this.synt[source] = nil;
+				testado[source] = false;
+				"stopping!".postln;
+			};
+		};
+	}
+
 	blips {
 		Routine.new({
 			4.do{
@@ -5500,9 +5519,9 @@ GUI Parameters usable in SynthDefs
 		this.synthRegistry[source].do({
 			arg item, i;
 
-			//	if(item.isPlaying) {
-			item.set(param, value);
-			//	}
+			//if(item.notNil) {
+				item.set(param, value);
+			//}
 		});
 
 	}
@@ -8065,44 +8084,17 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-
-
-
 		btestar = Button(dialView, Rect(0, 60, 90, 20))
 		.states_([
 			["audition", Color.black, Color.white],
 			["stop", Color.white, Color.red]
 		])
 		.action_({ arg but;
+			var bool = but.value.asBoolean;
 			if (this.ossiaaud.isNil) {
-				{ if(isPlay.not) {
-					if(but.value == 1) {
-						firstTime[currentsource] = true;
-						//testado[currentsource] = true;
-						//runTrigger.value(currentsource); - watcher does this now
-						//tocar.value(currentsource, 0); // needed only by SC input
-						//- and probably by HW - causes duplicates with file
-						// as file playback is handled by the "watcher" routine
-						testado[currentsource] = true;
-					} {
-
-						//testado[currentsource] = false;
-						runStop.value(currentsource);
-						this.synt[currentsource].free;
-						this.synt[currentsource] = nil;
-						testado[currentsource] = false;
-						"stopping!".postln;
-					};
-				} {
-					but.value = 0;
-				}
-				}.defer;
+				this.auditionFunc(currentsource, bool);
 			} {
-				if (but.value == 1) {
-					this.ossiaaud[currentsource].v_(true);
-				} {
-					this.ossiaaud[currentsource].v_(false);
-				}
+				this.ossiaaud[currentsource].v_(bool);
 			};
 		});
 
@@ -9692,13 +9684,17 @@ GUI Parameters usable in SynthDefs
 		};
 
 		runTrigger = {
-			arg source;
+			arg source, dirrect = false;
 			//	if(scncheck[i]) {
 			if(this.triggerFunc[source].notNil) {
 				this.triggerFunc[source].value;
+				if (dirrect && this.synt[source].isNil && (this.spheval[source].rho < 1)) {
+					this.newtocar(source, 0, force: true);
+				} {
 				updateSynthInArgs.value(source);
+				};
 				"RUNNING TRIGGER".postln;
-			}
+			};
 		};
 
 		runStops = {
@@ -9713,9 +9709,14 @@ GUI Parameters usable in SynthDefs
 		};
 
 		runStop = {
-			arg source;
+			arg source, dirrect = false;
 			if(this.stopFunc[source].notNil) {
 				this.stopFunc[source].value;
+				if (dirrect) {
+					firstTime[source] = false;
+					this.synt[source].free;
+					this.synt[source] = nil;
+				};
 			}
 		};
 
