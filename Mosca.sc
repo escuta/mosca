@@ -5519,9 +5519,9 @@ GUI Parameters usable in SynthDefs
 		this.synthRegistry[source].do({
 			arg item, i;
 
-			//if(item.notNil) {
+			if(item.notNil) {
 				item.set(param, value);
-			//}
+			}
 		});
 
 	}
@@ -7901,13 +7901,11 @@ GUI Parameters usable in SynthDefs
 				{
 					{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
 					{ zslider.value = (this.zlev[currentsource] + 1) * 0.5; }.defer;
-					{ znumbox.value = this.zlev[currentsource]; }.defer; }.defer(guiInt);
+					{ znumbox.value = this.zlev[currentsource]; }.defer;
+					{ win.refresh; }.defer;
+				}.defer(guiInt);
 			};
-
-			{ win.refresh; }.defer;
-
 			//plotlock = true;
-
 		};
 
 		/*novoplot = {
@@ -9691,7 +9689,7 @@ GUI Parameters usable in SynthDefs
 				if (dirrect && this.synt[source].isNil && (this.spheval[source].rho < 1)) {
 					this.newtocar(source, 0, force: true);
 				} {
-				updateSynthInArgs.value(source);
+				//updateSynthInArgs.value(source);
 				};
 				"RUNNING TRIGGER".postln;
 			};
