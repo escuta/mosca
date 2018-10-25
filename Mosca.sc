@@ -1489,6 +1489,9 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{this.tfield[i].value = path.value}.defer;
 				};
+				if (this.ossiaaud.notNil) {
+					this.ossiaaud[i].description = PathName(path.value).fileNameWithoutExtension;
+				};
 			};
 
 			control.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
@@ -7624,10 +7627,6 @@ GUI Parameters usable in SynthDefs
 			if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
 				i.postln;
 				newpath.postln;
-
-				if (this.ossiasrc.notNil) {
-					this.ossiasrc[i].description = newpath;
-				};
 
 				this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf;
 					"Loaded file".postln;
