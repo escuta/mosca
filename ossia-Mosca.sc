@@ -54,6 +54,19 @@
 			});
 		});
 
+
+		this.ossiamaster = OSSIA_Parameter(ossiaParent, "Master_level", Float, [0, 1],
+				1, 'clip', critical:allCrtitical);
+
+		this.ossiamaster.unit_(OSSIA_gain.linear);
+
+		this.ossiamaster.callback_({ arg num;
+			if (masterlevProxy.value != num.value) {
+				masterlevProxy.valueAction = num.value;
+			};
+		});
+
+
 		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Dst._Reverb_all", Integer, [0, (2 + rirList.size)],
 				0, 'clip', critical:true);
 

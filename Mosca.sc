@@ -208,17 +208,17 @@ Mosca {
 	<>clsdm, //<>clsdmslider,
 	<>clsdmnumbox, <>clsdmbox, <>clsdmboxProxy, // setable global dampening
 
+	<>masterlevProxy, <>masterslider,
+
 	<>ossiasrc, <>ossiaorient, <>ossiaorigine, <>ossiaplay, <>ossiatrasportLoop, <>ossiatransport,
 	<>ossiaseekback, <>ossiarec, <>ossiacart, <>ossiasphe, <>ossiaaud, <>ossialoop, <>ossialib,
 	<>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam, <>ossiaclsdel, <>ossiaclsdec, <>ossiadst,
 	<>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr,
-	<>ossiaspread, <>ossiadiff, <>ossiaCartBack, <>ossiaSpheBack, <>ossiarate, <>ossiawin, <>ossiarand;
-
+	<>ossiaspread, <>ossiadiff, <>ossiaCartBack, <>ossiaSpheBack, <>ossiarate, <>ossiawin, <>ossiarand,
+	<>ossiamaster;
 
 
 	/////////////////////////////////////////
-
-
 
 
 	classvar server,
@@ -698,6 +698,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		//set up automationProxy for single parameters outside of the previous loop, not to be docked
+		masterlevProxy = AutomationGuiProxy.new(1);
 		clsrvboxProxy = AutomationGuiProxy.new(0);
 		clsrmboxProxy = AutomationGuiProxy.new(0.5); // cls roomsize proxy
 		clsdmboxProxy = AutomationGuiProxy.new(0.5); // cls dampening proxy
@@ -1524,6 +1525,24 @@ GUI Parameters usable in SynthDefs
 			//control.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
 
 		};
+
+
+		this.masterlevProxy.action_({ arg num;
+
+			this.globDec.set(\level, num.value);
+
+			if (guiflag) {
+				this.masterslider.value = num.value;
+			};
+
+			if (this.ossiamaster.notNil) {
+				if (this.ossiamaster.v != num.value) {
+					this.ossiamaster.v_(num.value);
+				};
+			};
+
+		});
+
 
 
 		this.clsrvboxProxy.action_({ arg num;
@@ -2403,7 +2422,7 @@ GUI Parameters usable in SynthDefs
 
 			if (suboutbus.notNil) {
 				subOutFunc = { |signal, sublevel|
-					var subOut = Mix.ar(signal) * sublevel;
+					var subOut = Mix.ar(signal) * sublevel  * 0.55;
 					Out.ar(suboutbus, signal);
 				};
 			} {
@@ -2435,7 +2454,7 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 				if (this.serport.notNil) {
-					SynthDef.new("globDecodeSynth",  { arg heading=0, roll=0, pitch=0, sub = 1;
+					SynthDef.new("globDecodeSynth",  { arg heading=0, roll=0, pitch=0, sub = 1, level = 1;
 						var sig;
 						sig = In.ar(this.globTBus, 4);
 						sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),
@@ -2443,16 +2462,16 @@ GUI Parameters usable in SynthDefs
 							Lag.kr(pitch, 0.01));
 						sig = FoaDecode.ar(sig, decoder);
 						nonAmbiFunc.value(sig);
-						subOutFunc.value(sig, sub * 0.55);
+						subOutFunc.value(sig * level, sub);
 						Out.ar(outbus, sig);
 					}).add;
 				} {
-					SynthDef.new("globDecodeSynth",  { arg heading=0, roll=0, pitch=0, sub = 1;
+					SynthDef.new("globDecodeSynth",  { arg heading=0, roll=0, pitch=0, sub = 1, level = 1;
 						var sig;
 						sig = In.ar(this.globTBus, 4);
 						sig = FoaDecode.ar(sig, decoder);
 						nonAmbiFunc.value(sig);
-						subOutFunc.value(sig, sub * 0.55);
+						subOutFunc.value(sig * level, sub);
 						Out.ar(outbus, sig);
 					}).add;
 				}
@@ -2486,14 +2505,14 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 				SynthDef("globDecodeSynth", {
-					arg lf_hf=0, xover=400, sub = 1;
+					arg lf_hf=0, xover=400, sub = 1, level = 1;
 					var sig;
 					sig = In.ar(this.ambixbus, bFormNumChan);
 					sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
 						sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
+					sig = sig * 2 * level; //make upd for generaly low output
 					subOutFunc.value(sig, sub);
-					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			}
@@ -2528,15 +2547,15 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 				SynthDef("globDecodeSynth", {
-					arg lf_hf=0, xover=400, sub = 1;
+					arg lf_hf=0, xover=400, sub = 1, level = 1;
 					var sig;
 					sig = In.ar(this.ambixbus, bFormNumChan);
 					sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
 						sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
 						sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
+					sig = sig * 2 * level; //make upd for generaly low output
 					subOutFunc.value(sig, sub);
-					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			}
@@ -2571,7 +2590,7 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 				SynthDef("globDecodeSynth", {
-					arg lf_hf=0, xover=400, sub = 1;
+					arg lf_hf=0, xover=400, sub = 1, level = 1;
 					var ambixsig, sig;
 					sig = In.ar(this.ambixbus, bFormNumChan);
 					sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
@@ -2580,8 +2599,8 @@ GUI Parameters usable in SynthDefs
 						sig[19], sig[20], sig[21], sig[22], sig[23], sig[24],
 						0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
+					sig = sig * 2 * level; //make upd for generaly low output
 					subOutFunc.value(sig, sub);
-					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			}
@@ -2616,7 +2635,7 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 				SynthDef("globDecodeSynth", {
-					arg lf_hf=0, xover=400, sub = 1;
+					arg lf_hf=0, xover=400, sub = 1, level = 1;
 					var sig;
 					sig = In.ar(this.ambixbus, bFormNumChan);
 					sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
@@ -2629,8 +2648,8 @@ GUI Parameters usable in SynthDefs
 						sig[32], sig[33], sig[34], sig[35],
 						0, lf_hf, xover:xover);
 					nonAmbiFunc.value(sig);
+					sig = sig * 2 * level; //make upd for generaly low output
 					subOutFunc.value(sig, sub);
-					sig = sig * 2; //make upd for generaly low output
 					Out.ar(outbus, sig);
 				}).add;
 			};
@@ -8542,23 +8561,23 @@ GUI Parameters usable in SynthDefs
 
 		//if (this.serport.notNil) { //comment out serial port prerequisit
 
-		orientView = UserView(win, Rect(width - 265, height - 85, 265, 100));
+		orientView = UserView(win, Rect(width - 285, height - 85, 285, 100));
 
-		this.pitchnumbox = NumberBox(orientView, Rect(220, 20, 40, 20));
+		this.pitchnumbox = NumberBox(orientView, Rect(240, 20, 40, 20));
 		pitchnumbox.align = \center;
 		pitchnumbox.clipHi = pi;
 		pitchnumbox.clipLo = -pi;
 		pitchnumbox.step_(0.01);
 		pitchnumbox.scroll_step_(0.01);
 
-		this.rollnumbox = NumberBox(orientView, Rect(220, 40, 40, 20));
+		this.rollnumbox = NumberBox(orientView, Rect(240, 40, 40, 20));
 		rollnumbox.align = \center;
 		rollnumbox.clipHi = pi;
 		rollnumbox.clipLo = -pi;
 		rollnumbox.step_(0.01);
 		rollnumbox.scroll_step_(0.01);
 
-		this.headingnumbox = NumberBox(orientView, Rect(220, 60, 40, 20));
+		this.headingnumbox = NumberBox(orientView, Rect(240, 60, 40, 20));
 		headingnumbox.align = \center;
 		headingnumbox.clipHi = pi;
 		headingnumbox.clipLo = -pi;
@@ -8578,29 +8597,29 @@ GUI Parameters usable in SynthDefs
 			this.headingnumboxProxy.valueAction = num.value;
 		};
 
-		textbuf = StaticText(orientView, Rect(205, 20, 12, 22));
+		textbuf = StaticText(orientView, Rect(225, 20, 12, 22));
 		textbuf.string = "P:";
-		textbuf = StaticText(orientView, Rect(205, 40, 12, 22));
+		textbuf = StaticText(orientView, Rect(225, 40, 12, 22));
 		textbuf.string = "R:";
-		textbuf = StaticText(orientView, Rect(205, 60, 12, 22));
+		textbuf = StaticText(orientView, Rect(225, 60, 12, 22));
 		textbuf.string = "H:";
 
-		textbuf = StaticText(orientView, Rect(217, 0, 45, 20));
+		textbuf = StaticText(orientView, Rect(237, 0, 45, 20));
 		textbuf.string = "Orient.";
 
 		//}; //comment out the prerequisit for the serial port
 
-		this.oxnumbox = NumberBox(orientView, Rect(160, 20, 40, 20));
+		this.oxnumbox = NumberBox(orientView, Rect(180, 20, 40, 20));
 		oxnumbox.align = \center;
 		oxnumbox.step_(0.01);
 		oxnumbox.scroll_step_(0.01);
 
-		this.oynumbox = NumberBox(orientView, Rect(160, 40, 40, 20));
+		this.oynumbox = NumberBox(orientView, Rect(180, 40, 40, 20));
 		oynumbox.align = \center;
 		oynumbox.step_(0.01);
 		oynumbox.scroll_step_(0.01);
 
-		this.oznumbox = NumberBox(orientView, Rect(160, 60, 40, 20));
+		this.oznumbox = NumberBox(orientView, Rect(180, 60, 40, 20));
 		oznumbox.align = \center;
 		oznumbox.step_(0.01);
 		oznumbox.scroll_step_(0.01);
@@ -8617,14 +8636,14 @@ GUI Parameters usable in SynthDefs
 			this.oznumboxProxy.valueAction = num.value;
 		};
 
-		textbuf = StaticText(orientView, Rect(145, 20, 12, 22));
+		textbuf = StaticText(orientView, Rect(165, 20, 12, 22));
 		textbuf.string = "X:";
-		textbuf = StaticText(orientView, Rect(145, 40, 12, 22));
+		textbuf = StaticText(orientView, Rect(165, 40, 12, 22));
 		textbuf.string = "Y:";
-		textbuf = StaticText(orientView, Rect(145, 60, 12, 22));
+		textbuf = StaticText(orientView, Rect(165, 60, 12, 22));
 		textbuf.string = "Z:";
 
-		textbuf = StaticText(orientView, Rect(155, 0, 47, 20));
+		textbuf = StaticText(orientView, Rect(175, 0, 47, 20));
 		textbuf.string = "Origine";
 
 
@@ -8679,9 +8698,23 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(orientView, Rect(0, 0, 150, 20));
+
+		textbuf = StaticText(orientView, Rect(5, 0, 20, 20));
+		textbuf.string = "M";
+
+		masterslider = Slider.new(orientView, Rect(0, 20, 20, 60));
+		masterslider.orientation(\vertical);
+		masterslider.value = 1;
+		masterslider.action = {arg num;
+			this.masterlevProxy.valueAction = num.value;
+		};
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		textbuf = StaticText(orientView, Rect(35, 0, 150, 20));
 		textbuf.string = "Cls./Afmt. Reverb";
-		clsReverbox = PopUpMenu(orientView, Rect(0, 20, 130, 20));
+		clsReverbox = PopUpMenu(orientView, Rect(20, 20, 130, 20));
 		clsReverbox.items = ["no-reverb",
 			"freeverb",
 			"allpass"] ++ rirList;
@@ -8698,7 +8731,6 @@ GUI Parameters usable in SynthDefs
 
 
 		/////////////////////////////////////////////////////////////////////////
-
 
 
 		textbuf = StaticText(win, Rect(163, 150, 150, 20));
@@ -8725,9 +8757,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(orientView, Rect(43, 40, 100, 20));
+		textbuf = StaticText(orientView, Rect(63, 40, 100, 20));
 		textbuf.string = "room/delay";
-		clsrmnumbox = NumberBox(orientView, Rect(0, 40, 40, 20));
+		clsrmnumbox = NumberBox(orientView, Rect(20, 40, 40, 20));
 		clsrmnumbox.value = 0.5;
 		clsrmnumbox.clipHi = 1;
 		clsrmnumbox.clipLo = 0;
@@ -8749,9 +8781,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(orientView, Rect(43, 60, 100, 20));
+		textbuf = StaticText(orientView, Rect(63, 60, 100, 20));
 		textbuf.string = "damp/decay";
-		clsdmnumbox = NumberBox(orientView, Rect(0, 60, 40, 20));
+		clsdmnumbox = NumberBox(orientView, Rect(20, 60, 40, 20));
 		clsdmnumbox.value = 0.5;
 		clsdmnumbox.clipHi = 1;
 		clsdmnumbox.clipLo = 0;
@@ -9987,7 +10019,7 @@ GUI Parameters usable in SynthDefs
 				+ zSliderHeight, 40, 20));
 			zAxis.bounds_(Rect(width - 80, halfheight - 10, 90, 20));
 
-			orientView.bounds_(Rect(width - 265, height - 85, 265, 100));
+			orientView.bounds_(Rect(width - 285, height - 85, 285, 100));
 
 			autoView.bounds_(Rect(10, height - 45, 325, 40));
 
