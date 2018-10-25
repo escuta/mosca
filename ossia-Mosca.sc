@@ -243,7 +243,7 @@
 				critical:true, repetition_filter:true);
 
 			this.ossiaaud[i].callback_({ arg num;
-				this.auditionFunc(currentsource, num.value);
+				this.auditionFunc(i, num.value);
 				if (guiflag && (i == currentsource)) {
 					btestar.value = num.value.asInteger};
 			});
