@@ -3370,24 +3370,22 @@ GUI Parameters usable in SynthDefs
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
 				contr = Lag.kr(contr, 0.1);
+				dis = radius;
 
-				dis = 1 - radius;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
 
 				az = azim - 1.5707963267949;
-				// azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-				// azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
-				azim1 = az - (angle * dis);
-				azim2 = az + (angle * dis);
+				//azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+				//azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
+				azim1 = az - (angle * (1 - dis));
+				azim2 = az + (angle * (1 - dis));
 
 				p = In.ar(inbus, 2) * 2; // match other spatializers gain
-				p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
-
-				dis = radius;
+				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 				// ele = Lag.kr(elev, 0.1);
 				ele = elev;
-				dis = Select.kr(dis < 0, [dis, 0]);
-				dis = Select.kr(dis > 1, [dis, 1]);
 
 				// Doppler
 				rd = dis * 340;
@@ -3505,20 +3503,19 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.04; // needs less gain
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
-				dis = 1 - radius;
+				dis = radius;
+
+				dis = Select.kr(dis < (radius_max * 0.05), [ dis, (radius_max * 0.05) ]);
+				dis = Select.kr(dis > 1, [dis, 1]);
 
 				az = azim - 1.5707963267949;
-				//azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-				//azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
-				azim1 = az - (angle * dis);
-				azim2 = az + (angle * dis);
-
-				dis = radius;
+				//azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+				//azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
+				azim1 = az - (angle * (1 - dis));
+				azim2 = az + (angle * (1 - dis));
 
 				//ele = Lag.kr(elev, 0.1);
 				ele = elev;
-				dis = Select.kr(dis < (radius_max * 0.05), [ dis, (radius_max * 0.05) ]);
-				dis = Select.kr(dis > 1, [dis, 1]);
 
 				p = In.ar(inbus, 2);
 
@@ -3590,17 +3587,14 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.04; // needs less gain
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
-				dis = 1 - radius;
-
-				az = azim - 1.5707963267949;
-				azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-				azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
-
 				dis = radius;
-
-				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < (radius_max * 0.05), [ dis, (radius_max * 0.05) ]);
 				dis = Select.kr(dis > 1, [dis, 1]);
+
+				az = azim - 1.5707963267949;
+				azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+				azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
 
 				p = In.ar(inbus, 2);
 
@@ -3668,20 +3662,18 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.04; // needs less gain
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
-				dis = 1 - radius;
-
-				az = azim - 1.5707963267949;
-				azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-				azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
-
-				p = In.ar(inbus, 2);
-				p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
-
 				dis = radius;
-
-				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
+
+				az = azim - 1.5707963267949;
+				azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+				azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
+
+				p = In.ar(inbus, 2);
+				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
+
+				ele = Lag.kr(elev, 0.1);
 
 				// Doppler
 				rd = dis * 340;
@@ -3742,20 +3734,17 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.04; // needs less gain
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
-				dis = 1 - radius;
-
-				az = azim - 1.5707963267949;
-				azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-				azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
-
-				p = In.ar(inbus, 2);
-				p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
-
 				dis = radius;
-
-				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
+
+				az = azim - 1.5707963267949;
+				azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+				azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
+
+				p = In.ar(inbus, 2);
+				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 				// Doppler
 				rd = dis * 340;
@@ -3820,20 +3809,18 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.04; // needs less gain
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
-				dis = 1 - radius;
-
-				az = azim - 1.5707963267949;
-				azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-				azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
-
-				p = In.ar(inbus, 2);
-				p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
-
 				dis = radius;
-
-				ele = Lag.kr(elev, 0.1);
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
+
+				az = azim - 1.5707963267949;
+				azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+				azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
+
+				p = In.ar(inbus, 2);
+				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
+
+				ele = Lag.kr(elev, 0.1);
 
 				// Doppler
 				rd = dis * 340;
@@ -3898,22 +3885,20 @@ GUI Parameters usable in SynthDefs
 				var grevganho = 0.04; // needs less gain
 				var lrev1Ref =  Ref(0);
 				var lrev2Ref =  Ref(0);
-				dis = 1 - radius;
+				dis = radius;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
 
 				az = azim - 1.5707963267949;
-				azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-				azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
+				azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+				azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
 				azim1 = azim1 * 57.295779513082; // convert to degrees
 				azim2 = azim2 * 57.295779513082; // convert to degrees
 
 				p = In.ar(inbus, 2);
-				p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
-
-				dis = radius;
+				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 				ele = Lag.kr(elev, 0.1);
-				dis = Select.kr(dis < 0, [dis, 0]);
-				dis = Select.kr(dis > 1, [dis, 1]);
 
 				// Doppler
 				rd = dis * 340;
@@ -3956,8 +3941,8 @@ GUI Parameters usable in SynthDefs
 				junto2 = p2 + lrev2Ref.value;
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
-				sig = VBAP.ar(numoutputs, junto1, vbap_buffer.bufnum, azim1, ele, contr) +
-				VBAP.ar(numoutputs, junto2, vbap_buffer.bufnum, azim2, ele, contr);
+				sig = VBAP.ar(numoutputs, junto1, vbap_buffer.bufnum, azim1, ele, (1 - contr) * 100) +
+				VBAP.ar(numoutputs, junto2, vbap_buffer.bufnum, azim2, ele, (1 - contr) * 100);
 
 				Out.ar(nonambibus, sig);
 			}).load(server);
@@ -4097,7 +4082,7 @@ GUI Parameters usable in SynthDefs
 
 			// high freq attenuation
 			p = In.ar(inbus, 1) * 3.5; // match other spatializers gain
-			//p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
+			p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 			// Reverberação global
 			globallev = 1 / dis.sqrt;
@@ -4184,25 +4169,21 @@ GUI Parameters usable in SynthDefs
 			var soaSigLRef = Ref(0);
 			var soaSigRRef = Ref(0);
 			contr = Lag.kr(contr, 0.1);
-
-			dis = 1 - radius;
+			dis = radius;
+			dis = Select.kr(dis < 0, [dis, 0]);
+			dis = Select.kr(dis > 1, [dis, 1]);
 
 			az = azim - 1.5707963267949;
-			// azim1 = CircleRamp.kr(az - (angle * dis), 0.1, -pi, pi);
-			// azim2 = CircleRamp.kr(az + (angle * dis), 0.1, -pi, pi);
-			azim1 = az - (angle * dis);
-			azim2 = az + (angle * dis);
-
+			// azim1 = CircleRamp.kr(az - (angle * (1 - dis)), 0.1, -pi, pi);
+			// azim2 = CircleRamp.kr(az + (angle * (1 - dis)), 0.1, -pi, pi);
+			azim1 = az - (angle * (1 - dis));
+			azim2 = az + (angle * (1 - dis));
 
 			p = In.ar(inbus, 2) * 2; // match other spatializers gain
-			p = LPF.ar(p, dis * 18000 + 2000); // attenuate high freq with distance
-
-			dis = radius;
+			p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
 			// ele = Lag.kr(elev, 0.1);
 			ele = elev;
-			dis = Select.kr(dis < 0, [dis, 0]);
-			dis = Select.kr(dis > 1, [dis, 1]);
 
 			// Doppler
 			rd = dis * 340;
