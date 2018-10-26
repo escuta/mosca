@@ -5379,6 +5379,10 @@ GUI Parameters usable in SynthDefs
 				"stopping!".postln;
 			};
 		};
+
+		if (guiflag) {
+			novoplot.value(true);
+		};
 	}
 
 	blips {
@@ -7876,9 +7880,14 @@ GUI Parameters usable in SynthDefs
 				var color = lev * 0.2;
 				{x = halfwidth + (topView.x * halfheight)}.defer;
 				{y = halfheight - (topView.y * halfheight)}.defer;
-				Pen.fillColor = Color(0.8 + color, 0.2, 0.9);
 				Pen.addArc(x@y, 14, 0, 2pi);
-				Pen.fill;
+				if (this.testado[i] || isPlay) {
+					Pen.fillColor = Color(0.8 + color, 0.2, 0.9);
+					Pen.fill;
+				} {
+					Pen.strokeColor = Color.white;
+					Pen.stroke;
+				};
 				(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
 					Font.default, Color.white);
 			};
@@ -7890,21 +7899,28 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-		novoplot = {
+		novoplot = { |dirrect = false|
 
 			//plotlock = false;
 
-			period = Main.elapsedTime - lastGui;
-			if ((period > guiInt) /*&& plotlock*/) {
-				lastGui =  Main.elapsedTime;
-				{
-					{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
-					{ zslider.value = (this.zlev[currentsource] + 1) * 0.5; }.defer;
-					{ znumbox.value = this.zlev[currentsource]; }.defer;
-					{ win.refresh; }.defer;
-				}.defer(guiInt);
+			if (dirrect) {
+				this.zlev[currentsource] = this.spheval[currentsource].z;
+				zslider.value = (this.zlev[currentsource] + 1) * 0.5;
+				znumbox.value = this.zlev[currentsource];
+				win.refresh;
+			} {
+				period = Main.elapsedTime - lastGui;
+				if ((period > guiInt) /*&& plotlock*/) {
+					lastGui =  Main.elapsedTime;
+					{
+						{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
+						{ zslider.value = (this.zlev[currentsource] + 1) * 0.5; }.defer;
+						{ znumbox.value = this.zlev[currentsource]; }.defer;
+						{ win.refresh; }.defer;
+					}.defer(guiInt);
+				};
+				//plotlock = true;
 			};
-			//plotlock = true;
 		};
 
 		/*novoplot = {
