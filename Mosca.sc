@@ -2531,7 +2531,7 @@ GUI Parameters usable in SynthDefs
 
 				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi3O.ar(in1, azi1, elev, level) +
-					PanAmbi3O.ar(in1, azi1, elev, level);
+					PanAmbi3O.ar(in2, azi2, elev, level);
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
 						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
 						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
@@ -2574,7 +2574,7 @@ GUI Parameters usable in SynthDefs
 
 				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi3O.ar(in1, azi1, elev, level) +
-					PanAmbi3O.ar(in1, azi1, elev, level);
+					PanAmbi3O.ar(in2, azi2, elev, level);
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
 						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
 						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
@@ -2619,7 +2619,7 @@ GUI Parameters usable in SynthDefs
 
 				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi3O.ar(in1, azi1, elev, level) +
-					PanAmbi3O.ar(in1, azi1, elev, level);
+					PanAmbi3O.ar(in2, azi2, elev, level);
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3], ambSig[1],
 						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
 						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
