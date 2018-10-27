@@ -7866,10 +7866,11 @@ GUI Parameters usable in SynthDefs
 		// Note there is an extreme amount repetition occurring here. See the calling function. fix
 
 		win = Window.new("Mosca", Rect(0, width, width, height)).front;
+		win.background = Color.new255( 200, 200, 200 ); // OSSIA/score "HalfLight"
 
 		win.drawFunc = {
 
-			Pen.fillColor = Color(0.6,0.8,0.8);
+			Pen.fillColor = Color.new255(0, 127, 229, 76); // OSSIA/score "Transparent1"
 			Pen.addArc(halfwidth@halfheight, halfheight, 0, 2pi);
 			Pen.fill;
 
@@ -7877,12 +7878,18 @@ GUI Parameters usable in SynthDefs
 				var x, y;
 				var topView = this.spheval[i];
 				var lev = this.spheval[i].z;
-				var color = lev * 0.2;
+				var color = lev * 0.4;
 				{x = halfwidth + (topView.x * halfheight)}.defer;
 				{y = halfheight - (topView.y * halfheight)}.defer;
 				Pen.addArc(x@y, 14, 0, 2pi);
-				if (this.testado[i] || isPlay) {
-					Pen.fillColor = Color(0.8 + color, 0.2, 0.9);
+				if ((this.testado[i] || isPlay) && (lev.abs <= this.plim)) {
+					if (lev <= 0) {
+						Pen.fillColor = Color.new255(179 + (lev * 176), 90 - (lev * 60), 209 - (lev * 41));
+						// from OSSIA/score "Emphasis3" down to "Pulse2"
+					} {
+						Pen.fillColor = Color.new255(179 + (lev * 20), 90 - (lev * 59), 209 - (lev * 165));
+						// up to "Tender1"
+					};
 					Pen.fill;
 				} {
 					Pen.strokeColor = Color.white;
@@ -7892,7 +7899,7 @@ GUI Parameters usable in SynthDefs
 					Font.default, Color.white);
 			};
 
-			Pen.fillColor = Color.gray(0, 0.5);
+			Pen.fillColor = Color.new255(37, 41, 48, 40);
 			Pen.addArc(halfwidth@halfheight, 14, 0, 2pi);
 			Pen.fill;
 
