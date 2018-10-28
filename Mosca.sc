@@ -305,7 +305,7 @@ GUI Parameters usable in SynthDefs
 		irecchans, irecbus, iguiflag, iguiint, iautoloop;
 		var makeSynthDefPlayers, makeSpatialisers, revGlobTxt, subOutFunc,
 		espacAmbOutFunc, ambixOutFunc, espacAmbEstereoOutFunc, revGlobalAmbFunc,
-		playBFormatOutFunc, playMonoInFunc, playStereoInFunc, playBFormatInFunc,
+		playBFormatOutFunc, playInFunc,
 		revGlobalSoaOutFunc,
 		prepareAmbSigFunc,
 		localReverbFunc, localReverbStereoFunc,
@@ -2156,9 +2156,8 @@ GUI Parameters usable in SynthDefs
 
 
 
-		playMonoInFunc = Array.newClear(4); // one for File, Stereo, BFormat, Stream - streamed file;
-		playStereoInFunc = Array.newClear(4);
-		playBFormatInFunc = Array.newClear(4);
+		playInFunc = Array.newClear(4); // one for File, Stereo, BFormat, Stream - streamed file;
+
 		this.synthRegistry = Array.newClear(this.nfontes);
 		this.nfontes.do { arg i;
 			this.synthRegistry[i] = List[];
@@ -2462,7 +2461,8 @@ GUI Parameters usable in SynthDefs
 							Lag.kr(pitch, 0.01));
 						sig = FoaDecode.ar(sig, decoder);
 						nonAmbiFunc.value(sig);
-						subOutFunc.value(sig * level, sub);
+						sig = sig * level;
+						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).add;
 				} {
@@ -2471,7 +2471,8 @@ GUI Parameters usable in SynthDefs
 						sig = In.ar(this.globTBus, 4);
 						sig = FoaDecode.ar(sig, decoder);
 						nonAmbiFunc.value(sig);
-						subOutFunc.value(sig * level, sub);
+						sig = sig * level;
+						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).add;
 				}
@@ -4754,7 +4755,7 @@ GUI Parameters usable in SynthDefs
 				var scaledRate, spos, playerRef;
 				//SendTrig.kr(Impulse.kr(1), 101,  tpos); // debugging
 				playerRef = Ref(0);
-				playMonoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 1);
 				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
@@ -4762,12 +4763,12 @@ GUI Parameters usable in SynthDefs
 				level = 0, tpos = 0, lp = 0, busini;
 				var scaledRate, spos, playerRef;
 				playerRef = Ref(0);
-				playStereoInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 2);
 				Out.ar(outbus, playerRef.value * Lag.kr(level, 0.1));
 			}).add;
 
 
-			SynthDef.new("playBFormat"++type, { arg outbus, bufnum = 0, rate = 1,
+			SynthDef.new("playBFormatATK"++type++"_4", { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				azim = 0, elev = 0, radius = 0,
 				gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
@@ -4792,7 +4793,7 @@ GUI Parameters usable in SynthDefs
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				playerRef = Ref(0);
-				playBFormatInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate);
+				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 4);
 
 				rd = dis * 340;
 				rd = Lag.kr(rd, 1.0);
@@ -4815,7 +4816,7 @@ GUI Parameters usable in SynthDefs
 				//comment out all linear parameters
 				//prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
 				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
-							Lag.kr(level, 0.1) * intens * (1 - contr));
+					Lag.kr(level, 0.1) * intens * (1 - contr));
 
 				playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, az, ele);
 
@@ -4855,6 +4856,255 @@ GUI Parameters usable in SynthDefs
 				Out.ar(gbfbus, gsig);
 
 			}).add;
+
+
+			SynthDef.new("playBFormatAmbitools"++type++"_4", { arg outbus, bufnum = 0, rate = 1,
+				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+				azim = 0, elev = 0, radius = 0,
+				gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+				busini, insertFlag = 0;
+
+				var scaledRate, playerRef, wsinal, spos, pushang = 0,
+				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+
+				az, ele, dis, globallev, locallev,
+				gsig, lsig, rd, dopplershift,
+				intens;
+				var grevganho = 0.20;
+				dis = radius;
+
+				az = azim - 1.5707963267949;
+				az = CircleRamp.kr(az, 0.1, -pi, pi);
+				ele = Lag.kr(elev, 0.1);
+				// ele = elev;
+				dis = Select.kr(dis < 0, [dis, 0]);
+				dis = Select.kr(dis > 1, [dis, 1]);
+				playerRef = Ref(0);
+				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 4);
+
+				rd = dis * 340;
+				rd = Lag.kr(rd, 1.0);
+				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+				playerRef.value = dopplershift;
+
+				wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
+
+				Out.ar(outbus, wsinal);
+
+				// global reverb
+				globallev = 1 / dis.sqrt;
+				intens = globallev - 1;
+				intens = Select.kr(intens > 4, [intens, 4]);
+				intens = Select.kr(intens < 0, [intens, 0]);
+				intens = intens / 4;
+
+				playerRef.value = FoaEncode.ar(playerRef.value, FoaEncoderMatrix.newAmbix1);
+				playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
+					focus:contr * (1 - dis).squared);
+				playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
+
+				ambixOutFunc.value(playerRef.value);
+
+				globallev = globallev - 1.0; // lower tail of curve to zero
+				globallev = Select.kr(globallev > 1, [globallev, 1]);
+				globallev = Select.kr(globallev < 0, [globallev, 0]);
+				globallev = globallev * Lag.kr(glev, 0.1) * 6;
+
+				gsig = playerRef.value[0] * globallev;
+
+				locallev = dis;
+
+				locallev = locallev  * Lag.kr(llev, 0.1) * 5;
+				lsig = playerRef.value[0] * locallev;
+
+				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+				Out.ar(gbfbus, gsig);
+
+			}).add;
+
+
+			[9, 16, 25, 36].do { |item, count|
+
+				SynthDef.new("playBFormatATK"++type++"_"++item, { arg outbus, bufnum = 0, rate = 1,
+					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+					azim = 0, elev = 0, radius = 0,
+					gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+					busini,
+					insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+					aFormatBusOutSoa, aFormatBusInSoa;
+
+					var scaledRate, playerRef, wsinal, spos, pushang = 0,
+					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+
+					az, ele, dis, globallev, locallev,
+					gsig, lsig, rd, dopplershift,
+					intens;
+					var grevganho = 0.20;
+					dis = radius;
+
+					az = azim - 1.5707963267949;
+					// az = CircleRamp.kr(az, 0.1, -pi, pi);
+					// ele = Lag.kr(elev, 0.1);
+					ele = elev;
+					pushang = dis * 1.5707963267949; // degree of sound field displacement
+					dis = Select.kr(dis < 0, [dis, 0]);
+					dis = Select.kr(dis > 1, [dis, 1]);
+					playerRef = Ref(0);
+					playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, item);
+
+					rd = dis * 340;
+					rd = Lag.kr(rd, 1.0);
+					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+					playerRef.value = dopplershift;
+
+					wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
+
+					Out.ar(outbus, wsinal);
+
+					// global reverb
+					globallev = 1 / dis.sqrt;
+					intens = globallev - 1;
+					intens = Select.kr(intens > 4, [intens, 4]);
+					intens = Select.kr(intens < 0, [intens, 0]);
+					intens = intens / 4;
+
+					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
+
+					//comment out all linear parameters
+					//prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
+					playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+						Lag.kr(level, 0.1) * intens * (1 - contr));
+
+					playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, az, ele);
+
+					// convert to A-format and send to a-format out busses
+					aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
+					Out.ar(aFormatBusOutFoa, aFormatFoa);
+					// aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+					// Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+					// flag switchable selector of a-format signal (from insert or not)
+					aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+					//aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+					// convert back to b-format
+					ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+					//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+					// not sure if the b2a/a2b process degrades signal. Just in case it does:
+					playerRef.value = Select.ar(insertFlag, [playerRef.value, ambSigFoaProcessed]);
+					//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+					playBFormatOutFunc.value(playerRef.value);
+
+					globallev = globallev - 1.0; // lower tail of curve to zero
+					globallev = Select.kr(globallev > 1, [globallev, 1]);
+					globallev = Select.kr(globallev < 0, [globallev, 0]);
+					globallev = globallev * Lag.kr(glev, 0.1) * 6;
+
+					gsig = playerRef.value[0] * globallev;
+
+					locallev = dis;
+
+					locallev = locallev  * Lag.kr(llev, 0.1) * 5;
+					lsig = playerRef.value[0] * locallev;
+
+					gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+					Out.ar(gbfbus, gsig);
+
+				}).add;
+
+
+				SynthDef.new("playBFormatATK"++type++"_"++item, { arg outbus, bufnum = 0, rate = 1,
+					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+					azim = 0, elev = 0, radius = 0,
+					gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+					busini,
+					insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+					aFormatBusOutSoa, aFormatBusInSoa;
+
+					var scaledRate, playerRef, wsinal, spos, pushang = 0,
+					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+
+					az, ele, dis, globallev, locallev,
+					gsig, lsig, rd, dopplershift,
+					intens;
+					var grevganho = 0.20;
+					dis = radius;
+
+					az = azim - 1.5707963267949;
+					// az = CircleRamp.kr(az, 0.1, -pi, pi);
+					// ele = Lag.kr(elev, 0.1);
+					ele = elev;
+					pushang = dis * 1.5707963267949; // degree of sound field displacement
+					dis = Select.kr(dis < 0, [dis, 0]);
+					dis = Select.kr(dis > 1, [dis, 1]);
+					playerRef = Ref(0);
+					playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, item);
+
+					rd = dis * 340;
+					rd = Lag.kr(rd, 1.0);
+					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+					playerRef.value = dopplershift;
+
+					wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
+
+					Out.ar(outbus, wsinal);
+
+					// global reverb
+					globallev = 1 / dis.sqrt;
+					intens = globallev - 1;
+					intens = Select.kr(intens > 4, [intens, 4]);
+					intens = Select.kr(intens < 0, [intens, 0]);
+					intens = intens / 4;
+
+					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
+
+					//comment out all linear parameters
+					//prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
+					playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+						Lag.kr(level, 0.1) * intens * (1 - contr));
+
+					playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, az, ele);
+
+					// convert to A-format and send to a-format out busses
+					aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
+					Out.ar(aFormatBusOutFoa, aFormatFoa);
+					// aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+					// Out.ar(aFormatBusOutSoa, aFormatSoa);
+
+					// flag switchable selector of a-format signal (from insert or not)
+					aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
+					//aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
+
+					// convert back to b-format
+					ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+					//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
+
+					// not sure if the b2a/a2b process degrades signal. Just in case it does:
+					playerRef.value = Select.ar(insertFlag, [playerRef.value, ambSigFoaProcessed]);
+					//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+
+					playBFormatOutFunc.value(playerRef.value);
+
+					globallev = globallev - 1.0; // lower tail of curve to zero
+					globallev = Select.kr(globallev > 1, [globallev, 1]);
+					globallev = Select.kr(globallev < 0, [globallev, 0]);
+					globallev = globallev * Lag.kr(glev, 0.1) * 6;
+
+					gsig = playerRef.value[0] * globallev;
+
+					locallev = dis;
+
+					locallev = locallev  * Lag.kr(llev, 0.1) * 5;
+					lsig = playerRef.value[0] * locallev;
+
+					gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+					Out.ar(gbfbus, gsig);
+
+				}).add;
+
+			};
 
 			//comment out all linear parameters
 
@@ -4983,106 +5233,49 @@ GUI Parameters usable in SynthDefs
 
 		// Make File-in SynthDefs
 
-		playMonoInFunc[0] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+		playInFunc[0] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum;
 			// Note it needs all the variables
-
-			spos = tpos * BufSampleRate.kr(bufnum);
-
-			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(1, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-		};
-
-		playStereoInFunc[0] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
 			spos = tpos * BufSampleRate.kr(bufnum);
 			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(2, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
-		};
-
-		playBFormatInFunc[0] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			spos = tpos * BufSampleRate.kr(bufnum);
-			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(4, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+			playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
 		};
 
 		makeSynthDefPlayers.("File", 0);
 
 
-		playMonoInFunc[3] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
+		// Make HWBus-in SynthDefs
+
+
+		playInFunc[1] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum;
+			playerRef.value =  In.ar(busini, channum);
+		};
+
+		makeSynthDefPlayers.("HWBus", 1);
+
+
+		// Make SCBus-in SynthDefs
+
+
+		playInFunc[2] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum;
+			playerRef.value =  In.ar(busini, channum);
+		};
+
+		makeSynthDefPlayers.("SWBus", 2);
+
+
+		playInFunc[3] = {
+			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum;
 			// Note it needs all the variables
-
 			var trig;
-			playerRef.value = DiskIn.ar(1, bufnum, lp);
-			trig = Done.kr(playerRef.value);
-			FreeSelf.kr(trig);
-		};
-
-		playStereoInFunc[3] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			var trig;
-			playerRef.value = DiskIn.ar(2, bufnum, lp);
-			trig = Done.kr(playerRef.value);
-			FreeSelf.kr(trig);
-		};
-
-		playBFormatInFunc[3] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			var trig;
-			playerRef.value = DiskIn.ar(4, bufnum, lp);
+			playerRef.value = DiskIn.ar(channum, bufnum, lp);
 			trig = Done.kr(playerRef.value);
 			FreeSelf.kr(trig);
 		};
 
 		makeSynthDefPlayers.("Stream", 3);
-
-		// Make HWBus-in SynthDefs
-
-
-		playMonoInFunc[1] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  SoundIn.ar(busini, 1);
-		};
-
-		playStereoInFunc[1] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [SoundIn.ar(busini), SoundIn.ar(busini + 1)];
-		};
-
-
-		playBFormatInFunc[1] = {
-			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [SoundIn.ar(busini), SoundIn.ar(busini + 1),
-				SoundIn.ar(busini + 2), SoundIn.ar(busini + 3)];
-
-		};
-
-
-		makeSynthDefPlayers.("HWBus", 1);
-
-
-		playMonoInFunc[2] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  In.ar(busini, 1);
-		};
-
-		playStereoInFunc[2] = {
-			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [In.ar(busini, 1), In.ar(busini + 1, 1)];
-		};
-
-
-		playBFormatInFunc[2] = {
-			arg playerRef, busini = 0, bufnum, scaledRate, tpos, spos, lp = 0, rate;
-			playerRef.value =  [In.ar(busini, 1), In.ar(busini + 1, 1),
-				In.ar(busini + 2, 1), In.ar(busini + 3, 1)];
-
-		};
-
-
-		makeSynthDefPlayers.("SWBus", 2);
 
 
 		//////// END SYNTHDEFS ///////////////
@@ -6114,9 +6307,9 @@ GUI Parameters usable in SynthDefs
 
 				}
 				{ this.streambuf[i].numChannels >= 4} {
-					"4 channel".postln;
 					playingBF[i] = true;
-					ncanais[i] = 4;
+					ncanais[i] = this.streambuf[i].numChannels;
+					("contains "++ncanais[i]++" channels").postln;
 
 					// comment out automatic settings, prefer sensible deffaults
 					/*angle[i] = 0;
@@ -6153,7 +6346,7 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					this.synt[i] = Synth.new(\playBFormatStream, [\gbus, gbus, \gbfbus,
+					this.synt[i] = Synth.new(\playBFormatATKStream_++ncanais[i], [\gbus, gbus, \gbfbus,
 						gbfbus, \outbus,
 						mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 						\rate, 1, \tpos, tpos, \lp,
@@ -6694,7 +6887,7 @@ GUI Parameters usable in SynthDefs
 			} {
 				if (sombuf[i].numChannels >= 4) {
 					playingBF[i] = true;
-					ncanais[i] = 4;
+					ncanais[i] = sombuf[i].numChannels;
 
 					// comment out automatic settings, prefer sensible deffaults
 					/*angle[i] = 0;
@@ -6731,7 +6924,7 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					this.synt[i] = Synth.new(\playBFormatFile, [\gbus, gbus, \gbfbus,
+					this.synt[i] = Synth.new(\playBFormatATKFile_++ncanais[i], [\gbus, gbus, \gbfbus,
 						gbfbus, \outbus,
 						mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 						\rate, 1, \tpos, tpos, \lp,
@@ -7328,7 +7521,7 @@ GUI Parameters usable in SynthDefs
 						//comment out all linear parameters
 						//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 
-						this.synt[i] = Synth.new(\playBFormatHWBus, [\gbfbus, gbfbus,
+						this.synt[i] = Synth.new(\playBFormatATKHWBus_++this.ncan[i], [\gbfbus, gbfbus,
 							\outbus, mbus[i],
 							\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 							\insertFlag, this.insertFlag[i],
@@ -7347,7 +7540,7 @@ GUI Parameters usable in SynthDefs
 						//comment out all linear parameters
 						//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
 
-						this.synt[i] = Synth.new(\playBFormatSWBus, [\gbfbus, gbfbus,
+						this.synt[i] = Synth.new(\playBFormatATKSWBus_++this.ncan[i], [\gbfbus, gbfbus,
 							\outbus, mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos,
 							\level, level[i],
 							\insertFlag, this.insertFlag[i],
@@ -8483,14 +8676,12 @@ GUI Parameters usable in SynthDefs
 		textbuf.string = "No. of chans. (HW & SC-in)";
 		ncannumbox = NumberBox(win, Rect(10, 50, 40, 20));
 		ncannumbox.value = 0;
-		ncannumbox.clipHi = 4;
+		ncannumbox.clipHi = 36;
 		ncannumbox.clipLo = 0;
 		ncannumbox.align = \center;
 		ncannumbox.action = {arg num;
-
 			{this.ncanbox[currentsource].valueAction = num.value;}.defer;
 			this.ncan[currentsource] = num.value;
-
 		};
 
 
