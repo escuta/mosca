@@ -5572,10 +5572,6 @@ GUI Parameters usable in SynthDefs
 				"stopping!".postln;
 			};
 		};
-
-		if (guiflag) {
-			novoplot.value(true);
-		};
 	}
 
 	blips {
@@ -8103,24 +8099,19 @@ GUI Parameters usable in SynthDefs
 
 			//plotlock = false;
 
-			if (dirrect) {
-				this.zlev[currentsource] = this.spheval[currentsource].z;
-				zslider.value = (this.zlev[currentsource] + 1) * 0.5;
-				znumbox.value = this.zlev[currentsource];
-				win.refresh;
-			} {
-				period = Main.elapsedTime - lastGui;
-				if ((period > guiInt) /*&& plotlock*/) {
-					lastGui =  Main.elapsedTime;
-					{
-						{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
-						{ zslider.value = (this.zlev[currentsource] + 1) * 0.5; }.defer;
-						{ znumbox.value = this.zlev[currentsource]; }.defer;
-						{ win.refresh; }.defer;
-					}.defer(guiInt);
-				};
-				//plotlock = true;
+			period = Main.elapsedTime - lastGui;
+			if ((period > guiInt) /*&& plotlock*/) {
+				lastGui =  Main.elapsedTime;
+				{
+					{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
+					{ zslider.value = (this.zlev[currentsource] + 1) * 0.5; }.defer;
+					{ znumbox.value = this.zlev[currentsource]; }.defer;
+					{ win.refresh; }.defer;
+				}.defer(guiInt);
 			};
+
+			//plotlock = true;
+
 		};
 
 		/*novoplot = {
@@ -8309,6 +8300,9 @@ GUI Parameters usable in SynthDefs
 			} {
 				this.ossiaaud[currentsource].v_(bool);
 			};
+
+			{win.refresh;}.defer;
+
 		});
 
 
@@ -10006,6 +10000,8 @@ GUI Parameters usable in SynthDefs
 				this.ossiaplay.v_(true);
 			};
 
+			{win.refresh;}.defer;
+
 		};
 
 
@@ -10087,6 +10083,8 @@ GUI Parameters usable in SynthDefs
 			if (this.ossiaplay.notNil) {
 				this.ossiaplay.v_(false);
 			};
+
+			{win.refresh;}.defer;
 		};
 
 		///////////////// PROXY WILL REMOVE THIS //////////////
@@ -10163,7 +10161,7 @@ GUI Parameters usable in SynthDefs
 						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
 					};
 				};
-			} {
+			} /*{
 				this.cartval[currentsource].x_((x - halfwidth) / halfheight);
 				this.cartval[currentsource].y_((halfheight - y) / halfheight);
 				this.cartval[currentsource].z_((this.zslider.value * 2) - 1);
@@ -10174,7 +10172,7 @@ GUI Parameters usable in SynthDefs
 				xbox[currentsource].valueAction = this.cartval[currentsource].x + origine.x;
 				ybox[currentsource].valueAction = this.cartval[currentsource].y + origine.y;
 				zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
-			}
+			}*/
 		};
 
 		win.view.mouseMoveAction = {|view, x, y, modifiers|
