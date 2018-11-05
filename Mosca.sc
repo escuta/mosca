@@ -325,6 +325,10 @@ GUI Parameters usable in SynthDefs
 		//server.sync;
 		this.globTBus = Bus.audio(server, bFormNumChan.clip(4, 9));
 		this.ambixbus = Bus.audio(server, bFormNumChan); // global b-format ACN-SN3D bus
+		this.gbus = Bus.audio(server, 1); // global reverb bus
+		this.gbfbus = Bus.audio(server, 4); // global b-format bus
+		this.gbixfbus = Bus.audio(server, 4); // global ambix b-format bus
+		this.soaBus = Bus.audio(server, 9);
 		server.sync;
 		this.playEspacGrp = Group.tail;
 		this.glbRevDecGrp = Group.after(this.playEspacGrp);
@@ -1586,7 +1590,7 @@ GUI Parameters usable in SynthDefs
 
 					this.revGlobal.set(\gate, 0);
 
-					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
+					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gate, 1,
 						\room, clsrm, \damp, clsdm,
 						\wir, rirWspectrum[max((num.value - 3), 0)],
 						\xir, rirXspectrum[max((num.value - 3), 0)],
@@ -1606,7 +1610,7 @@ GUI Parameters usable in SynthDefs
 					});
 
 				} {
-					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gbus, gbus, \gate, 1,
+					this.revGlobal = Synth.new(\revGlobalAmb++clsRvtypes, [\gate, 1,
 						\room, clsrm, \damp, clsdm,
 						\wir, rirWspectrum[max((num.value - 3), 0)],
 						\xir, rirXspectrum[max((num.value - 3), 0)],
@@ -2758,16 +2762,15 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ATKChowning"++rev_type,  {
-				arg inbus, gbus, soaBus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, sp, df,
 				glev = 0, llev = 0, contr = 1,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 				room = 0.5, damp = 0.5, wir;
 
 				var wRef, xRef, yRef, zRef, rRef, sRef, tRef, uRef, vRef, pRef,
-				ambSigSoa, ambSigFoa,
+				ambSigSoa, ambSigFoa, aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 				junto, rd, dopplershift, az, ele, dis, xatras, yatras,
 				globallev, locallev, gsig,
 				intens,
@@ -2872,12 +2875,12 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("JoshGrainChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 05, wir,
 				contr = 1, grainrate = 10, winsize = 0.1, winrand = 0;
 
-				var ambSig,junto, rd, dopplershift, az, ele, dis, xatras, yatras,
+				var ambSig, junto, rd, dopplershift, az, ele, dis, xatras, yatras,
 				globallev, locallev, gsig, intens;
 
 				var p;
@@ -2938,7 +2941,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("AmbitoolsChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 05, wir;
 
@@ -3000,7 +3003,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("AmbIEMChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, wir;
 
@@ -3060,7 +3063,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("HoaLibChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, wir;
 
@@ -3123,7 +3126,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ADTBChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, wir;
 
@@ -3187,7 +3190,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("VBAPChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0, contr = 1,
 				room = 0.5, damp = 0.5, wir;
 
@@ -3254,7 +3257,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ATK2Chowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				glev = 0, llev = 0.2,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
@@ -3346,7 +3349,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ATKStereoChowning"++rev_type,  {
-				arg inbus, gbus, soaBus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0,
 				glev = 0, llev = 0, contr=1,
@@ -3492,7 +3495,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("JoshGrainStereoChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, zir,
@@ -3577,7 +3580,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("AmbitoolsStereoChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, zir;
@@ -3652,7 +3655,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("AmbIEMStereoChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, zir;
@@ -3724,7 +3727,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("HoaLibStereoChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, zir;
@@ -3799,7 +3802,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ADTBStereoChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, zir;
@@ -3875,7 +3878,7 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("VBAPStereoChowning"++rev_type,  {
-				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05, contr = 1,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, zir;
@@ -3957,7 +3960,7 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("espacAFormatVerb", {
-			arg inbus, gbus, soaBus, azim = 0, elev = 0, radius = 0,
+			arg inbus, soaBus, azim = 0, elev = 0, radius = 0,
 			dopamnt = 0,
 			glev = 0, llev = 0, contr = 1,
 			gbfbus,
@@ -4063,7 +4066,7 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("ATK2AFormat",  {
-			arg inbus, gbus, azim = 0, elev = 0, radius = 0,
+			arg inbus, azim = 0, elev = 0, radius = 0,
 			glev = 0, llev = 0.2, soaBus,
 			insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 			aFormatBusOutSoa, aFormatBusInSoa;
@@ -4150,7 +4153,7 @@ GUI Parameters usable in SynthDefs
 
 
 		SynthDef.new("espacEstereoAFormat",  {
-			arg inbus, gbus, soaBus, gbfbus, azim = 0, elev = 0, radius = 0,
+			arg inbus, azim = 0, elev = 0, radius = 0,
 			angle = 1.05, dopamnt = 0, sp, df,
 			glev = 0, llev = 0, contr = 1,
 			insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
@@ -4472,7 +4475,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("revGlobalAmb_conv",  { arg gbus, gate = 1, wir, xir, yir, zir;
+			SynthDef.new("revGlobalAmb_conv",  { arg gate = 1, wir, xir, yir, zir;
 				var env, sig, convsig;
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = In.ar(gbus, 1);
@@ -4615,7 +4618,7 @@ GUI Parameters usable in SynthDefs
 
 		//run the makeSpatialisers function for each types of local reverbs
 
-		SynthDef.new("revGlobalAmb_pass",  { arg gbus, gate = 1, room = 0.5, damp = 0.5;
+		SynthDef.new("revGlobalAmb_pass",  { arg gate = 1, room = 0.5, damp = 0.5;
 			var env, sig = In.ar(gbus, 1);
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) + { Rand(0, 0.001) },
@@ -4702,7 +4705,7 @@ GUI Parameters usable in SynthDefs
 		//run the makeSpatialisers function for each types of local reverbs
 
 
-		SynthDef.new("revGlobalAmb_free",  { arg gbus, gate = 1, room = 0.5, damp = 0.5;
+		SynthDef.new("revGlobalAmb_free",  { arg gate = 1, room = 0.5, damp = 0.5;
 			var env, sig, convsig;
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = In.ar(gbus, 1);
@@ -4783,8 +4786,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("playBFormatATK"++type++"_4", { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				azim = 0, elev = 0, radius = 0,
-				gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
-				busini,
+				glev, llev, directang = 0, contr, dopamnt, busini,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa;
 
@@ -4873,7 +4875,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("playBFormatAmbitools"++type++"_4", { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				azim = 0, elev = 0, radius = 0,
-				gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
+				glev, llev, directang = 0, contr, dopamnt,
 				busini, insertFlag = 0;
 
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
@@ -4940,7 +4942,7 @@ GUI Parameters usable in SynthDefs
 				SynthDef.new("playBFormatATK"++type++"_"++item, { arg outbus, bufnum = 0, rate = 1,
 					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 					azim = 0, elev = 0, radius = 0,
-					gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
+					glev, llev, directang = 0, contr, dopamnt,
 					busini,
 					insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 					aFormatBusOutSoa, aFormatBusInSoa;
@@ -5031,7 +5033,7 @@ GUI Parameters usable in SynthDefs
 				SynthDef.new("playBFormatAmbitools"++type++"_"++item, { arg outbus, bufnum = 0, rate = 1,
 					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 					azim = 0, elev = 0, radius = 0,
-					gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
+					glev, llev, directang = 0, contr, dopamnt,
 					busini, insertFlag = 0;
 
 					var scaledRate, playerRef, wsinal, spos, pushang = 0,
@@ -5268,10 +5270,6 @@ GUI Parameters usable in SynthDefs
 		//////// END SYNTHDEFS ///////////////
 
 		///// launch GUI was here
-		gbus = Bus.audio(server, 1); // global reverb bus
-		gbfbus = Bus.audio(server, 4); // global b-format bus
-		gbixfbus = Bus.audio(server, 4); // global ambix b-format bus
-		soaBus = Bus.audio(server, 9);
 
 		updateSynthInArgs = { arg source;
 			{
@@ -6062,9 +6060,7 @@ GUI Parameters usable in SynthDefs
 						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
 						this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
-							[\inbus, mbus[i],
-								\gbus, gbus,
-								\insertFlag, this.insertFlag[i],
+							[\inbus, mbus[i], \insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
@@ -6192,8 +6188,7 @@ GUI Parameters usable in SynthDefs
 						//this.espacializador[i] = Synth.new(\espacAmbEstereoAFormat++ln[i],
 
 						this.espacializador[i] = Synth.new(\espacEstereoAFormat,
-							[\inbus, sbus[i], \angle, angle[i],
-								\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus, \contr, clev[i],
+							[\inbus, sbus[i], \angle, angle[i], \contr, clev[i],
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -6261,8 +6256,7 @@ GUI Parameters usable in SynthDefs
 						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
 
 						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
-							[\inbus, sbus[i],
-								\gbus, gbus, \angle, angle[i],
+							[\inbus, sbus[i], \angle, angle[i],
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -6339,10 +6333,8 @@ GUI Parameters usable in SynthDefs
 					};
 
 					this.synt[i] = Synth.new("playBFormat"++libName[i]++"Stream_"++ncanais[i],
-						[\gbus, gbus, \gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
-							\bufnum, streambuf[i].bufnum, \contr, clev[i],
-							\rate, 1, \tpos, tpos, \lp,
-							lp[i], \level, level[i],
+						[\outbus, mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
+							\rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i],
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -6406,7 +6398,6 @@ GUI Parameters usable in SynthDefs
 						//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
 
 						this.espacializador[i] = Synth.new(\ATK2AFormat, [\inbus, mbus[i],
-							\gbus, gbus, \soaBus, soaBus,
 							\insertFlag, this.insertFlag[i], \contr, clev[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -6438,8 +6429,7 @@ GUI Parameters usable in SynthDefs
 						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
 
 						this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
-							[\inbus, mbus[i], \gbus, gbus,
-								\insertFlag, this.insertFlag[i], \contr, clev[i],
+							[\insertFlag, this.insertFlag[i], \contr, clev[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
@@ -6652,9 +6642,7 @@ GUI Parameters usable in SynthDefs
 					//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
 					this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
-						[\inbus, mbus[i],
-							\gbus, gbus,
-							\insertFlag, this.insertFlag[i],
+						[\inbus, mbus[i], \insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
@@ -6778,7 +6766,6 @@ GUI Parameters usable in SynthDefs
 
 						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
 							[\inbus, sbus[i], \contr, clev[i], \angle, angle[i],
-								\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -6846,8 +6833,7 @@ GUI Parameters usable in SynthDefs
 						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
 
 						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
-							[\inbus, sbus[i],
-								\gbus, gbus, \angle, angle[i],
+							[\inbus, sbus[i], \angle, angle[i],
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -6926,8 +6912,7 @@ GUI Parameters usable in SynthDefs
 						};
 
 						this.synt[i] = Synth.new("playBFormat"++libName[i]++"File_"++ncanais[i],
-							[\gbus, gbus, \gbfbus, gbfbus, \gbixfbus, gbixfbus,
-								\outbus, mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+							[\outbus, mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 								\rate, 1, \tpos, tpos, \lp,
 								lp[i], \level, level[i],
 								\insertFlag, this.insertFlag[i],
@@ -6995,7 +6980,7 @@ GUI Parameters usable in SynthDefs
 							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
 
 							this.espacializador[i] = Synth.new(\ATK2AFormat,
-								[\inbus, mbus[i], \gbus, gbus, \soaBus, soaBus, \contr, clev[i],
+								[\inbus, mbus[i], \contr, clev[i],
 									\insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -7026,8 +7011,7 @@ GUI Parameters usable in SynthDefs
 							//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
 
 							this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
-								[\inbus, mbus[i], \gbus, gbus,
-									\insertFlag, this.insertFlag[i],
+								[\inbus, mbus[i], \insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
@@ -7248,7 +7232,7 @@ GUI Parameters usable in SynthDefs
 						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
 						this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
-							[\inbus, mbus[i], \gbus, gbus, \insertFlag, this.insertFlag[i],
+							[\inbus, mbus[i], \insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
@@ -7385,8 +7369,7 @@ GUI Parameters usable in SynthDefs
 						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i],
 
 						this.espacializador[i] = Synth.new(\espacEstereoAFormat,
-							[\inbus, sbus[i], \gbus, gbus, \angle, angle[i],
-								\soaBus, soaBus, \gbfbus, gbfbus, \contr, clev[i],
+							[\inbus, sbus[i], \angle, angle[i], \contr, clev[i],
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -7454,8 +7437,7 @@ GUI Parameters usable in SynthDefs
 						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
 
 						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
-							[\inbus, sbus[i],
-								\gbus, gbus, \angle, angle[i],
+							[\inbus, sbus[i], \angle, angle[i],
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -7611,8 +7593,7 @@ GUI Parameters usable in SynthDefs
 							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i], [\inbus, mbus[i],
 
 							this.espacializador[i] = Synth.new(\ATK2AFormat,
-								[\inbus, mbus[i],
-								\gbus, gbus, \soaBus, soaBus, \contr, clev[i],
+								[\inbus, mbus[i], \contr, clev[i],
 								\insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -7644,9 +7625,7 @@ GUI Parameters usable in SynthDefs
 						//this.espacializador[i] = Synth.new(\espacAmb2Chowning++ln[i], [\inbus, mbus[i],
 
 						this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
-							[\inbus, mbus[i],
-								\gbus, gbus,
-								\insertFlag, this.insertFlag[i],
+							[\inbus, mbus[i], \insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
