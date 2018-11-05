@@ -143,7 +143,8 @@ Mosca {
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus, <>nonambibus,
+	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus, <>gbixfbus,
+	<>nonambibus,
 	<>playEspacGrp, <>glbRevDecGrp,
 	<>level, <>lp, <>lib, <>libName, <>convert, <>dstrv, <>dstrvtypes, <>clsrv, <>clsRvtypes,
 	//comment out all linear parameters
@@ -225,7 +226,7 @@ Mosca {
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum, rirA12Spectrum,
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 	rirList,
-	spatList = #["ambitools","hoaLib","ambiPanner","AmbIEM","ATK","JoshGrain","VBAP"], // list of spat lib
+	spatList = #["Ambitools","HoaLib","ADTB","AmbIEM","ATK","JoshGrain","VBAP"], // list of spat libs
 	lastSN3D = 3, // last SN3D lib index
 	lastFUMA = 5, // last FUMA lib index
 	b2a, a2b,
@@ -1631,7 +1632,8 @@ GUI Parameters usable in SynthDefs
 						this.revGlobalBF.set(\gate, 0);
 
 						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-							[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+								\room, clsrm, \damp, clsdm,
 								\fluir, rirFLUspectrum[max((num.value - 3), 0)],
 								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
@@ -1651,7 +1653,7 @@ GUI Parameters usable in SynthDefs
 
 					} {
 						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-							[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1, \room, clsrm, \damp, clsdm,
 								\fluir, rirFLUspectrum[max((num.value - 3), 0)],
 								\frdir, rirFRDspectrum[max((num.value - 3), 0)],
 								\bldir, rirBLDspectrum[max((num.value - 3), 0)],
@@ -2935,7 +2937,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("ambitoolsChowning"++rev_type,  {
+			SynthDef.new("AmbitoolsChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 05, wir;
@@ -3057,7 +3059,7 @@ GUI Parameters usable in SynthDefs
 			}).load(server);
 
 
-			SynthDef.new("hoaLibChowning"++rev_type,  {
+			SynthDef.new("HoaLibChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, wir;
@@ -3120,7 +3122,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("ambiPannerChowning"++rev_type,  {
+			SynthDef.new("ADTBChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				room = 0.5, damp = 0.5, wir;
@@ -3574,7 +3576,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("ambitoolsStereoChowning"++rev_type,  {
+			SynthDef.new("AmbitoolsStereoChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
@@ -3721,7 +3723,7 @@ GUI Parameters usable in SynthDefs
 			}).load(server);
 
 
-			SynthDef.new("hoaLibStereoChowning"++rev_type,  {
+			SynthDef.new("HoaLibStereoChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
@@ -3796,7 +3798,7 @@ GUI Parameters usable in SynthDefs
 
 
 
-			SynthDef.new("ambiPannerStereoChowning"++rev_type,  {
+			SynthDef.new("ADTBStereoChowning"++rev_type,  {
 				arg inbus, gbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0, glev = 0, llev = 0,
@@ -4485,10 +4487,14 @@ GUI Parameters usable in SynthDefs
 			}).add;
 
 
-			SynthDef.new("revGlobalBFormatAmb_conv",  { arg gbfbus, gate = 1, fluir, frdir, bldir, bruir;
-				var env, convsig, sig = In.ar(gbfbus, 4);
+			SynthDef.new("revGlobalBFormatAmb_conv",  { arg gbfbus, gbixfbus, gate = 1,
+				fluir, frdir, bldir, bruir;
+				var env, convsig, sigx, sig = In.ar(gbfbus, 4);
+				sigx = In.ar(gbixfbus, 4);
+				sigx = FoaDecode.ar(sigx, FoaDecoderMatrix.newAmbix1);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = FoaDecode.ar(sig, b2a);
+				sig = sig + sigx;
 				convsig = [
 					PartConv.ar(sig[0], fftsize, fluir),
 					PartConv.ar(sig[1], fftsize, frdir),
@@ -4575,10 +4581,13 @@ GUI Parameters usable in SynthDefs
 		// allpass reverbs
 
 
-		SynthDef.new("revGlobalBFormatAmb_pass",  { arg gbfbus, gate = 1, room = 0.5, damp = 0.5;
-			var env, temp, sig = In.ar(gbfbus, 4);
+		SynthDef.new("revGlobalBFormatAmb_pass",  { arg gbfbus, gbixfbus, gate = 1, room = 0.5, damp = 0.5;
+			var env, temp, sigx, sig = In.ar(gbfbus, 4);
+			sigx = In.ar(gbixfbus, 4);
+			sigx = FoaDecode.ar(sigx, FoaDecoderMatrix.newAmbix1);
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = FoaDecode.ar(sig, b2a);
+			sig = sig + sigx;
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) + { Rand(0, 0.001) },
 				damp * 2)});
 			sig = FoaEncode.ar(sig, a2b);
@@ -4641,10 +4650,13 @@ GUI Parameters usable in SynthDefs
 		// freeverb defs
 
 
-		SynthDef.new("revGlobalBFormatAmb_free",  { arg gbfbus, gate = 1, room = 0.5, damp = 0.5;
-			var env, convsig, sig = In.ar(gbfbus, 4);
-			env = EnvGen.kr(Env.asr, gate, doneAction:2);
+		SynthDef.new("revGlobalBFormatAmb_free",  { arg gbfbus, gbixfbus, gate = 1, room = 0.5, damp = 0.5;
+			var env, temp, convsig, sigx, sig = In.ar(gbfbus, 4);
+			sigx = In.ar(gbixfbus, 4);
+			sigx = FoaDecode.ar(sigx, FoaDecoderMatrix.newAmbix1);
+			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = FoaDecode.ar(sig, b2a);
+			sig = sig + sigx;
 			convsig = [
 				FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
 				FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
@@ -4771,7 +4783,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("playBFormatATK"++type++"_4", { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				azim = 0, elev = 0, radius = 0,
-				gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+				gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
 				busini,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa;
@@ -4861,7 +4873,7 @@ GUI Parameters usable in SynthDefs
 			SynthDef.new("playBFormatAmbitools"++type++"_4", { arg outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				azim = 0, elev = 0, radius = 0,
-				gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+				gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
 				busini, insertFlag = 0;
 
 				var scaledRate, playerRef, wsinal, spos, pushang = 0,
@@ -4887,9 +4899,9 @@ GUI Parameters usable in SynthDefs
 				dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
 				playerRef.value = dopplershift;
 
-				wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
+				wsinal = playerRef.value[0] * contr * level * dis * 2.0;
 
-				Out.ar(outbus, wsinal);
+				//Out.ar(outbus, wsinal);
 
 				// global reverb
 				globallev = 1 / dis.sqrt;
@@ -4899,9 +4911,9 @@ GUI Parameters usable in SynthDefs
 				intens = intens / 4;
 
 				playerRef.value = FoaEncode.ar(playerRef.value, FoaEncoderMatrix.newAmbix1);
-				playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
-					focus:contr * (1 - dis).squared);
 				playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
+				playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
+					focus:contr * dis.sqrt) * (1 - dis.squared) * level;
 
 				ambixOutFunc.value(playerRef.value);
 
@@ -4918,7 +4930,7 @@ GUI Parameters usable in SynthDefs
 				lsig = playerRef.value[0] * locallev;
 
 				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
-				Out.ar(gbfbus, gsig);
+				Out.ar(gbixfbus, gsig);
 
 			}).add;
 
@@ -4928,7 +4940,7 @@ GUI Parameters usable in SynthDefs
 				SynthDef.new("playBFormatATK"++type++"_"++item, { arg outbus, bufnum = 0, rate = 1,
 					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 					azim = 0, elev = 0, radius = 0,
-					gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
+					gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
 					busini,
 					insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 					aFormatBusOutSoa, aFormatBusInSoa;
@@ -4968,6 +4980,7 @@ GUI Parameters usable in SynthDefs
 					intens = Select.kr(intens < 0, [intens, 0]);
 					intens = intens / 4;
 
+					playerRef.value = FoaEncode.ar(playerRef.value, FoaEncoderMatrix.newAmbix1);
 					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
 
 					//comment out all linear parameters
@@ -5015,13 +5028,11 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 
-				SynthDef.new("playBFormatATK"++type++"_"++item, { arg outbus, bufnum = 0, rate = 1,
+				SynthDef.new("playBFormatAmbitools"++type++"_"++item, { arg outbus, bufnum = 0, rate = 1,
 					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 					azim = 0, elev = 0, radius = 0,
-					gbus, gbfbus, glev, llev, directang = 0, contr, dopamnt,
-					busini,
-					insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-					aFormatBusOutSoa, aFormatBusInSoa;
+					gbus, gbfbus, gbixfbus, glev, llev, directang = 0, contr, dopamnt,
+					busini, insertFlag = 0;
 
 					var scaledRate, playerRef, wsinal, spos, pushang = 0,
 					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
@@ -5033,10 +5044,9 @@ GUI Parameters usable in SynthDefs
 					dis = radius;
 
 					az = azim - 1.5707963267949;
-					// az = CircleRamp.kr(az, 0.1, -pi, pi);
-					// ele = Lag.kr(elev, 0.1);
-					ele = elev;
-					pushang = dis * 1.5707963267949; // degree of sound field displacement
+					az = CircleRamp.kr(az, 0.1, -pi, pi);
+					ele = Lag.kr(elev, 0.1);
+					// ele = elev;
 					dis = Select.kr(dis < 0, [dis, 0]);
 					dis = Select.kr(dis > 1, [dis, 1]);
 					playerRef = Ref(0);
@@ -5047,7 +5057,7 @@ GUI Parameters usable in SynthDefs
 					dopplershift= DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
 					playerRef.value = dopplershift;
 
-					wsinal = playerRef.value[0] * contr * Lag.kr(level, 0.1) * dis * 2.0;
+					wsinal = playerRef.value[0] * contr * level * dis * 2.0;
 
 					Out.ar(outbus, wsinal);
 
@@ -5058,34 +5068,11 @@ GUI Parameters usable in SynthDefs
 					intens = Select.kr(intens < 0, [intens, 0]);
 					intens = intens / 4;
 
-					playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
+					playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
+					playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
+						focus:contr * dis.sqrt) * (1 - dis.squared) * level;
 
-					//comment out all linear parameters
-					//prepareRotateFunc.value(dis, intens, playerRef, contr, rotAngle, Lag.kr(level, 0.1));
-					playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
-						Lag.kr(level, 0.1) * intens * (1 - contr));
-
-					playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang, az, ele);
-
-					// convert to A-format and send to a-format out busses
-					aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
-					Out.ar(aFormatBusOutFoa, aFormatFoa);
-					// aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
-					// Out.ar(aFormatBusOutSoa, aFormatSoa);
-
-					// flag switchable selector of a-format signal (from insert or not)
-					aFormatFoa = Select.ar(insertFlag, [aFormatFoa, InFeedback.ar(aFormatBusInFoa, 4)]);
-					//aFormatSoa = Select.ar(insertFlag, [aFormatSoa, InFeedback.ar(aFormatBusInSoa, 12)]);
-
-					// convert back to b-format
-					ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
-					//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa, soa_a12_encoder_matrix);
-
-					// not sure if the b2a/a2b process degrades signal. Just in case it does:
-					playerRef.value = Select.ar(insertFlag, [playerRef.value, ambSigFoaProcessed]);
-					//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
-
-					playBFormatOutFunc.value(playerRef.value);
+					ambixOutFunc.value(playerRef.value);
 
 					globallev = globallev - 1.0; // lower tail of curve to zero
 					globallev = Select.kr(globallev > 1, [globallev, 1]);
@@ -5100,7 +5087,7 @@ GUI Parameters usable in SynthDefs
 					lsig = playerRef.value[0] * locallev;
 
 					gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
-					Out.ar(gbfbus, gsig);
+					Out.ar(gbixfbus, gsig);
 
 				}).add;
 
@@ -5283,6 +5270,7 @@ GUI Parameters usable in SynthDefs
 		///// launch GUI was here
 		gbus = Bus.audio(server, 1); // global reverb bus
 		gbfbus = Bus.audio(server, 4); // global b-format bus
+		gbixfbus = Bus.audio(server, 4); // global ambix b-format bus
 		soaBus = Bus.audio(server, 9);
 
 		updateSynthInArgs = { arg source;
@@ -5907,10 +5895,9 @@ GUI Parameters usable in SynthDefs
 		if ((path != "") && this.hwncheckProxy[i].value.not
 			&& this.scncheckProxy[i].value.not
 			&& this.streamdisk[i]) {
-			var x;
 			"Content Streamed from disk".postln;
 			if (testado[i].not || force) { // if source is testing don't relaunch synths
-				x = case
+				case
 				{ this.streambuf[i].numChannels == 1} {
 					"1 channel".postln;
 
@@ -5959,8 +5946,9 @@ GUI Parameters usable in SynthDefs
 						if (clsrv > 0) {
 							if (revGlobalBF.isNil) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+										\room, clsrm, \damp, clsdm,
+										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
@@ -6156,7 +6144,8 @@ GUI Parameters usable in SynthDefs
 						if (clsrv > 0) {
 							if (revGlobalBF.isNil) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+									[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+										\room, clsrm, \damp, clsdm,
 										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
@@ -6299,6 +6288,7 @@ GUI Parameters usable in SynthDefs
 						});
 
 					};
+
 					updatesourcevariables.value(i);
 
 				}
@@ -6322,16 +6312,22 @@ GUI Parameters usable in SynthDefs
 						{angslider.value = 0;}.defer;
 					};*/
 
-					libboxProxy[i].valueAction = lastSN3D + 1;
+					if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
+						(dstrvboxProxy[i].value == 3)) {
+						libboxProxy[i].valueAction = lastSN3D + 1;
+						lib[i] = lastSN3D + 1;
+						convert[i] = convert_fuma;
+					} {
+						libboxProxy[i].valueAction = 0;
+						lib[i] = 0;
+						convert[i] = true;
+						dstrv[i] = dstrvboxProxy[i].value;
+					};
 
-						// set lib, convert and dstrv variables when stynths are lauched
-						// for the tracking functions to stay relevant
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-					lib[i] = lastSN3D + 1;
-					convert[i] = convert_fuma;
-					dstrv[i] = dstrvboxProxy[i].value;
-
-					if (convert_fuma) {
+					if (convert[i]) {
 						if (this.convertor.notNil) {
 							this.convertor.set(\gate, 1);
 						} {
@@ -6342,17 +6338,17 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					this.synt[i] = Synth.new(\playBFormatATKStream_++ncanais[i], [\gbus, gbus, \gbfbus,
-						gbfbus, \outbus,
-						mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
-						\rate, 1, \tpos, tpos, \lp,
-						lp[i], \level, level[i],
-						\insertFlag, this.insertFlag[i],
-						\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-						\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-						\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-						\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-					this.playEspacGrp).onFree({this.espacializador[i].free;
+					this.synt[i] = Synth.new("playBFormat"++libName[i]++"Stream_"++ncanais[i],
+						[\gbus, gbus, \gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
+							\bufnum, streambuf[i].bufnum, \contr, clev[i],
+							\rate, 1, \tpos, tpos, \lp,
+							lp[i], \level, level[i],
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.playEspacGrp).onFree({this.espacializador[i].free;
 						this.espacializador[i] = nil; this.synt[i] = nil;
 						playingBF[i] = false;
 						this.streambuf[i].free;
@@ -6361,7 +6357,8 @@ GUI Parameters usable in SynthDefs
 					if (clsrv > 0) {
 						if (revGlobalBF.isNil) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+								[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+									\room, clsrm, \damp, clsdm,
 									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
@@ -6374,35 +6371,35 @@ GUI Parameters usable in SynthDefs
 						} {
 							this.revGlobalBF.set(\gate, 1);
 						};
+					};
 
-						if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
+					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
 
-							if (maxorder > 1) {
-								if(revGlobalSoa.isNil) {
-									this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
-										[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
-											\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
-											\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
-											\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
-											\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
-											\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
-											\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
-											\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
-											\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
-											\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
-											\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
-											\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
-											\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-										this.glbRevDecGrp).register.onFree({
-										if (this.revGlobalSoa.isPlaying.not) {
-											this.revGlobalSoa = nil;
-										};
-									});
-								} {
-									this.revGlobalSoa.set(\gate, 1);
-								};
-
+						if (maxorder > 1) {
+							if(revGlobalSoa.isNil) {
+								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+									[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
+										\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
+										\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
+										\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
+										\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
+										\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
+										\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
+										\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
+										\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
+										\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
+										\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
+										\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
+										\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalSoa.isPlaying.not) {
+										this.revGlobalSoa = nil;
+									};
+								});
+							} {
+								this.revGlobalSoa.set(\gate, 1);
 							};
+
 						};
 
 						//comment out all linear parameters
@@ -6427,7 +6424,7 @@ GUI Parameters usable in SynthDefs
 								};
 							};
 							if (this.convertor.notNil) {
-								if (convert_fuma) {
+								if (convert[i]) {
 									if (this.converterNeeded(0).not) {
 										this.convertor.set(\gate, 0);
 									};
@@ -6438,7 +6435,7 @@ GUI Parameters usable in SynthDefs
 					} {
 
 						//comment out all linear parameters
-							//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
+						//this.synt[i] = Synth.new(\playBFormatStream++ln[i], [\gbus, gbus, \gbfbus,
 
 						this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
 							[\inbus, mbus[i], \gbus, gbus,
@@ -6462,7 +6459,7 @@ GUI Parameters usable in SynthDefs
 								};
 							};
 							if (this.convertor.notNil) {
-								if (convert_fuma) {
+								if (convert[i]) {
 									if (this.converterNeeded(0).not) {
 										this.convertor.set(\gate, 0);
 									};
@@ -6475,8 +6472,8 @@ GUI Parameters usable in SynthDefs
 				};
 
 				updatesourcevariables.value(i);
-			};
 
+			};
 
 		};
 
@@ -6497,14 +6494,14 @@ GUI Parameters usable in SynthDefs
 				// comment out automatic settings, prefer sensible deffaults
 				/*angle[i] = 0;
 				if (guiflag) {
-					{angnumbox.value = 0;}.defer;
-					{angslider.value = 0;}.defer;
+				{angnumbox.value = 0;}.defer;
+				{angslider.value = 0;}.defer;
 				};
 				cboxProxy[i].valueAction = 1;
 				clev[i] = 1;
 				if((i == currentsource) && guiflag) {
-					cslider.value = 1;
-					connumbox.value = 1;
+				cslider.value = 1;
+				connumbox.value = 1;
 				};*/
 
 
@@ -6540,13 +6537,14 @@ GUI Parameters usable in SynthDefs
 					if (clsrv > 0) {
 						if (revGlobalBF.isNil) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+								[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+									\room, clsrm, \damp, clsdm,
 									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
 									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
 								this.glbRevDecGrp).register.onFree({
-							if (this.revGlobalBF.isPlaying.not) {
+								if (this.revGlobalBF.isPlaying.not) {
 									this.revGlobalBF = nil;
 								};
 							});
@@ -6681,276 +6679,285 @@ GUI Parameters usable in SynthDefs
 					});
 
 				};
+
 				updatesourcevariables.value(i);
-
-
-			}
-			{if (sombuf[i].numChannels == 2) {
-
-				ncanais[i] = 2; // arquivo estéreo
-
-				// comment out automatic settings, prefer sensible deffaults
-				/*angle[i] = pi/2;
-				cboxProxy[i].valueAction = 1;
-				clev[i] = 1;
-				if((i == currentsource) && guiflag) {
-					cslider.value = 1;
-					connumbox.value = 1;
-				};
-				if (guiflag) {
-					{angnumbox.value = 1.05;}.defer; // 60 degrees
-					{angslider.value = 0.33;}.defer;
-				};*/
-
-				this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
-					\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-					\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
-					this.espacializador[i] = nil;
-					this.synt[i] = nil});
-
-				if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
-
-					libboxProxy[i].valueAction = lastSN3D + 1;
-
-					// set lib, convert and dstrv variables when stynths are lauched
-					// for the tracking functions to stay relevant
-
-					lib[i] = lastSN3D + 1;
-					dstrv[i] = 3;
-					convert[i] = convert_fuma;
-
-					if (convert_fuma) {
-						if (this.convertor.notNil) {
-							this.convertor.set(\gate, 1);
-						} {
-							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-								target:this.glbRevDecGrp).onFree({
-								this.convertor = nil;
-							});
-						};
-					};
-
-					if (clsrv > 0) {
-						if (revGlobalBF.isNil) {
-							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-								this.glbRevDecGrp).register.onFree({
-								if (this.revGlobalBF.isPlaying.not) {
-									this.revGlobalBF = nil;
-								};
-							});
-						} {
-							this.revGlobalBF.set(\gate, 1);
-						};
-					};
-
-					if (maxorder > 1) {
-						if(revGlobalSoa.isNil) {
-							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
-								[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
-									\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
-									\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
-									\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
-									\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
-									\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
-									\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
-									\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
-									\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
-									\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
-									\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
-									\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-								this.glbRevDecGrp).register.onFree({
-								if (this.revGlobalSoa.isPlaying.not) {
-									this.revGlobalSoa = nil;
-								};
-							});
-						} {
-							this.revGlobalSoa.set(\gate, 1);
-						};
-					};
-
-					//comment out all linear parameters
-					//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i], [\inbus, sbus[i],
-
-					this.espacializador[i] = Synth.new(\espacEstereoAFormat,
-						[\inbus, sbus[i], \contr, clev[i], \angle, angle[i],
-							\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-						this.synt[i], addAction: \addAfter).onFree({
-						if (this.revGlobalSoa.notNil) {
-							if (this.globSoaA12Needed(0).not) {
-								this.revGlobalSoa.set(\gate, 0);
-							};
-						};
-						if (this.revGlobalBF.notNil) {
-							if (this.globBfmtNeeded(0).not) {
-								this.revGlobalBF.set(\gate, 0);
-							};
-						};
-						if (this.convertor.notNil) {
-							if (convert_fuma) {
-								if (this.converterNeeded(0).not) {
-									this.convertor.set(\gate, 0);
-								};
-							};
-						};
-					});
-
-				} {
-					// set lib, convert and dstrv variables when stynths are lauched
-					// for the tracking functions to stay relevant
-
-					lib[i] = libboxProxy[i].value;
-
-					case
-					{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
-					{ convert[i] = convert_ambix; }
-					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
-					{ convert[i] = convert_fuma; }
-					{ libboxProxy[i].value >= (lastFUMA + 1) }
-					{ convert[i] = convert_direct; };
-
-					dstrv[i] = dstrvboxProxy[i].value;
-
-					if (convert[i]) {
-
-						if (this.convertor.notNil) {
-							this.convertor.set(\gate, 1);
-						} {
-							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-								target:this.glbRevDecGrp).onFree({
-								this.convertor = nil;
-							});
-						};
-					};
-
-					if (speaker_array.isNil) {
-
-						if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
-							this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
-								target:this.glbRevDecGrp).onFree({
-								this.nonAmbi2FuMa = nil;
-							});
-						};
-					};
-
-					//comment out all linear parameters
-					//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
-
-					this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
-						[\inbus, sbus[i],
-							\gbus, gbus, \angle, angle[i],
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\room, rm[i], \damp, dm[i], \contr, clev[i],
-							\zir, rirZspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
-							\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
-						this.synt[i], addAction: \addAfter).onFree({
-						if (speaker_array.isNil) {
-							if (this.nonAmbi2FuMaNeeded(0).not
-								&& this.nonAmbi2FuMa.notNil) {
-								this.nonAmbi2FuMa.free;
-							};
-						};
-						if (this.convertor.notNil) {
-							if (convert[i]) {
-								if (this.converterNeeded(0).not) {
-									this.convertor.set(\gate, 0);
-								};
-							};
-						};
-					});
-
-				};
-				//atualizarvariaveis.value;
-				updatesourcevariables.value(i);
-
-				//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
-
 
 			} {
-				if (sombuf[i].numChannels >= 4) {
-					playingBF[i] = true;
-					ncanais[i] = sombuf[i].numChannels;
+				if (sombuf[i].numChannels == 2) {
+
+					ncanais[i] = 2; // arquivo estéreo
 
 					// comment out automatic settings, prefer sensible deffaults
-					/*angle[i] = 0;
-					if (guiflag) {
-						{angnumbox.value = 0;}.defer;
-					};
-					cboxProxy[i].valueAction = 0;
-					clev[i] = 0;
+					/*angle[i] = pi/2;
+					cboxProxy[i].valueAction = 1;
+					clev[i] = 1;
 					if((i == currentsource) && guiflag) {
-						cslider.value = 0;
-						connumbox.value = 0;
+					cslider.value = 1;
+					connumbox.value = 1;
 					};
 					if (guiflag) {
-						{angslider.value = 0;}.defer;
+					{angnumbox.value = 1.05;}.defer; // 60 degrees
+					{angslider.value = 0.33;}.defer;
 					};*/
 
-					libboxProxy[i].valueAction = lastSN3D + 1;
-
-					// set lib, convert and dstrv variables when stynths are lauched
-					// for the tracking functions to stay relevant
-
-					lib[i] = lastSN3D + 1;
-					convert[i] = convert_fuma;
-					dstrv[i] = dstrvboxProxy[i].value;
-
-					if (convert_fuma) {
-						if (this.convertor.notNil) {
-							this.convertor.set(\gate, 1);
-						} {
-							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-								target:this.glbRevDecGrp).onFree({
-								this.convertor = nil;
-							});
-						};
-					};
-
-					this.synt[i] = Synth.new(\playBFormatATKFile_++ncanais[i], [\gbus, gbus, \gbfbus,
-						gbfbus, \outbus,
-						mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-						\rate, 1, \tpos, tpos, \lp,
-						lp[i], \level, level[i],
-						\insertFlag, this.insertFlag[i],
-						\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-						\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-						\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-						\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-					this.playEspacGrp).onFree({this.espacializador[i].free;
+					this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
+						\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+						\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
 						this.espacializador[i] = nil;
-						this.synt[i] = nil;
-						playingBF[i] = false;
-					});
+						this.synt[i] = nil});
 
-					if (clsrv > 0) {
-						if (revGlobalBF.isNil) {
-							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
-									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
-									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
-									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
-									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-								this.glbRevDecGrp).register.onFree({
-								if (this.revGlobalBF.isPlaying.not) {
-									this.revGlobalBF = nil;
+					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
+
+						libboxProxy[i].valueAction = lastSN3D + 1;
+
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
+
+						lib[i] = lastSN3D + 1;
+						dstrv[i] = 3;
+						convert[i] = convert_fuma;
+
+						if (convert_fuma) {
+							if (this.convertor.notNil) {
+								this.convertor.set(\gate, 1);
+							} {
+								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+									target:this.glbRevDecGrp).onFree({
+									this.convertor = nil;
+								});
+							};
+						};
+
+						if (clsrv > 0) {
+							if (revGlobalBF.isNil) {
+								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+									[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+										\room, clsrm, \damp, clsdm,
+										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalBF.isPlaying.not) {
+										this.revGlobalBF = nil;
+									};
+								});
+							} {
+								this.revGlobalBF.set(\gate, 1);
+							};
+						};
+
+						if (maxorder > 1) {
+							if(revGlobalSoa.isNil) {
+								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+									[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
+										\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
+										\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
+										\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
+										\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
+										\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
+										\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
+										\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
+										\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
+										\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
+										\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
+										\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
+										\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalSoa.isPlaying.not) {
+										this.revGlobalSoa = nil;
+									};
+								});
+							} {
+								this.revGlobalSoa.set(\gate, 1);
+							};
+						};
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i], [\inbus, sbus[i],
+
+						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
+							[\inbus, sbus[i], \contr, clev[i], \angle, angle[i],
+								\gbus, gbus, \soaBus, soaBus, \gbfbus, gbfbus,
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.synt[i], addAction: \addAfter).onFree({
+							if (this.revGlobalSoa.notNil) {
+								if (this.globSoaA12Needed(0).not) {
+									this.revGlobalSoa.set(\gate, 0);
 								};
-							});
+							};
+							if (this.revGlobalBF.notNil) {
+								if (this.globBfmtNeeded(0).not) {
+									this.revGlobalBF.set(\gate, 0);
+								};
+							};
+							if (this.convertor.notNil) {
+								if (convert_fuma) {
+									if (this.converterNeeded(0).not) {
+										this.convertor.set(\gate, 0);
+									};
+								};
+							};
+						});
+
+					} {
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
+
+						lib[i] = libboxProxy[i].value;
+
+						case
+						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+						{ convert[i] = convert_ambix; }
+						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+						{ convert[i] = convert_fuma; }
+						{ libboxProxy[i].value >= (lastFUMA + 1) }
+						{ convert[i] = convert_direct; };
+
+						dstrv[i] = dstrvboxProxy[i].value;
+
+						if (convert[i]) {
+
+							if (this.convertor.notNil) {
+								this.convertor.set(\gate, 1);
+							} {
+								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+									target:this.glbRevDecGrp).onFree({
+									this.convertor = nil;
+								});
+							};
+						};
+
+						if (speaker_array.isNil) {
+
+							if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
+								this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+									target:this.glbRevDecGrp).onFree({
+									this.nonAmbi2FuMa = nil;
+								});
+							};
+						};
+
+						//comment out all linear parameters
+						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
+
+						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
+							[\inbus, sbus[i],
+								\gbus, gbus, \angle, angle[i],
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\room, rm[i], \damp, dm[i], \contr, clev[i],
+								\zir, rirZspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
+								\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
+							this.synt[i], addAction: \addAfter).onFree({
+							if (speaker_array.isNil) {
+								if (this.nonAmbi2FuMaNeeded(0).not
+									&& this.nonAmbi2FuMa.notNil) {
+									this.nonAmbi2FuMa.free;
+								};
+							};
+							if (this.convertor.notNil) {
+								if (convert[i]) {
+									if (this.converterNeeded(0).not) {
+										this.convertor.set(\gate, 0);
+									};
+								};
+							};
+						});
+
+					};
+					//atualizarvariaveis.value;
+					updatesourcevariables.value(i);
+
+					//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+
+
+				} {
+					if (sombuf[i].numChannels >= 4) {
+						playingBF[i] = true;
+						ncanais[i] = sombuf[i].numChannels;
+
+						// comment out automatic settings, prefer sensible deffaults
+						/*angle[i] = 0;
+						if (guiflag) {
+						{angnumbox.value = 0;}.defer;
+						};
+						cboxProxy[i].valueAction = 0;
+						clev[i] = 0;
+						if((i == currentsource) && guiflag) {
+						cslider.value = 0;
+						connumbox.value = 0;
+						};
+						if (guiflag) {
+						{angslider.value = 0;}.defer;
+						};*/
+
+						if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
+							(dstrvboxProxy[i].value == 3)) {
+							libboxProxy[i].valueAction = lastSN3D + 1;
+							lib[i] = lastSN3D + 1;
+							convert[i] = convert_fuma;
 						} {
-							this.revGlobalBF.set(\gate, 1);
+							libboxProxy[i].valueAction = 0;
+							lib[i] = 0;
+							convert[i] = true;
+							dstrv[i] = dstrvboxProxy[i].value;
+						};
+
+						// set lib, convert and dstrv variables when stynths are lauched
+						// for the tracking functions to stay relevant
+
+						if (convert[i]) {
+							if (this.convertor.notNil) {
+								this.convertor.set(\gate, 1);
+							} {
+								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+									target:this.glbRevDecGrp).onFree({
+									this.convertor = nil;
+								});
+							};
+						};
+
+						this.synt[i] = Synth.new("playBFormat"++libName[i]++"File_"++ncanais[i],
+							[\gbus, gbus, \gbfbus, gbfbus, \gbixfbus, gbixfbus,
+								\outbus, mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+								\rate, 1, \tpos, tpos, \lp,
+								lp[i], \level, level[i],
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+							this.playEspacGrp).onFree({this.espacializador[i].free;
+							this.espacializador[i] = nil;
+							this.synt[i] = nil;
+							playingBF[i] = false;
+						});
+
+						if (clsrv > 0) {
+							if (revGlobalBF.isNil) {
+								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+									[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+										\room, clsrm, \damp, clsdm,
+										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
+									this.glbRevDecGrp).register.onFree({
+									if (this.revGlobalBF.isPlaying.not) {
+										this.revGlobalBF = nil;
+									};
+								});
+							} {
+								this.revGlobalBF.set(\gate, 1);
+							};
 						};
 
 						// reverb for contracted (mono) component - and for rest too
@@ -6985,11 +6992,10 @@ GUI Parameters usable in SynthDefs
 							};
 
 							//comment out all linear parameters
-						//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
+							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
 
 							this.espacializador[i] = Synth.new(\ATK2AFormat,
-								[\inbus, mbus[i],
-									\gbus, gbus, \soaBus, soaBus, \contr, clev[i],
+								[\inbus, mbus[i], \gbus, gbus, \soaBus, soaBus, \contr, clev[i],
 									\insertFlag, this.insertFlag[i],
 									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
@@ -7007,7 +7013,41 @@ GUI Parameters usable in SynthDefs
 									};
 								};
 								if (this.convertor.notNil) {
-									if (convert_fuma) {
+									if (convert[i]) {
+										if (this.converterNeeded(0).not) {
+											this.convertor.set(\gate, 0);
+										};
+									};
+								};
+							});
+
+						} {
+							//comment out all linear parameters
+							//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
+
+							this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
+								[\inbus, mbus[i], \gbus, gbus,
+									\insertFlag, this.insertFlag[i],
+									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+									\contr, clev[i], \room, rm[i], \damp, dm[i],
+									\wir, rirWspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
+									\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
+								this.synt[i], addAction: \addAfter).onFree({
+								if (this.revGlobalSoa.notNil) {
+									if (this.globSoaA12Needed(0).not) {
+										this.revGlobalSoa.set(\gate, 0);
+									};
+								};
+								if (this.revGlobalBF.notNil) {
+									if (this.globBfmtNeeded(0).not) {
+										this.revGlobalBF.set(\gate, 0);
+									};
+								};
+								if (this.convertor.notNil) {
+									if (convert[i]) {
 										if (this.converterNeeded(0).not) {
 											this.convertor.set(\gate, 0);
 										};
@@ -7017,67 +7057,31 @@ GUI Parameters usable in SynthDefs
 
 						};
 
-					} {
-						//comment out all linear parameters
-						//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
-
-						this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
-							[\inbus, mbus[i], \gbus, gbus,
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\contr, clev[i], \room, rm[i], \damp, dm[i],
-								\wir, rirWspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
-								\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
-							this.synt[i], addAction: \addAfter).onFree({
-							if (this.revGlobalSoa.notNil) {
-								if (this.globSoaA12Needed(0).not) {
-									this.revGlobalSoa.set(\gate, 0);
-								};
-							};
-							if (this.revGlobalBF.notNil) {
-								if (this.globBfmtNeeded(0).not) {
-									this.revGlobalBF.set(\gate, 0);
-								};
-							};
-							if (this.convertor.notNil) {
-								if (convert_fuma) {
-									if (this.converterNeeded(0).not) {
-										this.convertor.set(\gate, 0);
-									};
-								};
-							};
-						});
-
 					};
+
 					updatesourcevariables.value(i);
 
-				}
+				};
 
 				{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
 				};
-			};
-
 			};
 
 			// what is the meaning of the folowing condition?
 			// why is it only evaluated when files are loaded and not stremaed?
 
 			/*if(control.doRecord == false){
-				if (guiflag) {
-					{	xboxProxy[i].valueAction = xbox[i].value;
-						yboxProxy[i].valueAction = ybox[i].value;
-					}.defer;
-				};
+			if (guiflag) {
+			{	xboxProxy[i].valueAction = xbox[i].value;
+			yboxProxy[i].valueAction = ybox[i].value;
+			}.defer;
+			};
 			};*/
 
 		} {
 
 			if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
-				var x;
-				x = case
+				case
 				{ this.ncan[i] == 1 } {
 
 					// comment out automatic settings, prefer sensible deffaults
@@ -7130,7 +7134,8 @@ GUI Parameters usable in SynthDefs
 						if (clsrv > 0) {
 							if (revGlobalBF.isNil) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+									[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+										\room, clsrm, \damp, clsdm,
 										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
@@ -7243,9 +7248,7 @@ GUI Parameters usable in SynthDefs
 						//{this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i],
 
 						this.espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
-							[\inbus, mbus[i],
-								\gbus, gbus,
-								\insertFlag, this.insertFlag[i],
+							[\inbus, mbus[i], \gbus, gbus, \insertFlag, this.insertFlag[i],
 								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
 								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
 								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
@@ -7336,7 +7339,8 @@ GUI Parameters usable in SynthDefs
 						if (clsrv > 0) {
 							if (revGlobalBF.isNil) {
 								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-									[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+									[\gbfbus, gbfbus, \gate, 1, \gbixfbus, gbixfbus,
+										\room, clsrm, \damp, clsdm,
 										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
@@ -7491,17 +7495,19 @@ GUI Parameters usable in SynthDefs
 					connumbox.value = 0;
 					};*/
 
+					if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
+						(dstrvboxProxy[i].value == 3)) {
+						libboxProxy[i].valueAction = lastSN3D + 1;
+						lib[i] = lastSN3D + 1;
+						convert[i] = convert_fuma;
+					} {
+						libboxProxy[i].valueAction = 0;
+						lib[i] = 0;
+						convert[i] = true;
+						dstrv[i] = dstrvboxProxy[i].value;
+					};
 
-					libboxProxy[i].valueAction = lastSN3D + 1;
-
-					// set lib, convert and dstrv variables when stynths are lauched
-					// for the tracking functions to stay relevant
-
-					lib[i] = lastSN3D + 1;
-					dstrv[i] = dstrvboxProxy[i].value;
-					convert[i] = convert_fuma;
-
-					if (convert_fuma) {
+					if (convert[i]) {
 						if (this.convertor.notNil) {
 							this.convertor.set(\gate, 1);
 						} {
@@ -7517,8 +7523,8 @@ GUI Parameters usable in SynthDefs
 						//comment out all linear parameters
 						//this.synt[i] = Synth.new(\playBFormatHWBus++ln[i], [\gbfbus, gbfbus,
 
-						this.synt[i] = Synth.new(\playBFormatATKHWBus_++this.ncan[i], [\gbfbus, gbfbus,
-							\outbus, mbus[i],
+						this.synt[i] = Synth.new(\playBFormat++libName[i]++"HWBus_"++this.ncan[i],
+							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
 							\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
 							\insertFlag, this.insertFlag[i],
 							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
@@ -7536,15 +7542,16 @@ GUI Parameters usable in SynthDefs
 						//comment out all linear parameters
 						//this.synt[i] = Synth.new(\playBFormatSWBus++ln[i], [\gbfbus, gbfbus,
 
-						this.synt[i] = Synth.new(\playBFormatATKSWBus_++this.ncan[i], [\gbfbus, gbfbus,
-							\outbus, mbus[i], \contr, clev[i], \rate, 1, \tpos, tpos,
-							\level, level[i],
-							\insertFlag, this.insertFlag[i],
-							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-							\busini, this.scInBus[i] ],this.playEspacGrp).onFree({
+						this.synt[i] = Synth.new(\playBFormat++libName[i]++"SWBus_"++this.ncan[i],
+							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
+								\contr, clev[i], \rate, 1, \tpos, tpos,
+								\level, level[i],
+								\insertFlag, this.insertFlag[i],
+								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+								\busini, this.scInBus[i] ],this.playEspacGrp).onFree({
 							this.espacializador[i].free;
 							this.espacializador[i] = nil;
 							this.synt[i] = nil;
@@ -7554,7 +7561,8 @@ GUI Parameters usable in SynthDefs
 					if (clsrv > 0) {
 						if (revGlobalBF.isNil) {
 							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-								[\gbfbus, gbfbus, \gate, 1, \room, clsrm, \damp, clsdm,
+								[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+									\room, clsrm, \damp, clsdm,
 									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
 									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
 									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
@@ -7622,7 +7630,7 @@ GUI Parameters usable in SynthDefs
 								};
 							};
 							if (this.convertor.notNil) {
-								if (convert_fuma) {
+								if (convert[i]) {
 									if (this.converterNeeded(0).not) {
 										this.convertor.set(\gate, 0);
 									};
@@ -7658,7 +7666,7 @@ GUI Parameters usable in SynthDefs
 								};
 							};
 							if (this.convertor.notNil) {
-								if (convert_fuma) {
+								if (convert[i]) {
 									if (this.converterNeeded(0).not) {
 										this.convertor.set(\gate, 0);
 									};
@@ -10261,10 +10269,10 @@ GUI Parameters usable in SynthDefs
 
 		sysex  = { arg src, sysex;
 			// This should be more elaborate - other things might trigger it...fix this!
-			if(sysex[3] == 6){ var x;
+			if(sysex[3] == 6){
 				("We have : " ++ sysex[4] ++ " type action").postln;
 
-				x = case
+				case
 				{ sysex[4] == 1 } {
 
 					"Stop".postln;
