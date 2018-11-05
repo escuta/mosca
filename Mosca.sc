@@ -4491,7 +4491,7 @@ GUI Parameters usable in SynthDefs
 				fluir, frdir, bldir, bruir;
 				var env, convsig, sigx, sig = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
-				sigx = FoaDecode.ar(sigx, FoaDecoderMatrix.newAmbix1);
+				sigx = FoaEncode.ar(sigx, FoaEncoderMatrix.newAmbix1);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = FoaDecode.ar(sig, b2a);
 				sig = sig + sigx;
@@ -4584,7 +4584,7 @@ GUI Parameters usable in SynthDefs
 		SynthDef.new("revGlobalBFormatAmb_pass",  { arg gbfbus, gbixfbus, gate = 1, room = 0.5, damp = 0.5;
 			var env, temp, sigx, sig = In.ar(gbfbus, 4);
 			sigx = In.ar(gbixfbus, 4);
-			sigx = FoaDecode.ar(sigx, FoaDecoderMatrix.newAmbix1);
+			sigx = FoaEncode.ar(sigx, FoaEncoderMatrix.newAmbix1);
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = FoaDecode.ar(sig, b2a);
 			sig = sig + sigx;
@@ -4653,7 +4653,7 @@ GUI Parameters usable in SynthDefs
 		SynthDef.new("revGlobalBFormatAmb_free",  { arg gbfbus, gbixfbus, gate = 1, room = 0.5, damp = 0.5;
 			var env, temp, convsig, sigx, sig = In.ar(gbfbus, 4);
 			sigx = In.ar(gbixfbus, 4);
-			sigx = FoaDecode.ar(sigx, FoaDecoderMatrix.newAmbix1);
+			sigx = FoaEncode.ar(sigx, FoaEncoderMatrix.newAmbix1);
 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 			sig = FoaDecode.ar(sig, b2a);
 			sig = sig + sigx;
@@ -4880,8 +4880,8 @@ GUI Parameters usable in SynthDefs
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 
 				az, ele, dis, globallev, locallev,
-				gsig, lsig, rd, dopplershift,
-				intens;
+				gsig, //lsig, intens,
+				rd, dopplershift;
 				var grevganho = 0.20;
 				dis = radius;
 
@@ -4905,12 +4905,12 @@ GUI Parameters usable in SynthDefs
 
 				// global reverb
 				globallev = 1 / dis.sqrt;
-				intens = globallev - 1;
+				/*intens = globallev - 1;
 				intens = Select.kr(intens > 4, [intens, 4]);
 				intens = Select.kr(intens < 0, [intens, 0]);
-				intens = intens / 4;
+				intens = intens / 4;*/
 
-				playerRef.value = FoaEncode.ar(playerRef.value, FoaEncoderMatrix.newAmbix1);
+				playerRef.value = FoaDecode.ar(playerRef.value, FoaDecoderMatrix.newAmbix1);
 				playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
 				playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
 					focus:contr * dis.sqrt) * (1 - dis.squared) * level;
@@ -4924,12 +4924,12 @@ GUI Parameters usable in SynthDefs
 
 				gsig = playerRef.value[0] * globallev;
 
-				locallev = dis;
+				//locallev = dis;
 
-				locallev = locallev  * Lag.kr(llev, 0.1) * 5;
-				lsig = playerRef.value[0] * locallev;
+				//locallev = locallev  * Lag.kr(llev, 0.1) * 5;
+				//lsig = playerRef.value[0] * locallev;
 
-				gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+				//gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
 				Out.ar(gbixfbus, gsig);
 
 			}).add;
@@ -5038,8 +5038,8 @@ GUI Parameters usable in SynthDefs
 					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 
 					az, ele, dis, globallev, locallev,
-					gsig, lsig, rd, dopplershift,
-					intens;
+					gsig, //lsig, intens,
+					rd, dopplershift;
 					var grevganho = 0.20;
 					dis = radius;
 
@@ -5063,13 +5063,13 @@ GUI Parameters usable in SynthDefs
 
 					// global reverb
 					globallev = 1 / dis.sqrt;
-					intens = globallev - 1;
+					/*intens = globallev - 1;
 					intens = Select.kr(intens > 4, [intens, 4]);
 					intens = Select.kr(intens < 0, [intens, 0]);
-					intens = intens / 4;
+					intens = intens / 4;*/
 
-					playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
-					playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
+					playerRef.value = HOATransRotateAz.ar(count + 2, playerRef.value, rotAngle);
+					playerRef.value = HOABeamDirac2Hoa.ar(count + 2, playerRef.value, 1, az, ele,
 						focus:contr * dis.sqrt) * (1 - dis.squared) * level;
 
 					ambixOutFunc.value(playerRef.value);
@@ -5081,12 +5081,12 @@ GUI Parameters usable in SynthDefs
 
 					gsig = playerRef.value[0] * globallev;
 
-					locallev = dis;
+					//locallev = dis;
 
-					locallev = locallev  * Lag.kr(llev, 0.1) * 5;
-					lsig = playerRef.value[0] * locallev;
+					//locallev = locallev  * Lag.kr(llev, 0.1) * 5;
+					//lsig = playerRef.value[0] * locallev;
 
-					gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
+					//gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
 					Out.ar(gbixfbus, gsig);
 
 				}).add;
