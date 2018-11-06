@@ -5238,7 +5238,7 @@ GUI Parameters usable in SynthDefs
 
 		playInFunc[1] = {
 			arg playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum;
-			playerRef.value =  In.ar(busini, channum);
+			playerRef.value =  In.ar(busini + server.inputBus.index, channum);
 		};
 
 		makeSynthDefPlayers.("HWBus", 1);
