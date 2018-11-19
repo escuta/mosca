@@ -329,13 +329,13 @@ GUI Parameters usable in SynthDefs
 		this.gbfbus = Bus.audio(server, 4); // global b-format bus
 		this.gbixfbus = Bus.audio(server, 4); // global ambix b-format bus
 		this.soaBus = Bus.audio(server, 9);
-		server.sync;
+		//server.sync;
 		this.playEspacGrp = Group.tail;
 		this.glbRevDecGrp = Group.after(this.playEspacGrp);
 
 		speaker_array = ispeaker_array;
 
-		//server.sync;
+		server.sync;
 		//this.lock = ilock;
 
 		if (iwidth < 600) {
@@ -2578,6 +2578,7 @@ GUI Parameters usable in SynthDefs
 					ambixOutFunc.value([ambSig[0],ambSig[2],ambSig[3],
 						ambSig[1],ambSig[5],ambSig[7],
 						ambSig[8],ambSig[6],ambSig[4]]);
+					ambixOutFunc.value(ambSig);
 				};
 
 				iemStereoConvert = { |in1, azi1 = 0, in2, azi2 = 0, elev = 0, level = 1|
@@ -2597,8 +2598,9 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 				if ((decoder.class == String) || (decoder.class == Symbol)) {
+					var setup;
 
-					DecodeAmbi2O.addSetup(decoder,
+					setup = DecodeAmbi2O.addSetup(decoder,
 						Array.newFrom(speaker_array).collect({ |val| val[0] }),
 						Array.newFrom(speaker_array).collect({ |val| val[1] }) );
 
@@ -2606,8 +2608,7 @@ GUI Parameters usable in SynthDefs
 						arg lf_hf=0, xover=400, sub = 1, level = 1;
 						var sig, nonambi;
 						sig = In.ar(this.ambixbus, bFormNumChan);
-						sig = DecodeAmbi2O.ar([sig[0], sig[3], sig[1], sig[2], sig[8],
-							sig[4], sig[7], sig[5], sig[6]], decoder);
+						sig = setup.ar(sig, decoder);
 						nonambi = In.ar(nonambibus, numoutputs);
 						sig = (sig + nonambi) * level;
 						perfectSphereFunc.value(sig);
@@ -4422,7 +4423,7 @@ GUI Parameters usable in SynthDefs
 
 			});
 
-			server.sync;
+			//server.sync;
 
 			"Loading rir bank".postln;
 
@@ -4443,7 +4444,7 @@ GUI Parameters usable in SynthDefs
 				rirXspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
 				rirYspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
 				rirZspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				server.sync;
+				//server.sync;
 				rirWspectrum[count].preparePartConv(rirW[count], fftsize);
 				//server.sync;
 				rirXspectrum[count].preparePartConv(rirX[count], fftsize);
@@ -4474,7 +4475,7 @@ GUI Parameters usable in SynthDefs
 				12.do { arg i;
 					rirA12[i] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_SoaA12.wav",
 						channels: [i]);
-					server.sync;
+					//server.sync;
 					rirA12Spectrum[count, i] = Buffer.alloc(server, bufsize[count], 1);
 					//server.sync;
 					rirA12Spectrum[count, i].preparePartConv(rirA12[i], fftsize);
@@ -5303,7 +5304,7 @@ GUI Parameters usable in SynthDefs
 
 		updateSynthInArgs = { arg source;
 			{
-				server.sync;
+				//server.sync;
 				this.setSynths(source, \angle, angle[source]);
 				this.setSynths(source, \level, level[source]);
 				this.setSynths(source, \dopamnt, dplev[source]);
@@ -9806,7 +9807,7 @@ GUI Parameters usable in SynthDefs
 			this.libbox[i].action = {arg num;
 				this.libboxProxy[i].valueAction = num.value;
 			};
-			libbox[i].value = lastSN3D;
+			libbox[i].value = lastSN3D + 1;
 
 			this.dstrvbox[i].action = {arg num;
 				this.dstrvboxProxy[i].valueAction = num.value;
