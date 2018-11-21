@@ -2689,9 +2689,9 @@ GUI Parameters usable in SynthDefs
 		if (decoder.notNil) {
 
 			if (suboutbus.notNil) {
-				subOutFunc = { |signal, sublevel|
-					var subOut = Mix.ar(signal) * sublevel  * 0.55;
-					Out.ar(suboutbus, signal);
+				subOutFunc = { |signal, sublevel = 1|
+					var subOut = Mix.ar(signal) * sublevel * 0.5;
+					Out.ar(suboutbus, subOut);
 				};
 			} {
 				subOutFunc = { |signal, sublevel| };
@@ -2722,7 +2722,7 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 				if (this.serport.notNil) {
-					SynthDef.new("globDecodeSynth",  { arg heading=0, roll=0, pitch=0, sub = 1, level = 1;
+					SynthDef.new("globDecodeSynth",  { arg heading = 0, roll = 0, pitch = 0, sub = 1, level = 1;
 						var sig, nonambi;
 						sig = In.ar(this.globTBus, 4);
 						sig = FoaTransform.ar(sig, 'rtt',  Lag.kr(heading, 0.01),
@@ -2785,7 +2785,7 @@ GUI Parameters usable in SynthDefs
 						Array.newFrom(speaker_array).collect({ |val| val[1] }) );
 
 					SynthDef("globDecodeSynth", {
-						arg lf_hf=0, xover=400, sub = 1, level = 1;
+						arg lf_hf = 0, xover = 400, sub = 1, level = 1;
 						var sig, nonambi;
 						sig = In.ar(this.ambixbus, bFormNumChan);
 						sig = setup.ar(sig, decoder);
@@ -3056,7 +3056,7 @@ GUI Parameters usable in SynthDefs
 
 				dis = dis * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				//ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
 				ambSigSoa = [ambSigRef[0].value, ambSigRef[1].value, ambSigRef[2].value, ambSigRef[3].value,
@@ -3533,7 +3533,7 @@ GUI Parameters usable in SynthDefs
 
 				dis = dis * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+				//ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
 				// convert to A-format and send to a-format out busses
@@ -3563,7 +3563,7 @@ GUI Parameters usable in SynthDefs
 				arg inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05,
 				dopamnt = 0,
-				glev = 0, llev = 0, contr=1,
+				glev = 0, llev = 0, contr = 1,
 				sp, df,
 				insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 				aFormatBusOutSoa, aFormatBusInSoa,
@@ -3679,7 +3679,7 @@ GUI Parameters usable in SynthDefs
 
 				dis = dis * 5.0;
 				dis = Select.kr(dis < 0.001, [dis, 0.001]);
-				ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
+				//ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
 				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
 
 				// convert to A-format and send to a-format out busses
@@ -4246,7 +4246,7 @@ GUI Parameters usable in SynthDefs
 
 			dis = dis * 5.0;
 			dis = Select.kr(dis < 0.001, [dis, 0.001]);
-			ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+			//ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 			ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
 
@@ -4337,7 +4337,7 @@ GUI Parameters usable in SynthDefs
 
 			dis = dis * 5.0;
 			dis = Select.kr(dis < 0.001, [dis, 0.001]);
-			ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
+			//ambSigFoa = HPF.ar(ambSigFoa, 20); // stops bass frequency blow outs by proximity
 			ambSigFoa = FoaTransform.ar(ambSigFoa, 'proximity', dis);
 
 			// convert to A-format and send to a-format out busses
@@ -4468,7 +4468,7 @@ GUI Parameters usable in SynthDefs
 
 			dis = dis * 5.0;
 			dis = Select.kr(dis < 0.001, [dis, 0.001]);
-			ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
+			//ambSigFoa1plus2 = HPF.ar(ambSigFoa1plus2, 20); // stops bass frequency blow outs by proximity
 			ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity', dis);
 
 			// convert to A-format and send to a-format out busses

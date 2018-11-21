@@ -157,8 +157,8 @@
 		this.ossiaplay = OSSIA_Parameter(ossiaAutomation, "Play", Boolean,
 			critical:true, repetition_filter:true);
 
-		this.ossiaplay.callback_({ arg but;
-			if (but) {
+		this.ossiaplay.callback_({ arg bool;
+			if (bool) {
 				if (isPlay.not) {
 					this.control.play; };
 			} {
@@ -257,8 +257,11 @@
 
 			this.ossiaaud[i].callback_({ arg num;
 				this.auditionFunc(i, num.value);
-				if (guiflag && (i == currentsource)) {
-					btestar.value = num.value.asInteger};
+				if (guiflag) {
+					{novoplot.value;}.defer(guiInt);
+					if (i == currentsource) {
+					btestar.value = num.value.asInteger;};
+				};
 			});
 
 
