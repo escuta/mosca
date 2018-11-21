@@ -335,7 +335,6 @@ GUI Parameters usable in SynthDefs
 
 		speaker_array = ispeaker_array;
 
-		server.sync;
 		//this.lock = ilock;
 
 		if (iwidth < 600) {
@@ -2411,6 +2410,189 @@ GUI Parameters usable in SynthDefs
 
 		/////////// END code for 2nd order matrices /////////////////////
 
+		rirList = Array.newClear();
+
+		if (rirBank.notNil) {
+
+			/////////// START loading rirBank /////////////////////
+
+			var rirName, rirW, rirX, rirY, rirZ, bufWXYZ, rirFLU, rirFRD, rirBLD, rirBRU,
+			bufAformat, bufAformat_soa_a12, rirA12, bufsize,
+			// prepare list of impulse responses for close and distant reverb selection menue
+
+			rirPath = PathName(rirBank),
+			rirNum = 0; // initialize
+
+			rirW = [];
+			rirX = [];
+			rirY = [];
+			rirZ = [];
+			bufWXYZ = [];
+
+			rirPath.entries.do({ |item, count|
+
+				if (item.extension == "amb") {
+					rirNum = rirNum + 1;
+
+					rirName = item.fileNameWithoutExtension;
+					rirList = rirList ++ [rirName];
+
+					rirW = rirW ++ [ Buffer.readChannel(server, item.fullPath, channels: [0]) ];
+					rirX = rirX ++ [ Buffer.readChannel(server, item.fullPath, channels: [1]) ];
+					rirY = rirY ++ [ Buffer.readChannel(server, item.fullPath, channels: [2]) ];
+					rirZ = rirZ ++ [ Buffer.readChannel(server, item.fullPath, channels: [3]) ];
+
+					bufWXYZ = bufWXYZ ++ [ Buffer.read(server, item.fullPath) ];
+				};
+
+			});
+
+
+			bufAformat = Array.newClear(rirNum);
+			bufAformat_soa_a12 = Array.newClear(rirNum);
+			rirFLU = Array.newClear(rirNum);
+			rirFRD = Array.newClear(rirNum);
+			rirBLD = Array.newClear(rirNum);
+			rirBRU = Array.newClear(rirNum);
+			bufsize = Array.newClear(rirNum);
+
+			rirWspectrum = Array.newClear(rirNum);
+			rirXspectrum = Array.newClear(rirNum);
+			rirYspectrum = Array.newClear(rirNum);
+			rirZspectrum = Array.newClear(rirNum);
+
+			rirFLUspectrum = Array.newClear(rirNum);
+			rirFRDspectrum = Array.newClear(rirNum);
+			rirBLDspectrum = Array.newClear(rirNum);
+			rirBRUspectrum = Array.newClear(rirNum);
+
+			server.sync;
+
+			rirList.do({ |item, count|
+
+				bufsize[count] = PartConv.calcBufSize(fftsize, rirW[count]);
+
+				bufAformat[count] = Buffer.alloc(server, bufWXYZ[count].numFrames, bufWXYZ[count].numChannels);
+				bufAformat_soa_a12[count] = Buffer.alloc(server, bufWXYZ[count].numFrames, 12);
+				// for second order conv
+
+				//server.sync;
+
+				if (File.exists(rirBank ++ "/" ++ item ++ "_Flu.wav").not) {
+
+					("writing " ++ item ++ "_Flu.wav file in" ++ rirBank).postln;
+
+					{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ[count], loop: 0, doneAction: 2), b2a),
+						bufAformat[count], Phasor.ar(0, BufRateScale.kr(bufAformat[count]),
+							0, BufFrames.kr(bufAformat[count])));
+					Out.ar(0, Silent.ar);
+					}.play;
+
+					(bufAformat[count].numFrames / server.sampleRate).wait;
+
+					bufAformat[count].write(rirBank ++ "/" ++ item ++ "_Flu.wav",
+						headerFormat: "wav", sampleFormat: "int24");
+
+					"done".postln;
+
+				};
+
+
+				if (File.exists(rirBank ++ "/" ++ item ++ "_SoaA12.wav").not) {
+
+					("writing " ++ item ++ "_SoaA12.wav file in " ++ rirBank).postln;
+
+					{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ[count], loop: 0, doneAction: 2),
+						foa_a12_decoder_matrix),
+					bufAformat_soa_a12[count],
+					Phasor.ar(0, BufRateScale.kr(bufAformat[count]), 0, BufFrames.kr(bufAformat[count])));
+					Out.ar(0, Silent.ar);
+					}.play;
+
+					(bufAformat[count].numFrames / server.sampleRate).wait;
+
+					bufAformat_soa_a12[count].write(rirBank ++ "/" ++ item ++ "_SoaA12.wav",
+						headerFormat: "wav", sampleFormat: "int24");
+
+					"done".postln;
+
+				};
+
+			});
+
+			//server.sync;
+
+			"Loading rir bank".postln;
+
+			rirList.do({ |item, count|
+
+				bufAformat[count].free;
+				bufWXYZ[count].free;
+
+				rirFLU[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
+					channels: [0]);
+				rirFRD[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
+					channels: [1]);
+				rirBLD[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
+					channels: [2]);
+				rirBRU[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
+					channels: [3]);
+
+				//server.sync;
+
+				rirWspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				rirXspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				rirYspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				rirZspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				//server.sync;
+				rirWspectrum[count].preparePartConv(rirW[count], fftsize);
+				//server.sync;
+				rirW[count].free; // don't need time domain data anymore, just needed spectral version
+				rirXspectrum[count].preparePartConv(rirX[count], fftsize);
+				//server.sync;
+				rirX[count].free;
+				rirYspectrum[count].preparePartConv(rirY[count], fftsize);
+				//server.sync;
+				rirY[count].free;
+				rirZspectrum[count].preparePartConv(rirZ[count], fftsize);
+				//server.sync;
+				rirZ[count].free;
+
+				rirFLUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				rirFRDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				rirBLDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				rirBRUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+				//server.sync;
+				rirFLUspectrum[count].preparePartConv(rirFLU[count], fftsize);
+				//server.sync;
+				rirFLU[count].free;
+				rirFRDspectrum[count].preparePartConv(rirFRD[count], fftsize);
+				//server.sync;
+				rirFRD[count].free;
+				rirBLDspectrum[count].preparePartConv(rirBLD[count], fftsize);
+				//server.sync;
+				rirBLD[count].free;
+				rirBRUspectrum[count].preparePartConv(rirBRU[count], fftsize);
+				//server.sync;
+				rirBRU[count].free;
+
+				rirA12 = Array.newClear(12);
+				rirA12Spectrum = Array2D(rirNum, 12);
+				12.do { arg i;
+					rirA12[i] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_SoaA12.wav",
+						channels: [i]);
+					//server.sync;
+					rirA12Spectrum[count, i] = Buffer.alloc(server, bufsize[count], 1);
+					//server.sync;
+					rirA12Spectrum[count, i].preparePartConv(rirA12[i], fftsize);
+					//server.sync;
+					rirA12[i].free;
+				};
+
+				/////////// END loading rirBank /////////////////////
+
+			});
+
 
 		prjDr = projDir;
 
@@ -2503,8 +2685,6 @@ GUI Parameters usable in SynthDefs
 			convert_direct = convert_fuma;
 
 		};
-
-
 
 		if (decoder.notNil) {
 
@@ -4315,193 +4495,6 @@ GUI Parameters usable in SynthDefs
 		}).load(server);
 
 
-		rirList = Array.newClear();
-
-		if (rirBank.notNil) {
-
-			var rirName, rirW, rirX, rirY, rirZ, bufWXYZ, rirFLU, rirFRD, rirBLD, rirBRU,
-			bufAformat, bufAformat_soa_a12, rirA12, bufsize,
-			// prepare list of impulse responses for close and distant reverb selection menue
-
-			rirPath = PathName(rirBank),
-			rirNum = 0; // initialize
-
-			rirW = [];
-			rirX = [];
-			rirY = [];
-			rirZ = [];
-			bufWXYZ = [];
-
-			rirPath.entries.do({ |item, count|
-
-				if (item.extension == "amb") {
-					rirNum = rirNum + 1;
-
-					rirName = item.fileNameWithoutExtension;
-					rirList = rirList ++ [rirName];
-
-					rirW = rirW ++ [ Buffer.readChannel(server, item.fullPath, channels: [0]) ];
-					rirX = rirX ++ [ Buffer.readChannel(server, item.fullPath, channels: [1]) ];
-					rirY = rirY ++ [ Buffer.readChannel(server, item.fullPath, channels: [2]) ];
-					rirZ = rirZ ++ [ Buffer.readChannel(server, item.fullPath, channels: [3]) ];
-
-					bufWXYZ = bufWXYZ ++ [ Buffer.read(server, item.fullPath) ];
-				};
-
-			});
-
-
-			bufAformat = Array.newClear(rirNum);
-			bufAformat_soa_a12 = Array.newClear(rirNum);
-			rirFLU = Array.newClear(rirNum);
-			rirFRD = Array.newClear(rirNum);
-			rirBLD = Array.newClear(rirNum);
-			rirBRU = Array.newClear(rirNum);
-			bufsize = Array.newClear(rirNum);
-
-			rirWspectrum = Array.newClear(rirNum);
-			rirXspectrum = Array.newClear(rirNum);
-			rirYspectrum = Array.newClear(rirNum);
-			rirZspectrum = Array.newClear(rirNum);
-
-			rirFLUspectrum = Array.newClear(rirNum);
-			rirFRDspectrum = Array.newClear(rirNum);
-			rirBLDspectrum = Array.newClear(rirNum);
-			rirBRUspectrum = Array.newClear(rirNum);
-
-			server.sync;
-
-			rirList.do({ |item, count|
-
-				bufsize[count] = PartConv.calcBufSize(fftsize, rirW[count]);
-
-				bufAformat[count] = Buffer.alloc(server, bufWXYZ[count].numFrames, bufWXYZ[count].numChannels);
-				bufAformat_soa_a12[count] = Buffer.alloc(server, bufWXYZ[count].numFrames, 12);
-				// for second order conv
-
-				//server.sync;
-
-				if (File.exists(rirBank ++ "/" ++ item ++ "_Flu.wav").not) {
-
-					("writing " ++ item ++ "_Flu.wav file in" ++ rirBank).postln;
-
-					{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ[count], loop: 0, doneAction: 2), b2a),
-						bufAformat[count], Phasor.ar(0, BufRateScale.kr(bufAformat[count]),
-							0, BufFrames.kr(bufAformat[count])));
-					Out.ar(0, Silent.ar);
-					}.play;
-
-					(bufAformat[count].numFrames / server.sampleRate).wait;
-
-					bufAformat[count].write(rirBank ++ "/" ++ item ++ "_Flu.wav",
-						headerFormat: "wav", sampleFormat: "int24");
-
-					"done".postln;
-
-				};
-
-
-				if (File.exists(rirBank ++ "/" ++ item ++ "_SoaA12.wav").not) {
-
-					("writing " ++ item ++ "_SoaA12.wav file in " ++ rirBank).postln;
-
-					{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ[count], loop: 0, doneAction: 2),
-						foa_a12_decoder_matrix),
-					bufAformat_soa_a12[count],
-					Phasor.ar(0, BufRateScale.kr(bufAformat[count]), 0, BufFrames.kr(bufAformat[count])));
-					Out.ar(0, Silent.ar);
-					}.play;
-
-					(bufAformat[count].numFrames / server.sampleRate).wait;
-
-					bufAformat_soa_a12[count].write(rirBank ++ "/" ++ item ++ "_SoaA12.wav",
-						headerFormat: "wav", sampleFormat: "int24");
-
-					"done".postln;
-
-				};
-
-			});
-
-			//server.sync;
-
-			"Loading rir bank".postln;
-
-			rirList.do({ |item, count|
-
-				rirFLU[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
-					channels: [0]);
-				rirFRD[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
-					channels: [1]);
-				rirBLD[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
-					channels: [2]);
-				rirBRU[count] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_Flu.wav",
-					channels: [3]);
-
-				//server.sync;
-
-				rirWspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				rirXspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				rirYspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				rirZspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				//server.sync;
-				rirWspectrum[count].preparePartConv(rirW[count], fftsize);
-				//server.sync;
-				rirXspectrum[count].preparePartConv(rirX[count], fftsize);
-				//server.sync;
-				rirYspectrum[count].preparePartConv(rirY[count], fftsize);
-				//server.sync;
-				rirZspectrum[count].preparePartConv(rirZ[count], fftsize);
-
-				//server.sync;
-
-				rirFLUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				rirFRDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				rirBLDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				rirBRUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-				//server.sync;
-				rirFLUspectrum[count].preparePartConv(rirFLU[count], fftsize);
-				//server.sync;
-				rirFRDspectrum[count].preparePartConv(rirFRD[count], fftsize);
-				//server.sync;
-				rirBLDspectrum[count].preparePartConv(rirBLD[count], fftsize);
-				//server.sync;
-				rirBRUspectrum[count].preparePartConv(rirBRU[count], fftsize);
-
-				//server.sync;
-
-				rirA12 = Array.newClear(12);
-				rirA12Spectrum = Array2D(rirNum, 12);
-				12.do { arg i;
-					rirA12[i] = Buffer.readChannel(server, rirBank ++ "/" ++ item ++ "_SoaA12.wav",
-						channels: [i]);
-					//server.sync;
-					rirA12Spectrum[count, i] = Buffer.alloc(server, bufsize[count], 1);
-					//server.sync;
-					rirA12Spectrum[count, i].preparePartConv(rirA12[i], fftsize);
-					//server.sync;
-					rirA12[i].free;
-				};
-
-				rirW[count].free; // don't need time domain data anymore, just needed spectral version
-				rirX[count].free;
-				rirY[count].free;
-				rirZ[count].free;
-				rirFLU[count].free;
-				rirFRD[count].free;
-				rirBLD[count].free;
-				rirBRU[count].free;
-				bufAformat[count].free;
-				bufWXYZ[count].free;
-
-				(rirNum - count).postln;
-
-			});
-
-
-			//server.sync;
-
-
 			/// START SYNTH DEFS ///////
 
 
@@ -5304,7 +5297,7 @@ GUI Parameters usable in SynthDefs
 
 		updateSynthInArgs = { arg source;
 			{
-				//server.sync;
+				server.sync;
 				this.setSynths(source, \angle, angle[source]);
 				this.setSynths(source, \level, level[source]);
 				this.setSynths(source, \dopamnt, dplev[source]);
@@ -5552,7 +5545,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 
-		server.sync;
+		//server.sync;
 
 
 		if(guiflag) {
