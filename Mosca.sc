@@ -2474,8 +2474,6 @@ GUI Parameters usable in SynthDefs
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			convert_direct = false;
-
 		} {
 
 			var emulate_array, vbap_setup;
@@ -2505,9 +2503,11 @@ GUI Parameters usable in SynthDefs
 				espacAmbOutFunc.value(sig, sig);
 			}).add;
 
-			convert_direct = convert_fuma;
-
 		};
+
+
+		// define ambisonic decoder
+
 
 		if (decoder.notNil) {
 
@@ -2524,6 +2524,7 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 1 }
 			{ convert_fuma = false;
 				convert_ambix = true;
+				convert_direct = false;
 
 				iemConvert = { |in, azi = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi1O.ar(in, azi, elev, level);
@@ -2575,6 +2576,7 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 2 }
 			{ convert_fuma = true;
 				convert_ambix = false;
+				convert_direct = true;
 
 				iemConvert = { |in, azi = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi2O.ar(in, azi, elev, level);
@@ -2641,6 +2643,7 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 3 }
 			{ convert_fuma = true;
 				convert_ambix = false;
+				convert_direct = true;
 
 				iemConvert = { |in, azi = 0, elev = 0, level|
 					var ambSig = PanAmbi3O.ar(in, azi, elev, level);
@@ -2685,6 +2688,7 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 4 }
 			{ convert_fuma = true;
 				convert_ambix = false;
+				convert_direct = true;
 
 				iemConvert = { |in, azi = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi3O.ar(in, azi, elev, level);
@@ -2731,6 +2735,7 @@ GUI Parameters usable in SynthDefs
 			{ maxorder == 5 }
 			{ convert_fuma = true;
 				convert_ambix = false;
+				convert_direct = true;
 
 				iemConvert = { |in, azi = 0, elev = 0, level = 1|
 					var ambSig = PanAmbi3O.ar(in, azi, elev, level);
@@ -6026,7 +6031,7 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+						{ libboxProxy[i].value <= lastSN3D }
 						{ convert[i] = convert_ambix; }
 						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
@@ -6223,7 +6228,7 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+						{ libboxProxy[i].value <= lastSN3D }
 						{ convert[i] = convert_ambix; }
 						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
@@ -6609,7 +6614,7 @@ GUI Parameters usable in SynthDefs
 					lib[i] = libboxProxy[i].value;
 
 					case
-					{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+					{ libboxProxy[i].value <= lastSN3D }
 					{ convert[i] = convert_ambix; }
 					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 					{ convert[i] = convert_fuma; }
@@ -6800,7 +6805,7 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+						{ libboxProxy[i].value <= lastSN3D }
 						{ convert[i] = convert_ambix; }
 						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
@@ -7067,6 +7072,7 @@ GUI Parameters usable in SynthDefs
 		} {
 
 			if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
+
 				case
 				{ this.ncan[i] == 1 } {
 
@@ -7199,7 +7205,7 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+						{ libboxProxy[i].value <= lastSN3D }
 						{ convert[i] = convert_ambix; }
 						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
@@ -7404,7 +7410,7 @@ GUI Parameters usable in SynthDefs
 						lib[i] = libboxProxy[i].value;
 
 						case
-						{ (libboxProxy[i].value >= 0) && (libboxProxy[i].value <= lastSN3D) }
+						{ libboxProxy[i].value <= lastSN3D }
 						{ convert[i] = convert_ambix; }
 						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 						{ convert[i] = convert_fuma; }
