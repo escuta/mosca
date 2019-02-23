@@ -5902,6 +5902,7 @@ GUI Parameters usable in SynthDefs
 			&& this.streamdisk[i]) {
 			"Content Streamed from disk".postln;
 			if (testado[i].not || force) { // if source is testing don't relaunch synths
+
 				case
 				{ this.streambuf[i].numChannels == 1} {
 					"1 channel".postln;
@@ -6471,7 +6472,6 @@ GUI Parameters usable in SynthDefs
 				updatesourcevariables.value(i);
 
 			};
-
 		};
 
 		/// END STREAM FROM DISK
@@ -6482,9 +6482,8 @@ GUI Parameters usable in SynthDefs
 		&& this.streamdisk[i].not) {
 
 			//{
-
-			if (sombuf[i].numChannels == 1)  // arquivo mono
-			{
+			case
+			{ this.sombuf[i].numChannels == 1} { // arquivo mono
 				//"Am I mono?".postln;
 				ncanais[i] = 1;
 
@@ -6677,386 +6676,380 @@ GUI Parameters usable in SynthDefs
 
 				updatesourcevariables.value(i);
 
-			} {
-				if (sombuf[i].numChannels == 2) {
+			}
+			{ this.sombuf[i].numChannels == 2 } {
 
-					ncanais[i] = 2; // arquivo estéreo
+				ncanais[i] = 2; // arquivo estéreo
 
-					// comment out automatic settings, prefer sensible deffaults
-					/*angle[i] = pi/2;
-					cboxProxy[i].valueAction = 1;
-					clev[i] = 1;
-					if((i == currentsource) && guiflag) {
-					cslider.value = 1;
-					connumbox.value = 1;
+				// comment out automatic settings, prefer sensible deffaults
+				/*angle[i] = pi/2;
+				cboxProxy[i].valueAction = 1;
+				clev[i] = 1;
+				if((i == currentsource) && guiflag) {
+				cslider.value = 1;
+				connumbox.value = 1;
+				};
+				if (guiflag) {
+				{angnumbox.value = 1.05;}.defer; // 60 degrees
+				{angslider.value = 0.33;}.defer;
+				};*/
+
+				this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
+					\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+					\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
+					this.espacializador[i] = nil;
+					this.synt[i] = nil});
+
+				if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
+
+					libboxProxy[i].valueAction = lastSN3D + 1;
+
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
+
+					lib[i] = lastSN3D + 1;
+					dstrv[i] = 3;
+					convert[i] = convert_fuma;
+
+					if (convert_fuma) {
+						if (this.convertor.notNil) {
+							this.convertor.set(\gate, 1);
+						} {
+							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
+							});
+						};
 					};
-					if (guiflag) {
-					{angnumbox.value = 1.05;}.defer; // 60 degrees
-					{angslider.value = 0.33;}.defer;
-					};*/
 
-					this.synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
-						\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-						\level, level[i]], this.playEspacGrp).onFree({this.espacializador[i].free;
-						this.espacializador[i] = nil;
-						this.synt[i] = nil});
-
-					if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
-
-						libboxProxy[i].valueAction = lastSN3D + 1;
-
-						// set lib, convert and dstrv variables when stynths are lauched
-						// for the tracking functions to stay relevant
-
-						lib[i] = lastSN3D + 1;
-						dstrv[i] = 3;
-						convert[i] = convert_fuma;
-
-						if (convert_fuma) {
-							if (this.convertor.notNil) {
-								this.convertor.set(\gate, 1);
-							} {
-								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-									target:this.glbRevDecGrp).onFree({
-									this.convertor = nil;
-								});
-							};
-						};
-
-						if (clsrv > 0) {
-							if (revGlobalBF.isNil) {
-								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-									[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
-										\room, clsrm, \damp, clsdm,
-										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
-										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
-										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
-										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-									this.glbRevDecGrp).register.onFree({
-									if (this.revGlobalBF.isPlaying.not) {
-										this.revGlobalBF = nil;
-									};
-								});
-							} {
-								this.revGlobalBF.set(\gate, 1);
-							};
-						};
-
-						if (maxorder > 1) {
-							if(revGlobalSoa.isNil) {
-								this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
-									[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
-										\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
-										\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
-										\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
-										\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
-										\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
-										\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
-										\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
-										\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
-										\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
-										\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
-										\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
-										\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-									this.glbRevDecGrp).register.onFree({
-									if (this.revGlobalSoa.isPlaying.not) {
-										this.revGlobalSoa = nil;
-									};
-								});
-							} {
-								this.revGlobalSoa.set(\gate, 1);
-							};
-						};
-
-						//comment out all linear parameters
-						//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i], [\inbus, sbus[i],
-
-						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
-							[\inbus, sbus[i], \contr, clev[i], \angle, angle[i],
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.synt[i], addAction: \addAfter).onFree({
-							if (this.revGlobalSoa.notNil) {
-								if (this.globSoaA12Needed(0).not) {
-									this.revGlobalSoa.set(\gate, 0);
+					if (clsrv > 0) {
+						if (revGlobalBF.isNil) {
+							this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+								[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+									\room, clsrm, \damp, clsdm,
+									\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+									\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+									\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+									\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalBF.isPlaying.not) {
+									this.revGlobalBF = nil;
 								};
-							};
-							if (this.revGlobalBF.notNil) {
-								if (this.globBfmtNeeded(0).not) {
-									this.revGlobalBF.set(\gate, 0);
-								};
-							};
-							if (this.convertor.notNil) {
-								if (convert_fuma) {
-									if (this.converterNeeded(0).not) {
-										this.convertor.set(\gate, 0);
-									};
-								};
-							};
-						});
-
-					} {
-						// set lib, convert and dstrv variables when stynths are lauched
-						// for the tracking functions to stay relevant
-
-						lib[i] = libboxProxy[i].value;
-
-						case
-						{ libboxProxy[i].value <= lastSN3D }
-						{ convert[i] = convert_ambix; }
-						{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
-						{ convert[i] = convert_fuma; }
-						{ libboxProxy[i].value >= (lastFUMA + 1) }
-						{ convert[i] = convert_direct; };
-
-						dstrv[i] = dstrvboxProxy[i].value;
-
-						if (convert[i]) {
-
-							if (this.convertor.notNil) {
-								this.convertor.set(\gate, 1);
-							} {
-								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-									target:this.glbRevDecGrp).onFree({
-									this.convertor = nil;
-								});
-							};
+							});
+						} {
+							this.revGlobalBF.set(\gate, 1);
 						};
-
-						if (speaker_array.isNil) {
-
-							if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
-								this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
-									target:this.glbRevDecGrp).onFree({
-									this.nonAmbi2FuMa = nil;
-								});
-							};
-						};
-
-						//comment out all linear parameters
-						//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
-
-						this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
-							[\inbus, sbus[i], \angle, angle[i],
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-								\room, rm[i], \damp, dm[i], \contr, clev[i],
-								\zir, rirZspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
-								\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
-							this.synt[i], addAction: \addAfter).onFree({
-							if (speaker_array.isNil) {
-								if (this.nonAmbi2FuMaNeeded(0).not
-									&& this.nonAmbi2FuMa.notNil) {
-									this.nonAmbi2FuMa.free;
-								};
-							};
-							if (this.convertor.notNil) {
-								if (convert[i]) {
-									if (this.converterNeeded(0).not) {
-										this.convertor.set(\gate, 0);
-									};
-								};
-							};
-						});
-
 					};
-					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);
 
-					//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+					if (maxorder > 1) {
+						if(revGlobalSoa.isNil) {
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
+									\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
+									\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
+									\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
+									\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
+									\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
+									\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
+									\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
+									\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
+									\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
+									\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
+									\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
+									\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalSoa.isPlaying.not) {
+									this.revGlobalSoa = nil;
+								};
+							});
+						} {
+							this.revGlobalSoa.set(\gate, 1);
+						};
+					};
 
+					//comment out all linear parameters
+					//this.espacializador[i] = Synth.new(\espacEstereoAFormat++ln[i], [\inbus, sbus[i],
+
+					this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
+						[\inbus, sbus[i], \contr, clev[i], \angle, angle[i],
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.synt[i], addAction: \addAfter).onFree({
+						if (this.revGlobalSoa.notNil) {
+							if (this.globSoaA12Needed(0).not) {
+								this.revGlobalSoa.set(\gate, 0);
+							};
+						};
+						if (this.revGlobalBF.notNil) {
+							if (this.globBfmtNeeded(0).not) {
+								this.revGlobalBF.set(\gate, 0);
+							};
+						};
+						if (this.convertor.notNil) {
+							if (convert_fuma) {
+								if (this.converterNeeded(0).not) {
+									this.convertor.set(\gate, 0);
+								};
+							};
+						};
+					});
 
 				} {
-					if (sombuf[i].numChannels >= 4) {
-						playingBF[i] = true;
-						ncanais[i] = sombuf[i].numChannels;
+					// set lib, convert and dstrv variables when stynths are lauched
+					// for the tracking functions to stay relevant
 
-						// comment out automatic settings, prefer sensible deffaults
-						/*angle[i] = 0;
-						if (guiflag) {
-						{angnumbox.value = 0;}.defer;
-						};
-						cboxProxy[i].valueAction = 0;
-						clev[i] = 0;
-						if((i == currentsource) && guiflag) {
-						cslider.value = 0;
-						connumbox.value = 0;
-						};
-						if (guiflag) {
-						{angslider.value = 0;}.defer;
-						};*/
+					lib[i] = libboxProxy[i].value;
 
-						if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
-							(dstrvboxProxy[i].value == 3)) {
-							libboxProxy[i].valueAction = lastSN3D + 1;
-							lib[i] = lastSN3D + 1;
-							convert[i] = convert_fuma;
+					case
+					{ libboxProxy[i].value <= lastSN3D }
+					{ convert[i] = convert_ambix; }
+					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+					{ convert[i] = convert_fuma; }
+					{ libboxProxy[i].value >= (lastFUMA + 1) }
+					{ convert[i] = convert_direct; };
+
+					dstrv[i] = dstrvboxProxy[i].value;
+
+					if (convert[i]) {
+
+						if (this.convertor.notNil) {
+							this.convertor.set(\gate, 1);
 						} {
-							libboxProxy[i].valueAction = 0;
-							lib[i] = 0;
-							convert[i] = true;
-							dstrv[i] = dstrvboxProxy[i].value;
-						};
-
-						// set lib, convert and dstrv variables when stynths are lauched
-						// for the tracking functions to stay relevant
-
-						if (convert[i]) {
-							if (this.convertor.notNil) {
-								this.convertor.set(\gate, 1);
-							} {
-								this.convertor = Synth.new(\ambiConverter, [\gate, 1],
-									target:this.glbRevDecGrp).onFree({
-									this.convertor = nil;
-								});
-							};
-						};
-
-						this.synt[i] = Synth.new("playBFormat"++libName[i]++"File_"++ncanais[i],
-							[\outbus, mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
-								\rate, 1, \tpos, tpos, \lp,
-								lp[i], \level, level[i],
-								\insertFlag, this.insertFlag[i],
-								\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-								\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-								\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-								\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-							this.playEspacGrp).onFree({this.espacializador[i].free;
-							this.espacializador[i] = nil;
-							this.synt[i] = nil;
-							playingBF[i] = false;
-						});
-
-						if (clsrv > 0) {
-							if (revGlobalBF.isNil) {
-								this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
-									[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
-										\room, clsrm, \damp, clsdm,
-										\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
-										\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
-										\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
-										\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
-									this.glbRevDecGrp).register.onFree({
-									if (this.revGlobalBF.isPlaying.not) {
-										this.revGlobalBF = nil;
-									};
-								});
-							} {
-								this.revGlobalBF.set(\gate, 1);
-							};
-						};
-
-						// reverb for contracted (mono) component - and for rest too
-						if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
-
-							dstrv[i] = 3;
-
-							if (maxorder > 1) {
-								if(revGlobalSoa.isNil) {
-									this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
-										[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
-											\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
-											\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
-											\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
-											\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
-											\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
-											\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
-											\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
-											\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
-											\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
-											\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
-											\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
-											\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
-										this.glbRevDecGrp).register.onFree({
-										if (this.revGlobalSoa.isPlaying.not) {
-											this.revGlobalSoa = nil;
-										};
-									});
-								} {
-									this.revGlobalSoa.set(\gate, 1);
-								};
-							};
-
-							//comment out all linear parameters
-							//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
-
-							this.espacializador[i] = Synth.new(\ATK2AFormat,
-								[\inbus, mbus[i], \contr, clev[i],
-									\insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
-								this.synt[i], addAction: \addAfter).onFree({
-								if (this.revGlobalSoa.notNil) {
-									if (this.globSoaA12Needed(0).not) {
-										this.revGlobalSoa.set(\gate, 0);
-									};
-								};
-								if (this.revGlobalBF.notNil) {
-									if (this.globBfmtNeeded(0).not) {
-										this.revGlobalBF.set(\gate, 0);
-									};
-								};
-								if (this.convertor.notNil) {
-									if (convert[i]) {
-										if (this.converterNeeded(0).not) {
-											this.convertor.set(\gate, 0);
-										};
-									};
-								};
+							this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+								target:this.glbRevDecGrp).onFree({
+								this.convertor = nil;
 							});
-
-						} {
-							//comment out all linear parameters
-							//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
-
-							this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
-								[\inbus, mbus[i], \insertFlag, this.insertFlag[i],
-									\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
-									\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
-									\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
-									\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
-									\contr, clev[i], \room, rm[i], \damp, dm[i],
-									\wir, rirWspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
-									\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
-								this.synt[i], addAction: \addAfter).onFree({
-								if (this.revGlobalSoa.notNil) {
-									if (this.globSoaA12Needed(0).not) {
-										this.revGlobalSoa.set(\gate, 0);
-									};
-								};
-								if (this.revGlobalBF.notNil) {
-									if (this.globBfmtNeeded(0).not) {
-										this.revGlobalBF.set(\gate, 0);
-									};
-								};
-								if (this.convertor.notNil) {
-									if (convert[i]) {
-										if (this.converterNeeded(0).not) {
-											this.convertor.set(\gate, 0);
-										};
-									};
-								};
-							});
-
 						};
-
 					};
 
-					updatesourcevariables.value(i);
+					if (speaker_array.isNil) {
+
+						if ((this.libboxProxy[i].value > lastFUMA) && this.nonAmbi2FuMa.isNil) {
+							this.nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+								target:this.glbRevDecGrp).onFree({
+								this.nonAmbi2FuMa = nil;
+							});
+						};
+					};
+
+					//comment out all linear parameters
+					//this.espacializador[i] = Synth.new(\espacEstereoChowning++ln[i],
+
+					this.espacializador[i] = Synth.new(libName[i]++"StereoChowning"++dstrvtypes[i],
+						[\inbus, sbus[i], \angle, angle[i],
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\room, rm[i], \damp, dm[i], \contr, clev[i],
+							\zir, rirZspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
+							\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
+						this.synt[i], addAction: \addAfter).onFree({
+						if (speaker_array.isNil) {
+							if (this.nonAmbi2FuMaNeeded(0).not
+								&& this.nonAmbi2FuMa.notNil) {
+								this.nonAmbi2FuMa.free;
+							};
+						};
+						if (this.convertor.notNil) {
+							if (convert[i]) {
+								if (this.converterNeeded(0).not) {
+									this.convertor.set(\gate, 0);
+								};
+							};
+						};
+					});
+
+				};
+				//atualizarvariaveis.value;
+				updatesourcevariables.value(i);
+
+				//	~revGlobal = Synth.new(\revGlobalAmb, [\gbus, gbus], addAction:\addToTail);
+
+
+			}
+			{ this.sombuf[i].numChannels >= 4 } {
+				playingBF[i] = true;
+				ncanais[i] = sombuf[i].numChannels;
+
+				// comment out automatic settings, prefer sensible deffaults
+				/*angle[i] = 0;
+				if (guiflag) {
+				{angnumbox.value = 0;}.defer;
+				};
+				cboxProxy[i].valueAction = 0;
+				clev[i] = 0;
+				if((i == currentsource) && guiflag) {
+				cslider.value = 0;
+				connumbox.value = 0;
+				};
+				if (guiflag) {
+				{angslider.value = 0;}.defer;
+				};*/
+
+				if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
+					(dstrvboxProxy[i].value == 3)) {
+					libboxProxy[i].valueAction = lastSN3D + 1;
+					lib[i] = lastSN3D + 1;
+					convert[i] = convert_fuma;
+				} {
+					libboxProxy[i].valueAction = 0;
+					lib[i] = 0;
+					convert[i] = true;
+					dstrv[i] = dstrvboxProxy[i].value;
+				};
+
+				// set lib, convert and dstrv variables when stynths are lauched
+				// for the tracking functions to stay relevant
+
+				if (convert[i]) {
+					if (this.convertor.notNil) {
+						this.convertor.set(\gate, 1);
+					} {
+						this.convertor = Synth.new(\ambiConverter, [\gate, 1],
+							target:this.glbRevDecGrp).onFree({
+							this.convertor = nil;
+						});
+					};
+				};
+
+				this.synt[i] = Synth.new("playBFormat"++libName[i]++"File_"++ncanais[i],
+					[\outbus, mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
+						\rate, 1, \tpos, tpos, \lp,
+						lp[i], \level, level[i],
+						\insertFlag, this.insertFlag[i],
+						\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+						\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+						\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+						\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+					this.playEspacGrp).onFree({this.espacializador[i].free;
+					this.espacializador[i] = nil;
+					this.synt[i] = nil;
+					playingBF[i] = false;
+				});
+
+				if (clsrv > 0) {
+					if (revGlobalBF.isNil) {
+						this.revGlobalBF = Synth.new(\revGlobalBFormatAmb++clsRvtypes,
+							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
+								\room, clsrm, \damp, clsdm,
+								\fluir, rirFLUspectrum[max((clsrv - 3), 0)],
+								\frdir, rirFRDspectrum[max((clsrv - 3), 0)],
+								\bldir, rirBLDspectrum[max((clsrv - 3), 0)],
+								\bruir, rirBRUspectrum[max((clsrv - 3), 0)]],
+							this.glbRevDecGrp).register.onFree({
+							if (this.revGlobalBF.isPlaying.not) {
+								this.revGlobalBF = nil;
+							};
+						});
+					} {
+						this.revGlobalBF.set(\gate, 1);
+					};
+				};
+
+				// reverb for contracted (mono) component - and for rest too
+				if (this.dstrvboxProxy[i].value == 3) { // A-fomat reverb swich
+
+					dstrv[i] = 3;
+
+					if (maxorder > 1) {
+						if(revGlobalSoa.isNil) {
+							this.revGlobalSoa = Synth.new(\revGlobalSoaA12++clsRvtypes,
+								[\soaBus, soaBus, \gate, 1, \room, clsrm, \damp, clsdm,
+									\a0ir, rirA12Spectrum[max((clsrv - 3), 0), 0],
+									\a1ir, rirA12Spectrum[max((clsrv - 3), 0), 1],
+									\a2ir, rirA12Spectrum[max((clsrv - 3), 0), 2],
+									\a3ir, rirA12Spectrum[max((clsrv - 3), 0), 3],
+									\a4ir, rirA12Spectrum[max((clsrv - 3), 0), 4],
+									\a5ir, rirA12Spectrum[max((clsrv - 3), 0), 5],
+									\a6ir, rirA12Spectrum[max((clsrv - 3), 0), 6],
+									\a7ir, rirA12Spectrum[max((clsrv - 3), 0), 7],
+									\a8ir, rirA12Spectrum[max((clsrv - 3), 0), 8],
+									\a9ir, rirA12Spectrum[max((clsrv - 3), 0), 9],
+									\a10ir, rirA12Spectrum[max((clsrv - 3), 0), 10],
+									\a11ir, rirA12Spectrum[max((clsrv - 3), 0), 11]],
+								this.glbRevDecGrp).register.onFree({
+								if (this.revGlobalSoa.isPlaying.not) {
+									this.revGlobalSoa = nil;
+								};
+							});
+						} {
+							this.revGlobalSoa.set(\gate, 1);
+						};
+					};
+
+					//comment out all linear parameters
+					//this.espacializador[i] = Synth.new(\espacAmb2AFormat++ln[i],
+
+					this.espacializador[i] = Synth.new(\ATK2AFormat,
+						[\inbus, mbus[i], \contr, clev[i],
+							\insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index],
+						this.synt[i], addAction: \addAfter).onFree({
+						if (this.revGlobalSoa.notNil) {
+							if (this.globSoaA12Needed(0).not) {
+								this.revGlobalSoa.set(\gate, 0);
+							};
+						};
+						if (this.revGlobalBF.notNil) {
+							if (this.globBfmtNeeded(0).not) {
+								this.revGlobalBF.set(\gate, 0);
+							};
+						};
+						if (this.convertor.notNil) {
+							if (convert[i]) {
+								if (this.converterNeeded(0).not) {
+									this.convertor.set(\gate, 0);
+								};
+							};
+						};
+					});
+
+				} {
+					//comment out all linear parameters
+					//this.synt[i] = Synth.new(\playBFormatFile++ln[i], [\gbus, gbus,
+
+					this.espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
+						[\inbus, mbus[i], \insertFlag, this.insertFlag[i],
+							\aFormatBusInFoa, this.aFormatBusFoa[0,i].index,
+							\aFormatBusOutFoa, this.aFormatBusFoa[1,i].index,
+							\aFormatBusInSoa, this.aFormatBusSoa[0,i].index,
+							\aFormatBusOutSoa, this.aFormatBusSoa[1,i].index,
+							\contr, clev[i], \room, rm[i], \damp, dm[i],
+							\wir, rirWspectrum[max(this.dstrvboxProxy[i].value - 4, 0)],
+							\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]],
+						this.synt[i], addAction: \addAfter).onFree({
+						if (this.revGlobalSoa.notNil) {
+							if (this.globSoaA12Needed(0).not) {
+								this.revGlobalSoa.set(\gate, 0);
+							};
+						};
+						if (this.revGlobalBF.notNil) {
+							if (this.globBfmtNeeded(0).not) {
+								this.revGlobalBF.set(\gate, 0);
+							};
+						};
+						if (this.convertor.notNil) {
+							if (convert[i]) {
+								if (this.converterNeeded(0).not) {
+									this.convertor.set(\gate, 0);
+								};
+							};
+						};
+					});
 
 				};
 
-				{ncanais[i] = 0; // outro tipo de arquivo, faz nada.
-				};
 			};
+
+			updatesourcevariables.value(i);
 
 			// what is the meaning of the folowing condition?
 			// why is it only evaluated when files are loaded and not stremaed?
@@ -7070,6 +7063,7 @@ GUI Parameters usable in SynthDefs
 			};*/
 
 		} {
+			ncanais[i] = 0 ; // outro tipo de arquivo, faz nada.
 
 			if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
 
