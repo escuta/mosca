@@ -10,7 +10,7 @@ Input sources may be any combination of mono, stereo or B-format material and th
 
 Mono and stereo sources are encoded as second order ambisonic signals whereas B-format signals remain as 1st order and are angled in space using "push" transformations. Source signals are attenuated proportionally to the inverse of the square root of proximity or in a linear relationship with distance, selectable on a per-source basis via the GUI. All sources are subject to high-frequency attenuation with distance and if decoding is performed by one of the ATK's 1st order decoders, a proximity effect is generated adding a bass boost to proximal sources among other phase effects to simulate wave curvature (see: http://doc.sccode.org/Classes/FoaProximity.html).
 
-Reverberation is performed either using a B-format tail room impulse response (RIR) - the preferred method - or using the FreeVerb reverberator, options selectable on creation of a Mosca instance. With both options, two reverberation level controls are included in the GUI to set close and distant levels. A further two reverb types are selectable in the GUI on a per-source basis for both RIR and allpass reverberation modes. The default reverb type uses John Chowning's technique of applying "local" and "global" reverberation to sources (CHOWNING). The "Close" reverberation of the GUI in this case is "global" and is audible by the listener from all directions when the source is close whereas "distant" reverb is "local" in scope and is encoded as a 2nd order ambisonic signal along with the dry signal. This predominates as the source becomes more distant. The second type of reverberation may be described as a "2nd order diffuse A-format reverberation". This technique produces reverberation weighted in the direction of sound events encoded in the dry ambisonic signal and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either a) convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum, or, as in the case of the allpass option, b) passed through a 12-channel bank of allpass filters before being converted back to a 2nd order B-format diffuse signal. Please note that the 2nd order diffuse reverberation may require the user to set a larger audio output buffer and thus increase the latency of the system. The "Chowning" type reverberation is more efficient and the "allpass" option, more still. 
+Reverberation is performed either using a B-format tail room impulse response (RIR) - the preferred method - or using the FreeVerb reverberator, options selectable on creation of a Mosca instance. With both options, two reverberation level controls are included in the GUI to set close and distant levels. A further two reverb types are selectable in the GUI on a per-source basis for both RIR and allpass reverberation modes. The default reverb type uses John Chowning's technique of applying "local" and "global" reverberation to sources (CHOWNING). The "Close" reverberation of the GUI in this case is "global" and is audible by the listener from all directions when the source is close whereas "distant" reverb is "local" in scope and is encoded as a 2nd order ambisonic signal along with the dry signal. This predominates as the source becomes more distant. The second type of reverberation may be described as a "2nd order diffuse A-format reverberation". This technique produces reverberation weighted in the direction of sound events encoded in the dry ambisonic signal and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either a) convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum, or, as in the case of the allpass option, b) passed through a 12-channel bank of allpass filters before being converted back to a 2nd order B-format diffuse signal. Please note that the 2nd order diffuse reverberation may require the user to set a larger audio output buffer and thus increase the latency of the system. The "Chowning" type reverberation is more efficient and the "allpass" option, more still.
 
 Mosca also has other features including a scalable Doppler Effect on moving sources, looping of sources loaded from file, adjustment of virtual loudspeaker angle of stereo sources and in the case of B-format sources: a rotation control, adjustment of "directivity" (see ATK documentation) and a control of "contraction", whereby the B-format signal may be crossfaded with its W component and which is spatialised as a 2nd order ambisonic signal.
 
@@ -23,7 +23,7 @@ USING MOSCA
 A video tutorial of Mosca is available here: http://escuta.org/moscavideo
 
 Please ensure that SuperCollider is installed with plugins from: https://github.com/supercollider/sc3-plugins
-It is also necessary to install the ATK Kernels: http://www.ambisonictoolkit.net/download/kernels 
+It is also necessary to install the ATK Kernels: http://www.ambisonictoolkit.net/download/kernels
 
 The user must set up a project directory with subdirectories "rir" and "auto". RIRs should have the first 100 or 120ms silenced to act as "tail" reverberator and must be placed in the "rir" directory. For convenience, please download the "moscaproject.zip" file on the following page which contains the file structure, example RIRs and B-format recordings as well as other information and demos. Note that the example RIR is recorded at 48kHz:
 
@@ -188,7 +188,7 @@ REFERENCES
 
 ANDERSON, Joseph. Authoring complex Ambisonic soundfields: An artist's tips & tricks. . In: DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby, UK: 2011.
 
-CHOWNING, John M. The Simulation of Moving Sound Sources. Computer Music Journal, v. 1, n. 3, p. 48-52, 1977. 
+CHOWNING, John M. The Simulation of Moving Sound Sources. Computer Music Journal, v. 1, n. 3, p. 48-52, 1977.
 
 CLASSMETHODS::
 
@@ -207,34 +207,36 @@ Pixel width and height of GUI window. Minimum of 550 pixels.
 ARGUMENT:: dur
 Duration in seconds of automation transport.
 
-ARGUMENT:: rir
+ARGUMENT:: rirBank
 B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has the same sample rate as your system. Default is the string "FreeVerb" which makes Mosca use the FreeVerb reverberator in place of an RIR.
-
-ARGUMENT:: freeroom
-If FreeVerb is used as the argument for rir, freeroom defines a room size between 0 and 1. Default is 0.5.
-
-ARGUMENT:: freedamp
-If FreeVerb is used as the argument for rir, freedamp defines a dampening value between 0 and 1. Default is 0.5.
-
-ARGUMENT:: freemul
-FreeVerb multiplier. Default is 1.
 
 ARGUMENT:: server
 Server used. Default is Server.default.
 
 ARGUMENT:: decoder
-Name of 1st order ambisonic decoder to be used. See the following ATK links:
+Name of ambisonic decoder to be used. See the following ATK links:
 http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/FoaDecoderMatrix.html http://doc.sccode.org/Classes/FoaDecoderKernel.html
 
 Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to the outputs for external decoding with, for example, AmbDec: http://kokkinizita.linuxaudio.org/linuxaudio/
 
-ARGUMENT:: rawbusfoa
+ARGUMENT:: speaker_array
+Speaker setup defined with nested array in the form
+[[speaker 1 azimuth in degrees, speaker 1 elevation in degrees, speaker 1 radius in meters],
+[speaker 2 ...], ...]
+
+ARGUMENT:: outbus
+Index of the first output bus, all other channels folow sequentialy.
+
+ARGUMENT:: suboutbus
+Index of the output bus for subwoofers, the signal is a mono mix of all other channels.
+
+ARGUMENT:: rawbusfuma
 Starting bus for raw first order ambisonic output. First and second order ambisonic output may be separated from each other (to enable use of different external decoders) and from channels dedicated to decoder output. Default is zero.
 
-ARGUMENT:: rawbussoa
+ARGUMENT:: rawbusambix
 Starting bus for raw second order ambisonic output. First and second order ambisonic output may be separated from each other (to enable use of different external decoders) and from channels dedicated to decoder output. Default is zero.
 
-ARGUMENT:: raworder
+ARGUMENT:: maxorder
 Ambisonics order for raw output to external decoder. Default is 2. 1st order may be used with an extenal decoder to take advantage of ATK 1st order features such as proximity effect and frequency spreading (see "Contraction"above).
 
 ARGUMENT:: serport
@@ -254,6 +256,9 @@ If set to false, Mosca will run with no GUI. Default is true.
 
 ARGUMENT:: guiint
 Maximum interval in seconds to refresh GUI. Default is 0.07.
+
+ARGUMENT:: autoloop
+If set true, transport will always loop.
 
 returns:: New instance.
 
@@ -835,7 +840,7 @@ ARGUMENT:: source
 The number of the source (starting with 1). See code example below.
 
 METHOD:: setTriggerFunc
-Designate a function to be triggered when selecting play in the transport or auditioning a sound in SC-in mode. See code examples below. 
+Designate a function to be triggered when selecting play in the transport or auditioning a sound in SC-in mode. See code examples below.
 
 ARGUMENT:: source
 The number of the source (starting with 1). See code example below.
@@ -865,16 +870,16 @@ ARGUMENT:: source
 The number of the source (starting with 1). See code example below.
 
 METHOD:: getSoaInsertOut
-Create a second order A-format insert (12 channel) for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling signal from the spatialiser. 
+Create a second order A-format insert (12 channel) for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling signal from the spatialiser.
 
 ARGUMENT:: source
 The number of the source (starting with 1).
 
 METHOD:: getSoaInsertIn
-Create a second order A-format insert for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling the return signal to the spatialiser. 
+Create a second order A-format insert for a SOA source spatialised in the GUI. Return the bus number of the A-format bus channeling the return signal to the spatialiser.
 
 ARGUMENT:: source
-The number of the source (starting with 1). 
+The number of the source (starting with 1).
 
 METHOD:: playAutomation
 Non-gui method for playing automation data. Useful for playing data immediately after a Mosca instance is created. If called after loadAutomation (see above), may require a prior "wait" message to allow all data to load.
@@ -926,7 +931,7 @@ s.sync;
 MIDIIn.connect(inport: 0, device: 0);  // must connect to MIDI for MMC synch
 s.sync;
 
-/*Create a project directory and in it create to more directories "rir" and "auto". Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings see the zip archive here: http://escuta.org/mosca 
+/*Create a project directory and in it create to more directories "rir" and "auto". Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings see the zip archive here: http://escuta.org/mosca
 
 Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180, rir: "allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order and 1st order signals out of SC's outputs for decoding with an external decoder. */
 
@@ -954,7 +959,7 @@ Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180
 s.sync;
 
 
-// use the following to experiment with heading adjustments 
+// use the following to experiment with heading adjustments
 //~testMosca.offsetHeading(0.38);
 };
 
@@ -982,15 +987,15 @@ Mosca.printSynthParams
 (
 SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
 	var source, source2, point, freqAdjust, delEnv, dis;
-        var mod;	
+        var mod;
 	point = Point.new;
 	point.set(mx, my);
 	dis = point.rho;
 //	mod = SinOsc.kr(5 + (dis * 4), 0, 0.4);
 mod = 0;
 	dis = Lag.kr(dis, 0.1);
-	
-	freqAdjust = dis * 1;	
+
+	freqAdjust = dis * 1;
 	delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
 	sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
 	source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2) + mod);
@@ -1002,7 +1007,7 @@ mod = 0;
 }).send(s);
 )
 
-/* 
+/*
 Set up first source
 
 The user must create a "Trigger function" that contains synths. This function will be called when "audition" a particular source or when the transport's play button is selected in the GUI. The user must use the getSCBus method to set the bus number for the particular source (sources numbered from 1 on) as well as "onFree" of the Synth class to deregister the synth (with the method deregisterSynth). The method registerSynth is used to register it.
@@ -1017,7 +1022,7 @@ These simple sounds work best with some doppler set in GUI and some reverb.
 ~testMosca.registerSynth(1, ~mySynth);
 };
 ~source1StopFunc = {~mySynth.free; };
-~testMosca.setTriggerFunc(1, ~source1PlayFunc); 
+~testMosca.setTriggerFunc(1, ~source1PlayFunc);
 ~testMosca.setStopFunc(1, ~source1StopFunc);
 )
 
@@ -1030,7 +1035,7 @@ These simple sounds work best with some doppler set in GUI and some reverb.
 };
 ~source2StopFunc = {~myOtherSynth.free; };
 
-~testMosca.setTriggerFunc(2, ~source2PlayFunc); 
+~testMosca.setTriggerFunc(2, ~source2PlayFunc);
 ~testMosca.setStopFunc(2, ~source2StopFunc);
 )
 
@@ -1046,7 +1051,7 @@ SynthDef(\Echo, {|aformatIn, aformatOut|
 	var sig, delayTime = 0.6;
         sig = In.ar(aformatOut, 4);
 	delayTime = 0.6;
-        sig = CombC.ar(sig*0.5, 2, delayTime, 6) + sig; 
+        sig = CombC.ar(sig*0.5, 2, delayTime, 6) + sig;
 	Out.ar(aformatIn, sig)
 }).add;
 
@@ -1059,14 +1064,14 @@ y.free; // free the filter
 // If you have an external decoder, try this with a 2nd order mono source (will use 12-channel A-format)
 
 SynthDef(\Filter, {|aformatIn, aformatOut|
-	var sig = In.ar(aformatOut, 12); 
+	var sig = In.ar(aformatOut, 12);
 	sig = RLPF.ar(sig, FSinOsc.kr( 0.2, 0, 3600, 4000), 0.9);
 	Out.ar(aformatIn, sig)
 }).add;
 z = Synth(\Filter, [\aformatIn, ~testMosca.getSoaInsertIn(1), \aformatOut, ~testMosca.getSoaInsertOut(1)], addAction: \addToTail);
 
 z.free; // free the filter
-~testMosca.releaseInsert(1) // return to sound with no filter 
+~testMosca.releaseInsert(1) // return to sound with no filter
 
 // CODED CONTROL OF MOSCA
 
@@ -1076,10 +1081,10 @@ As described above in this help file (see "CODED CONTROL OF MOSCA" in Descriptio
 // orbit derived from code by WillS: http://cplussplussatplay.blogspot.com.br/2011/09/simple-2d-orbit.html
 
 // "constants"
-var grav_const = 6.6742e-11;           
-var earth_mass = 5.975e24;             
+var grav_const = 6.6742e-11;
+var earth_mass = 5.975e24;
 // variables
-var radius = 6.37814e6;              
+var radius = 6.37814e6;
 var angle = 0;
 var grav_accel = 0;
 var body_pos_x = 1.4e6;              // An X axis position of the body to be attracted
@@ -1106,7 +1111,7 @@ Routine {
 	};
 	);
 }.play;
- 
+
 )
 
 ~orbit = false    // turn off orbit
@@ -1115,7 +1120,7 @@ Routine {
 
 // RUNNING MOSCA WITHOUT A GUI
 
-1. As a first step, run the first block of code above in these Examples to open a Mosca GUI. 
+1. As a first step, run the first block of code above in these Examples to open a Mosca GUI.
 2. Record some Automation data and save to disk, taking note of the address.
 3. Edit the block of code below to include the correct paths for your saved Automation file.
 4. Run the code and use the commands below the block to control playback.
