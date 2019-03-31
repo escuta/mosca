@@ -227,7 +227,7 @@ Mosca {
 	convert_direct,
 	speaker_array,
 	numoutputs,
-	radius_max,
+	radius_max, elev_max, elev_min,
 	vbap_buffer,
 	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
 	cart, spher, foa_a12_decoder_matrix,
@@ -2360,7 +2360,7 @@ GUI Parameters usable in SynthDefs
 
 		if (speaker_array.notNil) {
 
-			var max_func, dimention, vbap_setup, radiusses, adjust;
+			var max_func, min_func, dimention, vbap_setup, radiusses, elevations, adjust;
 
 			this.nonambibus = outbus;
 
@@ -2374,52 +2374,83 @@ GUI Parameters usable in SynthDefs
 				) };
 				rep };
 
-			radiusses = Array.newFrom(speaker_array).collect({ |val| val[2] });
-
 			case
 			{ speaker_array[0].size < 2 || speaker_array[0].size > 3 }
 			{ ^"bad speaker array".postln }
 			{ speaker_array[0].size == 2 }
-			{ dimention = 2 }
+			{ dimention = 2;
+
+				radiusses = Array.newFrom(speaker_array).collect({ |val| val[1] });
+				radius_max = max_func.value(radiusses);
+
+				radius_max = 2;
+
+				adjust = Array.fill(numoutputs, { |i|
+					[(radius_max - radiusses[i]) / 334, radius_max/radiusses[i]];
+				});
+
+				elev_min = 0;
+				elev_max = 0;
+
+				speaker_array.collect({ |val| val.pop });
+
+				vbap_setup = VBAPSpeakerArray(dimention, speaker_array.flat);
+			}
 			{ speaker_array[0].size == 3 }
 			{ dimention = 3;
 
+				radiusses = Array.newFrom(speaker_array).collect({ |val| val[2] });
 				radius_max = max_func.value(radiusses);
 
 				adjust = Array.fill(numoutputs, { |i|
 					[(radius_max - radiusses[i]) / 334, radius_max/radiusses[i]];
 				});
+
+				min_func = { |x|
+					var rep = 0;
+					x.do{ |item|
+						if(item < rep,
+							{ rep = item };
+					) };
+					rep };
+
+				elevations = Array.newFrom(speaker_array).collect({ |val| val[1] });
+				elev_min = min_func.value(elevations);
+				elev_max = max_func.value(elevations);
+
+				speaker_array.collect({ |val| val.pop });
+
+				vbap_setup = VBAPSpeakerArray(dimention, speaker_array);
 			};
+
+			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
 			perfectSphereFunc = { |sig|
 				sig = Array.fill(numoutputs, { |i| DelayN.ar(sig[i],
 					delaytime:adjust[i][0], mul:adjust[i][1]) });
 			};
 
-			speaker_array.collect({ |val| val.pop });
-
-			vbap_setup = VBAPSpeakerArray(dimention, speaker_array);
-
-			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
-
 		} {
 
 			var emulate_array, vbap_setup;
 
-			numoutputs = 18;
+			numoutputs = 26;
 
 			this.nonambibus = Bus.audio(server, numoutputs);
 
-			emulate_array = [[-45, 50], [-135, 50], [135, 50], [45, 50], [-30, 20], [-90, 20],
-				[-150, 20], [150, 20], [90, 20], [30, 20], [-22.5, -3], [-67.5, -3], [-112.5, -3],
-				[-157.5, -3], [157.5, -3], [112.5, -3], [67.5, -3], [22.5, -3]];
+			emulate_array = [ [ 0, 90 ], [ 0, 45 ], [ 90, 45 ], [ 180, 45 ], [ -90, 45 ], [ 45, 35 ],
+				[ 135, 35 ], [ -135, 35 ], [ -45, 35 ], [ 0, 0 ], [ 45, 0 ], [ 90, 0 ], [ 135, 0 ],
+				[ 180, 0 ], [ -135, 0 ], [ -90, 0 ], [ -45, 0 ], [ 45, -35 ], [ 135, -35 ], [ -135, -35 ],
+				[ -45, -35 ], [ 0, -45 ], [ 90, -45 ], [ 180, -45 ], [ -90, -45 ], [ 0, -90 ] ];
 
 			vbap_setup = VBAPSpeakerArray(3, emulate_array);
-			//emulate the dome at "Le SCRIME" (scrime.u-bordeaux.fr)
+			//emulate 26-point Lebedev grid
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			radius_max = 2.829;
+			radius_max = 3;
+			elev_min = -90;
+			elev_max = 90;
 
 			perfectSphereFunc = { |sig|
 				sig;
@@ -2945,7 +2976,7 @@ GUI Parameters usable in SynthDefs
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
 				ambSig = HOAEncoder.ar(maxorder, junto, az, ele, 6,
-					plane_spherical:1, radius: VarLag.kr(dis.squared * 50), speaker_radius: radius_max);
+					plane_spherical:1, radius: VarLag.kr(dis * 50), speaker_radius: radius_max);
 
 				ambixOutFunc.value(ambSig);
 			}).load(server);
@@ -2999,15 +3030,15 @@ GUI Parameters usable in SynthDefs
 				locallev = dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-				//applie distance attenuation before mixxing in reverb to keep trail off
-				//p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
+				// applie distance attenuation before mixxing in reverb to keep trail off
+				// p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
 				p = p * (1 - dis).squared;
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
-				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				// dis = Select.kr(dis < 0.5, [dis, 0.5]);
 				iemConvert.value(junto, az, ele, 2);
 			}).load(server);
 
@@ -3054,21 +3085,21 @@ GUI Parameters usable in SynthDefs
 				globallev = globallev * Lag.kr(glev, 0.1);
 				gsig = p * globallev;
 
-				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
+				Out.ar(gbus, gsig); // send part of direct signal global reverb synth
 
 				// Local reverberation
 				locallev = dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-				//applie distance attenuation before mixxing in reverb to keep trail off
-				//p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
-				p = p * (1 - dis).squared;
+				// applie distance attenuation before mixxing in reverb to keep trail off
+				// p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
+				// p = p * (1 - dis).squared;
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
 
 				junto = p + lrevRef.value;
 
-				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
+				// dis = Select.kr(dis < 0.5, [dis, 0.5]);
 				ambSig = HOALibEnc3D.ar(maxorder, junto, az, ele, 8);
 
 				ambixOutFunc.value(ambSig);
@@ -3124,8 +3155,8 @@ GUI Parameters usable in SynthDefs
 				locallev = dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-				//applie distance attenuation before mixxing in reverb to keep trail off
-				//p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
+				// applie distance attenuation before mixxing in reverb to keep trail off
+				// p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
 				p = p * (1 - dis).squared;
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
@@ -3139,27 +3170,29 @@ GUI Parameters usable in SynthDefs
 			}).load(server);
 
 
-
-
 			SynthDef.new("VBAPChowning"++rev_type,  {
 				| inbus, azim = 0, elev = 0, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0, contr = 1,
 				room = 0.5, damp = 0.5, wir |
 
 				var sig, junto, rd, dopplershift, az, ele, dis, xatras, yatras,
-				globallev, locallev, gsig, intens;
+				globallev, locallev, gsig, intens, elevexcess;
 
 				var p;
 				var grevganho = 0.04; // needs less gain
 				var lrevRef = Ref(0);
-				dis = radius;
+
+				dis = radius.clip(0, 1);
 
 				az = (azim - halfPi);
 				az = CircleRamp.kr(az, 0.1, -pi, pi);
 				az = az * 57.295779513082; // convert to degrees
 				ele = Lag.kr(elev * 57.295779513082, 0.1); // convert to degrees
-				dis = Select.kr(dis < 0, [dis, 0]);
-				dis = Select.kr(dis > 1, [dis, 1]);
+				elevexcess = Select.kr(ele < elev_min, [0, ele.abs]);
+				elevexcess = Select.kr(ele > elev_max, [0, ele]); // get elevation overshoot
+
+				ele = ele.clip(elev_min, elev_max); // restrict to between min & max
+
 				p = In.ar(inbus, 1) * 1.5; // match other spatializers gain
 				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 
@@ -3190,8 +3223,8 @@ GUI Parameters usable in SynthDefs
 				locallev = dis;
 				locallev = locallev  * Lag.kr(llev, 0.1);
 
-				//applie distance attenuation before mixxing in reverb to keep trail off
-				//p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
+				// applie distance attenuation before mixxing in reverb to keep trail off
+				// p = p * (1 - dis) * (radius_max / ((dis.squared) * 50));
 				p = p * (1 - dis).squared;
 
 				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
@@ -3200,7 +3233,7 @@ GUI Parameters usable in SynthDefs
 
 				//dis = Select.kr(dis < 0.5, [dis, 0.5]);
 				sig = VBAP.ar(numoutputs, junto, vbap_buffer.bufnum,
-					az, ele, (1 - contr) * 100);
+					az, ele, ((1 - contr) + (elevexcess / 90)) * 100);
 
 				Out.ar(nonambibus, sig);
 			}).load(server);
