@@ -1,1 +1,0 @@
-// Please type "Mosca" in the Quick lookup field of Help Browser for information on Mosca class
