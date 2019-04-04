@@ -3087,8 +3087,7 @@ GUI Parameters usable in SynthDefs
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 
 				//Local reverberation
-				locallev = dis;
-				locallev = locallev * llev;
+				locallev = dis * llev;
 
 				//applie distance attenuation before mixxing in reverb to keep trail off
 				p = p * intens * spatGains[6].dbamp;
@@ -3148,8 +3147,7 @@ GUI Parameters usable in SynthDefs
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 
 				// Local reverberation
-				locallev = dis;
-				locallev = locallev * llev;
+				locallev = dis * llev;
 
 				// applie distance attenuation before mixxing in reverb to keep trail off
 				p = p * intens * (radius_max / (dis * 50));
@@ -3205,10 +3203,7 @@ GUI Parameters usable in SynthDefs
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 
 				// Reverberação local
-				locallev = dis;
-				locallev = locallev;
-
-				localReverbFunc.value(lrevRef, p, fftsize, wir, locallev, room, damp);
+				localReverbFunc.value(lrevRef, p, fftsize, wir, dis, room, damp);
 
 				junto = p + lrevRef.value;
 
@@ -3245,7 +3240,7 @@ GUI Parameters usable in SynthDefs
 				| inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05, dopamnt = 0,
 				// insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				// aFormatBusOutSoa, aFormatBusInSoa, // coment out insert
+				// aFormatBusOutSoa, aFormatBusInSoa, // comment out insert
 				glev = 0, llev = 0, contr = 1,
 				sp, df, room = 0.5, damp = 0.5, zir |
 
@@ -3256,9 +3251,9 @@ GUI Parameters usable in SynthDefs
 				omni1, spread1, diffuse1,
 				omni2, spread2, diffuse2,
 				globallev, locallev, gsig,
-				// aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed; // coment out insert
+				// aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed; // comment out insert
 				lrev, intens, lrev1Ref =  Ref(0), lrev2Ref =  Ref(0);
-				// var soaSigLRef = Ref(0); // coment out insert
+				// var soaSigLRef = Ref(0); // comment out insert
 				// var soaSigRRef = Ref(0);
 				dis = radius;
 
@@ -3294,38 +3289,20 @@ GUI Parameters usable in SynthDefs
 
 				Out.ar(gbus, gsig); //send part of direct signal global reverb synth
 
-				p1 = p[0];
-				p2 = p[1];
+				p1 = p[0] * intens * (radius_max / (dis * 50).clip(0.1, 50));
+				p2 = p[1] * intens * (radius_max / (dis * 50).clip(0.1, 50));
 
 				// Reverberação local
-				locallev = dis;
-
-				locallev = locallev * llev;
+				locallev = dis * llev;
 				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, zir, locallev,
 					room, damp);
 
-				junto1 = (p1 + lrev1Ref.value);
-				junto2 = (p2 + lrev2Ref.value);
+				junto1 = p1 + lrev1Ref.value;
+				junto2 = p2 + lrev2Ref.value;
 
-				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
-				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
-				diffuse1 = FoaEncode.ar(junto1, foaEncoderDiffuse);
-				junto1 = Select.ar(df, [omni1, diffuse1]);
-				junto1 = Select.ar(sp, [junto1, spread1]);
-
-				omni2 = FoaEncode.ar(junto2, foaEncoderOmni);
-				spread2 = FoaEncode.ar(junto2, foaEncoderSpread);
-				diffuse2 = FoaEncode.ar(junto2, foaEncoderDiffuse);
-				junto2 = Select.ar(df, [omni2, diffuse2]);
-				junto2 = Select.ar(sp, [junto2, spread2]);
-
-				ambSigFoa1plus2 = FoaTransform.ar(junto1, 'push', halfPi * contr,
-					azim1, ele, intens) +
-				FoaTransform.ar(junto2, 'push', halfPi * contr,
-					azim2, ele, intens);
-
-				ambSigFoa1plus2 = FoaTransform.ar(ambSigFoa1plus2, 'proximity',
-					(dis * 50).clip(0.1, 50)) * spatGains[5].dbamp;
+				// do second order encoding
+				ambSig = FMHEncode0.ar(junto, azim1, ele, spatGains[4].dbamp) +
+				FMHEncode0.ar(junto, azim2, ele, spatGains[4].dbamp);
 /*
 				// comment out insert
 				// convert to A-format and send to a-format out busses
@@ -3346,7 +3323,7 @@ GUI Parameters usable in SynthDefs
 				ambSigFoa1plus2 = Select.ar(insertFlag, [ambSigFoa1plus2, ambSigFoaProcessed]);
 				ambSigSoa1plus2 = Select.ar(insertFlag, [ambSigSoa1plus2, ambSigSoaProcessed]);
 */
-				fumaOutFunc.value(ambSigFoa1plus2);
+				fumaOutFunc.value(ambSig);
 			}).load(server);
 
 
@@ -3354,7 +3331,7 @@ GUI Parameters usable in SynthDefs
 				| inbus, azim = 0, elev = 0, radius = 0,
 				angle = 1.05, dopamnt = 0,
 				// insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-				// aFormatBusOutSoa, aFormatBusInSoa, // coment out insert
+				// aFormatBusOutSoa, aFormatBusInSoa, // comment out insert
 				glev = 0, llev = 0, contr = 1,
 				sp, df, room = 0.5, damp = 0.5, zir |
 
@@ -3365,9 +3342,9 @@ GUI Parameters usable in SynthDefs
 				omni1, spread1, diffuse1,
 				omni2, spread2, diffuse2,
 				globallev, locallev, gsig,
-				// aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed; // coment out insert
+				// aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed; // comment out insert
 				lrev, intens, lrev1Ref =  Ref(0), lrev2Ref =  Ref(0);
-				// var soaSigLRef = Ref(0); // coment out insert
+				// var soaSigLRef = Ref(0); // comment out insert
 				// var soaSigRRef = Ref(0);
 				dis = radius;
 
@@ -3408,13 +3385,12 @@ GUI Parameters usable in SynthDefs
 
 				// Reverberação local
 				locallev = dis;
-
 				locallev = locallev * llev;
 				localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p1, p2, fftsize, zir, locallev,
 					room, damp);
 
-				junto1 = (p1 + lrev1Ref.value);
-				junto2 = (p2 + lrev2Ref.value);
+				junto1 = p1 + lrev1Ref.value;
+				junto2 = p2 + lrev2Ref.value;
 
 				omni1 = FoaEncode.ar(junto1, foaEncoderOmni);
 				spread1 = FoaEncode.ar(junto1, foaEncoderSpread);
@@ -4698,7 +4674,8 @@ GUI Parameters usable in SynthDefs
 			}).add;
 
 
-			SynthDef.new("playBFormatATK"++type++"_4", { | outbus, bufnum = 0, rate = 1,
+			SynthDef.new("playBFormatATK"++type++"_4", {
+				| outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				azim = 0, elev = 0, radius = 0,
 				glev, llev, directang = 0, contr, dopamnt, busini,
@@ -4782,7 +4759,8 @@ GUI Parameters usable in SynthDefs
 			}).add;
 
 
-			SynthDef.new("playBFormatAmbitools"++type++"_4", { | outbus, bufnum = 0, rate = 1,
+			SynthDef.new("playBFormatAmbitools"++type++"_4", {
+				| outbus, bufnum = 0, rate = 1,
 				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 				azim = 0, elev = 0, radius = 0,
 				glev, llev, directang = 0, contr, dopamnt,
@@ -4846,7 +4824,8 @@ GUI Parameters usable in SynthDefs
 
 			[9, 16, 25, 36].do { |item, count|
 
-				SynthDef.new("playBFormatATK"++type++"_"++item, { | outbus, bufnum = 0, rate = 1,
+				SynthDef.new("playBFormatATK"++type++"_"++item, {
+					| outbus, bufnum = 0, rate = 1,
 					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 					azim = 0, elev = 0, radius = 0,
 					glev, llev, directang = 0, contr, dopamnt,
@@ -4930,7 +4909,8 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 
-				SynthDef.new("playBFormatAmbitools"++type++"_"++item, { | outbus, bufnum = 0, rate = 1,
+				SynthDef.new("playBFormatAmbitools"++type++"_"++item, {
+					| outbus, bufnum = 0, rate = 1,
 					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
 					azim = 0, elev = 0, radius = 0,
 					glev, llev, directang = 0, contr, dopamnt,
@@ -4979,12 +4959,6 @@ GUI Parameters usable in SynthDefs
 					globallev = globallev * glev * 6;
 					gsig = playerRef.value[0] * globallev;
 
-					//locallev = dis;
-
-					//locallev = locallev  * llev * 5;
-					//lsig = playerRef.value[0] * locallev;
-
-					//gsig = (playerRef.value * globallev) + (playerRef.value * locallev); // b-format
 					Out.ar(gbixfbus, gsig);
 				}).add;
 			};
