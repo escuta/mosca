@@ -121,7 +121,7 @@
 
 		});
 
-		this.ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Afmt._Reverb", Integer,
+		this.ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Reverb", Integer,
 			[0, (2 + rirList.size)], 0, 'clip', critical:true, repetition_filter:true);
 
 		this.ossiacls.description_((["no-reverb",
@@ -299,7 +299,7 @@
 			});
 
 
-			this.ossiaclsam[i] = OSSIA_Parameter(this.ossiasrc[i], "Cls._Afmt._amount", Float,
+			this.ossiaclsam[i] = OSSIA_Parameter(this.ossiasrc[i], "Cls._amount", Float,
 				[0, 1], 0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 

@@ -2350,7 +2350,7 @@ GUI Parameters usable in SynthDefs
 						sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
 					nonambi = In.ar(nonambibus, numoutputs);
 					perfectSphereFunc.value(nonambi);
-					sig = ((sig * 2) + nonambi) * level; // *2 make up for generaly low output
+					sig = ((sig * 3) + nonambi) * level; // *2 make up for generaly low output
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
 				}).add;
@@ -2444,14 +2444,14 @@ GUI Parameters usable in SynthDefs
 		spatFuncs[0] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
 			ref.value = HOAEncoder.ar(maxorder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-				Lag.kr(elevation), 6, 1, Lag.kr((radius * 50)), longest_radius);
+				Lag.kr(elevation), 6, 1, Lag.kr(radius * 50), longest_radius);
 		};
 
 		// HoaLib
 		spatFuncs[1] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
 			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
 			ref.value = HOALibEnc3D.ar(maxorder,
-				(ref.value + aten) * (longest_radius / (radius * 50)),
+				(ref.value + aten) * (longest_radius / radius * 50),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
 		};
 
@@ -2459,7 +2459,7 @@ GUI Parameters usable in SynthDefs
 		spatFuncs[2] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
 			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
 			ref.value = HOAmbiPanner.ar(maxorder,
-				(ref.value + aten) * (longest_radius / (radius * 50)),
+				(ref.value + aten) * (longest_radius / radius * 50),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
 		};
 
@@ -2467,14 +2467,16 @@ GUI Parameters usable in SynthDefs
 		spatFuncs[3] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
 			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
 			ref.value = iemConvert.value(
-				(ref.value + aten) * (longest_radius / (radius * 50)),
+				(ref.value + aten) * (longest_radius / radius * 50),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
 		};
 
 		// ATK
 		spatFuncs[4] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var sig, diffuse, spread, omni,
+			var sig, diffuse, spread, omni, rad,
 			aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
+			rad = radius * 50;
+			aten = aten * (longest_radius / rad);
 			sig = (ref.value + aten);
 			omni = FoaEncode.ar(sig, foaEncoderOmni);
 			spread = FoaEncode.ar(sig, foaEncoderSpread);
@@ -2482,15 +2484,15 @@ GUI Parameters usable in SynthDefs
 			sig = Select.ar(difu, [omni, diffuse]);
 			sig = Select.ar(spre, [sig, spread]);
 			sig = FoaTransform.ar(sig, 'push', halfPi * contract, azimuth, elevation);
-			ref.value = FoaTransform.ar(sig, 'proximity', (longest_radius / (radius * 50)), 4);
+			sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
+			ref.value = FoaTransform.ar(sig, 'proximity', rad);
 		};
 
 		// BF-FMH
 		spatFuncs[5] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
 			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
-			//ref.value = bfOrFmh.ar(ref.value + aten, azimuth, elevation,
-			ref.value = FMHEncode1.ar(ref.value + aten, azimuth, elevation,
-				longest_radius / (radius * 50), 10);
+			ref.value = bfOrFmh.ar(ref.value + aten, azimuth, elevation,
+				longest_radius / (radius.clip(limit_radius, 1) * 50), 10);
 		};
 
 		// joshGrain
@@ -2503,13 +2505,14 @@ GUI Parameters usable in SynthDefs
 
 		// VBAP
 		spatFuncs[7] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var elevexcess, elev, azi, rad2deg = 57.295779513082,
-			aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
-			azi = azimuth * rad2deg; // convert to degrees
-			elev = elevation * rad2deg; // convert to degrees
+			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000), // attenuate high freq with distance
+			rad2deg = 57.295779513082,
+			azi = azimuth * rad2deg, // convert to degrees
+			elev = elevation * rad2deg, // convert to degrees
 			elevexcess = Select.kr(elev < lowest_elevation, [0, elev.abs]);
 			elevexcess = Select.kr(elev > highest_elevation, [0, elev]); // get elevation overshoot
-			elev = elev.clip(lowest_elevation, highest_elevation); // restrict to between min & max
+			elev = elev.clip(lowest_elevation, highest_elevation); // restrict between min & max
+
 			ref.value = VBAP.ar(numoutputs,
 				(ref.value + aten) * (longest_radius / (radius * 50)),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
@@ -2545,51 +2548,49 @@ GUI Parameters usable in SynthDefs
 				{ (i > lastSN3D) && (i <= lastFUMA) } { out_type = 1 }
 				{ i > lastFUMA } { out_type = 2 };
 
-				SynthDef.new(item++"Chowning"++rev_type,  {
-					| inbus, azim = 0, elev = 0, radius = 0,
+				SynthDef.new(item++"Chowning"++rev_type, {
+					| inbus, azim = 0, elev = 0, radius = 20,
 					dopamnt = 0, glev = 0, llev = 0,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var rd, az, p, globallev, lrevRef = Ref(0),
-					dis = radius.clip(limit_radius, 1);
+					var lrevRef = Ref(0),
+					az = azim - halfPi,
+					p = In.ar(inbus, 1),
+					// interpret radius as linear representattion of distance
+					dis = radius.linexp(0, 1, 0.001, 1),
+					rd = Lag.kr(dis * 340); // Doppler
 
-					az = azim - halfPi;
-					p = In.ar(inbus, 1);
-					p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
-					rd = Lag.kr(dis * 340); 				 // Doppler
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-					p = p * (1 - dis);
-					// applie distance attenuation before mixxing in reverb to keep trail off
+
 					localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
 
 					spatFuncs[i].value(lrevRef, p, dis, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
-					// Global reverberation
-					globallev = (1 / dis.sqrt) - 1; // lower tail of curve to zero
-
-					outPutFuncs[out_type].value(p, lrevRef.value, globallev);
+					outPutFuncs[out_type].value(p, lrevRef.value, (1 - dis) * glev);
 				}).add;
 
 
-				SynthDef.new(item++"StereoChowning"++rev_type,  {
+				SynthDef.new(item++"StereoChowning"++rev_type, {
 					| inbus, azim = 0, elev = 0, radius = 0,
 					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var rd, az, p, rfact, globallev, lrev1Ref = Ref(0), lrev2Ref = Ref(0),
-					dis = radius.clip(limit_radius, 1);
-					az = azim - halfPi;
-					p = In.ar(inbus, 2);
-					rd = Lag.kr(dis * 340);					 // Doppler
+					var lrev1Ref = Ref(0), lrev2Ref = Ref(0),
+					az = azim - halfPi,
+					p = In.ar(inbus, 2),
+					// interpret radius as linear representattion of distance
+					dis = radius.linexp(0, 1, 0.001, 1),
+					rd = Lag.kr(dis * 340); // Doppler
+
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-					rfact = p * (1 - dis);
+
 					// applie distance attenuation before mixxing in reverb to keep trail off
-					localReverbStereoFunc.value(lrev1Ref, lrev2Ref, rfact[0], rfact[1],
+					localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
 						wir, dis * llev, room, damp);
 
 					spatFuncs[i].value(lrev1Ref, p[0], dis, az - (angle * (1 - dis)),
@@ -2597,17 +2598,14 @@ GUI Parameters usable in SynthDefs
 					spatFuncs[i].value(lrev2Ref, p[1], dis, az + (angle * (1 - dis)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
-					// Global reverberation
-					globallev = (1 / dis.sqrt) - 1; // lower tail of curve to zero
-
 					outPutFuncs[out_type].value(Mix.new(p) * 0.5,
-						lrev1Ref.value + lrev2Ref.value, globallev);
+						(lrev1Ref.value + lrev2Ref.value) * 0.5, (1 - dis) * glev);
 				}).add;
 
 			};
 
 
-			SynthDef.new("ATK2Chowning"++rev_type,  {
+			SynthDef.new("ATK2Chowning"++rev_type, {
 				| inbus, radius = 0,
 				dopamnt = 0, glev = 0, llev = 0,
 				insertFlag = 0, insertOut, insertBack,
@@ -2615,9 +2613,8 @@ GUI Parameters usable in SynthDefs
 
 				var ambSig, rd,
 				globallev, gsig, p, lrevRef = Ref(0),
-				dis = radius.clip(limit_radius, 1);
+				dis = radius.clip(0, 1);
 				p = In.ar(inbus, 1);
-				p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
 				rd = Lag.kr(dis * 340); 				 // Doppler
 				p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
@@ -2641,7 +2638,7 @@ GUI Parameters usable in SynthDefs
 		// allpass reverbs
 		if (maxorder == 1) {
 
-			SynthDef.new("revGlobalAmb_pass",  { | gate = 1, room = 0.5, damp = 0.5 |
+			SynthDef.new("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
 				sig = In.ar(gbus, 1);
@@ -2658,7 +2655,7 @@ GUI Parameters usable in SynthDefs
 
 		} {
 
-			SynthDef.new("revGlobalAmb_pass",  { | gate = 1, room = 0.5, damp = 0.5 |
+			SynthDef.new("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, w, x, y, z, r, s, t, u, v,
 				soaSig, tmpsig, sig, sigx, sigf = In.ar(soaRevBus, 9);
 				sigx = In.ar(gbixfbus, 9);
@@ -5475,38 +5472,6 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		/*
-		bsnap = Button(win, Rect(170, width - 40, 25, 20))
-		.states_([
-		["[ô]", Color.black, Color.white],
-		])
-		.action_({ arg but;
-		if(control.now>0) {
-		control.seek; // go to 0.0
-		"Snapshot: Transport must be at zero seconds. Please try again.".postln;
-		} {
-		control.snapshot;  // only take snapshot at 0.0
-		"Snapshot taken".postln;
-		}
-
-		});
-		*/
-
-		// no longer neded since win.view.onResize method is evaluated on init
-		/*this.win.drawFunc = {
-		//paint origin
-		Pen.fillColor = Color(0.6,0.8,0.8);
-		Pen.addArc(halfwidth@halfheight, halfheight, 0, 2pi);
-		Pen.fill;
-
-
-		Pen.fillColor = Color.gray(0, 0.5);
-		Pen.addArc(halfwidth@halfheight, 20, 0, 2pi);
-		Pen.fill;
-
-		//	Pen.width = 10;
-		};*/
-
 		// seleção de fontes
 		itensdemenu = Array.newClear(this.nfontes);
 		this.nfontes.do { | i |
@@ -5840,7 +5805,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(orientView, Rect(35, 0, 150, 20));
-		textbuf.string = "Cls./Afmt. Reverb";
+		textbuf.string = "Cls. Reverb";
 		clsReverbox = PopUpMenu(orientView, Rect(20, 20, 130, 20));
 		clsReverbox.items = ["no-reverb",
 			"freeverb",
@@ -5861,7 +5826,7 @@ GUI Parameters usable in SynthDefs
 
 
 		textbuf = StaticText(win, Rect(163, 150, 150, 20));
-		textbuf.string = "Cls./Afmt. amount";
+		textbuf.string = "Cls. amount";
 		gnumbox = NumberBox(win, Rect(10, 150, 40, 20));
 		gnumbox.value = 0;
 		gnumbox.clipHi = 1;
