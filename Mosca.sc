@@ -523,7 +523,7 @@ GUI Parameters usable in SynthDefs
 			dstrv[i] = 0;
 			convert[i] = false;
 			angle[i] = 1.05;
-			level[i] = 0;
+			level[i] = 1;
 			glev[i] = 0;
 			llev[i] = 0;
 			rm[i] = 0.5;
@@ -612,7 +612,7 @@ GUI Parameters usable in SynthDefs
 			rboxProxy[i] = AutomationGuiProxy.new(0.0);
 			cboxProxy[i] = AutomationGuiProxy.new(0.0);
 			aboxProxy[i] = AutomationGuiProxy.new(1.0471975511966);
-			vboxProxy[i] = AutomationGuiProxy.new(0.0);
+			vboxProxy[i] = AutomationGuiProxy.new(1.0);
 			gboxProxy[i] = AutomationGuiProxy.new(0.0);
 			lboxProxy[i] = AutomationGuiProxy.new(0.0);
 			rmboxProxy[i]= AutomationGuiProxy.new(0.5);
@@ -871,7 +871,7 @@ GUI Parameters usable in SynthDefs
 
 					if(i == currentsource)
 					{
-						{volslider.value = num.value}.defer;
+						{volslider.value = num.value * 0.5}.defer;
 						{volnumbox.value = num.value}.defer;
 					};
 				};
@@ -1476,7 +1476,7 @@ GUI Parameters usable in SynthDefs
 			this.globDec.set(\level, num.value);
 
 			if (guiflag) {
-				this.masterslider.value = num.value;
+				this.masterslider.value = num.value * 0.5;
 			};
 
 			if (this.ossiamaster.notNil) {
@@ -2313,7 +2313,7 @@ GUI Parameters usable in SynthDefs
 							sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
 						nonambi = In.ar(nonambibus, numoutputs);
 						perfectSphereFunc.value(nonambi);
-						sig = ((sig * 2) + nonambi) * level; // *2 make up for generaly low output
+						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).add;
@@ -2350,7 +2350,7 @@ GUI Parameters usable in SynthDefs
 						sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
 					nonambi = In.ar(nonambibus, numoutputs);
 					perfectSphereFunc.value(nonambi);
-					sig = ((sig * 3) + nonambi) * level; // *2 make up for generaly low output
+					sig = (sig + nonambi) * level;
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
 				}).add;
@@ -2388,7 +2388,7 @@ GUI Parameters usable in SynthDefs
 						0, lf_hf, xover:xover);
 					nonambi = In.ar(nonambibus, numoutputs);
 					perfectSphereFunc.value(nonambi);
-					sig = ((sig * 2) + nonambi) * level; // *2 make up for generaly low output
+					sig = (sig + nonambi) * level;
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
 				}).add;
@@ -2430,7 +2430,7 @@ GUI Parameters usable in SynthDefs
 						0, lf_hf, xover:xover);
 					nonambi = In.ar(nonambibus, numoutputs);
 					perfectSphereFunc.value(nonambi);
-					sig = ((sig * 2) + nonambi) * level; // *2 make up for generaly low output
+					sig = (sig + nonambi) * level;
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
 				}).add;
@@ -2523,17 +2523,17 @@ GUI Parameters usable in SynthDefs
 		// contains the synthDef blocks for each spatialyers
 
 		outPutFuncs[0] = { |dry, wet, globrev|
-			Out.ar(gbixfbus, wet * globrev.clip(0, 1));
+			Out.ar(gbixfbus, wet * globrev);
 			Out.ar(ambixbus, wet);
 		};
 
 		outPutFuncs[1] = { |dry, wet, globrev|
-			Out.ar(gbfbus, wet * globrev.clip(0, 1));
+			Out.ar(gbfbus, wet * globrev);
 			Out.ar(fumabus, wet);
 		};
 
 		outPutFuncs[2] = { |dry, wet, globrev|
-			Out.ar(gbus, dry * globrev.clip(0, 1));
+			Out.ar(gbus, dry * globrev);
 			Out.ar(nonambibus, wet);
 		};
 
@@ -2555,21 +2555,24 @@ GUI Parameters usable in SynthDefs
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var lrevRef = Ref(0),
+					var globallev = (1 / radius.sqrt) - 1, //global reverberation
+					locallev, lrevRef = Ref(0),
 					az = azim - halfPi,
 					p = In.ar(inbus, 1),
-					// interpret radius as linear representattion of distance
-					dis = radius.linexp(0, 1, 0.001, 1),
-					rd = Lag.kr(dis * 340); // Doppler
+					rd = Lag.kr(radius * 340), // Doppler
+					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
+					//make shure level is 0 when radius reaches plim
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-					localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
+					localReverbFunc.value(lrevRef, p, wir, radius * llev, // local reverberation
+						room, damp);
 
-					spatFuncs[i].value(lrevRef, p, dis, az, elev, df, sp, contr,
+					spatFuncs[i].value(lrevRef, p, radius, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(p, lrevRef.value, (1 - dis) * glev);
+					outPutFuncs[out_type].value(p, lrevRef.value * cut,
+						globallev.clip(0, 1) * glev);
 				}).add;
 
 
@@ -2580,28 +2583,27 @@ GUI Parameters usable in SynthDefs
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var lrev1Ref = Ref(0), lrev2Ref = Ref(0),
+					var globallev = (1 / radius.sqrt) - 1, //global reverberation
+					lrev1Ref = Ref(0), lrev2Ref = Ref(0),
 					az = azim - halfPi,
 					p = In.ar(inbus, 2),
-					// interpret radius as linear representattion of distance
-					dis = radius.linexp(0, 1, 0.001, 1),
-					rd = Lag.kr(dis * 340); // Doppler
+					rd = Lag.kr(radius * 340), // Doppler
+					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
+					//make shure level is 0 when radius reaches plim
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-					// applie distance attenuation before mixxing in reverb to keep trail off
 					localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
-						wir, dis * llev, room, damp);
+						wir, radius * llev, room, damp);
 
-					spatFuncs[i].value(lrev1Ref, p[0], dis, az - (angle * (1 - dis)),
+					spatFuncs[i].value(lrev1Ref, p[0], radius, az - (angle * (1 - radius)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
-					spatFuncs[i].value(lrev2Ref, p[1], dis, az + (angle * (1 - dis)),
+					spatFuncs[i].value(lrev2Ref, p[1], radius, az + (angle * (1 - radius)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(Mix.new(p) * 0.5,
-						(lrev1Ref.value + lrev2Ref.value) * 0.5, (1 - dis) * glev);
+					outPutFuncs[out_type].value(Mix.new(p) * 0.5, (lrev1Ref.value + lrev2Ref.value) * 0.5,
+						globallev.clip(0, 1) * glev);
 				}).add;
-
 			};
 
 
@@ -2611,29 +2613,24 @@ GUI Parameters usable in SynthDefs
 				insertFlag = 0, insertOut, insertBack,
 				room = 0.5, damp = 05, wir|
 
-				var ambSig, rd,
-				globallev, gsig, p, lrevRef = Ref(0),
-				dis = radius.clip(0, 1);
-				p = In.ar(inbus, 1);
-				rd = Lag.kr(dis * 340); 				 // Doppler
+				var globallev = (1 / radius.sqrt) - 1, //global reverberation
+				lrevRef = Ref(0),
+				p = In.ar(inbus, 1),
+				rd = Lag.kr(radius * 340), // Doppler
+				cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
 				p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				//make shure level is 0 when radius reaches plim
 
-				// Global reverberation
-				globallev = 1 / dis.sqrt; // lower tail of curve to zero
-				globallev = globallev / 3; // scale it so that it values 1 close to origin
-				gsig = p * globallev.clip(0, 1) * glev;
-				Out.ar(gbus, gsig); // send part of direct signal global reverb synth
-
-				// applie distance attenuation before mixxing in reverb to keep trail off
-				localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
+				localReverbFunc.value(lrevRef, p, wir, radius * llev, room, damp);
+				p = HPF.ar(p, 20); // stops bass frequency blow outs by proximity
 				p = FoaTransform.ar(p + lrevRef.value, 'proximity',
-					(dis * 50).clip(0.1, 50));
+					(radius * 50).clip(0.1, 50));
 
-				outPutFuncs[out_type].value(p, lrevRef.value, globallev);
+				outPutFuncs[out_type].value(p, lrevRef.value,
+					globallev.clip(0, 1) * glev);
 			}).add;
 
 		}; //end makeSpatialisers
-
 
 		// allpass reverbs
 		if (maxorder == 1) {
@@ -3050,64 +3047,55 @@ GUI Parameters usable in SynthDefs
 			// 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
 
 			SynthDef.new("playMono"++type, { | outbus, bufnum = 0, rate = 1,
-				level = 0, tpos = 0, lp = 0, busini |
-				var scaledRate, spos, playerRef;
-				//SendTrig.kr(Impulse.kr(1), 101,  tpos); // debugging
-				playerRef = Ref(0);
-				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 1);
+				level = 1, tpos = 0, lp = 0, busini |
+				var playerRef = Ref(0);
+				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 1);
 				Out.ar(outbus, playerRef.value * level);
 			}).add;
 
 			SynthDef.new("playStereo"++type, { | outbus, bufnum = 0, rate = 1,
-				level = 0, tpos = 0, lp = 0, busini |
-				var scaledRate, spos, playerRef;
-				playerRef = Ref(0);
-				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 2);
+				level = 1, tpos = 0, lp = 0, busini |
+				var playerRef = Ref(0);
+				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 2);
 				Out.ar(outbus, playerRef.value * level);
 			}).add;
 
-			// | inbus, azim = 0, elev = 0, radius = 0,
-			// dopamnt = 0, glev = 0, llev = 0,
-			// insertFlag = 0, insertOut, insertBack,
-			// room = 0.5, damp = 05, wir, df, sp,
-			// contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
-			//
-			// var rd, az, p, globallev, lrevRef = Ref(0),
-			// dis = radius.clip(limit_radius, 1);
-			//
-			// az = azim - halfPi;
-			// p = In.ar(inbus, 1);
-			// p = LPF.ar(p, (1 - dis) * 18000 + 2000); // attenuate high freq with distance
-			// rd = Lag.kr(dis * 340); 				 // Doppler
-			// p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-			//
-			// // applie distance attenuation before mixxing in reverb to keep trail off
-			// localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
-			//
-			// spatFuncs[i].value(lrevRef, p, dis, az, elev, df, sp, contr,
-			// winsize, grainrate, winrand);
-			//
-			// // Global reverberation
-			// globallev = (1 / radius.sqrt) - 1; // lower tail of curve to zero
-			//
-			// outPutFuncs[out_type].value(p, lrevRef.value, globallev);
+/*
+					var globallev = (1 / radius.sqrt) - 1, //global reverberation
+					locallev, lrevRef = Ref(0),
+					az = azim - halfPi,
+					p = In.ar(inbus, 1),
+					rd = Lag.kr(radius * 340), // Doppler
+					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
+					//make shure level is 0 when radius reaches plim
+
+					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+					localReverbFunc.value(lrevRef, p, wir, radius * llev, // local reverberation
+						room, damp);
+
+					spatFuncs[i].value(lrevRef, p, radius, az, elev, df, sp, contr,
+						winsize, grainrate, winrand);
+
+					outPutFuncs[out_type].value(p, lrevRef.value * cut,
+						globallev.clip(0, 1) * glev);
+*/
 
 
 			SynthDef.new("playBFormatATK"++type++"_4", {
-				| outbus, bufnum = 0, rate = 1,
-				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
-				azim = 0, elev = 0, radius = 0,
+				| bufnum = 0, rate = 1, level = 1, tpos = 0, lp = 0,
+				rotAngle = 0, azim = 0, elev = 0, radius = 20,
 				glev, llev, directang = 0, contr, dopamnt, busini,
 				insertFlag = 0, insertOut, insertBack |
 
-				var scaledRate, playerRef = Ref(0),
-				spos, pushang, az, ele, globallev,
+				var playerRef = Ref(0),
+				pushang, az, ele, globallev,
 				rd, dis = radius.clip(limit_radius, 1);
 
 				az = azim - halfPi;
 				pushang = dis * halfPi; // degree of sound field displacement
 
-				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 4);
+				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 4);
 				playerRef.value = LPF.ar(playerRef.value, (1 - dis) * 18000 + 2000);
 				// attenuate high freq with distance
 				rd = Lag.kr(dis * 340); 				 // Doppler
@@ -3124,12 +3112,12 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("playBFormatAmbitools"++type++"_4", {
 				| outbus, bufnum = 0, rate = 1,
-				level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+				level = 1, tpos = 0, lp = 0, rotAngle = 0,
 				azim = 0, elev = 0, radius = 0,
 				glev, llev, directang = 0, contr, dopamnt,
 				busini, insertFlag = 0 |
 
-				var scaledRate, playerRef, wsinal, spos, pushang = 0,
+				var playerRef, wsinal, pushang = 0,
 				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 
 				az, ele, dis, globallev, locallev,
@@ -3145,7 +3133,7 @@ GUI Parameters usable in SynthDefs
 				dis = Select.kr(dis < 0, [dis, 0]);
 				dis = Select.kr(dis > 1, [dis, 1]);
 				playerRef = Ref(0);
-				playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, 4);
+				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 4);
 
 				rd = Lag.kr(dis * 340);
 				playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
@@ -3185,14 +3173,13 @@ GUI Parameters usable in SynthDefs
 
 				SynthDef.new("playBFormatATK"++type++"_"++item, {
 					| outbus, bufnum = 0, rate = 1,
-					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+					level = 1, tpos = 0, lp = 0, rotAngle = 0,
 					azim = 0, elev = 0, radius = 0,
 					glev, llev, directang = 0, contr, dopamnt,
-					busini,
-					insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+					busini, insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
 					aFormatBusOutSoa, aFormatBusInSoa |
 
-					var scaledRate, playerRef, wsinal, spos, pushang = 0,
+					var playerRef, wsinal, pushang = 0,
 					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 
 					az, ele, dis, globallev, locallev,
@@ -3208,7 +3195,7 @@ GUI Parameters usable in SynthDefs
 					dis = Select.kr(dis < 0, [dis, 0]);
 					dis = Select.kr(dis > 1, [dis, 1]);
 					playerRef = Ref(0);
-					playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, item);
+					playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
 
 					rd = Lag.kr(dis * 340);
 					playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
@@ -3266,12 +3253,12 @@ GUI Parameters usable in SynthDefs
 
 				SynthDef.new("playBFormatAmbitools"++type++"_"++item, {
 					| outbus, bufnum = 0, rate = 1,
-					level = 0, tpos = 0, lp = 0, rotAngle = 0, tilAngle = 0, tumAngle = 0,
+					level = 1, tpos = 0, lp = 0, rotAngle = 0,
 					azim = 0, elev = 0, radius = 0,
 					glev, llev, directang = 0, contr, dopamnt,
 					busini, insertFlag = 0 |
 
-					var scaledRate, playerRef, wsinal, spos, pushang = 0,
+					var playerRef, wsinal, pushang = 0,
 					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
 
 					az, ele, dis, globallev, locallev, gsig, //lsig, intens,
@@ -3285,7 +3272,7 @@ GUI Parameters usable in SynthDefs
 					dis = Select.kr(dis < 0, [dis, 0]);
 					dis = Select.kr(dis > 1, [dis, 1]);
 					playerRef = Ref(0);
-					playInFunc[i].value(playerRef, busini, bufnum, scaledRate, tpos, spos, lp, rate, item);
+					playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
 
 					rd = Lag.kr(dis * 340);
 					playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
@@ -3319,20 +3306,19 @@ GUI Parameters usable in SynthDefs
 
 		// Make File-in SynthDefs
 
-		playInFunc[0] = {
-			| playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum |
+		playInFunc[0] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 			// Note it needs all the variables
-			spos = tpos * BufSampleRate.kr(bufnum);
+			var spos = tpos * BufSampleRate.kr(bufnum),
 			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos, loop: lp, doneAction:2);
+			playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
+				loop: lp, doneAction:2);
 		};
 
 		makeSynthDefPlayers.("File", 0);
 
 		// Make HWBus-in SynthDefs
 
-		playInFunc[1] = {
-			| playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum |
+		playInFunc[1] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 			playerRef.value =  In.ar(busini + server.inputBus.index, channum);
 		};
 
@@ -3340,15 +3326,13 @@ GUI Parameters usable in SynthDefs
 
 		// Make SCBus-in SynthDefs
 
-		playInFunc[2] = {
-			| playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum |
+		playInFunc[2] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 			playerRef.value =  In.ar(busini, channum);
 		};
 
 		makeSynthDefPlayers.("SWBus", 2);
 
-		playInFunc[3] = {
-			| playerRef, busini, bufnum, scaledRate, tpos, spos, lp = 0, rate, channum |
+		playInFunc[3] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 			// Note it needs all the variables
 			var trig;
 			playerRef.value = DiskIn.ar(channum, bufnum, lp);
@@ -5745,8 +5729,8 @@ GUI Parameters usable in SynthDefs
 		textbuf = StaticText(win, Rect(163, 110, 50, 20));
 		textbuf.string = "Level";
 		volnumbox = NumberBox(win, Rect(10, 110, 40, 20));
-		volnumbox.value = 0;
-		volnumbox.clipHi = pi;
+		volnumbox.value = 1;
+		volnumbox.clipHi = 2;
 		volnumbox.clipLo = 0;
 		volnumbox.step_(0.01);
 		volnumbox.scroll_step_(0.01);
@@ -5756,9 +5740,9 @@ GUI Parameters usable in SynthDefs
 
 		};
 		volslider = Slider.new(win, Rect(50, 110, 110, 20));
-		volslider.value = 0;
+		volslider.value = 0.5;
 		volslider.action = { | num |
-			{vbox[currentsource].valueAction = num.value;}.defer;
+			{vbox[currentsource].valueAction = num.value * 2;}.defer;
 		};
 
 
@@ -5796,9 +5780,9 @@ GUI Parameters usable in SynthDefs
 
 		masterslider = Slider.new(orientView, Rect(0, 20, 20, 60));
 		masterslider.orientation(\vertical);
-		masterslider.value = 1;
+		masterslider.value = 0.5;
 		masterslider.action = { | num |
-			this.masterlevProxy.valueAction = num.value;
+			this.masterlevProxy.valueAction = num.value * 2;
 		};
 
 		/////////////////////////////////////////////////////////////////////////
@@ -6633,7 +6617,7 @@ GUI Parameters usable in SynthDefs
 
 			abox[i].clipHi = pi;
 			abox[i].clipLo = 0;
-			vbox[i].clipHi = 1.0;
+			vbox[i].clipHi = 2.0;
 			vbox[i].clipLo = 0;
 			gbox[i].clipHi = 1.0;
 			gbox[i].clipLo = 0;

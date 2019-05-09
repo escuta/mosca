@@ -55,7 +55,7 @@
 		});
 
 
-		this.ossiamaster = OSSIA_Parameter(ossiaParent, "Master_level", Float, [0, 1],
+		this.ossiamaster = OSSIA_Parameter(ossiaParent, "Master_level", Float, [0, 2],
 				1, 'clip', critical:allCrtitical);
 
 		this.ossiamaster.unit_(OSSIA_gain.linear);
@@ -67,7 +67,7 @@
 		});
 
 
-		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Dst._Reverb_all", Integer, [0, (2 + rirList.size)],
+		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Dst._Reverb_all", Integer, [0, (rirList.size + 2)],
 				0, 'clip', critical:true);
 
 		ossiaMasterRev.description_((["no-reverb",
@@ -276,7 +276,7 @@
 
 
 
-			this.ossialev[i] = OSSIA_Parameter(this.ossiasrc[i], "Level", Float, [0, 1], 0, 'clip',
+			this.ossialev[i] = OSSIA_Parameter(this.ossiasrc[i], "Level", Float, [0, 2], 1, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
 			this.ossialev[i].unit_(OSSIA_gain.linear);
