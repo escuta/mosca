@@ -2203,7 +2203,7 @@ GUI Parameters usable in SynthDefs
 
 		};
 
-		limit_radius = longest_radius * 0.01; // prevent amplitue spike
+		//limit_radius = longest_radius * 0.01; // prevent amplitue spike
 
 
 		// define ambisonic decoder
@@ -2449,35 +2449,34 @@ GUI Parameters usable in SynthDefs
 
 		// HoaLib
 		spatFuncs[1] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
+			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
 			ref.value = HOALibEnc3D.ar(maxorder,
-				(ref.value + aten) * (longest_radius / radius * 50),
+				(ref.value + sig) * (longest_radius / (radius * 50)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
 		};
 
 		// ADTB
 		spatFuncs[2] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
+			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
 			ref.value = HOAmbiPanner.ar(maxorder,
-				(ref.value + aten) * (longest_radius / radius * 50),
+				(ref.value + sig) * (longest_radius / (radius * 50)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
 		};
 
 		// AmbIEM
 		spatFuncs[3] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
+			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
 			ref.value = iemConvert.value(
-				(ref.value + aten) * (longest_radius / radius * 50),
+				(ref.value + sig) * (longest_radius / (radius * 50)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
 		};
 
 		// ATK
 		spatFuncs[4] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var sig, diffuse, spread, omni, rad,
-			aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
-			rad = radius * 50;
-			aten = aten * (longest_radius / rad);
-			sig = (ref.value + aten);
+			var diffuse, spread, omni,
+			sig = LPF.ar(input, (1 - radius) * 18000 + 2000), // attenuate high freq with distance
+			rad = longest_radius / (radius * 50);
+			sig = sig + ref.value;
 			omni = FoaEncode.ar(sig, foaEncoderOmni);
 			spread = FoaEncode.ar(sig, foaEncoderSpread);
 			diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
@@ -2490,22 +2489,22 @@ GUI Parameters usable in SynthDefs
 
 		// BF-FMH
 		spatFuncs[5] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
-			ref.value = bfOrFmh.ar(ref.value + aten, azimuth, elevation,
-				longest_radius / (radius.clip(limit_radius, 1) * 50), 10);
+			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
+			ref.value = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
+				longest_radius / (radius.clip * 50), 10);
 		};
 
 		// joshGrain
 		spatFuncs[6] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
-			ref.value = MonoGrainBF.ar(ref.value + aten, win, rate, rand, azimuth, 1 - contract,
+			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000); // attenuate high freq with distance
+			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand, azimuth, 1 - contract,
 				elevation, 1 - contract, rho: Lag.kr(longest_radius / (radius * 50)),
 				mul: 1 + (0.5 - win) + (1 - (rate / 40)));
 		};
 
 		// VBAP
 		spatFuncs[7] = { |ref, input, radius, azimuth, elevation, difu, spre, contract, win, rate, rand|
-			var aten = LPF.ar(input, (1 - radius) * 18000 + 2000), // attenuate high freq with distance
+			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000), // attenuate high freq with distance
 			rad2deg = 57.295779513082,
 			azi = azimuth * rad2deg, // convert to degrees
 			elev = elevation * rad2deg, // convert to degrees
@@ -2514,7 +2513,7 @@ GUI Parameters usable in SynthDefs
 			elev = elev.clip(lowest_elevation, highest_elevation); // restrict between min & max
 
 			ref.value = VBAP.ar(numoutputs,
-				(ref.value + aten) * (longest_radius / (radius * 50)),
+				(ref.value + sig) * (longest_radius / (radius * 50)),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100);
 		};
@@ -2560,7 +2559,8 @@ GUI Parameters usable in SynthDefs
 					az = azim - halfPi,
 					p = In.ar(inbus, 1),
 					rd = Lag.kr(radius * 340), // Doppler
-					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
+					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1),
+					rad = radius.clip(0.01, 1);
 					//make shure level is 0 when radius reaches plim
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
@@ -2568,7 +2568,7 @@ GUI Parameters usable in SynthDefs
 					localReverbFunc.value(lrevRef, p, wir, radius * llev, // local reverberation
 						room, damp);
 
-					spatFuncs[i].value(lrevRef, p, radius, az, elev, df, sp, contr,
+					spatFuncs[i].value(lrevRef, p, rad, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(p, lrevRef.value * cut,
@@ -2588,17 +2588,18 @@ GUI Parameters usable in SynthDefs
 					az = azim - halfPi,
 					p = In.ar(inbus, 2),
 					rd = Lag.kr(radius * 340), // Doppler
-					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
+					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1),
 					//make shure level is 0 when radius reaches plim
+					rad = radius.clip(0.01, 1);
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 					localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
 						wir, radius * llev, room, damp);
 
-					spatFuncs[i].value(lrev1Ref, p[0], radius, az - (angle * (1 - radius)),
+					spatFuncs[i].value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
-					spatFuncs[i].value(lrev2Ref, p[1], radius, az + (angle * (1 - radius)),
+					spatFuncs[i].value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(Mix.new(p) * 0.5, (lrev1Ref.value + lrev2Ref.value) * 0.5,
@@ -2617,14 +2618,15 @@ GUI Parameters usable in SynthDefs
 				lrevRef = Ref(0),
 				p = In.ar(inbus, 1),
 				rd = Lag.kr(radius * 340), // Doppler
-				cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
-				p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1),
 				//make shure level is 0 when radius reaches plim
+				rad = radius.clip(0.01, 1);
+				p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 				localReverbFunc.value(lrevRef, p, wir, radius * llev, room, damp);
 				p = HPF.ar(p, 20); // stops bass frequency blow outs by proximity
 				p = FoaTransform.ar(p + lrevRef.value, 'proximity',
-					(radius * 50).clip(0.1, 50));
+					rad * 50);
 
 				outPutFuncs[out_type].value(p, lrevRef.value,
 					globallev.clip(0, 1) * glev);
@@ -3090,7 +3092,7 @@ GUI Parameters usable in SynthDefs
 
 				var playerRef = Ref(0),
 				pushang, az, ele, globallev,
-				rd, dis = radius.clip(limit_radius, 1);
+				rd, dis = radius.clip(0.01, 1);
 
 				az = azim - halfPi;
 				pushang = dis * halfPi; // degree of sound field displacement
@@ -5483,7 +5485,7 @@ GUI Parameters usable in SynthDefs
 			angslider.value = angle[currentsource] / pi;
 			volnumbox.value = level[currentsource];
 			dopnumbox.value = dplev[currentsource];
-			volslider.value = level[currentsource];
+			volslider.value = level[currentsource] * 0.5;
 			gnumbox.value = glev[currentsource];
 			gslider.value = glev[currentsource];
 			lnumbox.value = llev[currentsource];
