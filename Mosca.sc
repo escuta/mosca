@@ -58,8 +58,7 @@ AutomationGuiProxy : QView {
 
 
 Mosca {
-	var //<>sprite,
-	<>nfontes,
+	var <>nfontes,
 	<>revGlobal, <>nonAmbi2FuMa, <>convertor,
 	<>libnumbox, <>control,
 	<>globDec,
@@ -4920,7 +4919,9 @@ GUI Parameters usable in SynthDefs
 	gui {
 
 		//arg dur = 120;
-		var fonte, dist,
+		var sprite,
+		furthest,
+		dist,
 		itensdemenu,
 		//gbus, gbfbus,
 		//azimuth,
@@ -5559,7 +5560,7 @@ GUI Parameters usable in SynthDefs
 		//offset = 60;
 
 		lockCheck = CheckBox( win, Rect(163, 10, 80, 20), "Lock");
-		lockCheck.value = false;
+		lockCheck.value = true;
 
 		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ | butt |
 			{this.hwncheck[currentsource].valueAction = butt.value;}.defer;
@@ -7023,12 +7024,30 @@ GUI Parameters usable in SynthDefs
 		};
 		*/
 
+		furthest = halfheight * 20;
+
+		sprite = Array2D.new(nfontes, 2);
+		nfontes.do { | i |
+			sprite.put(i, 0, 0);
+			sprite.put(i, 1, furthest);
+		};
+
 		win.view.mouseDownAction = { | view, x, y, modifiers, buttonNumber, clickCount |
 			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
-			if(mouseButton == 1) {
-				if(lockCheck == 0) {
-					this.nfontes.do { | i | }
-				}
+			if(mouseButton == 0) {
+				if(lockCheck.value.not) {
+					var closest = [0, furthest]; // save sources index and distance from click
+					// initialize at the furthest point
+					this.nfontes.do { | i |
+						var dis = ((x - sprite[i, 0].value).squared
+							+ (y - sprite[i, 1].value).squared).sqrt; // claculate distance from click
+						if(dis < closest[1].value) {
+							closest[1] = dis;
+							closest[0] = i;
+						};
+					};
+					m.valueAction = closest[0].value;
+				};
 			} {
 				this.nfontes.do { | i |
 					("" ++ i ++ " " ++ this.cartval[i]).postln;
@@ -7049,24 +7068,15 @@ GUI Parameters usable in SynthDefs
 						//\xoffset, this.xoffset[i], \yoffset, this.yoffset[i]);
 					};
 				};
-			} /*{
-			this.cartval[currentsource].x_((x - halfwidth) / halfheight);
-			this.cartval[currentsource].y_((halfheight - y) / halfheight);
-			this.cartval[currentsource].z_((this.zslider.value * 2) - 1);
-
-			this.cartval[currentsource] = this.cartval[currentsource]
-			.tumble(heading).tilt(roll).rotate(pitch);
-
-			xbox[currentsource].valueAction = this.cartval[currentsource].x + origine.x;
-			ybox[currentsource].valueAction = this.cartval[currentsource].y + origine.y;
-			zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
-			}*/
+			};
 		};
 
 		win.view.mouseMoveAction = {|view, x, y, modifiers|
-			var point;
-
 			if (mouseButton == 0) { // left button
+
+				// save raw mouseposition for slectinc closest source on click
+				sprite.put(currentsource, 0, x);
+				sprite.put(currentsource, 1, y);
 
 				this.cartval[currentsource].x_((x - halfwidth) / halfheight);
 				this.cartval[currentsource].y_((halfheight - y) / halfheight);
@@ -7080,7 +7090,6 @@ GUI Parameters usable in SynthDefs
 				zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
 
 			};
-
 		};
 
 
