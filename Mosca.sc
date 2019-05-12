@@ -2173,21 +2173,41 @@ GUI Parameters usable in SynthDefs
 
 			var emulate_array, vbap_setup;
 
-			numoutputs = 26;
+			//numoutputs = 26;
+			numoutputs = 16;
 
 			this.nonambibus = Bus.audio(server, numoutputs);
 
+			emulate_array = [[ 80, 10],
+	[ 52, -10],
+	[ 22, 10],
+	[ 0, -10, 8.67],
+	[ -22, 10],
+	[ -52, -10],
+	[ -80, 10],
+	[ -105, -10],
+	[ -135, 10],
+	[ -145, -10],
+	[ -165, 10],
+	[ 180, -10],
+	[ 165, 10],
+	[ 145, -10],
+	[ 135, 10],
+			[ 105, -10]];
+
+			/*
 			emulate_array = [ [ 0, 90 ], [ 0, 45 ], [ 90, 45 ], [ 180, 45 ], [ -90, 45 ], [ 45, 35 ],
 				[ 135, 35 ], [ -135, 35 ], [ -45, 35 ], [ 0, 0 ], [ 45, 0 ], [ 90, 0 ], [ 135, 0 ],
 				[ 180, 0 ], [ -135, 0 ], [ -90, 0 ], [ -45, 0 ], [ 45, -35 ], [ 135, -35 ], [ -135, -35 ],
 				[ -45, -35 ], [ 0, -45 ], [ 90, -45 ], [ 180, -45 ], [ -90, -45 ], [ 0, -90 ] ];
-
+*/
 			vbap_setup = VBAPSpeakerArray(3, emulate_array);
 			// emulate 26-point Lebedev grid
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			longest_radius = 3;
+			longest_radius = 13.5;
+			//longest_radius = 3;
 			lowest_elevation = -90;
 			highest_elevation = 90;
 
@@ -2476,7 +2496,7 @@ GUI Parameters usable in SynthDefs
 			var diffuse, spread, omni,
 			sig = LPF.ar(input, (1 - radius) * 18000 + 2000), // attenuate high freq with distance
 			rad = longest_radius / (radius * 50);
-			sig = sig + ref.value;
+			sig = (sig + ref.value) * rad;
 			omni = FoaEncode.ar(sig, foaEncoderOmni);
 			spread = FoaEncode.ar(sig, foaEncoderSpread);
 			diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
@@ -2571,7 +2591,7 @@ GUI Parameters usable in SynthDefs
 					spatFuncs[i].value(lrevRef, p, rad, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(p, lrevRef.value * cut,
+					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
 						globallev.clip(0, 1) * glev);
 				}).add;
 
@@ -2602,7 +2622,8 @@ GUI Parameters usable in SynthDefs
 					spatFuncs[i].value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(Mix.new(p) * 0.5, (lrev1Ref.value + lrev2Ref.value) * 0.5,
+					outPutFuncs[out_type].value(Mix.new(p) * 0.5 * cut,
+						(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
 						globallev.clip(0, 1) * glev);
 				}).add;
 			};
@@ -2628,7 +2649,7 @@ GUI Parameters usable in SynthDefs
 				p = FoaTransform.ar(p + lrevRef.value, 'proximity',
 					rad * 50);
 
-				outPutFuncs[out_type].value(p, lrevRef.value,
+				outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
 					globallev.clip(0, 1) * glev);
 			}).add;
 
@@ -4908,7 +4929,7 @@ GUI Parameters usable in SynthDefs
 		//lastAutomation = nil,
 		//	loopcheck,
 		//lpcheck,
-
+		lockCheck,
 		//spreadcheck,
 		//spcheck,
 		//sp,
@@ -5419,7 +5440,7 @@ GUI Parameters usable in SynthDefs
 			["load auto", Color.black, Color.white],
 		])
 		.action_({
-			var title = "Select Automation directory", onSuccess, onFailure = nil,
+			var title = "Load: select automation directory", onSuccess, onFailure = nil,
 			preset = nil, bounds, dwin, textField, success = false;
 
 			bounds = Rect(100,300,300,30);
@@ -5450,10 +5471,8 @@ GUI Parameters usable in SynthDefs
 				this.loadNonAutomationData(textField.value);
 
 			};
+
 			dwin.front;
-
-
-
 
 		});
 
@@ -5538,6 +5557,9 @@ GUI Parameters usable in SynthDefs
 		};
 
 		//offset = 60;
+
+		lockCheck = CheckBox( win, Rect(163, 10, 80, 20), "Lock");
+		lockCheck.value = false;
 
 		hwInCheck = CheckBox( win, Rect(10, 30, 100, 20), "HW-in").action_({ | butt |
 			{this.hwncheck[currentsource].valueAction = butt.value;}.defer;
@@ -7003,9 +7025,11 @@ GUI Parameters usable in SynthDefs
 
 		win.view.mouseDownAction = { | view, x, y, modifiers, buttonNumber, clickCount |
 			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
-			if((mouseButton == 1) || (mouseButton == 2)) {
-				//dragStartScreen.x = y - halfwidth;
-				//dragStartScreen.y = x - halfwidth;
+			if(mouseButton == 1) {
+				if(lockCheck == 0) {
+					this.nfontes.do { | i | }
+				}
+			} {
 				this.nfontes.do { | i |
 					("" ++ i ++ " " ++ this.cartval[i]).postln;
 					("" ++ i ++ " " ++ this.spheval[i]).postln;
