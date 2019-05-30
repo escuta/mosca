@@ -85,11 +85,10 @@ Mosca {
 	<>streamdisk,
 	<>streambuf, // <>streamrate, // apparently unused
 	<>origine,
-	<>oxnumbox, <>oynumbox, <>oznumbox,
 	<>oxnumboxProxy, <>oynumboxProxy, <>oznumboxProxy,
-	<>pitch, <>pitchnumbox, <>pitchnumboxProxy,
-	<>roll, <>rollnumbox, <>rollnumboxProxy,
-	<>heading, <>headingnumbox, <>headingnumboxProxy,
+	<>pitch, <>pitchnumboxProxy,
+	<>roll, <>rollnumboxProxy,
+	<>heading, <>headingnumboxProxy,
 	// head tracking
 	<>trackarr, <>trackarr2, <>tracki, <>trackPort,
 	//<>track2arr, <>track2arr2, <>track2i,
@@ -100,11 +99,12 @@ Mosca {
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	<>angnumbox, <>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus, <>gbixfbus,
+	<>cbox, <>clev, <>angle, <>ncanais, <>testado,	<>gbus, <>gbfbus, <>ambixbus, <>gbixfbus,
 	<>nonambibus,
 	<>playEspacGrp, <>glbRevDecGrp,
 	<>level, <>lp, <>lib, <>libName, <>convert, <>dstrv, <>dstrvtypes, <>clsrv, <>clsRvtypes,
-	<>angslider, <>connumbox, <>cslider,
+	<>winCtl,
+	<>originCtl,
 	<>xbox, <>ybox, <>sombuf, <>sbus, <>soaRevBus, <>mbus,
 	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
 	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box, <>a4box, <>a5box,
@@ -114,9 +114,10 @@ Mosca {
 	//<>funcs, // apparently unused
 	//<>lastx, <>lasty, // apparently unused
 	<>zlev, <>znumbox, <>zslider,
-	<>volslider, <>volnumbox, <>glev, <>gslider, <>gnumbox, <>lslider,
-	<>lnumbox, <>llev, <>rnumbox, <>rslider, <>rlev, <>dlev,
-	<>dirnumbox, <>dirslider, <>dplev, <>dpslider, <>dopnumbox,
+	<>glev,
+	<>lslider,
+	<>llev, <>rlev, <>dlev,
+	<>dplev,
 	<>auxslider1, <>auxslider2, <>auxslider3, <>auxslider4, <>auxslider5,
 	<>auxbutton1, <>auxbutton2, <>auxbutton3, <>auxbutton4, <>auxbutton5,
 	<>aux1numbox, <>aux2numbox, <>aux3numbox, <>aux4numbox, <>aux5numbox,
@@ -147,18 +148,18 @@ Mosca {
 	<>scncheckProxy, <>dfcheckProxy,
 	<>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
-	<>grainrate, <>rateslider, <>ratenumbox, <>ratebox, <>rateboxProxy, // setable granular rate
-	<>winsize, <>winslider, <>winumbox, <>winbox, <>winboxProxy, // setable granular window size
-	<>winrand, <>randslider, <>randnumbox, <>randbox, <>randboxProxy,
+	<>grainrate, <>ratebox, <>rateboxProxy, // setable granular rate
+	<>winsize, <>winbox, <>winboxProxy, // setable granular window size
+	<>winrand, <>randbox, <>randboxProxy,
 	// setable granular window size random factor
 
-	<>rm, <>rmslider, <>rmnumbox, <>rmbox, <>rmboxProxy, // setable local room size
-	<>dm, <>dmslider, <>dmnumbox, <>dmbox, <>dmboxProxy, // setable local dampening
+	<>rm, <>rmbox, <>rmboxProxy, // setable local room size
+	<>dm, <>dmbox, <>dmboxProxy, // setable local dampening
 
-	<>clsrm, //<>clsrmslider,
-	<>clsrmnumbox, <>clsrmbox, <>clsrmboxProxy, // setable global room size
-	<>clsdm, //<>clsdmslider,
-	<>clsdmnumbox, <>clsdmbox, <>clsdmboxProxy, // setable global dampening
+	<>clsrm,
+	<>clsrmbox, <>clsrmboxProxy, // setable global room size
+	<>clsdm,
+	<>clsdmbox, <>clsdmboxProxy, // setable global dampening
 
 	<>masterlevProxy, <>masterslider,
 
@@ -178,7 +179,7 @@ Mosca {
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 	rirList, a12SpecPar, a4SpecPar, wxyzSpecPar, zSpecPar, wSpecPar,
 	spatList = #["Ambitools","HoaLib","ADTB","AmbIEM","ATK","BF-FMH","JoshGrain","VBAP"], // list of spat libs
-	lastSN3D = 3, // last SN3D lib index
+	lastN3D = 3, // last SN3D lib index
 	lastFUMA = 6, // last FUMA lib index
 	b2a, a2b,
 	blips,
@@ -192,7 +193,7 @@ Mosca {
 	vbap_buffer,
 	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
 	cart, spher, foa_a12_decoder_matrix,
-	width, halfwidth, height, halfheight, novoplot,
+	width, halfwidth, height, halfheight, novoplot, chanGui, libGui,
 	lastGui, guiInt,
 	lastAutomation = nil,
 	firstTime,
@@ -398,7 +399,7 @@ GUI Parameters usable in SynthDefs
 		mbus = Array.newClear(this.nfontes);
 		sbus = Array.newClear(this.nfontes);
 		ncanais = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
-		this.ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
+		ncan = Array.newClear(this.nfontes);  // 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		// note that ncan refers to # of channels in streamed sources.
 		// ncanais is related to sources read from file
 		this.busini = Array.newClear(this.nfontes); // initial bus # in streamed audio grouping
@@ -515,8 +516,8 @@ GUI Parameters usable in SynthDefs
 		clsdm = 0.5; // initialise close reverb dampening
 
 		this.nfontes.do { | i |
-			libName[i] = spatList[lastSN3D + 1]; // initialize original ATK encoding
-			lib[i] = lastSN3D + 1;
+			libName[i] = spatList[lastN3D + 1]; // initialize original ATK encoding
+			lib[i] = lastN3D + 1;
 			dstrv[i] = 0;
 			convert[i] = false;
 			angle[i] = 1.05;
@@ -547,6 +548,7 @@ GUI Parameters usable in SynthDefs
 			aux5[i] = 0;
 			this.streamdisk[i] = false;
 			this.ncan[i] = 0;
+			this.ncanais[i] = 0;
 			this.busini[i] = 0;
 			//sprite[i, 0] = 20;
 			//sprite[i, 1] = 0;
@@ -683,6 +685,7 @@ GUI Parameters usable in SynthDefs
 					{this.libbox[i].value = num.value}.defer;
 					if(i == currentsource) {
 						{libnumbox.value = num.value}.defer;
+						libGui.value;
 					};
 				};
 				if (this.ossialib.notNil) {
@@ -845,8 +848,8 @@ GUI Parameters usable in SynthDefs
 					{abox[i].value = num.value}.defer;
 					if(i == currentsource)
 					{
-						{angnumbox.value = num.value}.defer;
-						{angslider.value = num.value / pi}.defer;
+						{winCtl[0][7].value = num.value}.defer;
+						{winCtl[1][7].value = num.value / pi}.defer;
 					};
 				};
 				if (this.ossiaangle.notNil) {
@@ -867,8 +870,8 @@ GUI Parameters usable in SynthDefs
 
 					if(i == currentsource)
 					{
-						{volslider.value = num.value * 0.5}.defer;
-						{volnumbox.value = num.value}.defer;
+						{winCtl[1][0].value = num.value * 0.5}.defer;
+						{winCtl[0][0].value = num.value}.defer;
 					};
 				};
 				if (this.ossialev.notNil) {
@@ -889,8 +892,8 @@ GUI Parameters usable in SynthDefs
 					{gbox[i].value = num.value}.defer;
 					if (i == currentsource)
 					{
-						{gslider.value = num.value}.defer;
-						{gnumbox.value = num.value}.defer;
+						{winCtl[0][3].value = num.value}.defer;
+						{winCtl[0][3].value = num.value}.defer;
 					};
 				};
 				if (this.ossiaclsam.notNil) {
@@ -909,8 +912,8 @@ GUI Parameters usable in SynthDefs
 					lbox[i].value = num.value;
 					if (i == currentsource)
 					{
-						{lslider.value = num.value}.defer;
-						{lnumbox.value = num.value}.defer;
+						{winCtl[0][4].value = num.value}.defer;
+						{winCtl[0][4].value = num.value}.defer;
 					};
 				};
 				if (this.ossiadstam.notNil) {
@@ -928,8 +931,8 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					rmbox[i].value = num.value;
 					if (i == currentsource) {
-						{rmslider.value = num.value}.defer;
-						{rmnumbox.value = num.value}.defer;
+						{winCtl[0][5].value = num.value}.defer;
+						{winCtl[1][5].value = num.value}.defer;
 					};
 				};
 				if (this.ossiadstdel.notNil) {
@@ -947,8 +950,8 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					dmbox[i].value = num.value;
 					if (i == currentsource) {
-						{dmslider.value = num.value}.defer;
-						{dmnumbox.value = num.value}.defer;
+						{winCtl[0][6].value = num.value}.defer;
+						{winCtl[1][6].value = num.value}.defer;
 					};
 				};
 				if (this.ossiadstdec.notNil) {
@@ -966,8 +969,8 @@ GUI Parameters usable in SynthDefs
 					{rbox[i].value = num.value}.defer;
 					if(i == currentsource)
 					{
-						{rslider.value = (num.value + pi) / 2pi}.defer;
-						{rnumbox.value = num.value}.defer;
+						{winCtl[0][8].value = num.value}.defer;
+						{winCtl[1][8].value = (num.value + pi) / 2pi}.defer;
 					};
 				};
 				if (this.ossiarot.notNil) {
@@ -985,8 +988,8 @@ GUI Parameters usable in SynthDefs
 					{dbox[i].value = num.value}.defer;
 					if(i == currentsource)
 					{
-						{dirslider.value = num.value / halfPi}.defer;
-						{dirnumbox.value = num.value}.defer;
+						{winCtl[0][9].value = num.value}.defer;
+						{winCtl[1][9].value = num.value / halfPi}.defer;
 					};
 				};
 				if (this.ossiadir.notNil) {
@@ -1006,8 +1009,8 @@ GUI Parameters usable in SynthDefs
 					{cbox[i].value = num.value}.defer;
 					if (i == currentsource)
 					{
-						{cslider.value = num.value}.defer;
-						{connumbox.value = num.value}.defer;
+						{winCtl[0][2].value = num.value}.defer;
+						{winCtl[1][2].value = num.value}.defer;
 					};
 				};
 				if (this.ossiactr.notNil) {
@@ -1027,8 +1030,8 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					{dpbox[i].value = num.value}.defer;
 					if(i == currentsource) {
-						{dpslider.value = num.value}.defer;
-						{dopnumbox.value = num.value}.defer;
+						{winCtl[1][1].value = num.value}.defer;
+						{winCtl[0][1].value = num.value}.defer;
 					};
 				};
 				if (this.ossiadp.notNil) {
@@ -1330,6 +1333,7 @@ GUI Parameters usable in SynthDefs
 				};
 				if (guiflag) {
 					{this.ncanbox[i].value = num.value}.defer;
+					chanGui.value;
 				};
 			};
 
@@ -1352,8 +1356,8 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					ratebox[i].value = num.value;
 					if (i == currentsource) {
-						{rateslider.value = (num.value - 1) / 59}.defer;
-						{ratenumbox.value = num.value}.defer;
+						{winCtl[0][10].value = num.value}.defer;
+						{winCtl[1][10].value = (num.value - 1) / 59}.defer;
 					};
 				};
 				if (this.ossiarate.notNil) {
@@ -1371,8 +1375,8 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					winbox[i].value = num.value;
 					if (i == currentsource) {
-						{winslider.value = num.value * 5}.defer;
-						{winumbox.value = num.value}.defer;
+						{winCtl[0][11].value = num.value}.defer;
+						{winCtl[1][11].value = num.value * 5}.defer;
 					};
 				};
 				if (this.ossiawin.notNil) {
@@ -1390,8 +1394,8 @@ GUI Parameters usable in SynthDefs
 				if (guiflag) {
 					randbox[i].value = num.value;
 					if (i == currentsource) {
-						{randslider.value = num.value.sqrt}.defer;
-						{randnumbox.value = num.value}.defer;
+						{winCtl[0][12].value = num.value}.defer;
+						{winCtl[1][12].value = num.value.sqrt}.defer;
 					};
 				};
 				if (this.ossiawin.notNil) {
@@ -1424,6 +1428,7 @@ GUI Parameters usable in SynthDefs
 
 				if (guiflag) {
 					{this.tfield[i].value = path.value}.defer;
+					chanGui.value;
 				};
 				if (this.ossiaaud.notNil) {
 					this.ossiaaud[i].description = PathName(path.value).fileNameWithoutExtension;
@@ -1540,15 +1545,11 @@ GUI Parameters usable in SynthDefs
 
 
 		this.clsrmboxProxy.action_({ | num |
-
 			this.glbRevDecGrp.set(\room, num.value);
-
 			clsrm = num.value;
 
 			if (guiflag) {
-				//{clsrmslider.value = num.value}.defer;
-				{clsrmnumbox.value = num.value}.defer;
-				//clsrmbox.value = num.value;
+				{originCtl[0][0].value = num.value}.defer;
 			};
 			if (this.ossiaclsdel.notNil) {
 				if (this.ossiaclsdel.v != num.value) {
@@ -1565,9 +1566,7 @@ GUI Parameters usable in SynthDefs
 			clsdm = num.value;
 
 			if (guiflag) {
-				//{clsdmslider.value = num.value}.defer;
-				{clsdmnumbox.value = num.value}.defer;
-				//clsdmbox.value = num.value;
+				{originCtl[0][0].value = num.value}.defer;
 			};
 			if (this.ossiaclsdec.notNil) {
 				if (this.ossiaclsdec.v != num.value) {
@@ -1636,7 +1635,7 @@ GUI Parameters usable in SynthDefs
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
-				{this.oxnumbox.value = num.value;}.defer;
+				{originCtl[0][5].value = num.value;}.defer;
 			};
 		});
 
@@ -1701,7 +1700,7 @@ GUI Parameters usable in SynthDefs
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
-				{this.oynumbox.value = num.value;}.defer;
+				{originCtl[0][6].value = num.value;}.defer;
 			};
 		});
 
@@ -1766,7 +1765,7 @@ GUI Parameters usable in SynthDefs
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
-				{this.oznumbox.value = num.value;}.defer;
+				{originCtl[0][7].value = num.value;}.defer;
 			};
 		});
 
@@ -1827,7 +1826,7 @@ GUI Parameters usable in SynthDefs
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
-				{this.pitchnumbox.value = num.value;}.defer;
+				{originCtl[0][2].value = num.value;}.defer;
 			};
 		});
 
@@ -1887,7 +1886,7 @@ GUI Parameters usable in SynthDefs
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
-				{this.rollnumbox.value = num.value;}.defer;
+				{originCtl[0][3].value = num.value;}.defer;
 			};
 		});
 
@@ -1946,7 +1945,7 @@ GUI Parameters usable in SynthDefs
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
-				{this.headingnumbox.value = num.value;}.defer;
+				{originCtl[0][4].value = num.value;}.defer;
 			};
 		});
 
@@ -2554,8 +2553,8 @@ GUI Parameters usable in SynthDefs
 			spatList.do{ |item, i|
 
 				case
-				{ i <= lastSN3D } { out_type = 0 }
-				{ (i > lastSN3D) && (i <= lastFUMA) } { out_type = 1 }
+				{ i <= lastN3D } { out_type = 0 }
+				{ (i > lastN3D) && (i <= lastFUMA) } { out_type = 1 }
 				{ i > lastFUMA } { out_type = 2 };
 
 				SynthDef.new(item++"Chowning"++rev_type, {
@@ -3583,8 +3582,6 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-
-
 		watcher.play;
 
 		///////////////
@@ -3936,9 +3933,9 @@ GUI Parameters usable in SynthDefs
 					lib[i] = libboxProxy[i].value;
 
 					case
-					{ libboxProxy[i].value <= lastSN3D }
+					{ libboxProxy[i].value <= lastN3D }
 					{ convert[i] = convert_ambix; }
-					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+					{ (libboxProxy[i].value >= (lastN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 					{ convert[i] = convert_fuma; }
 					{ libboxProxy[i].value >= (lastFUMA + 1) }
 					{ convert[i] = convert_direct; };
@@ -4011,9 +4008,9 @@ GUI Parameters usable in SynthDefs
 					lib[i] = libboxProxy[i].value;
 
 					case
-					{ libboxProxy[i].value <= lastSN3D }
+					{ libboxProxy[i].value <= lastN3D }
 					{ convert[i] = convert_ambix; }
-					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+					{ (libboxProxy[i].value >= (lastN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 					{ convert[i] = convert_fuma; }
 					{ libboxProxy[i].value >= (lastFUMA + 1) }
 					{ convert[i] = convert_direct; };
@@ -4073,10 +4070,10 @@ GUI Parameters usable in SynthDefs
 					playingBF[i] = true;
 					("contains "++ncanais[i]++" channels").postln;
 
-					if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
+					if ((libboxProxy[i].value >= (lastN3D + 1)) ||
 						(dstrvboxProxy[i].value == 3)) {
-						libboxProxy[i].valueAction = lastSN3D + 1;
-						lib[i] = lastSN3D + 1;
+						libboxProxy[i].valueAction = lastN3D + 1;
+						lib[i] = lastN3D + 1;
 						convert[i] = convert_fuma;
 					} {
 						libboxProxy[i].valueAction = 0;
@@ -4158,9 +4155,9 @@ GUI Parameters usable in SynthDefs
 				lib[i] = libboxProxy[i].value;
 
 				case
-				{ libboxProxy[i].value <= lastSN3D }
+				{ libboxProxy[i].value <= lastN3D }
 				{ convert[i] = convert_ambix; }
-				{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+				{ (libboxProxy[i].value >= (lastN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 				{ convert[i] = convert_fuma; }
 				{ libboxProxy[i].value >= (lastFUMA + 1) }
 				{ convert[i] = convert_direct; };
@@ -4176,7 +4173,7 @@ GUI Parameters usable in SynthDefs
 							target:this.glbRevDecGrp).onFree({
 								this.convertor = nil;
 						});
-						};
+					};
 				};
 
 				if (speaker_array.isNil) {
@@ -4229,9 +4226,9 @@ GUI Parameters usable in SynthDefs
 				lib[i] = libboxProxy[i].value;
 
 				case
-				{ libboxProxy[i].value <= lastSN3D }
+				{ libboxProxy[i].value <= lastN3D }
 				{ convert[i] = convert_ambix; }
-				{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+				{ (libboxProxy[i].value >= (lastN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 				{ convert[i] = convert_fuma; }
 				{ libboxProxy[i].value >= (lastFUMA + 1) }
 				{ convert[i] = convert_direct; };
@@ -4291,10 +4288,10 @@ GUI Parameters usable in SynthDefs
 			{ this.ncanais[i] >= 4 } {
 				playingBF[i] = true;
 
-				if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
+				if ((libboxProxy[i].value >= (lastN3D + 1)) ||
 					(dstrvboxProxy[i].value == 3)) {
-					libboxProxy[i].valueAction = lastSN3D + 1;
-					lib[i] = lastSN3D + 1;
+					libboxProxy[i].valueAction = lastN3D + 1;
+					lib[i] = lastN3D + 1;
 					convert[i] = convert_fuma;
 				} {
 					libboxProxy[i].valueAction = 0;
@@ -4379,9 +4376,9 @@ GUI Parameters usable in SynthDefs
 					lib[i] = libboxProxy[i].value;
 
 					case
-					{ libboxProxy[i].value <= lastSN3D }
+					{ libboxProxy[i].value <= lastN3D }
 					{ convert[i] = convert_ambix; }
-					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+					{ (libboxProxy[i].value >= (lastN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 					{ convert[i] = convert_fuma; }
 					{ libboxProxy[i].value >= (lastFUMA + 1) }
 					{ convert[i] = convert_direct; };
@@ -4462,9 +4459,9 @@ GUI Parameters usable in SynthDefs
 					lib[i] = libboxProxy[i].value;
 
 					case
-					{ libboxProxy[i].value <= lastSN3D }
+					{ libboxProxy[i].value <= lastN3D }
 					{ convert[i] = convert_ambix; }
-					{ (libboxProxy[i].value >= (lastSN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
+					{ (libboxProxy[i].value >= (lastN3D + 1)) && (libboxProxy[i].value <= lastFUMA) }
 					{ convert[i] = convert_fuma; }
 					{ libboxProxy[i].value >= (lastFUMA + 1) }
 					{ convert[i] = convert_direct; };
@@ -4523,10 +4520,10 @@ GUI Parameters usable in SynthDefs
 				}
 				{ this.ncan[i] >= 4 } {
 
-					if ((libboxProxy[i].value >= (lastSN3D + 1)) ||
+					if ((libboxProxy[i].value >= (lastN3D + 1)) ||
 						(dstrvboxProxy[i].value == 3)) {
-						libboxProxy[i].valueAction = lastSN3D + 1;
-						lib[i] = lastSN3D + 1;
+						libboxProxy[i].valueAction = lastN3D + 1;
+						lib[i] = lastN3D + 1;
 						convert[i] = convert_fuma;
 					} {
 						libboxProxy[i].valueAction = 0;
@@ -4872,10 +4869,11 @@ GUI Parameters usable in SynthDefs
 		waux,
 		dialView,
 		autoView,
-		orientView,
+		originView,
 		cnumbox,
 		textbuf,
-		info,
+		sourceName,
+		sourceList,
 		baux,
 		bsalvar,
 		bcarregar,
@@ -4929,7 +4927,6 @@ GUI Parameters usable in SynthDefs
 
 
 		novoplot = { |dirrect = false|
-
 			period = Main.elapsedTime - lastGui;
 			if (period > guiInt) {
 				lastGui =  Main.elapsedTime;
@@ -4939,6 +4936,127 @@ GUI Parameters usable in SynthDefs
 					{ znumbox.value = this.zlev[currentsource]; }.defer;
 					{ win.refresh; }.defer;
 				}.defer(guiInt);
+			};
+		};
+
+		chanGui = {
+			var selector;
+
+			if (this.hwncheckProxy[currentsource].value.not
+				&& this.scncheckProxy[currentsource].value.not) {
+				selector = ncanais[currentsource];
+			} {
+				selector = ncan[currentsource];
+			};
+
+			case
+			{ (selector.value < 2) || (selector.value == 3) }
+			{
+				winCtl[0][8].visible = false;
+				winCtl[1][8].visible = false;
+				winCtl[2][8].visible = false;
+				winCtl[0][9].visible = false;
+				winCtl[1][9].visible = false;
+				winCtl[2][9].visible = false;
+				winCtl[0][7].visible = false;
+				winCtl[1][7].visible = false;
+				winCtl[2][7].visible = false;
+			}
+			{ selector.value == 2 }
+			{
+				winCtl[0][8].visible = false;
+				winCtl[1][8].visible = false;
+				winCtl[2][8].visible = false;
+				winCtl[0][9].visible = false;
+				winCtl[1][9].visible = false;
+				winCtl[2][9].visible = false;
+				winCtl[0][7].visible = true;
+				winCtl[1][7].visible = true;
+				winCtl[2][7].visible = true;
+				winCtl[0][7].value = angle[currentsource];
+				winCtl[1][7].value = angle[currentsource] / pi;
+			}
+			{ selector.value >= 4 }
+			{
+				winCtl[0][7].visible = false;
+				winCtl[1][7].visible = false;
+				winCtl[2][7].visible = false;
+				winCtl[0][8].visible = true;
+				winCtl[1][8].visible = true;
+				winCtl[2][8].visible = true;
+				winCtl[0][9].visible = true;
+				winCtl[1][9].visible = true;
+				winCtl[2][9].visible = true;
+				winCtl[0][8].value = rlev[currentsource];
+				winCtl[1][8].value = (rlev[currentsource] + pi) / 2pi;
+				winCtl[0][9].value = dlev[currentsource];
+				winCtl[1][9].value = dlev[currentsource] / halfPi;
+			};
+		};
+
+		libGui = {
+			case
+			{ libnumbox.value == (lastN3D + 1) }
+			{
+				winCtl[0][10].visible = false;
+				winCtl[1][10].visible = false;
+				winCtl[2][10].visible = false;
+				winCtl[0][11].visible = false;
+				winCtl[1][11].visible = false;
+				winCtl[2][11].visible = false;
+				winCtl[0][12].visible = false;
+				winCtl[1][12].visible = false;
+				winCtl[2][12].visible = false;
+
+				spreadcheck.visible = true;
+				diffusecheck.visible = true;
+				if(sp[currentsource] == 1) {
+					spreadcheck.value = true
+				} {
+					spreadcheck.value = false
+				};
+				if(df[currentsource] == 1) {
+					diffusecheck.value = true
+				}{
+					diffusecheck.value = false
+				};
+			}
+			{ libnumbox.value == lastFUMA }
+			{
+				spreadcheck.visible = false;
+				diffusecheck.visible = false;
+
+				winCtl[0][10].visible = true;
+				winCtl[1][10].visible = true;
+				winCtl[2][10].visible = true;
+				winCtl[0][11].visible = true;
+				winCtl[1][11].visible = true;
+				winCtl[2][11].visible = true;
+				winCtl[0][12].visible = true;
+				winCtl[1][12].visible = true;
+				winCtl[2][12].visible = true;
+
+				winCtl[0][10].value = grainrate[currentsource];
+				winCtl[1][10].value = (grainrate[currentsource] - 1) / 59;
+				winCtl[0][11].value = winsize[currentsource];
+				winCtl[1][11].value = winsize[currentsource] * 5;
+				winCtl[0][12].value = winrand[currentsource];
+				winCtl[1][12].value = winrand[currentsource].sqrt;
+			}
+			{ (libnumbox.value != (lastN3D + 1)) && (libnumbox.value != lastFUMA) }
+			{
+				winCtl[0][10].visible = false;
+				winCtl[1][10].visible = false;
+				winCtl[2][10].visible = false;
+				winCtl[0][11].visible = false;
+				winCtl[1][11].visible = false;
+				winCtl[2][11].visible = false;
+				winCtl[0][12].visible = false;
+				winCtl[1][12].visible = false;
+				winCtl[2][12].visible = false;
+
+				spreadcheck.visible = false;
+				diffusecheck.visible = false;
 			};
 		};
 
@@ -5038,7 +5156,6 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-
 		auxslider1 = Slider.new(waux, Rect(40, 20, 20, 160));
 		auxslider2 = Slider.new(waux, Rect(80, 20, 20, 160));
 		auxslider3 = Slider.new(waux, Rect(120, 20, 20, 160));
@@ -5065,7 +5182,6 @@ GUI Parameters usable in SynthDefs
 
 		aux1numbox.action = { | num |
 			a1box[currentsource].valueAction = num.value;
-			//this.aux1[currentsource] = num.value;
 			auxslider1.value = num.value;
 		};
 
@@ -5090,11 +5206,12 @@ GUI Parameters usable in SynthDefs
 			aux5numbox.value = num.value;
 		};
 
-		info = Array.fill(10, { StaticText(win) });
-		info[0].bounds = Rect(163, 10, 240, 20);
-		info[0].string = "Source 1";
+		winCtl = Array.newClear(3); // [0]numboxes, [1]sliders, [2]texts
+		winCtl[0] = Array.newClear(13);
+		winCtl[1] = Array.newClear(13);
+		winCtl[2] = Array.newClear(13);
 
-		btestar = Button(win,Rect(10, 10, 150, 20))
+		btestar = Button(win,Rect(10, 90, 150, 20))
 		.states_([
 			["audition", Color.black, Color.green],
 			["stop", Color.white, Color.red]
@@ -5263,10 +5380,8 @@ GUI Parameters usable in SynthDefs
 
 				control.save(textField.value);
 				lastAutomation = textField.value;
-
 			};
 			dwin.front;
-
 		});
 
 		// load automation - adapted from chooseDirectoryDialog in AutomationGui.sc
@@ -5305,11 +5420,8 @@ GUI Parameters usable in SynthDefs
 				//control.seek;
 				lastAutomation = textField.value;
 				this.loadNonAutomationData(textField.value);
-
 			};
-
 			dwin.front;
-
 		});
 
 
@@ -5319,54 +5431,67 @@ GUI Parameters usable in SynthDefs
 			itensdemenu[i] = "Source " ++ (i + 1).asString;
 		};
 
+		sourceName = StaticText(win, Rect(10, 10, 150, 20)).string = "Source 1";
+
 		sourceSelect = { | item |
 			currentsource = item.value;
-			info[0].string = itensdemenu[currentsource];
+			sourceName.string = itensdemenu[currentsource];
+
+			chanGui.value;
 
 			libnumbox.value = this.libboxProxy[currentsource].value;
 
 			dstReverbox.value = this.dstrvboxProxy[currentsource].value;
+			if(this.dstrvboxProxy[currentsource].value == 0) {
+				winCtl[2][4].visible = false;
+				winCtl[1][4].visible = false;
+				winCtl[0][4].visible = false;
+				winCtl[2][5].visible = false;
+				winCtl[1][5].visible = false;
+				winCtl[0][5].visible = false;
+				winCtl[2][6].visible = false;
+				winCtl[1][6].visible = false;
+				winCtl[0][6].visible = false;
+			} {
+				winCtl[2][4].visible = true;
+				winCtl[1][4].visible = true;
+				winCtl[0][4].visible = true;
+				winCtl[2][5].visible = true;
+				winCtl[1][5].visible = true;
+				winCtl[0][5].visible = true;
+				winCtl[2][6].visible = true;
+				winCtl[1][6].visible = true;
+				winCtl[0][6].visible = true;
+				winCtl[0][4].value = llev[currentsource];
+				winCtl[1][4].value = llev[currentsource];
+				winCtl[0][5].value = rm[currentsource];
+				winCtl[1][5].value = rm[currentsource];
+				winCtl[0][6].value = dm[currentsource];
+				winCtl[1][6].value = dm[currentsource];
+			};
 
 			if(lp[currentsource] == 1){loopcheck.value = true}{loopcheck.value = false};
 
-			if(sp[currentsource] == 1){spreadcheck.value = true}{spreadcheck.value = false};
-			if(df[currentsource] == 1){diffusecheck.value = true}{diffusecheck.value = false};
+			libGui.value;
 
 			if(hwn[currentsource] == 1){hwInCheck.value = true}{hwInCheck.value = false};
 			if(scn[currentsource] == 1){scInCheck.value = true}{scInCheck.value = false};
 
-			angnumbox.value = angle[currentsource];
-			angslider.value = angle[currentsource] / pi;
-			volnumbox.value = level[currentsource];
-			dopnumbox.value = dplev[currentsource];
-			volslider.value = level[currentsource] * 0.5;
-			gnumbox.value = glev[currentsource];
-			gslider.value = glev[currentsource];
-			lnumbox.value = llev[currentsource];
-			lslider.value = llev[currentsource];
-			rmslider.value = rm[currentsource];
-			rmnumbox.value = rm[currentsource];
-			dmslider.value = dm[currentsource];
-			dmnumbox.value = dm[currentsource];
-			rslider.value = (rlev[currentsource] + pi) / 2pi;
-			rnumbox.value = rlev[currentsource];
-			dirslider.value = dlev[currentsource] / (pi * 0.5);
-			dirnumbox.value = dlev[currentsource];
-			cslider.value = clev[currentsource];
-			zslider.value = (zlev[currentsource] + 1) * 0.5;
-			znumbox.value = zlev[currentsource];
-			rateslider.value = (grainrate[currentsource] - 1) / 59;
-			ratenumbox.value = grainrate[currentsource];
-			winslider.value = winsize[currentsource] * 5;
-			winumbox.value = winsize[currentsource];
-			randslider.value = winrand[currentsource];
-			randnumbox.value = winrand[currentsource];
-
-			dpslider.value = dplev[currentsource];
-			connumbox.value = clev[currentsource];
+			winCtl[0][0].value = level[currentsource];
+			winCtl[1][0].value = level[currentsource] * 0.5;
+			winCtl[0][1].value = dplev[currentsource];
+			winCtl[1][1].value = dplev[currentsource];
+			winCtl[1][2].value = clev[currentsource];
+			winCtl[1][2].value = clev[currentsource];
+			winCtl[0][3].value = glev[currentsource];
+			winCtl[1][3].value = glev[currentsource];
 
 			ncannumbox.value = this.ncan[currentsource];
 			busininumbox.value = this.busini[currentsource];
+
+			zslider.value = (zlev[currentsource] + 1) * 0.5;
+			znumbox.value = zlev[currentsource];
+
 
 			auxslider1.value = this.aux1[currentsource];
 			aux1numbox.value = this.aux1[currentsource];
@@ -5445,14 +5570,14 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 90, 240, 20));
+		textbuf = StaticText(win, Rect(163, 110, 240, 20));
 		textbuf.string = "Library";
-		libnumbox = PopUpMenu( win, Rect(10, 90, 150, 20));
+		libnumbox = PopUpMenu( win, Rect(10, 110, 150, 20));
 		libnumbox.items = spatList;
 		libnumbox.action_({ | num |
 			{this.libbox[currentsource].valueAction = num.value;}.defer;
 		});
-		libnumbox.value = lastSN3D + 1;
+		libnumbox.value = lastN3D + 1;
 
 
 		/////////////////////////////////////////////////////////
@@ -5495,109 +5620,114 @@ GUI Parameters usable in SynthDefs
 
 		////////////////////////////// Orientation //////////////
 
-		orientView = UserView(win, Rect(width - 285, height - 85, 285, 100));
 
-		this.pitchnumbox = NumberBox(orientView, Rect(240, 20, 40, 20));
-		pitchnumbox.align = \center;
-		pitchnumbox.clipHi = pi;
-		pitchnumbox.clipLo = -pi;
-		pitchnumbox.step_(0.01);
-		pitchnumbox.scroll_step_(0.01);
+		originView = UserView(win, Rect(width - 285, height - 85, 285, 100));
 
-		this.rollnumbox = NumberBox(orientView, Rect(240, 40, 40, 20));
-		rollnumbox.align = \center;
-		rollnumbox.clipHi = pi;
-		rollnumbox.clipLo = -pi;
-		rollnumbox.step_(0.01);
-		rollnumbox.scroll_step_(0.01);
+		originCtl = Array.newClear(2); // [0]numboxes, [1]texts
+		originCtl[0] = Array.newClear(8);
+		originCtl[1] = Array.newClear(8);
 
-		this.headingnumbox = NumberBox(orientView, Rect(240, 60, 40, 20));
-		headingnumbox.align = \center;
-		headingnumbox.clipHi = pi;
-		headingnumbox.clipLo = -pi;
-		headingnumbox.step_(0.01);
-		headingnumbox.scroll_step_(0.01);
+		originCtl[0][2] = NumberBox(originView, Rect(240, 20, 40, 20));
+		originCtl[0][2].align = \center;
+		originCtl[0][2].clipHi = pi;
+		originCtl[0][2].clipLo = -pi;
+		originCtl[0][2].step_(0.01);
+		originCtl[0][2].scroll_step_(0.01);
+
+		originCtl[0][3] = NumberBox(originView, Rect(240, 40, 40, 20));
+		originCtl[0][3].align = \center;
+		originCtl[0][3].clipHi = pi;
+		originCtl[0][3].clipLo = -pi;
+		originCtl[0][3].step_(0.01);
+		originCtl[0][3].scroll_step_(0.01);
+
+		originCtl[0][4] = NumberBox(originView, Rect(240, 60, 40, 20));
+		originCtl[0][4].align = \center;
+		originCtl[0][4].clipHi = pi;
+		originCtl[0][4].clipLo = -pi;
+		originCtl[0][4].step_(0.01);
+		originCtl[0][4].scroll_step_(0.01);
 
 
-		this.pitchnumbox.action = { | num |
+		originCtl[0][2].action = { | num |
 			this.pitchnumboxProxy.valueAction = num.value;
 		};
 
-		this.rollnumbox.action = { | num |
+		originCtl[0][3].action = { | num |
 			this.rollnumboxProxy.valueAction = num.value;
 		};
 
-		this.headingnumbox.action = { | num |
+		originCtl[0][4].action = { | num |
 			this.headingnumboxProxy.valueAction = num.value;
 		};
 
-		textbuf = StaticText(orientView, Rect(225, 20, 12, 22));
-		textbuf.string = "P:";
-		textbuf = StaticText(orientView, Rect(225, 40, 12, 22));
-		textbuf.string = "R:";
-		textbuf = StaticText(orientView, Rect(225, 60, 12, 22));
-		textbuf.string = "H:";
+		originCtl[1][2] = StaticText(originView, Rect(225, 20, 12, 22));
+		originCtl[1][2].string = "P:";
+		originCtl[1][3] = StaticText(originView, Rect(225, 40, 12, 22));
+		originCtl[1][3].string = "R:";
+		originCtl[1][4] = StaticText(originView, Rect(225, 60, 12, 22));
+		originCtl[1][4].string = "H:";
 
-		textbuf = StaticText(orientView, Rect(237, 0, 45, 20));
+		textbuf = StaticText(originView, Rect(237, 0, 45, 20));
 		textbuf.string = "Orient.";
 
-		this.oxnumbox = NumberBox(orientView, Rect(180, 20, 40, 20));
-		oxnumbox.align = \center;
-		oxnumbox.step_(0.01);
-		oxnumbox.scroll_step_(0.01);
+		originCtl[0][5] = NumberBox(originView, Rect(180, 20, 40, 20));
+		originCtl[0][5].align = \center;
+		originCtl[0][5].step_(0.01);
+		originCtl[0][5].scroll_step_(0.01);
 
-		this.oynumbox = NumberBox(orientView, Rect(180, 40, 40, 20));
-		oynumbox.align = \center;
-		oynumbox.step_(0.01);
-		oynumbox.scroll_step_(0.01);
+		originCtl[0][6] = NumberBox(originView, Rect(180, 40, 40, 20));
+		originCtl[0][6].align = \center;
+		originCtl[0][6].step_(0.01);
+		originCtl[0][6].scroll_step_(0.01);
 
-		this.oznumbox = NumberBox(orientView, Rect(180, 60, 40, 20));
-		oznumbox.align = \center;
-		oznumbox.step_(0.01);
-		oznumbox.scroll_step_(0.01);
+		originCtl[0][7] = NumberBox(originView, Rect(180, 60, 40, 20));
+		originCtl[0][7].align = \center;
+		originCtl[0][7].step_(0.01);
+		originCtl[0][7].scroll_step_(0.01);
 
-		this.oxnumbox.action = { | num |
+		originCtl[0][5].action = { | num |
 			this.oxnumboxProxy.valueAction = num.value;
 		};
 
-		this.oynumbox.action = { | num |
+		originCtl[0][6].action = { | num |
 			this.oynumboxProxy.valueAction = num.value;
 		};
 
-		this.oznumbox.action = { | num |
+		originCtl[0][7].action = { | num |
 			this.oznumboxProxy.valueAction = num.value;
 		};
 
-		textbuf = StaticText(orientView, Rect(165, 20, 12, 22));
-		textbuf.string = "X:";
-		textbuf = StaticText(orientView, Rect(165, 40, 12, 22));
-		textbuf.string = "Y:";
-		textbuf = StaticText(orientView, Rect(165, 60, 12, 22));
-		textbuf.string = "Z:";
+		originCtl[1][5] = StaticText(originView, Rect(165, 20, 12, 22));
+		originCtl[1][5].string = "X:";
+		originCtl[1][6] = StaticText(originView, Rect(165, 40, 12, 22));
+		originCtl[1][6].string = "Y:";
+		originCtl[1][7] = StaticText(originView, Rect(165, 60, 12, 22));
+		originCtl[1][7].string = "Z:";
 
-		textbuf = StaticText(orientView, Rect(175, 0, 47, 20));
+		textbuf = StaticText(originView, Rect(175, 0, 47, 20));
 		textbuf.string = "Origine";
 
 
 		////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 110, 50, 20));
-		textbuf.string = "Level";
-		volnumbox = NumberBox(win, Rect(10, 110, 40, 20));
-		volnumbox.value = 1;
-		volnumbox.clipHi = 2;
-		volnumbox.clipLo = 0;
-		volnumbox.step_(0.01);
-		volnumbox.scroll_step_(0.01);
-		volnumbox.align = \center;
-		volnumbox.action = { | num |
+		winCtl[2][0] = StaticText(win, Rect(163, 130, 50, 20));
+		winCtl[2][0].string = "Level";
+		winCtl[0][0] = NumberBox(win, Rect(10, 130, 40, 20));
+		winCtl[0][0].value = 1;
+		winCtl[0][0].clipHi = 2;
+		winCtl[0][0].clipLo = 0;
+		winCtl[0][0].step_(0.01);
+		winCtl[0][0].scroll_step_(0.01);
+		winCtl[0][0].align = \center;
+		winCtl[0][0].action = { | num |
 			{vbox[currentsource].valueAction = num.value;}.defer;
-
 		};
-		volslider = Slider.new(win, Rect(50, 110, 110, 20));
-		volslider.value = 0.5;
-		volslider.action = { | num |
+
+		winCtl[1][0] = Slider(win, Rect(50, 130, 110, 20));
+		winCtl[1][0].value = 0.5;
+		winCtl[1][0].action = { | num |
 			{vbox[currentsource].valueAction = num.value * 2;}.defer;
 		};
 
@@ -5605,61 +5735,56 @@ GUI Parameters usable in SynthDefs
 		///////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 130, 120, 20)).string = "Doppler amount";
-		dopnumbox = NumberBox(win, Rect(10, 130, 40, 20));
-		dopnumbox.value = 0;
-		dopnumbox.clipHi = 1;
-		dopnumbox.clipLo = 0;
-		dopnumbox.step_(0.01);
-		dopnumbox.scroll_step_(0.01);
-		dopnumbox.align = \center;
-		dopnumbox.action = { | num |
+		winCtl[2][1] = StaticText(win, Rect(163, 150, 120, 20));
+		winCtl[2][1].string = "Doppler amount";
+		winCtl[0][1] = NumberBox(win, Rect(10, 150, 40, 20));
+		winCtl[0][1].value = 0;
+		winCtl[0][1].clipHi = 1;
+		winCtl[0][1].clipLo = 0;
+		winCtl[0][1].step_(0.01);
+		winCtl[0][1].scroll_step_(0.01);
+		winCtl[0][1].align = \center;
+		winCtl[0][1].action = { | num |
 			{dpbox[currentsource].valueAction = num.value;}.defer;
-
 		};
-		// stepsize?
-		dpslider = Slider.new(win, Rect(50, 130, 110, 20));
-		dpslider.value = 0;
-		dpslider.action = { | num |
+
+		winCtl[1][1] = Slider(win, Rect(50, 150, 110, 20));
+		winCtl[1][1].value = 0;
+		winCtl[1][1].action = { | num |
 			{dpbox[currentsource].valueAction = num.value;}.defer;
-			{dopnumbox.value = num.value;}.defer;
 		};
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 150, 170, 20));
-		textbuf.string = "Contraction";
-		connumbox = NumberBox(win, Rect(10, 150, 40, 20));
-		connumbox.value = 1;
-		connumbox.clipHi = 1;
-		connumbox.clipLo = 0;
-		connumbox.step_(0.01);
-		connumbox.scroll_step_(0.01);
-		connumbox.align = \center;
-		connumbox.action = { | num |
+		winCtl[2][2] = StaticText(win, Rect(163, 170, 170, 20));
+		winCtl[2][2].string = "Contraction";
+		winCtl[0][2] = NumberBox(win, Rect(10, 170, 40, 20));
+		winCtl[0][2].value = 1;
+		winCtl[0][2].clipHi = 1;
+		winCtl[0][2].clipLo = 0;
+		winCtl[0][2].step_(0.01);
+		winCtl[0][2].scroll_step_(0.01);
+		winCtl[0][2].align = \center;
+		winCtl[0][2].action = { | num |
 			{cbox[currentsource].valueAction = num.value;}.defer;
-
-		};
-		// stepsize?
-		cslider = Slider.new(win, Rect(50, 150, 110, 20));
-		cslider.value = 1;
-		cslider.action = { | num |
-			{cbox[currentsource].valueAction = num.value;}.defer;
-			{connumbox.value = num.value;}.defer;
 		};
 
+		winCtl[1][2] = Slider.new(win, Rect(50, 170, 110, 20));
+		winCtl[1][2].value = 1;
+		winCtl[1][2].action = { | num |
+			{cbox[currentsource].valueAction = num.value;}.defer;
+		};
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-
-		textbuf = StaticText(orientView, Rect(5, 0, 20, 20));
+		textbuf = StaticText(originView, Rect(5, 0, 20, 20));
 		textbuf.string = "M";
 
-		masterslider = Slider.new(orientView, Rect(0, 20, 20, 60));
+		masterslider = Slider.new(originView, Rect(0, 20, 20, 60));
 		masterslider.orientation(\vertical);
 		masterslider.value = 0.5;
 		masterslider.action = { | num |
@@ -5669,9 +5794,9 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(orientView, Rect(35, 0, 150, 20));
+		textbuf = StaticText(originView, Rect(35, 0, 150, 20));
 		textbuf.string = "Cls. Reverb";
-		clsReverbox = PopUpMenu(orientView, Rect(20, 20, 130, 20));
+		clsReverbox = PopUpMenu(originView, Rect(20, 20, 130, 20));
 		clsReverbox.items = ["no-reverb",
 			"freeverb",
 			"allpass"] ++ rirList;
@@ -5679,65 +5804,65 @@ GUI Parameters usable in SynthDefs
 
 		clsReverbox.action_({ | num |
 			this.clsrvboxProxy.valueAction = num.value;
+			if (num.value == 0) {
+				winCtl[0][3].visible = false;
+				winCtl[1][3].visible = false;
+				winCtl[2][3].visible = false;
+
+				originCtl[0][0].visible = false;
+				originCtl[1][0].visible = false;
+				originCtl[0][1].visible = false;
+				originCtl[1][1].visible = false;
+			} {
+				winCtl[0][3].visible = true;
+				winCtl[1][3].visible = true;
+				winCtl[2][3].visible = true;
+
+				originCtl[0][0].visible = true;
+				originCtl[1][0].visible = true;
+				originCtl[0][1].visible = true;
+				originCtl[1][1].visible = true;
+			};
 		});
 		clsReverbox.value = 0;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
-		info[1].bounds = Rect(163, 170, 150, 20);
-		info[1].string = "Cls. amount";
-		gnumbox = NumberBox(win, Rect(10, 170, 40, 20));
-		gnumbox.value = 0;
-		gnumbox.clipHi = 1;
-		gnumbox.clipLo = 0;
-		gnumbox.step_(0.01);
-		gnumbox.scroll_step_(0.01);
-		gnumbox.align = \center;
-		gnumbox.action = { | num |
-			{gbox[currentsource].valueAction = num.value;}.defer;
-		};
 
-		gslider = Slider.new(win, Rect(50, 170, 110, 20));
-		gslider.value = 0;
-		gslider.action = { | num |
-			{gbox[currentsource].valueAction = num.value;}.defer;
-		};
-
-
-		/////////////////////////////////////////////////////////////////////////
-
-
-		textbuf = StaticText(orientView, Rect(63, 40, 100, 20));
-		textbuf.string = "room/delay";
-		clsrmnumbox = NumberBox(orientView, Rect(20, 40, 40, 20));
-		clsrmnumbox.value = 0.5;
-		clsrmnumbox.clipHi = 1;
-		clsrmnumbox.clipLo = 0;
-		clsrmnumbox.step_(0.01);
-		clsrmnumbox.scroll_step_(0.01);
-		clsrmnumbox.align = \center;
-		clsrmnumbox.action = { | num |
+		originCtl[0][0] = StaticText(originView, Rect(63, 40, 100, 20));
+		originCtl[0][0].string = "room/delay";
+		originCtl[0][0].visible = false;
+		originCtl[1][0] = NumberBox(originView, Rect(20, 40, 40, 20));
+		originCtl[1][0].value = 0.5;
+		originCtl[1][0].clipHi = 1;
+		originCtl[1][0].clipLo = 0;
+		originCtl[1][0].step_(0.01);
+		originCtl[1][0].scroll_step_(0.01);
+		originCtl[1][0].align = \center;
+		originCtl[1][0].action = { | num |
 			{clsrmboxProxy.valueAction = num.value;}.defer;
-
 		};
+		originCtl[1][0].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(orientView, Rect(63, 60, 100, 20));
-		textbuf.string = "damp/decay";
-		clsdmnumbox = NumberBox(orientView, Rect(20, 60, 40, 20));
-		clsdmnumbox.value = 0.5;
-		clsdmnumbox.clipHi = 1;
-		clsdmnumbox.clipLo = 0;
-		clsdmnumbox.step_(0.01);
-		clsdmnumbox.scroll_step_(0.01);
-		clsdmnumbox.align = \center;
-		clsdmnumbox.action = { | num |
+		originCtl[0][1] = StaticText(originView, Rect(63, 60, 100, 20));
+		originCtl[0][1].string = "damp/decay";
+		originCtl[0][1].visible = false;
+		originCtl[1][1] = NumberBox(originView, Rect(20, 60, 40, 20));
+		originCtl[1][1].value = 0.5;
+		originCtl[1][1].clipHi = 1;
+		originCtl[1][1].clipLo = 0;
+		originCtl[1][1].step_(0.01);
+		originCtl[1][1].scroll_step_(0.01);
+		originCtl[1][1].align = \center;
+		originCtl[1][1].action = { | num |
 			{clsdmboxProxy.valueAction = num.value;}.defer;
 		};
+		originCtl[1][1].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
@@ -5751,6 +5876,27 @@ GUI Parameters usable in SynthDefs
 
 		dstReverbox.action_({ | num |
 			{this.dstrvbox[currentsource].valueAction = num.value;}.defer;
+			if(num.value == 0) {
+				winCtl[2][4].visible = false;
+				winCtl[1][4].visible = false;
+				winCtl[0][4].visible = false;
+				winCtl[2][5].visible = false;
+				winCtl[1][5].visible = false;
+				winCtl[0][5].visible = false;
+				winCtl[2][6].visible = false;
+				winCtl[1][6].visible = false;
+				winCtl[0][6].visible = false;
+			} {
+				winCtl[2][4].visible = true;
+				winCtl[1][4].visible = true;
+				winCtl[0][4].visible = true;
+				winCtl[2][5].visible = true;
+				winCtl[1][5].visible = true;
+				winCtl[0][5].visible = true;
+				winCtl[2][6].visible = true;
+				winCtl[1][6].visible = true;
+				winCtl[0][6].visible = true;
+			};
 		});
 		dstReverbox.value = 0;
 
@@ -5758,160 +5904,196 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 210, 150, 20));
-		textbuf.string = "Dst. amount";
-		lnumbox = NumberBox(win, Rect(10, 210, 40, 20));
-		lnumbox.value = 0;
-		lnumbox.clipHi = 1;
-		lnumbox.clipLo = 0;
-		lnumbox.step_(0.01);
-		lnumbox.scroll_step_(0.01);
-		lnumbox.align = \center;
-		lnumbox.action = { | num |
+		winCtl[2][4] = StaticText(win, Rect(163, 210, 150, 20));
+		winCtl[2][4].string = "Dst. amount";
+		winCtl[2][4].visible = false;
+		winCtl[0][4] = NumberBox(win, Rect(10, 210, 40, 20));
+		winCtl[0][4].value = 0;
+		winCtl[0][4].clipHi = 1;
+		winCtl[0][4].clipLo = 0;
+		winCtl[0][4].step_(0.01);
+		winCtl[0][4].scroll_step_(0.01);
+		winCtl[0][4].align = \center;
+		winCtl[0][4].action = { | num |
 			{lbox[currentsource].valueAction = num.value;}.defer;
 		};
+		winCtl[0][4].visible = false;
 
-		// stepsize?
-		lslider = Slider.new(win, Rect(50, 210, 110, 20));
-		lslider.value = 0;
-		lslider.action = { | num |
+		winCtl[1][4] = Slider(win, Rect(50, 210, 110, 20));
+		winCtl[1][4].value = 0;
+		winCtl[1][4].action = { | num |
 			{lbox[currentsource].valueAction = num.value;}.defer;
 		};
+		winCtl[1][4].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 230, 150, 20));
-		textbuf.string = "Dst. room/delay";
-		rmnumbox = NumberBox(win, Rect(10, 230, 40, 20));
-		rmnumbox.value = 0.5;
-		rmnumbox.clipHi = 1;
-		rmnumbox.clipLo = 0;
-		rmnumbox.step_(0.01);
-		rmnumbox.scroll_step_(0.01);
-		rmnumbox.align = \center;
-		rmnumbox.action = { | num |
-			{rmbox[currentsource].valueAction = num.value;}.defer;
-
-		};
-		// stepsize?
-		rmslider = Slider.new(win, Rect(50, 230, 110, 20));
-		rmslider.value = 0.5;
-		rmslider.action = { | num |
+		winCtl[2][5] = StaticText(win, Rect(163, 230, 150, 20));
+		winCtl[2][5].string = "Dst. room/delay";
+		winCtl[2][5].visible = false;
+		winCtl[0][5] = NumberBox(win, Rect(10, 230, 40, 20));
+		winCtl[0][5].value = 0.5;
+		winCtl[0][5].clipHi = 1;
+		winCtl[0][5].clipLo = 0;
+		winCtl[0][5].step_(0.01);
+		winCtl[0][5].scroll_step_(0.01);
+		winCtl[0][5].align = \center;
+		winCtl[0][5].action = { | num |
 			{rmbox[currentsource].valueAction = num.value;}.defer;
 		};
+		winCtl[0][5].visible = false;
+
+		winCtl[1][5] = Slider.new(win, Rect(50, 230, 110, 20));
+		winCtl[1][5].value = 0.5;
+		winCtl[1][5].action = { | num |
+			{rmbox[currentsource].valueAction = num.value;}.defer;
+		};
+		winCtl[1][5].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 250, 150, 20));
-		textbuf.string = "Dst. damp/decay";
-		dmnumbox = NumberBox(win, Rect(10, 250, 40, 20));
-		dmnumbox.value = 0.5;
-		dmnumbox.clipHi = 1;
-		dmnumbox.clipLo = 0;
-		dmnumbox.step_(0.01);
-		dmnumbox.scroll_step_(0.01);
-		dmnumbox.align = \center;
-		dmnumbox.action = { | num |
+		winCtl[2][6] = StaticText(win, Rect(163, 250, 150, 20));
+		winCtl[2][6].string = "Dst. damp/decay";
+		winCtl[2][6].visible = false;
+		winCtl[0][6] = NumberBox(win, Rect(10, 250, 40, 20));
+		winCtl[0][6].value = 0.5;
+		winCtl[0][6].clipHi = 1;
+		winCtl[0][6].clipLo = 0;
+		winCtl[0][6].step_(0.01);
+		winCtl[0][6].scroll_step_(0.01);
+		winCtl[0][6].align = \center;
+		winCtl[0][6].action = { | num |
 			{dmbox[currentsource].valueAction = num.value;}.defer;
+		};
+		winCtl[0][6].visible = false;
 
-		};
-		// stepsize?
-		dmslider = Slider.new(win, Rect(50, 250, 110, 20));
-		dmslider.value = 0.5;
-		dmslider.action = { | num |
+		winCtl[1][6] = Slider.new(win, Rect(50, 250, 110, 20));
+		winCtl[1][6].value = 0.5;
+		winCtl[1][6].action = { | num |
 			{dmbox[currentsource].valueAction = num.value;}.defer;
 		};
+		winCtl[1][6].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 270, 100, 20));
-		textbuf.string = "Angle (stereo)";
-		angnumbox = NumberBox(win, Rect(10, 270, 40, 20));
-		angnumbox.value = 1.0471975511966;
-		angnumbox.clipHi = pi;
-		angnumbox.clipLo = 0;
-		angnumbox.step_(0.01);
-		angnumbox.scroll_step_(0.01);
-		angnumbox.align = \center;
-		angnumbox.action = { | num |
+		winCtl[2][3] = StaticText(win, Rect(163, 270, 150, 20));
+		winCtl[2][3].string = "Cls. amount";
+		winCtl[2][3].visible = false;
+		winCtl[0][3] = NumberBox(win, Rect(10, 270, 40, 20));
+		winCtl[0][3].value = 0;
+		winCtl[0][3].clipHi = 1;
+		winCtl[0][3].clipLo = 0;
+		winCtl[0][3].step_(0.01);
+		winCtl[0][3].scroll_step_(0.01);
+		winCtl[0][3].align = \center;
+		winCtl[0][3].action = { | num |
+			{gbox[currentsource].valueAction = num.value;}.defer;
+		};
+		winCtl[0][3].visible = false;
+
+		winCtl[1][3] = Slider.new(win, Rect(50, 270, 110, 20));
+		winCtl[1][3].value = 0;
+		winCtl[1][3].action = { | num |
+			{gbox[currentsource].valueAction = num.value;}.defer;
+		};
+		winCtl[1][3].visible = false;
+
+
+		/////////////////////////////////////////////////////////////////////////
+
+
+		winCtl[2][7] = StaticText(win, Rect(163, 290, 100, 20));
+		winCtl[2][7].string = "Stereo Angle";
+		winCtl[2][7].visible = false;
+		winCtl[0][7] = NumberBox(win, Rect(10, 290, 40, 20));
+		winCtl[0][7].value = 1.0471975511966;
+		winCtl[0][7].clipHi = pi;
+		winCtl[0][7].clipLo = 0;
+		winCtl[0][7].step_(0.01);
+		winCtl[0][7].scroll_step_(0.01);
+		winCtl[0][7].align = \center;
+		winCtl[0][7].action = { | num |
 			{abox[currentsource].valueAction = num.value;}.defer;
-			if((ncanais[currentsource] == 2) || (this.ncan[currentsource] == 2)){
+			if((ncanais[currentsource] == 2) || (ncan[currentsource] == 2)) {
 				this.espacializador[currentsource].set(\angle, num.value);
 				this.setSynths(currentsource, \angle, num.value);
 				angle[currentsource] = num.value;
 			};
 		};
+		winCtl[0][7].visible = false;
 
-		angslider = Slider.new(win, Rect(50, 270, 110, 20));
+		winCtl[1][7] = Slider.new(win, Rect(50, 290, 110, 20));
 		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
-		angslider.value = 1.0471975511966 / pi;
-		angslider.action = { | num |
+		winCtl[1][7].value = 1.0471975511966 / pi;
+		winCtl[1][7].action = { | num |
 			{abox[currentsource].valueAction = num.value * pi;}.defer;
-			if((ncanais[currentsource] == 2) || (this.ncan[currentsource] == 2)) {
-				{angnumbox.value = num.value * pi;}.defer;
+			if((ncanais[currentsource] == 2) || (ncan[currentsource] == 2)) {
 				//			this.espacializador[currentsource].set(\angle, b.map(num.value));
 				this.espacializador[currentsource].set(\angle, num.value * pi);
 				this.setSynths(currentsource, \angle, num.value * pi);
 				//			angle[currentsource] = b.map(num.value);
 				angle[currentsource] = num.value * pi;
-			}{{angnumbox.value = num.value * pi;}.defer;};
+			};
 		};
+		winCtl[1][7].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 290, 150, 20));
-		textbuf.string = "Rotation (B-Format)";
-		rnumbox = NumberBox(win, Rect(10, 290, 40, 20));
-		rnumbox.value = 0;
-		rnumbox.clipHi = pi;
-		rnumbox.clipLo = -pi;
-		rnumbox.step_(0.01);
-		rnumbox.scroll_step_(0.01);
-		rnumbox.align = \center;
-		rnumbox.action = { | num |
+		winCtl[2][8] = StaticText(win, Rect(163, 290, 150, 20));
+		winCtl[2][8].string = "B-Format Rotation";
+		winCtl[2][8].visible = false;
+		winCtl[0][8] = NumberBox(win, Rect(10, 290, 40, 20));
+		winCtl[0][8].value = 0;
+		winCtl[0][8].clipHi = pi;
+		winCtl[0][8].clipLo = -pi;
+		winCtl[0][8].step_(0.01);
+		winCtl[0][8].scroll_step_(0.01);
+		winCtl[0][8].align = \center;
+		winCtl[0][8].action = { | num |
 			{rbox[currentsource].valueAction = num.value;}.defer;
-
 		};
-		// stepsize?
-		rslider = Slider.new(win, Rect(50, 290, 110, 20));
-		rslider.value = 0.5;
-		rslider.action = { | num |
+		winCtl[0][8].visible = false;
+
+		winCtl[1][8] = Slider.new(win, Rect(50, 290, 110, 20));
+		winCtl[1][8].value = 0.5;
+		winCtl[1][8].action = { | num |
 			{rbox[currentsource].valueAction = num.value * 2pi - pi;}.defer;
-			{rnumbox.value = num.value * 2pi - pi;}.defer;
-
 		};
+		winCtl[1][8].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 310, 150, 20));
-		textbuf.string = "Directivity (B-Format)";
-		dirnumbox = NumberBox(win, Rect(10, 310, 40, 20));
-		dirnumbox.value = 0;
-		dirnumbox.clipHi = pi * 0.5;
-		dirnumbox.clipLo = 0;
-		dirnumbox.step_(0.01);
-		dirnumbox.scroll_step_(0.01);
-		dirnumbox.align = \center;
-		dirnumbox.action = { | num |
+		winCtl[2][9] = StaticText(win, Rect(163, 310, 150, 20));
+		winCtl[2][9].string = "B-Format Directivity";
+		winCtl[2][9].visible = false;
+		winCtl[0][9] = NumberBox(win, Rect(10, 310, 40, 20));
+		winCtl[0][9].value = 0;
+		winCtl[0][9].clipHi = pi * 0.5;
+		winCtl[0][9].clipLo = 0;
+		winCtl[0][9].step_(0.01);
+		winCtl[0][9].scroll_step_(0.01);
+		winCtl[0][9].align = \center;
+		winCtl[0][9].action = { | num |
 			{dbox[currentsource].valueAction = num.value;}.defer;
 		};
-		// stepsize?
-		dirslider = Slider.new(win, Rect(50, 310, 110, 20));
-		dirslider.value = 0;
-		dirslider.action = { | num |
+		winCtl[0][9].visible = false;
+
+		winCtl[1][9] = Slider.new(win, Rect(50, 310, 110, 20));
+		winCtl[1][9].value = 0;
+		winCtl[1][9].action = { | num |
 			{dbox[currentsource].valueAction = num.value * pi * 0.5;}.defer;
-			{dirnumbox.value = num.value * pi * 0.5;}.defer;
 		};
+		winCtl[1][9].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
@@ -5931,72 +6113,80 @@ GUI Parameters usable in SynthDefs
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 350, 200, 20));
-		textbuf.string = "Grain rate (JoshGrain)";
-		ratenumbox = NumberBox(win, Rect(10, 350, 40, 20));
-		ratenumbox.value = 10;
-		ratenumbox.clipHi = 60;
-		ratenumbox.clipLo = 1;
-		ratenumbox.step_(0.01);
-		ratenumbox.scroll_step_(0.01);
-		ratenumbox.align = \center;
-		ratenumbox.action = { | num |
+		winCtl[2][10] = StaticText(win, Rect(163, 330, 200, 20));
+		winCtl[2][10].string = "Grain rate (JoshGrain)";
+		winCtl[2][10].visible = false;
+		winCtl[0][10] = NumberBox(win, Rect(10, 330, 40, 20));
+		winCtl[0][10].value = 10;
+		winCtl[0][10].clipHi = 60;
+		winCtl[0][10].clipLo = 1;
+		winCtl[0][10].step_(0.01);
+		winCtl[0][10].scroll_step_(0.01);
+		winCtl[0][10].align = \center;
+		winCtl[0][10].action = { | num |
 			{ratebox[currentsource].valueAction = num.value;}.defer;
-
 		};
-		// stepsize?
-		rateslider = Slider.new(win, Rect(50, 350, 110, 20));
-		rateslider.value = 0.15254237288136;
-		rateslider.action = { | num |
+		winCtl[0][10].visible = false;
+
+		winCtl[1][10] = Slider.new(win, Rect(50, 330, 110, 20));
+		winCtl[1][10].value = 0.15254237288136;
+		winCtl[1][10].action = { | num |
 			{ratebox[currentsource].valueAction = (num.value * 59) + 1;}.defer;
 		};
+		winCtl[1][10].visible = false;
 
 
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 370, 200, 20));
-		textbuf.string = "Window size (JoshGrain)";
-		winumbox = NumberBox(win, Rect(10, 370, 40, 20));
-		winumbox.value = 0.1;
-		winumbox.clipHi = 0.2;
-		winumbox.clipLo = 0;
-		winumbox.step_(0.01);
-		winumbox.scroll_step_(0.01);
-		winumbox.align = \center;
-		winumbox.action = { | num |
+		winCtl[2][11] = StaticText(win, Rect(163, 350, 200, 20));
+		winCtl[2][11].string = "Window size (JoshGrain)";
+		winCtl[2][11].visible = false;
+		winCtl[0][11] = NumberBox(win, Rect(10, 350, 40, 20));
+		winCtl[0][11].value = 0.1;
+		winCtl[0][11].clipHi = 0.2;
+		winCtl[0][11].clipLo = 0;
+		winCtl[0][11].step_(0.01);
+		winCtl[0][11].scroll_step_(0.01);
+		winCtl[0][11].align = \center;
+		winCtl[0][11].action = { | num |
 			{winbox[currentsource].valueAction = num.value;}.defer;
-
 		};
-		// stepsize?
-		winslider = Slider.new(win, Rect(50, 370, 110, 20));
-		winslider.value = 0.5;
-		winslider.action = { | num |
+		winCtl[0][11].visible = false;
+
+		winCtl[1][11] = Slider.new(win, Rect(50, 350, 110, 20));
+		winCtl[1][11].value = 0.5;
+		winCtl[1][11].action = { | num |
 			{winbox[currentsource].valueAction = num.value * 0.2;}.defer;
 		};
+		winCtl[1][11].visible = false;
+
 
 		/////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 390, 200, 20));
-		textbuf.string = "Rand. win. (JoshGrain)";
-		randnumbox = NumberBox(win, Rect(10, 390, 40, 20));
-		randnumbox.value = 0;
-		randnumbox.clipHi = 1;
-		randnumbox.clipLo = 0;
-		randnumbox.step_(0.01);
-		randnumbox.scroll_step_(0.01);
-		randnumbox.align = \center;
-		randnumbox.action = { | num |
+		winCtl[2][12] = StaticText(win, Rect(163, 370, 200, 20));
+		winCtl[2][12].string = "Rand. win. (JoshGrain)";
+		winCtl[2][12].visible = false;
+		winCtl[0][12] = NumberBox(win, Rect(10, 370, 40, 20));
+		winCtl[0][12].value = 0;
+		winCtl[0][12].clipHi = 1;
+		winCtl[0][12].clipLo = 0;
+		winCtl[0][12].step_(0.01);
+		winCtl[0][12].scroll_step_(0.01);
+		winCtl[0][12].align = \center;
+		winCtl[0][12].action = { | num |
 			{randbox[currentsource].valueAction = num.value;}.defer;
-
 		};
-		// stepsize?
-		randslider = Slider.new(win, Rect(50, 390, 110, 20));
-		randslider.value = 0;
-		randslider.action = { | num |
+		winCtl[0][12].visible = false;
+
+		winCtl[1][12] = Slider(win, Rect(50, 370, 110, 20));
+		winCtl[1][12].value = 0;
+		winCtl[1][12].action = { | num |
 			{randbox[currentsource].valueAction = num.value.squared;}.defer;
 		};
+		winCtl[1][12].visible = false;
+
 
 		/////////////////////////////////////////////////////////
 
@@ -6049,8 +6239,6 @@ GUI Parameters usable in SynthDefs
 				if (this.ossiarec.notNil) {
 					this.ossiarec.v_(false);
 				};
-				//control.stop;
-				//control.seek;
 				{
 					| path |
 					{
@@ -6066,9 +6254,7 @@ GUI Parameters usable in SynthDefs
 					{this.tfield[currentsource].value = "";}.defer;
 					stcheck[currentsource].valueAction = false;
 				}
-
 			);
-
 		});
 
 
@@ -6484,7 +6670,7 @@ GUI Parameters usable in SynthDefs
 			this.libbox[i].action = { | num |
 				this.libboxProxy[i].valueAction = num.value;
 			};
-			libbox[i].value = lastSN3D + 1;
+			libbox[i].value = lastN3D + 1;
 
 			this.dstrvbox[i].action = { | num |
 				this.dstrvboxProxy[i].valueAction = num.value;
@@ -6493,17 +6679,6 @@ GUI Parameters usable in SynthDefs
 
 			abox[i].action = { | num |
 				this.aboxProxy[i].valueAction = num.value;
-				/*	angle[i] = num.value;
-				if((ncanais[i]==2) || (this.ncan[i]==2)){
-				this.espacializador[i].set(\angle, num.value);
-				this.setSynths(i, \angle, num.value);
-				angle[i] = num.value;
-				};
-				if(i == currentsource)
-				{
-				angnumbox.value = num.value;
-				angslider.value = num.value / pi;
-				*/
 			};
 
 			vbox[i].action = { | num |
@@ -6802,13 +6977,21 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 				sourceSelect.value(closest[0].value);
+				moveSource.value(mx, my);
 			}
 			{mouseButton == 1} {
-				var list = ListView(win, Rect(mx,my,90,70)).items_(itensdemenu).action_({ |sel|
-					sourceSelect.value(sel.value);
-					moveSource.value(mx, my);
-					list.close;
-				});
+				if (sourceList.isNil) {
+					sourceList = ListView(win, Rect(mx,my,90,70)).items_(itensdemenu).value_(currentsource)
+					.action_({ |sel|
+						sourceSelect.value(sel.value);
+						moveSource.value(mx + 45, my + 35);
+						sourceList.close;
+						sourceList = nil;
+					});
+				} {
+					sourceList.close;
+					sourceList = nil;
+				};
 			}
 			{mouseButton == 2} {
 				this.nfontes.do { | i |
@@ -6868,7 +7051,7 @@ GUI Parameters usable in SynthDefs
 				+ zSliderHeight, 40, 20));
 			zAxis.bounds_(Rect(width - 80, halfheight - 10, 90, 20));
 
-			orientView.bounds_(Rect(width - 285, height - 85, 285, 100));
+			originView.bounds_(Rect(width - 285, height - 85, 285, 100));
 
 			autoView.bounds_(Rect(10, height - 45, 325, 40));
 
