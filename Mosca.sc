@@ -18,6 +18,8 @@
 
 /*
 AutomationGuiProxy {
+
+
     var <>val, <>function;
     *new { arg val;
         ^super.new.initAutomationProxy(val);
@@ -4993,21 +4995,26 @@ GUI Parameters usable in SynthDefs
 			preset=nil, bounds,  dwin, textField, success=false;
 			
 
-			////// Changes
 
-			/*	var dopplerf = File((prjDr ++ "/auto/doppler.txt").standardizePath,"w");
-				var loopedf = File((prjDr ++ "/auto/looped.txt").standardizePath,"w");
-				var aformatrevf = File((prjDr ++ "/auto/aformatrev.txt").standardizePath,"w");
-				var hwinf = File((prjDr ++ "/auto/hwin.txt").standardizePath,"w");
-				var scinf = File((prjDr ++ "/auto/scin.txt").standardizePath,"w");
-				var linearf = File((prjDr ++ "/auto/linear.txt").standardizePath,"w");
-				var spreadf = File((prjDr ++ "/auto/spread.txt").standardizePath,"w");
-				var diffusef = File((prjDr ++ "/auto/diffuse.txt").standardizePath,"w");
-			*/
 			var dopplerf, loopedf, aformatrevf, hwinf, scinf, linearf, spreadf, diffusef, ncanf, businif, stcheckf;
+			var toDosPath;
 
 			//////////////
 
+
+			// this function is needed to convert to DOS path on Windows machine
+			// does nothing in Unix
+			toDosPath = { |upath|
+			var size, newpath, splitpath;
+			splitpath = upath.split;
+			newpath = splitpath.at(0);
+			for (1, splitpath.size - 1,
+			    { arg i;
+			      newpath = newpath +/+ splitpath.at(i);
+			      //p.at(i).postln;
+			});
+			newpath;
+			};
 
 			bounds = Rect(100,300,300,30);
 			
@@ -5018,6 +5025,9 @@ GUI Parameters usable in SynthDefs
 					} {
 						preset = this.lastAutomation;
 					};
+					//check
+				//	preset = toDosPath.value(preset);
+					
 				};
 			dwin = GUI.window.new(title, bounds);
             dwin.onClose = {
@@ -5032,22 +5042,29 @@ GUI Parameters usable in SynthDefs
                 success = true;
                 onSuccess.value(textField.value);
                 dwin.close;
-				
-				("FILE IS " ++ textField.value ++ "/filenames.txt").postln;
-				("mkdir -p" + textField.value).systemCmd;
-				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
 
-				dopplerf = File((textField.value ++ "/doppler.txt").standardizePath,"w");
-				loopedf = File((textField.value ++ "/looped.txt").standardizePath,"w");
-				aformatrevf = File((textField.value ++ "/aformatrev.txt").standardizePath,"w");
-				hwinf = File((textField.value ++ "/hwin.txt").standardizePath,"w");
-				scinf = File((textField.value ++ "/scin.txt").standardizePath,"w");
-				linearf = File((textField.value ++ "/linear.txt").standardizePath,"w");
-				spreadf = File((textField.value ++ "/spread.txt").standardizePath,"w");
-				diffusef = File((textField.value ++ "/diffuse.txt").standardizePath,"w");
-				ncanf = File((textField.value ++ "/ncan.txt").standardizePath,"w");
-				businif = File((textField.value ++ "/busini.txt").standardizePath,"w");
-				stcheckf = File((textField.value ++ "/stcheck.txt").standardizePath,"w");
+"Tô aqui!".postln;
+			this.lastAutomation = textField.value;		
+			//windows check
+			if(thisProcess.platform.name == 'windows'){
+			textField.value = toDosPath.value(textField.value);
+			};
+
+				("FILE IS " ++ textField.value +/+ "filenames.txt").postln;
+				("mkdir -p" + textField.value).systemCmd;
+				filenames = File((textField.value +/+ "filenames.txt").standardizePath,"w");
+
+				dopplerf = File((textField.value +/+ "doppler.txt").standardizePath,"w");
+				loopedf = File((textField.value +/+ "looped.txt").standardizePath,"w");
+				aformatrevf = File((textField.value +/+ "aformatrev.txt").standardizePath,"w");
+				hwinf = File((textField.value +/+ "hwin.txt").standardizePath,"w");
+				scinf = File((textField.value +/+ "scin.txt").standardizePath,"w");
+				linearf = File((textField.value +/+ "linear.txt").standardizePath,"w");
+				spreadf = File((textField.value +/+ "spread.txt").standardizePath,"w");
+				diffusef = File((textField.value +/+ "diffuse.txt").standardizePath,"w");
+				ncanf = File((textField.value +/+ "ncan.txt").standardizePath,"w");
+				businif = File((textField.value +/+ "busini.txt").standardizePath,"w");
+				stcheckf = File((textField.value +/+ "stcheck.txt").standardizePath,"w");
 
 
 				nfontes.do { arg i;
@@ -5093,7 +5110,7 @@ GUI Parameters usable in SynthDefs
 
 				
 				control.save(textField.value);
-				this.lastAutomation = textField.value;
+			//	this.lastAutomation = textField.value;
 
             };
             dwin.front;
@@ -5134,6 +5151,7 @@ GUI Parameters usable in SynthDefs
             };
             textField = GUI.textField.new(dwin, Rect(0,0,bounds.width,bounds.height));
             textField.value = preset;
+	    
             textField.action = {
                 success = true;
                 onSuccess.value(textField.value);
