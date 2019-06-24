@@ -5019,7 +5019,9 @@ GUI Parameters usable in SynthDefs
 			bounds = Rect(100,300,300,30);
 			
 			if(prjDr.isNil && this.lastAutomation.isNil) {
-				preset = "HOME".getenv ++ "/auto/"; } {
+				//preset = "HOME".getenv ++ "/auto/"; } {
+			// this should be Windows and Unix friendly:
+				preset = (PathName.new("~").fullPath +/+ "auto" +/+ "").replace("\\", "/"); } {
 					if (this.lastAutomation.isNil) {
 						preset = prjDr ++ "/auto/";
 					} {
