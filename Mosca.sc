@@ -3493,7 +3493,7 @@ GUI Parameters usable in SynthDefs
 								this.streambuf[i].free;
 							});
 
-						("HERE!!!!!!!!!!!!!!! xval = " ++ this.xval[i] ++ "yval = " ++ this.yval[i]).postln;
+						//	("HERE!!!!!!!!!!!!!!! xval = " ++ this.xval[i] ++ "yval = " ++ this.yval[i]).postln;
 						
 						this.espacializador[i] = Synth.new(\espacAmbChowning++ln[i], [\inbus, mbus[i], 
 							\gbus, gbus, 
