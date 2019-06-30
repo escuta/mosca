@@ -1,9 +1,9 @@
  + Mosca {
 
-	ossia { |parentNode, allCrtitical = false, mirrorTree, paramDepth|
+	ossia { |parentOssiaNode, allCrtitical|
 
-		var ossiaParent = OSSIA_Node(parentNode, "Mosca");
-		var ossiasrc, ossiaAutomation, ossiaMasterPlay, ossiaMasterLib, ossiaMasterRev;
+		var ossiaParent, ossiasrc, ossiaAutomation, ossiaMasterPlay,
+		ossiaMasterLib, ossiaMasterRev, ossiaAtk, ossiaJosh;
 
 		ossiasrc = Array.newClear(this.nfontes);
 		this.ossiaorient = Array.newClear(this.nfontes);
@@ -24,8 +24,10 @@
 		this.ossiarot = Array.newClear(this.nfontes);
 		this.ossiadir = Array.newClear(this.nfontes);
 		this.ossiactr = Array.newClear(this.nfontes);
+		ossiaAtk = Array.newClear(this.nfontes);
 		this.ossiaspread = Array.newClear(this.nfontes);
 		this.ossiadiff = Array.newClear(this.nfontes);
+		ossiaJosh = Array.newClear(this.nfontes);
 		this.ossiarate = Array.newClear(this.nfontes);
 		this.ossiawin = Array.newClear(this.nfontes);
 		this.ossiarand = Array.newClear(this.nfontes);
@@ -33,6 +35,12 @@
 		this.ossiaCartBack = true;
 		this.ossiaSpheBack = true;
 
+		if (parentOssiaNode.isNil) {
+			ossiaParent = OSSIA_Device("Mosca");
+			ossiaParent.exposeOSC();
+		} {
+			ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");
+		};
 
 		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
 			critical:true);
@@ -98,10 +106,9 @@
 			if (oznumboxProxy.value != num[2].value) {
 				oznumboxProxy.valueAction = num[2].value;
 			};
-
 		});
 
-		this.ossiaorient = OSSIA_Parameter(ossiaParent, "Orentation", OSSIA_vec3f,
+		this.ossiaorient = OSSIA_Parameter(ossiaParent, "Orientation", OSSIA_vec3f,
 			domain:[[-pi, -pi, -pi], [pi, pi, pi]], default_value:[0, 0, 0],
 			bounding_mode:'wrap', critical:allCrtitical, repetition_filter:true);
 
@@ -118,7 +125,6 @@
 			if (headingnumboxProxy.value != num[2].value) {
 				headingnumboxProxy.valueAction = num[2].value;
 			};
-
 		});
 
 		this.ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Reverb", Integer,
@@ -134,7 +140,7 @@
 			};
 		});
 
-		this.ossiaclsdel = OSSIA_Parameter(ossiaParent, "Cls._room_delay", Float,
+		this.ossiaclsdel = OSSIA_Parameter(this.ossiacls, "Cls._room_delay", Float,
 			[0, 1], 0.5, 'clip', critical:allCrtitical, repetition_filter:true);
 
 		this.ossiaclsdel.callback_({arg num;
@@ -143,7 +149,7 @@
 			};
 		});
 
-		this.ossiaclsdec = OSSIA_Parameter(ossiaParent, "Cls._damp_decay", Float,
+		this.ossiaclsdec = OSSIA_Parameter(this.ossiacls, "Cls._damp_decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCrtitical, repetition_filter:true);
 
 		this.ossiaclsdec.callback_({arg num;
@@ -195,7 +201,7 @@
 				this.control.enableRecording;
 			} {
 				this.control.stopRecording;
-			}
+			};
 		});
 
 		this.nfontes.do({ |i|
@@ -258,9 +264,10 @@
 			this.ossiaaud[i].callback_({ arg num;
 				this.auditionFunc(i, num.value);
 				if (guiflag) {
-					{novoplot.value;}.defer(guiInt);
+					{ novoplot.value; }.defer(guiInt);
 					if (i == currentsource) {
-					baudi.value = num.value.asInteger;};
+						{ baudi.value = num.value.asInteger; }.defer;
+					};
 				};
 			});
 
@@ -327,7 +334,7 @@
 			});
 
 
-			this.ossiadstam[i] = OSSIA_Parameter(ossiasrc[i], "Dst._amount", Float,
+			this.ossiadstam[i] = OSSIA_Parameter(this.ossiadst[i], "Dst._amount", Float,
 				[0, 1], 0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
@@ -341,7 +348,7 @@
 
 
 
-			this.ossiadstdel[i] = OSSIA_Parameter(ossiasrc[i], "Dst._room_delay", Float,
+			this.ossiadstdel[i] = OSSIA_Parameter(this.ossiadst[i], "Dst._room_delay", Float,
 				[0, 1], 0.5, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
@@ -353,7 +360,7 @@
 
 
 
-			this.ossiadstdec[i] = OSSIA_Parameter(ossiasrc[i], "Dst._damp_decay", Float,
+			this.ossiadstdec[i] = OSSIA_Parameter(this.ossiadst[i], "Dst._damp_decay", Float,
 				[0, 1], 0.5, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
@@ -406,7 +413,9 @@
 			});
 
 
-			this.ossiaspread[i] = OSSIA_Parameter(ossiasrc[i], "Spread", Boolean,
+			ossiaAtk[i] = OSSIA_Node(ossiasrc[i], "Atk");
+
+			this.ossiaspread[i] = OSSIA_Parameter(ossiaAtk[i], "Spread", Boolean,
 				critical:true, repetition_filter:true);
 
 			this.ossiaspread[i].description_("ATK");
@@ -418,7 +427,7 @@
 			});
 
 
-			this.ossiadiff[i] = OSSIA_Parameter(ossiasrc[i], "Diffuse", Boolean,
+			this.ossiadiff[i] = OSSIA_Parameter(ossiaAtk[i], "Diffuse", Boolean,
 				critical:true, repetition_filter:true);
 
 			this.ossiadiff[i].description_("ATK");
@@ -431,7 +440,7 @@
 
 
 			this.ossiactr[i] = OSSIA_Parameter(ossiasrc[i], "Contraction", Float,
-				[0, 1], 1, 'clip',
+				[0, 1], 1.0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
 			this.ossiactr[i].description_("B-Format, JoshGrain & VBAP");
@@ -442,8 +451,9 @@
 				};
 			});
 
+			ossiaJosh[i] = OSSIA_Node(ossiasrc[i], "Josh");
 
-			this.ossiarate[i] = OSSIA_Parameter(ossiasrc[i], "Grain_rate", Float,
+			this.ossiarate[i] = OSSIA_Parameter(ossiaJosh[i], "Grain_rate", Float,
 				[1, 60], 10, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
@@ -457,7 +467,7 @@
 			});
 
 
-			this.ossiawin[i] = OSSIA_Parameter(ossiasrc[i], "Window_size", Float,
+			this.ossiawin[i] = OSSIA_Parameter(ossiaJosh[i], "Window_size", Float,
 				[0, 0.2], 0.1, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
@@ -471,7 +481,7 @@
 			});
 
 
-			this.ossiarand[i] = OSSIA_Parameter(ossiasrc[i], "Randomize_window", Float,
+			this.ossiarand[i] = OSSIA_Parameter(ossiaJosh[i], "Randomize_window", Float,
 				[0, 1], 0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
