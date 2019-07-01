@@ -272,8 +272,10 @@ GUI Parameters usable in SynthDefs
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
 		foaEncoderOmni = FoaEncoderMatrix.newOmni;
-		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048);
-		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048);
+		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
+		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
 
 		if (maxorder > 1) {
 			this.fumabus = Bus.audio(server, 9);
