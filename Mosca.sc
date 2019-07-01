@@ -103,7 +103,7 @@ Mosca {
 	<>playEspacGrp, <>glbRevDecGrp,
 	<>level, <>lp, <>lib, <>libName, <>convert, <>dstrv, <>dstrvtypes, <>clsrv, <>clsRvtypes,
 	<>winCtl, <>originCtl, <>hwCtl,
-	<>xbox, <>ybox, <>sombuf, <>sbus, <>soaRevBus, <>mbus,
+	<>xbox, <>ybox, <>sombuf, <>sbus, <>mbus,
 	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
 	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box,
 	<>a4box, <>a5box,
@@ -278,12 +278,9 @@ GUI Parameters usable in SynthDefs
 			server:server, sampleRate:server.sampleRate.asInteger);
 
 		if (maxorder > 1) {
-			this.fumabus = Bus.audio(server, 9);
-			this.soaRevBus = Bus.audio(server, 9);
 			bfOrFmh = BFEncode1;
 			fourOrTwelve = 12;
 		} {
-			this.fumabus = Bus.audio(server, 4);
 			bfOrFmh = FMHEncode1;
 			fourOrTwelve = 4;
 		};
@@ -305,6 +302,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		this.n3dbus = Bus.audio(server, bFormNumChan); // global b-format ACN-SN3D bus
+		this.fumabus = Bus.audio(server, fourOrTwelve);
 		this.gbus = Bus.audio(server, 1); // global reverb bus
 		this.gbfbus = Bus.audio(server, fourOrTwelve); // global b-format bus
 		this.gbixfbus = Bus.audio(server, fourOrTwelve); // global n3d b-format bus
@@ -1490,7 +1488,7 @@ GUI Parameters usable in SynthDefs
 				revGlobal = Synth.new(\revGlobalAmb++clsRvtypes,
 					[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
 						\room, clsrm, \damp, clsdm] ++
-					irSpecPar.value(max((clsrv - 2), 0)),
+					irSpecPar.value(max((clsrv - 3), 0)),
 					this.glbRevDecGrp).register.onFree({
 					if (revGlobal.isPlaying.not) {
 						revGlobal = nil;
@@ -2034,8 +2032,7 @@ GUI Parameters usable in SynthDefs
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			longest_radius = 13.5;
-			//longest_radius = 3;
+			longest_radius = 3;
 			lowest_elevation = -90;
 			highest_elevation = 90;
 
@@ -2127,7 +2124,7 @@ GUI Parameters usable in SynthDefs
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(this.fumabus, 9);
-					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D) * env;
+					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(this.n3dbus, sig);
 				}).add;
 
@@ -2184,7 +2181,7 @@ GUI Parameters usable in SynthDefs
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(this.fumabus, 9);
-					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D) * env;
+					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(this.n3dbus, sig);
 				}).add;
 
@@ -2220,7 +2217,7 @@ GUI Parameters usable in SynthDefs
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(this.fumabus, 9);
-					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D) * env;
+					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(this.n3dbus, sig);
 				}).add;
 
@@ -2258,7 +2255,7 @@ GUI Parameters usable in SynthDefs
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(this.fumabus, 9);
-					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_SN3D) * env;
+					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(this.n3dbus, sig);
 				}).add;
 
@@ -2525,9 +2522,9 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, w, x, y, z, r, s, t, u, v,
-				soaSig, tmpsig, sig, sigx, sigf = In.ar(soaRevBus, 9);
+				soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
 				sigx = In.ar(gbixfbus, 9);
-				sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_SN3D);
+				sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
 				sig = In.ar(gbus, 1);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = sig + sigf + sigx;
@@ -2591,9 +2588,9 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, w, x, y, z, r, s, t, u, v,
-				soaSig, tmpsig, sig, sigx, sigf = In.ar(soaRevBus, 9);
+				soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
 				sigx = In.ar(gbixfbus, 9);
-				sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_SN3D);
+				sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
 				sig = In.ar(gbus, 1);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = sig + sigf + sigx;
@@ -2847,14 +2844,15 @@ GUI Parameters usable in SynthDefs
 						rirA12Spectrum[count, i].preparePartConv(rirA12[i], fftsize);
 						rirA12[i].free;
 					};
+
 				});
 
 				SynthDef.new("revGlobalAmb_conv",  { | gate = 1, a0ir, a1ir, a2ir, a3ir,
 					a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 					var env, w, x, y, z, r, s, t, u, v,
-					soaSig, tmpsig, sig, sigx, sigf = In.ar(soaRevBus, 9);
+					soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
 					sigx = In.ar(gbixfbus, 9);
-					sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_SN3D);
+					sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
 					sig = In.ar(gbus, 1);
 					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 					sig = sig + sigf + sigx;
@@ -4755,10 +4753,6 @@ GUI Parameters usable in SynthDefs
 
 		this.gbus.free;
 		this.gbfbus.free;
-
-		if (maxorder > 1) {
-			this.soaRevBus.free;
-		};
 
 		rirList.do { |item, count|
 			rirWspectrum[count].free;
