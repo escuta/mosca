@@ -1792,9 +1792,6 @@ GUI Parameters usable in SynthDefs
 
 		///////////////////////////////////////////////////
 
-		if(guiflag) {
-			this.gui;
-		};
 
 		playInFunc = Array.newClear(4);
 		// one for File, Stereo, BFormat, Stream - streamed file;
@@ -2765,6 +2762,8 @@ GUI Parameters usable in SynthDefs
 
 			rirList.do({ |item, count|
 
+				server.sync;
+
 				bufAformat[count].free;
 				bufWXYZ[count].free;
 
@@ -2939,6 +2938,11 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
+		};
+
+		// Lauch GUI
+		if(guiflag) {
+			this.gui;
 		};
 
 
