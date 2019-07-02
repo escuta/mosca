@@ -754,7 +754,6 @@ GUI Parameters usable in SynthDefs
 				};
 
 				if ( guiflag) {
-					{novoplot.value;}.defer;
 					{this.xbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || playingBF[i]) {
@@ -788,7 +787,6 @@ GUI Parameters usable in SynthDefs
 				};
 
 				if (guiflag) {
-					{novoplot.value;}.defer;
 					{this.ybox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || playingBF[i]){
@@ -822,7 +820,6 @@ GUI Parameters usable in SynthDefs
 				};
 				zlev[i] = this.spheval[i].z;
 				if (guiflag) {
-					{novoplot.value;}.defer;
 					{zbox[i].value = num.value}.defer;
 				};
 				if(this.espacializador[i].notNil || playingBF[i]){
@@ -4834,6 +4831,7 @@ GUI Parameters usable in SynthDefs
 		sourceSelect,
 		//m,
 		moveSource,
+		zoom_factor = 1,
 		zSliderHeight = height * 2 / 3;
 
 
@@ -4846,7 +4844,7 @@ GUI Parameters usable in SynthDefs
 		win.drawFunc = {
 
 			Pen.fillColor = Color.new255(0, 127, 229, 76); // OSSIA/score "Transparent1"
-			Pen.addArc(halfwidth@halfheight, halfheight, 0, 2pi);
+			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor, 0, 2pi);
 			Pen.fill;
 
 			nfontes.do { |i|
@@ -4854,8 +4852,8 @@ GUI Parameters usable in SynthDefs
 				var topView = this.spheval[i];
 				var lev = this.spheval[i].z;
 				var color = lev * 0.4;
-				{x = halfwidth + (topView.x * halfheight)}.defer;
-				{y = halfheight - (topView.y * halfheight)}.defer;
+				{x = halfwidth + (topView.x * halfheight * zoom_factor)}.defer;
+				{y = halfheight - (topView.y * halfheight * zoom_factor)}.defer;
 				Pen.addArc(x@y, 14, 0, 2pi);
 				if ((this.audit[i] || isPlay) && (lev.abs <= plim)) {
 					if (lev <= 0) {
@@ -7014,21 +7012,37 @@ GUI Parameters usable in SynthDefs
 			};
 		};
 
+		win.view.mouseWheelAction = {|view, mx, my, modifiers, dx, dy|
+			if ((dy < 0) && (zoom_factor <= 10)) {
+				zoom_factor = zoom_factor * 1.01;
+				win.refresh;
+			};
+
+			if ((dy > 0) && (zoom_factor >= 0.1)) {
+				zoom_factor = zoom_factor * 0.99009900990099;
+				win.refresh;
+			};
+		};
+
 		moveSource = { |x, y|
-				// save raw mouseposition for slectinc closest source on click
-				sprite.put(currentsource, 0, x);
-				sprite.put(currentsource, 1, y);
+			// save raw mouseposition for selecting closest source on click
 
-				this.cartval[currentsource].x_((x - halfwidth) / halfheight);
-				this.cartval[currentsource].y_((halfheight - y) / halfheight);
-				this.cartval[currentsource].z_((this.zslider.value * 2) - 1);
+			var car2sphe = Cartesian((x - halfwidth) / halfheight,
+				(halfheight - y) / halfheight,
+				(this.zslider.value * 2) - 1).asSpherical;
 
-				this.cartval[currentsource] = this.cartval[currentsource]
-				.tumble(heading).tilt(roll).rotate(pitch);
+			sprite.put(currentsource, 0, x);
+			sprite.put(currentsource, 1, y);
 
-				xbox[currentsource].valueAction = this.cartval[currentsource].x + origine.x;
-				ybox[currentsource].valueAction = this.cartval[currentsource].y + origine.y;
-				zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
+			spheval[currentsource].rho_(car2sphe.rho);
+			spheval[currentsource].theta_(car2sphe.theta);
+			spheval[currentsource].phi_(car2sphe.phi);
+
+			spheval[currentsource]  = spheval[currentsource] / zoom_factor;
+
+			ossiasphe[currentsource].v_([spheval[currentsource].rho,
+				spheval[currentsource].theta  - halfPi,
+				spheval[currentsource].phi]);
 		};
 
 		win.view.onResize_({|view|

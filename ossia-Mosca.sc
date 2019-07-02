@@ -224,6 +224,10 @@
 				if (zboxProxy[i].value != num[2].value) {
 					zboxProxy[i].valueAction = num[2].value;
 				};
+
+				if ( guiflag) {
+					{novoplot.value;}.defer;
+				};
 			});
 
 
@@ -235,14 +239,18 @@
 
 			this.ossiasphe[i].callback_({arg num;
 				spheval[i].rho_(num.value[0]);
-				spheval[i].theta_(num.value[1].wrap(-pi, pi) + 1.5707963267949);
-				spheval[i].phi_(num.value[2].fold(-1.5707963267949, 1.5707963267949));
+				spheval[i].theta_(num.value[1].wrap(-pi, pi) + halfPi);
+				spheval[i].phi_(num.value[2].fold(halfPi.neg, halfPi));
 				this.ossiaSpheBack = false;
 				if (this.ossiaCartBack) {
 					this.ossiacart[i].v_(spheval[i].rotate(pitch).tilt(roll).tumble(heading)
 						.asCartesian.asArray);
 				};
 				this.ossiaSpheBack = true;
+
+				if ( guiflag) {
+				{novoplot.value;}.defer;
+				};
 			});
 
 
