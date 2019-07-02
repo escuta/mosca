@@ -2326,7 +2326,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		// ATK
-		spatFuncs[4] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[3] = { |ref, input, radius, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var diffuse, spread, omni,
 			sig = LPF.ar(input, (1 - radius) * 18000 + 2000),
@@ -2344,7 +2344,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		// BF-FMH
-		spatFuncs[5] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[4] = { |ref, input, radius, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000);
 			// attenuate high freq with distance
@@ -2353,7 +2353,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		// joshGrain
-		spatFuncs[6] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[5] = { |ref, input, radius, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000);
 			// attenuate high freq with distance
@@ -2364,7 +2364,7 @@ GUI Parameters usable in SynthDefs
 		};
 
 		// VBAP
-		spatFuncs[7] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[6] = { |ref, input, radius, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000),
 			// attenuate high freq with distance
@@ -3491,7 +3491,6 @@ GUI Parameters usable in SynthDefs
 
 			globDec = Synth.new(\globDecodeSynth,
 				target:this.glbRevDecGrp,addAction: \addToTail);
-
 
 	} // end initMosca
 
