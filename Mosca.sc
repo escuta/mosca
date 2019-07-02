@@ -188,7 +188,7 @@ Mosca {
 	convert_fuma,
 	convert_n3d,
 	convert_direct,
-	speaker_array,
+	azimuths, radiusses, elevations,
 	numoutputs,
 	longest_radius, highest_elevation, lowest_elevation,
 	vbap_buffer,
@@ -255,7 +255,7 @@ GUI Parameters usable in SynthDefs
 	}
 
 	initMosca { | projDir, nsources, iwidth, idur, rirBank, iserver, parentOssiaNode,
-		allCrtitical, decoder, imaxorder, ispeaker_array, outbus, suboutbus, rawformat, rawoutbus,
+		allCrtitical, decoder, imaxorder, speaker_array, outbus, suboutbus, rawformat, rawoutbus,
 		iserport, ioffsetheading, irecchans, irecbus, iguiflag,
 		iguiint, iautoloop |
 
@@ -310,8 +310,6 @@ GUI Parameters usable in SynthDefs
 		this.playEspacGrp = Group.tail;
 		this.glbRevDecGrp = Group.after(this.playEspacGrp);
 		server.sync;
-
-		speaker_array = ispeaker_array;
 
 		//this.lock = ilock;
 
@@ -1946,7 +1944,7 @@ GUI Parameters usable in SynthDefs
 
 		if (speaker_array.notNil) {
 
-			var max_func, min_func, dimention, vbap_setup, radiusses, elevations, adjust;
+			var max_func, min_func, dimention, vbap_setup, adjust;
 
 			this.nonambibus = outbus;
 
@@ -1977,9 +1975,9 @@ GUI Parameters usable in SynthDefs
 				lowest_elevation = 0;
 				highest_elevation = 0;
 
-				speaker_array.collect({ |val| val.pop });
+				azimuths = speaker_array.collect({ |val| val.pop });
 
-				vbap_setup = VBAPSpeakerArray(dimention, speaker_array.flat);
+				vbap_setup = VBAPSpeakerArray(dimention, azimuths.flat);
 			}
 			{ speaker_array[0].size == 3 }
 			{ dimention = 3;
@@ -2006,6 +2004,8 @@ GUI Parameters usable in SynthDefs
 				speaker_array.collect({ |val| val.pop });
 
 				vbap_setup = VBAPSpeakerArray(dimention, speaker_array);
+
+				azimuths = speaker_array.collect({ |val| val.pop });
 			};
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
@@ -2136,54 +2136,97 @@ GUI Parameters usable in SynthDefs
 					Out.ar(fumabus, n3dsig);
 				}).add;
 
-				if (speaker_array.notNil) {
+				if (decoder == "internal") {
+
+					if (elevations.isNil) {
+						elevations = Array.fill(numoutputs, { 0 });
+					};
+
 					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(this.fumabus, 4);
-						sig = FoaDecode.ar(sig, decoder);
+						sig = BFDecode1.ar1(sig[0], sig[1], sig[2], sig[3],
+							speaker_array.collect(_.degrad), elevations.collect(_.degrad),
+							longest_radius, radiusses);
 						nonambi = In.ar(nonambibus, numoutputs);
 						perfectSphereFunc.value(nonambi);
 						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).add;
+
 				} {
-					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
-						var sig, nonambi;
-						sig = In.ar(this.fumabus, 4);
-						sig = FoaDecode.ar(sig, decoder);
-						sig = sig * level;
-						subOutFunc.value(sig, sub);
-						Out.ar(outbus, sig);
-					}).add;
+
+					if (speaker_array.notNil) {
+						SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+							var sig, nonambi;
+							sig = In.ar(this.fumabus, 4);
+							sig = FoaDecode.ar(sig, decoder);
+							nonambi = In.ar(nonambibus, numoutputs);
+							perfectSphereFunc.value(nonambi);
+							sig = (sig + nonambi) * level;
+							subOutFunc.value(sig, sub);
+							Out.ar(outbus, sig);
+						}).add;
+
+					} {
+						SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+							var sig, nonambi;
+							sig = In.ar(this.fumabus, 4);
+							sig = FoaDecode.ar(sig, decoder);
+							sig = sig * level;
+							subOutFunc.value(sig, sub);
+							Out.ar(outbus, sig);
+						}).add;
+					}
 				}
 			}
 
 			{ maxorder == 2 }
-			{ convert_fuma = true;
-				convert_n3d = false;
-				convert_direct = true;
-
+			{
 				if (decoder == "internal") {
-					var setup;
 
-					setup = DecodeAmbi2O.addSetup(decoder,
-						Array.newFrom(speaker_array).collect({ |val| val[0] }),
-						Array.newFrom(speaker_array).collect({ |val| val[1] }) );
+					convert_fuma = false;
+					convert_n3d = true;
+					convert_direct = false;
 
-					SynthDef("globDecodeSynth", {
-						| lf_hf = 0, xover = 400, sub = 1, level = 1 |
+					if (elevations.isNil) {
+						elevations = Array.fill(numoutputs, { 0 });
+					};
+
+					SynthDef.new("ambiConverter", { | gate = 1 |
+						var n3dsig, env;
+						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+						n3dsig = In.ar(this.n3dbus, 9);
+						n3dsig = HOAConvert.ar(2, n3dsig, \ACN_N3D, \FuMa) * env;
+						Out.ar(fumabus, n3dsig);
+					}).add;
+
+					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
-						sig = In.ar(this.n3dbus, bFormNumChan);
-						sig = setup.ar(sig, decoder);
+						sig = In.ar(this.fumabus, 9);
+						sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4], sig[5], sig[6], sig[7], sig[8],
+							azimuths.collect(_.degrad), elevations.collect(_.degrad),
+							longest_radius, radiusses);
 						nonambi = In.ar(nonambibus, numoutputs);
+						perfectSphereFunc.value(nonambi);
 						sig = (sig + nonambi) * level;
-						perfectSphereFunc.value(sig);
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).add;
 
 				} { // assume ADT Decoder
+					convert_fuma = true;
+					convert_n3d = false;
+					convert_direct = true;
+
+					SynthDef.new("ambiConverter", { | gate = 1 |
+						var sig, env;
+						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+						sig = In.ar(this.fumabus, fourOrNine);
+						sig = HOAConvert.ar(maxorder, sig, \FuMa, \ACN_N3D) * env;
+						Out.ar(this.n3dbus, sig);
+					}).add;
 
 					SynthDef("globDecodeSynth", {
 						| lf_hf=0, xover=400, sub = 1, level = 1 |
@@ -3837,7 +3880,7 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					if (speaker_array.isNil) {
+					if (azimuths.isNil) {
 
 						if ((this.libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
@@ -3858,7 +3901,7 @@ GUI Parameters usable in SynthDefs
 							\winrand, winrand[i]] ++
 						wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
 						this.synt[i], addAction:\addAfter).onFree({
-						if (speaker_array.isNil) {
+						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
 								&& nonAmbi2FuMa.notNil) {
 								nonAmbi2FuMa.free;
@@ -3916,7 +3959,7 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					if (speaker_array.isNil) {
+					if (azimuths.isNil) {
 
 						if ((this.libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
@@ -3938,7 +3981,7 @@ GUI Parameters usable in SynthDefs
 							\winrand, winrand[i]] ++
 						zSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
 						this.synt[i], addAction: \addAfter).onFree({
-						if (speaker_array.isNil) {
+						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
 								&& nonAmbi2FuMa.notNil) {
 								nonAmbi2FuMa.free;
@@ -4070,7 +4113,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (speaker_array.isNil) {
+				if (azimuths.isNil) {
 
 					if ((this.libboxProxy[i].value > lastFUMA)
 						&& nonAmbi2FuMa.isNil) {
@@ -4090,7 +4133,7 @@ GUI Parameters usable in SynthDefs
 						\winrand, winrand[i]]  ++
 					wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
 					this.synt[i], addAction: \addAfter).onFree({
-					if (speaker_array.isNil) {
+					if (azimuths.isNil) {
 						if (this.nonAmbi2FuMaNeeded(0).not
 							&& nonAmbi2FuMa.notNil) {
 							nonAmbi2FuMa.free;
@@ -4145,7 +4188,7 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (speaker_array.isNil) {
+				if (azimuths.isNil) {
 
 					if ((this.libboxProxy[i].value > lastFUMA) && nonAmbi2FuMa.isNil) {
 						nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
@@ -4166,7 +4209,7 @@ GUI Parameters usable in SynthDefs
 						\winrand, winrand[i]] ++
 					zSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
 					this.synt[i], addAction: \addAfter).onFree({
-					if (speaker_array.isNil) {
+					if (azimuths.isNil) {
 						if (this.nonAmbi2FuMaNeeded(0).not
 							&& nonAmbi2FuMa.notNil) {
 							nonAmbi2FuMa.free;
@@ -4300,7 +4343,7 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					if (speaker_array.isNil) {
+					if (azimuths.isNil) {
 
 						if ((this.libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
@@ -4321,7 +4364,7 @@ GUI Parameters usable in SynthDefs
 							\winrand, winrand[i]] ++
 						wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
 						this.synt[i], addAction: \addAfter).onFree({
-						if (speaker_array.isNil) {
+						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
 								&& nonAmbi2FuMa.notNil) {
 								nonAmbi2FuMa.free;
@@ -4388,7 +4431,7 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					if (speaker_array.isNil) {
+					if (azimuths.isNil) {
 
 						if ((this.libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
@@ -4410,7 +4453,7 @@ GUI Parameters usable in SynthDefs
 							\winrand, winrand[i]] ++
 						zSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
 						this.synt[i], addAction: \addAfter).onFree({
-						if (speaker_array.isNil) {
+						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
 								&& nonAmbi2FuMa.notNil) {
 								nonAmbi2FuMa.free;
