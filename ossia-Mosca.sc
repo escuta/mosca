@@ -209,7 +209,7 @@
 			ossiasrc[i] = OSSIA_Node(ossiaParent, "Source_" ++ (i + 1));
 
 			this.ossiacart[i] = OSSIA_Parameter(ossiasrc[i], "Cartesian", OSSIA_vec3f,
-				domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 20, 0],
+				domain:[[-200, -200, -200], [200, 200, 200]], default_value:[0, 200, 0],
 				critical:allCrtitical, repetition_filter:true);
 
 			this.ossiacart[i].unit_(OSSIA_position.cart3D);
@@ -232,8 +232,8 @@
 
 
 			this.ossiasphe[i] = OSSIA_Parameter(ossiasrc[i], "Spherical", OSSIA_vec3f,
-				domain:[[0, -pi, -1.5707963267949], [20, pi, 1.5707963267949]],
-				default_value:[20, 0, 0], critical:allCrtitical, repetition_filter:true);
+				domain:[[0, -pi, -1.5707963267949], [200, pi, 1.5707963267949]],
+				default_value:[200, 0, 0], critical:allCrtitical, repetition_filter:true);
 
 			this.ossiasphe[i].unit_(OSSIA_position.spherical);
 

@@ -537,7 +537,7 @@ GUI Parameters usable in SynthDefs
 		// these proxies behave like GUI elements. They eneable
 		// the use of Automation without a GUI
 
-		cartval = Array.fill(nfontes, {Cartesian(0, 20, 0)});
+		cartval = Array.fill(nfontes, {Cartesian(0, 200, 0)});
 		spheval = Array.fill(nfontes, {|i| cartval[i].asSpherical});
 
 		rboxProxy = Array.newClear(nfontes);
@@ -655,7 +655,7 @@ GUI Parameters usable in SynthDefs
 			dboxProxy[i] = AutomationGuiProxy.new(0.0);
 			dpboxProxy[i] = AutomationGuiProxy.new(0.0);
 			zboxProxy[i] = AutomationGuiProxy.new(0.0);
-			yboxProxy[i] = AutomationGuiProxy.new(20.0);
+			yboxProxy[i] = AutomationGuiProxy.new(200.0);
 			xboxProxy[i] = AutomationGuiProxy.new(0.0);
 			a1checkProxy[i] = AutomationGuiProxy.new(false);
 			a2checkProxy[i] = AutomationGuiProxy.new(false);
@@ -3008,7 +3008,7 @@ GUI Parameters usable in SynthDefs
 
 			SynthDef.new("playBFormatATK"++type++"_4", {
 				| bufnum = 0, rate = 1, level = 1, tpos = 0, lp = 0,
-				rotAngle = 0, azim = 0, elev = 0, radius = 20,
+				rotAngle = 0, azim = 0, elev = 0, radius = 200,
 				glev, llev, directang = 0, contr, dopamnt, busini,
 				insertFlag = 0, insertOut, insertBack |
 
@@ -4852,8 +4852,8 @@ GUI Parameters usable in SynthDefs
 				var topView = this.spheval[i];
 				var lev = this.spheval[i].z;
 				var color = lev * 0.4;
-				{x = halfwidth + (topView.x * halfheight * zoom_factor)}.defer;
-				{y = halfheight - (topView.y * halfheight * zoom_factor)}.defer;
+				{x = halfwidth + (topView.x * halfheight * zoom_factor * 0.01)}.defer;
+				{y = halfheight - (topView.y * halfheight * zoom_factor * 0.01)}.defer;
 				Pen.addArc(x@y, 14, 0, 2pi);
 				if ((this.audit[i] || isPlay) && (lev.abs <= plim)) {
 					if (lev <= 0) {
@@ -7018,19 +7018,19 @@ GUI Parameters usable in SynthDefs
 				win.refresh;
 			};
 
-			if ((dy > 0) && (zoom_factor >= 0.1)) {
+			if ((dy > 0) && (zoom_factor >= 0.55)) {
 				zoom_factor = zoom_factor * 0.99009900990099;
 				win.refresh;
 			};
 		};
 
 		moveSource = { |x, y|
-			// save raw mouseposition for selecting closest source on click
 
 			var car2sphe = Cartesian((x - halfwidth) / halfheight,
 				(halfheight - y) / halfheight,
 				(this.zslider.value * 2) - 1).asSpherical;
 
+			// save raw mouseposition for selecting closest source on click
 			sprite.put(currentsource, 0, x);
 			sprite.put(currentsource, 1, y);
 
@@ -7038,7 +7038,7 @@ GUI Parameters usable in SynthDefs
 			spheval[currentsource].theta_(car2sphe.theta);
 			spheval[currentsource].phi_(car2sphe.phi);
 
-			spheval[currentsource]  = spheval[currentsource] / zoom_factor;
+			spheval[currentsource]  = (spheval[currentsource] / zoom_factor) * 100;
 
 			ossiasphe[currentsource].v_([spheval[currentsource].rho,
 				spheval[currentsource].theta  - halfPi,
