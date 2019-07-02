@@ -178,11 +178,11 @@ Mosca {
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum, rirA12Spectrum,
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 	rirList, irSpecPar, wxyzSpecPar, zSpecPar, wSpecPar,
-	spatList = #["Ambitools","HoaLib","ADTB","AmbIEM","ATK","BF-FMH","JoshGrain","VBAP"],
+	spatList = #["Ambitools","HoaLib","ADTB","ATK","BF-FMH","JoshGrain","VBAP"],
 	// list of spat libs
-	lastN3D = 3, // last SN3D lib index
-	lastFUMA = 6, // last FUMA lib index
-	b2a, a2b,
+	lastN3D = 2, // last SN3D lib index
+	lastFUMA = 5, // last FUMA lib index
+	b2a, a2b, n2m,
 	blips,
 	maxorder,
 	convert_fuma,
@@ -208,14 +208,14 @@ Mosca {
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	server, foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, width = 800, dur = 180, rirBank,
-		server = Server.local, parentOssiaNode, allCrtitical = false, decoder,
-		speaker_array, outbus = 0, suboutbus, rawbusfuma = 0, rawbusn3d = 9, maxorder = 1,
+		server = Server.local, parentOssiaNode, allCrtitical = false, decoder, maxorder = 1,
+		speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus,
 		serport, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, autoloop = false;
 
 		^super.new.initMosca(projDir, nsources, width, dur, rirBank,
-			server, parentOssiaNode, allCrtitical, decoder, speaker_array, outbus,
-			suboutbus, rawbusfuma, rawbusn3d, maxorder, serport, offsetheading, recchans,
+			server, parentOssiaNode, allCrtitical, decoder, maxorder, speaker_array, outbus,
+			suboutbus, rawformat, rawoutbus, serport, offsetheading, recchans,
 			recbus, guiflag, guiint, autoloop);
 	}
 
@@ -255,22 +255,23 @@ GUI Parameters usable in SynthDefs
 	}
 
 	initMosca { | projDir, nsources, iwidth, idur, rirBank, iserver, parentOssiaNode,
-		allCrtitical, decoder, ispeaker_array, outbus, suboutbus, rawbusfuma,
-		rawbusn3d, imaxorder, iserport, ioffsetheading, irecchans, irecbus, iguiflag,
+		allCrtitical, decoder, imaxorder, ispeaker_array, outbus, suboutbus, rawformat, rawoutbus,
+		iserport, ioffsetheading, irecchans, irecbus, iguiflag,
 		iguiint, iautoloop |
 
 		var makeSynthDefPlayers, makeSpatialisers, subOutFunc, playInFunc,
 		localReverbFunc, localReverbStereoFunc, perfectSphereFunc,
-		iemConvert, bfOrFmh, spatFuncs, outPutFuncs,
+		bfOrFmh, spatFuncs, outPutFuncs,
 		bFormNumChan = (imaxorder + 1).squared,
 		// add the number of channels of the b format
-		fourOrTwelve; // switch between 4 fuma and 12 ch Matrix
+		fourOrNine; // switch between 4 fuma and 9 ch Matrix
 
 		nfontes = nsources;
 		maxorder = imaxorder;
 		server = iserver;
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
+		n2m = FoaEncoderMatrix.newHoa1();
 		foaEncoderOmni = FoaEncoderMatrix.newOmni;
 		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048,
 			server:server, sampleRate:server.sampleRate.asInteger);
@@ -279,10 +280,10 @@ GUI Parameters usable in SynthDefs
 
 		if (maxorder > 1) {
 			bfOrFmh = BFEncode1;
-			fourOrTwelve = 12;
+			fourOrNine = 9;
 		} {
 			bfOrFmh = FMHEncode1;
-			fourOrTwelve = 4;
+			fourOrNine = 4;
 		};
 
 		this.synthRegistry = Array.newClear(nfontes);
@@ -295,17 +296,17 @@ GUI Parameters usable in SynthDefs
 
 			this.scInBus[i] = Bus.audio(server, 1);
 
-			this.insertBus[0, i] = Bus.audio(server, fourOrTwelve);
-			this.insertBus[1, i] = Bus.audio(server, fourOrTwelve);
+			this.insertBus[0, i] = Bus.audio(server, fourOrNine);
+			this.insertBus[1, i] = Bus.audio(server, fourOrNine);
 
 			this.insertFlag[i] = 0;
 		};
 
 		this.n3dbus = Bus.audio(server, bFormNumChan); // global b-format ACN-SN3D bus
-		this.fumabus = Bus.audio(server, fourOrTwelve);
+		this.fumabus = Bus.audio(server, fourOrNine);
 		this.gbus = Bus.audio(server, 1); // global reverb bus
-		this.gbfbus = Bus.audio(server, fourOrTwelve); // global b-format bus
-		this.gbixfbus = Bus.audio(server, fourOrTwelve); // global n3d b-format bus
+		this.gbfbus = Bus.audio(server, fourOrNine); // global b-format bus
+		this.gbixfbus = Bus.audio(server, fourOrNine); // global n3d b-format bus
 		this.playEspacGrp = Group.tail;
 		this.glbRevDecGrp = Group.after(this.playEspacGrp);
 		server.sync;
@@ -319,6 +320,7 @@ GUI Parameters usable in SynthDefs
 		} {
 			width = iwidth;
 		};
+
 		halfwidth = width * 0.5;
 		height = width; // on init
 		halfheight = halfwidth;
@@ -2053,16 +2055,72 @@ GUI Parameters usable in SynthDefs
 		// define ambisonic decoder
 
 
-		if (decoder.notNil) {
-
-			if (suboutbus.notNil) {
-				subOutFunc = { |signal, sublevel = 1|
-					var subOut = Mix.ar(signal) * sublevel * 0.5;
-					Out.ar(suboutbus, subOut);
-				};
-			} {
-				subOutFunc = { |signal, sublevel| };
+		if (suboutbus.notNil) {
+			subOutFunc = { |signal, sublevel = 1|
+				var subOut = Mix.ar(signal) * sublevel * 0.5;
+				Out.ar(suboutbus, subOut);
 			};
+		} {
+			subOutFunc = { |signal, sublevel| };
+		};
+
+
+		if (decoder.isNil) {
+
+			case
+			{rawformat == \FuMa}
+			{
+				convert_fuma = false;
+				convert_n3d = true;
+				convert_direct = false;
+
+				SynthDef.new("ambiConverter", { | gate = 1 |
+					var n3dsig, env;
+					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+					n3dsig = In.ar(this.n3dbus, bFormNumChan);
+					n3dsig = HOAConvert.ar(maxorder, n3dsig, \ACN_N3D, \FuMa) * env;
+					Out.ar(fumabus, n3dsig);
+				}).add;
+
+				SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+					var sig, nonambi;
+					sig = In.ar(this.fumabus, bFormNumChan) * level;
+					nonambi = In.ar(nonambibus, numoutputs) * level;
+					perfectSphereFunc.value(nonambi);
+					subOutFunc.value(sig + nonambi, sub);
+					Out.ar(rawoutbus, sig);
+					Out.ar(outbus, nonambi);
+				}).add;
+
+			}
+			{rawformat == \N3D}
+			{
+				convert_fuma = true;
+				convert_n3d = false;
+				convert_direct = true;
+
+				SynthDef.new("ambiConverter", { | gate = 1 |
+					var sig, env;
+					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+					sig = In.ar(this.fumabus, fourOrNine);
+					sig = HOAConvert.ar(maxorder, sig, \FuMa, \ACN_N3D) * env;
+					Out.ar(this.n3dbus, sig);
+				}).add;
+
+				SynthDef("globDecodeSynth", {
+					| lf_hf=0, xover=400, sub = 1, level = 1 |
+					var sig, nonambi;
+					sig = In.ar(this.n3dbus, bFormNumChan) * level;
+					nonambi = In.ar(nonambibus, numoutputs) * level;
+					perfectSphereFunc.value(nonambi);
+					subOutFunc.value(sig + nonambi, sub);
+					Out.ar(rawoutbus, sig);
+					Out.ar(outbus, nonambi);
+				}).add;
+
+			};
+
+		} {
 
 			case
 			{ maxorder == 1 }
@@ -2070,22 +2128,16 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = true;
 				convert_direct = false;
 
-				iemConvert = { |in, azi = 0, elev = 0, level = 0|
-					var ambSig = PanAmbi1O.ar(in, azi, elev, level.dbamp);
-					[ambSig[0],ambSig[2],ambSig[3],ambSig[1]];
-				};
-
 				SynthDef.new("ambiConverter", { | gate = 1 |
 					var n3dsig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					n3dsig = In.ar(this.n3dbus, 4);
-					n3dsig = FoaEncode.ar(n3dsig, FoaEncoderMatrix.newAmbix1) * env;
+					n3dsig = FoaEncode.ar(n3dsig, n2m) * env;
 					Out.ar(fumabus, n3dsig);
 				}).add;
 
 				if (speaker_array.notNil) {
-					SynthDef.new("globDecodeSynth",  { | heading = 0, roll = 0, pitch = 0,
-						sub = 1, level = 1 |
+					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(this.fumabus, 4);
 						sig = FoaDecode.ar(sig, decoder);
@@ -2096,8 +2148,7 @@ GUI Parameters usable in SynthDefs
 						Out.ar(outbus, sig);
 					}).add;
 				} {
-					SynthDef.new("globDecodeSynth",  { | heading = 0, roll = 0, pitch = 0,
-						sub = 1, level = 1 |
+					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(this.fumabus, 4);
 						sig = FoaDecode.ar(sig, decoder);
@@ -2113,22 +2164,7 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = false;
 				convert_direct = true;
 
-				iemConvert = { |in, azi = 0, elev = 0, level = 0|
-					var ambSig = PanAmbi2O.ar(in, azi, elev, level.dbamp);
-					[ambSig[0],ambSig[2],ambSig[3],
-						ambSig[1],ambSig[5],ambSig[7],
-						ambSig[8],ambSig[6],ambSig[4]];
-				};
-
-				SynthDef.new("ambiConverter", { | gate = 1 |
-					var sig, env;
-					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
-					sig = In.ar(this.fumabus, 9);
-					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
-					Out.ar(this.n3dbus, sig);
-				}).add;
-
-				if ((decoder.class == String) || (decoder.class == Symbol)) {
+				if (decoder == "internal") {
 					var setup;
 
 					setup = DecodeAmbi2O.addSetup(decoder,
@@ -2147,7 +2183,7 @@ GUI Parameters usable in SynthDefs
 						Out.ar(outbus, sig);
 					}).add;
 
-				} {
+				} { // assume ADT Decoder
 
 					SynthDef("globDecodeSynth", {
 						| lf_hf=0, xover=400, sub = 1, level = 1 |
@@ -2164,18 +2200,10 @@ GUI Parameters usable in SynthDefs
 				};
 			}
 
-			{ maxorder == 3 }
+			{ maxorder == 3 } // assume ADT Decoder
 			{ convert_fuma = true;
 				convert_n3d = false;
 				convert_direct = true;
-
-				iemConvert = { |in, azi = 0, elev = 0, level = 0|
-					var ambSig = PanAmbi3O.ar(in, azi, elev, level.dbamp);
-					[ambSig[0],ambSig[2],ambSig[3], ambSig[1],
-						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
-						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
-						ambSig[15],ambSig[13],ambSig[11],ambSig[9]];
-				};
 
 				SynthDef.new("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -2200,18 +2228,10 @@ GUI Parameters usable in SynthDefs
 				}).add;
 			}
 
-			{ maxorder == 4 }
+			{ maxorder == 4 } // assume ADT Decoder
 			{ convert_fuma = true;
 				convert_n3d = false;
 				convert_direct = true;
-
-				iemConvert = { |in, azi = 0, elev = 0, level = 0|
-					var ambSig = PanAmbi3O.ar(in, azi, elev, level.dbamp);
-					[ambSig[0],ambSig[2],ambSig[3], ambSig[1],
-						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
-						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
-						ambSig[15],ambSig[13],ambSig[11],ambSig[9]];
-				};
 
 				SynthDef.new("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -2238,18 +2258,10 @@ GUI Parameters usable in SynthDefs
 				}).add;
 			}
 
-			{ maxorder == 5 }
+			{ maxorder == 5 } // assume ADT Decoder
 			{ convert_fuma = true;
 				convert_n3d = false;
 				convert_direct = true;
-
-				iemConvert = { |in, azi = 0, elev = 0, level = 0|
-					var ambSig = PanAmbi3O.ar(in, azi, elev, level.dbamp);
-					[ambSig[0],ambSig[2],ambSig[3], ambSig[1],
-						ambSig[5],ambSig[7],ambSig[8],ambSig[6],
-						ambSig[4],ambSig[10],ambSig[12],ambSig[14],
-						ambSig[15],ambSig[13],ambSig[11],ambSig[9]];
-				};
 
 				SynthDef.new("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -2311,16 +2323,6 @@ GUI Parameters usable in SynthDefs
 			ref.value = HOAmbiPanner.ar(maxorder,
 				(ref.value + sig) * (longest_radius / (radius * 50)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
-		};
-
-		// AmbIEM
-		spatFuncs[3] = { |ref, input, radius, azimuth, elevation, difu, spre,
-			contract, win, rate, rand|
-			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000);
-			// attenuate high freq with distance
-			ref.value = iemConvert.value(
-				(ref.value + sig) * (longest_radius / (radius * 50)),
-				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
 		};
 
 		// ATK
@@ -2506,7 +2508,7 @@ GUI Parameters usable in SynthDefs
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
 				sig = In.ar(gbus, 1);
-				sigx = FoaEncode.ar(sigx, FoaEncoderMatrix.newAmbix1);
+				sigx = FoaEncode.ar(sigx, n2m);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sigf = FoaDecode.ar(sigf, b2a);
 				sig = sig + sigf + sigx;
@@ -2572,7 +2574,7 @@ GUI Parameters usable in SynthDefs
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
 				sig = In.ar(gbus, 1);
-				sigx = FoaEncode.ar(sigx, FoaEncoderMatrix.newAmbix1);
+				sigx = FoaEncode.ar(sigx, n2m);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sigf = FoaDecode.ar(sigf, b2a);
 				sig = sig + sigf + sigx;
@@ -2816,7 +2818,7 @@ GUI Parameters usable in SynthDefs
 					var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 					sigx = In.ar(gbixfbus, 4);
 					sig = In.ar(gbus, 1);
-					sigx = FoaEncode.ar(sigx, FoaEncoderMatrix.newAmbix1);
+					sigx = FoaEncode.ar(sigx, n2m);
 					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 					sigf = FoaDecode.ar(sigf, b2a);
 					sig = sig + sigf + sigx;
@@ -2963,28 +2965,6 @@ GUI Parameters usable in SynthDefs
 				Out.ar(outbus, playerRef.value * level);
 			}).add;
 
-/*
-					var globallev = (1 / radius.sqrt) - 1, //global reverberation
-					locallev, lrevRef = Ref(0),
-					az = azim - halfPi,
-					p = In.ar(inbus, 1),
-					rd = Lag.kr(radius * 340), // Doppler
-					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1);
-					//make shure level is 0 when radius reaches plim
-
-					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-					localReverbFunc.value(lrevRef, p, wir, radius * llev,
-			// local reverberation
-						room, damp);
-
-					spatFuncs[i].value(lrevRef, p, radius, az, elev, df, sp, contr,
-						winsize, grainrate, winrand);
-
-					outPutFuncs[out_type].value(p, lrevRef.value * cut,
-						globallev.clip(0, 1) * glev);
-*/
-
 
 			SynthDef.new("playBFormatATK"++type++"_4", {
 				| bufnum = 0, rate = 1, level = 1, tpos = 0, lp = 0,
@@ -3117,7 +3097,7 @@ GUI Parameters usable in SynthDefs
 					intens = intens * 0.25;
 
 					playerRef.value = FoaEncode.ar(playerRef.value,
-						FoaEncoderMatrix.newAmbix1);
+						n2m);
 					playerRef.value = FoaDirectO.ar(playerRef.value, directang);
 					// directivity
 
@@ -3509,11 +3489,8 @@ GUI Parameters usable in SynthDefs
 
 		//// LAUNCH INITIAL SYNTH
 
-		if (decoder.notNil) {
-
 			globDec = Synth.new(\globDecodeSynth,
 				target:this.glbRevDecGrp,addAction: \addToTail);
-		};
 
 
 	} // end initMosca
@@ -7044,6 +7021,7 @@ GUI Parameters usable in SynthDefs
 			this.free;
 
 		});
+
 
 		mmcslave = CheckBox(autoView, Rect(163, 20, 140, 20),
 			"Slave to MMC").action_({ | butt |
