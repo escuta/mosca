@@ -70,7 +70,6 @@ Mosca {
 	<>insertFlag,
 	<>insertBus,
 	<dur,
-	plim, // distance limit from origin where processes continue to run
 	<>looping,
 	<>serport,
 	<>offsetheading,
@@ -203,8 +202,9 @@ Mosca {
 	currentsource,
 	guiflag, baudi,
 	watcher, troutine, kroutine,
-	updatesourcevariables,
-	prjDr, fftsize = 2048, halfPi = 1.5707963267949,
+	updatesourcevariables, prjDr,
+	plim = 120, // distance limit from origin where processes continue to run
+	fftsize = 2048, halfPi = 1.5707963267949, rad2deg = 57.295779513082 ,
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	server, foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, width = 800, dur = 180, rirBank,
@@ -330,7 +330,6 @@ GUI Parameters usable in SynthDefs
 		guiflag = iguiflag;
 
 		currentsource = 0;
-		plim = 1.2;
 		lastGui = Main.elapsedTime;
 		guiInt = iguiint;
 		this.autoloopval = iautoloop;
@@ -755,6 +754,7 @@ GUI Parameters usable in SynthDefs
 
 				if ( guiflag) {
 					{this.xbox[i].value = num.value}.defer;
+					{novoplot.value;}.defer;
 				};
 				if(this.espacializador[i].notNil || playingBF[i]) {
 					this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -788,6 +788,7 @@ GUI Parameters usable in SynthDefs
 
 				if (guiflag) {
 					{this.ybox[i].value = num.value}.defer;
+					{novoplot.value;}.defer;
 				};
 				if(this.espacializador[i].notNil || playingBF[i]){
 					this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -821,6 +822,7 @@ GUI Parameters usable in SynthDefs
 				zlev[i] = this.spheval[i].z;
 				if (guiflag) {
 					{zbox[i].value = num.value}.defer;
+					{novoplot.value;}.defer;
 				};
 				if(this.espacializador[i].notNil || playingBF[i]){
 					this.espacializador[i].set(\azim, this.spheval[i].theta);
@@ -2031,7 +2033,7 @@ GUI Parameters usable in SynthDefs
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			longest_radius = 3;
+			longest_radius = 18;
 			lowest_elevation = -90;
 			highest_elevation = 90;
 
@@ -2338,40 +2340,40 @@ GUI Parameters usable in SynthDefs
 		// contains the synthDef blocks for each spatialyers lib
 
 		// Ambitools
-		spatFuncs[0] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[0] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			ref.value = HOAEncoder.ar(maxorder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-				Lag.kr(elevation), 6, 1, Lag.kr(radius * 50), longest_radius);
+				Lag.kr(elevation), 6, 1, Lag.kr(radius), longest_radius);
 		};
 
 		// HoaLib
-		spatFuncs[1] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[1] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000);
+			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOALibEnc3D.ar(maxorder,
-				(ref.value + sig) * (longest_radius / (radius * 50)),
+				(ref.value + sig) * (longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
 		};
 
 		// ADTB
-		spatFuncs[2] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[2] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000);
+			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOAmbiPanner.ar(maxorder,
-				(ref.value + sig) * (longest_radius / (radius * 50)),
+				(ref.value + sig) * (longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
 		};
 
 		// ATK
-		spatFuncs[3] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[3] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var diffuse, spread, omni,
-			sig = LPF.ar(input, (1 - radius) * 18000 + 2000),
+			sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
 			// attenuate high freq with distance
-			rad = longest_radius / (radius * 50);
+			rad = longest_radius / radius;
 			sig = (sig + ref.value) * rad;
 			omni = FoaEncode.ar(sig, foaEncoderOmni);
 			spread = FoaEncode.ar(sig, foaEncoderSpread);
@@ -2384,31 +2386,30 @@ GUI Parameters usable in SynthDefs
 		};
 
 		// BF-FMH
-		spatFuncs[4] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[4] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000);
+			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
-				longest_radius / (radius.clip * 50), 10);
+				longest_radius / radius, 10);
 		};
 
 		// joshGrain
-		spatFuncs[5] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[5] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000);
+			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 				azimuth, 1 - contract,
-				elevation, 1 - contract, rho: Lag.kr(longest_radius / (radius * 50)),
+				elevation, 1 - contract, rho: Lag.kr(longest_radius / radius),
 				mul: 1 + (0.5 - win) + (1 - (rate / 40)));
 		};
 
 		// VBAP
-		spatFuncs[6] = { |ref, input, radius, azimuth, elevation, difu, spre,
+		spatFuncs[6] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = LPF.ar(input, (1 - radius) * 18000 + 2000),
+			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
 			// attenuate high freq with distance
-			rad2deg = 57.295779513082,
 			azi = azimuth * rad2deg, // convert to degrees
 			elev = elevation * rad2deg, // convert to degrees
 			elevexcess = Select.kr(elev < lowest_elevation, [0, elev.abs]);
@@ -2418,7 +2419,7 @@ GUI Parameters usable in SynthDefs
 			// restrict between min & max
 
 			ref.value = VBAP.ar(numoutputs,
-				(ref.value + sig) * (longest_radius / (radius * 50)),
+				(ref.value + sig) * (longest_radius / radius),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100);
 		};
@@ -2453,28 +2454,29 @@ GUI Parameters usable in SynthDefs
 				{ i > lastFUMA } { out_type = 2 };
 
 				SynthDef.new(item++"Chowning"++rev_type, {
-					| inbus, azim = 0, elev = 0, radius = 20,
+					| inbus, azim = 0, elev = 0, radius = 200,
 					dopamnt = 0, glev = 0, llev = 0,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var globallev = (1 / radius.sqrt) - 1, //global reverberation
+					var dis = radius * 0.01,
+					globallev = (1 / dis.sqrt) - 1, //global reverberation
 					locallev, lrevRef = Ref(0),
 					az = azim - halfPi,
 					p = In.ar(inbus, 1),
-					rd = Lag.kr(radius * 340), // Doppler
-					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1),
-					rad = radius.clip(0.01, 1);
-					//make shure level is 0 when radius reaches plim
+					rd = Lag.kr(dis * 340), // Doppler
+					cut = ((1 - dis) * 2).clip(0, 1),
+					//make shure level is 0 when radius reaches 100
+					rad = radius.clip(0.5, 50);
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-					localReverbFunc.value(lrevRef, p, wir, radius * llev,
+					localReverbFunc.value(lrevRef, p, wir, dis * llev,
 						// local reverberation
 						room, damp);
 
-					spatFuncs[i].value(lrevRef, p, rad, az, elev, df, sp, contr,
+					spatFuncs[i].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
@@ -2489,23 +2491,24 @@ GUI Parameters usable in SynthDefs
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var globallev = (1 / radius.sqrt) - 1, //global reverberation
+					var dis = radius * 0.01,
+					globallev = (1 / dis.sqrt) - 1, //global reverberation
 					lrev1Ref = Ref(0), lrev2Ref = Ref(0),
 					az = azim - halfPi,
 					p = In.ar(inbus, 2),
-					rd = Lag.kr(radius * 340), // Doppler
-					cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1),
-					//make shure level is 0 when radius reaches plim
-					rad = radius.clip(0.01, 1);
+					rd = Lag.kr(dis * 340), // Doppler
+					cut = ((1 - dis) * 2).clip(0, 1),
+					//make shure level is 0 when radius reaches 100
+					rad = radius.clip(0.5, 50);
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 					localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
-						wir, radius * llev, room, damp);
+						wir, dis * llev, room, damp);
 
-					spatFuncs[i].value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
+					spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
-					spatFuncs[i].value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
+					spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(Mix.new(p) * 0.5 * cut,
@@ -4847,13 +4850,17 @@ GUI Parameters usable in SynthDefs
 			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor, 0, 2pi);
 			Pen.fill;
 
+			// Pen.fillColor = Color.new255(37, 41, 48, 40);
+			// Pen.addArc(halfwidth@halfheight, 14, 0, 2pi);
+			// Pen.fill;
+
 			nfontes.do { |i|
 				var x, y;
-				var topView = this.spheval[i];
-				var lev = this.spheval[i].z;
+				var topView = this.spheval[i] * zoom_factor * 0.01;
+				var lev = topView.z;
 				var color = lev * 0.4;
-				{x = halfwidth + (topView.x * halfheight * zoom_factor * 0.01)}.defer;
-				{y = halfheight - (topView.y * halfheight * zoom_factor * 0.01)}.defer;
+				{x = halfwidth + (topView.x * halfheight)}.defer;
+				{y = halfheight - (topView.y * halfheight)}.defer;
 				Pen.addArc(x@y, 14, 0, 2pi);
 				if ((this.audit[i] || isPlay) && (lev.abs <= plim)) {
 					if (lev <= 0) {
@@ -4887,7 +4894,7 @@ GUI Parameters usable in SynthDefs
 				lastGui =  Main.elapsedTime;
 				{
 					{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
-					{ zslider.value = (this.zlev[currentsource] + 1) * 0.5; }.defer;
+					{ zslider.value = (this.zlev[currentsource] * 0.01 + 1) * 0.5; }.defer;
 					{ znumbox.value = this.zlev[currentsource]; }.defer;
 					{ win.refresh; }.defer;
 				}.defer(guiInt);
@@ -5543,7 +5550,7 @@ GUI Parameters usable in SynthDefs
 			winCtl[0][3].value = glev[currentsource];
 			winCtl[1][3].value = glev[currentsource];
 
-			zslider.value = (zlev[currentsource] + 1) * 0.5;
+			zslider.value = (zlev[currentsource] * 0.01 + 1) * 0.5;
 			znumbox.value = zlev[currentsource];
 
 			auxslider1.value = this.aux1[currentsource];
@@ -5642,13 +5649,13 @@ GUI Parameters usable in SynthDefs
 		znumbox = NumberBox(win, Rect(width - 45, ((width - zSliderHeight) * 0.5)
 			+ zSliderHeight, 40, 20));
 		znumbox.value = 0;
-		znumbox.clipHi = 1;
-		znumbox.clipLo = -1;
-		znumbox.step_(0.01);
-		znumbox.scroll_step_(0.01);
+		znumbox.clipHi = 100;
+		znumbox.clipLo = -100;
+		znumbox.step_(0.1);
+		znumbox.scroll_step_(0.1);
 		znumbox.align = \center;
 		znumbox.action = { | num |
-			{zslider.valueAction = (num.value * 2) -1;}.defer;
+			{ zslider.valueAction = (num.value * 0.01 + 0.5); }.defer;
 		};
 
 
@@ -5656,19 +5663,7 @@ GUI Parameters usable in SynthDefs
 			20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = { | num |
-			var scale = (0.5 - num.value) * -2;
-
-			this.cartval[currentsource].x_(this.spheval[currentsource].x);
-			this.cartval[currentsource].y_(this.spheval[currentsource].y);
-			this.cartval[currentsource].z_(scale);
-
-			this.cartval[currentsource] = this.cartval[currentsource]
-			.tumble(heading).tilt(roll).rotate(pitch);
-
-			xbox[currentsource].valueAction = this.cartval[currentsource].x + origine.x;
-			ybox[currentsource].valueAction = this.cartval[currentsource].y + origine.y;
-			zbox[currentsource].valueAction = this.cartval[currentsource].z + origine.z;
-
+			{ moveSource.value(sprite[currentsource, 0], sprite[currentsource, 1]) }.defer;
 		};
 
 
@@ -7028,7 +7023,7 @@ GUI Parameters usable in SynthDefs
 
 			var car2sphe = Cartesian((x - halfwidth) / halfheight,
 				(halfheight - y) / halfheight,
-				(this.zslider.value * 2) - 1).asSpherical;
+				(zslider.value - 0.5) * 2 * zoom_factor);
 
 			// save raw mouseposition for selecting closest source on click
 			sprite.put(currentsource, 0, x);
