@@ -2204,7 +2204,8 @@ GUI Parameters usable in SynthDefs
 					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(this.fumabus, 9);
-						sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4], sig[5], sig[6], sig[7], sig[8],
+						sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4], sig[5],
+							sig[6], sig[7], sig[8],
 							azimuths.collect(_.degrad), elevations.collect(_.degrad),
 							longest_radius, radiusses);
 						nonambi = In.ar(nonambibus, numoutputs);
@@ -2344,7 +2345,7 @@ GUI Parameters usable in SynthDefs
 			contract, win, rate, rand|
 			ref.value = HOAEncoder.ar(maxorder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-				Lag.kr(elevation), 0, 1, Lag.kr(radius), longest_radius);
+				Lag.kr(elevation), 0, 1, radius, longest_radius);
 		};
 
 		// HoaLib
@@ -2353,7 +2354,7 @@ GUI Parameters usable in SynthDefs
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOALibEnc3D.ar(maxorder,
-				(ref.value + sig) * Lag.kr((longest_radius / radius)),
+				(ref.value + sig) * (longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
@@ -2363,7 +2364,7 @@ GUI Parameters usable in SynthDefs
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOAmbiPanner.ar(maxorder,
-				(ref.value + sig) * Lag.kr((longest_radius / radius)),
+				(ref.value + sig) * (longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
@@ -2401,7 +2402,7 @@ GUI Parameters usable in SynthDefs
 			// attenuate high freq with distance
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 				azimuth, 1 - contract,
-				elevation, 1 - contract, rho: Lag.kr(longest_radius / radius),
+				elevation, 1 - contract, rho: longest_radius / radius,
 				mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
 		};
 
@@ -2419,7 +2420,7 @@ GUI Parameters usable in SynthDefs
 			// restrict between min & max
 
 			ref.value = VBAP.ar(numoutputs,
-				(ref.value + sig) * Lag.kr((longest_radius / radius)),
+				(ref.value + sig) * (longest_radius / radius),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100) * 0.5;
 		};
@@ -2460,15 +2461,16 @@ GUI Parameters usable in SynthDefs
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var dis = radius * 0.01,
+					var rad = Lag.kr(radius),
+					dis = rad * 0.01,
 					globallev = (1 / dis.sqrt) - 1, //global reverberation
 					locallev, lrevRef = Ref(0),
 					az = azim - halfPi,
 					p = In.ar(inbus, 1),
-					rd = Lag.kr(dis * 340), // Doppler
-					cut = ((1 - dis) * 2).clip(0, 1),
+					rd = dis * 340, // Doppler
+					cut = ((1 - dis) * 2).clip(0, 1);
 					//make shure level is 0 when radius reaches 100
-					rad = radius.clip(1, 50);
+					rad = rad.clip(1, 50);
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
@@ -2491,15 +2493,16 @@ GUI Parameters usable in SynthDefs
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-					var dis = radius * 0.01,
+					var rad = Lag.kr(radius),
+					dis = rad * 0.01,
 					globallev = (1 / dis.sqrt) - 1, //global reverberation
 					lrev1Ref = Ref(0), lrev2Ref = Ref(0),
-					az = azim - halfPi,
+					az = Lag.kr(azim - halfPi),
 					p = In.ar(inbus, 2),
-					rd = Lag.kr(dis * 340), // Doppler
-					cut = ((1 - dis) * 2).clip(0, 1),
+					rd = dis * 340, // Doppler
+					cut = ((1 - dis) * 2).clip(0, 1);
 					//make shure level is 0 when radius reaches 100
-					rad = radius.clip(0.5, 50);
+					rad = rad.clip(1, 50);
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
@@ -2519,21 +2522,24 @@ GUI Parameters usable in SynthDefs
 
 
 			SynthDef.new("ATK2Chowning"++rev_type, {
-				| inbus, radius = 0,
+				| inbus, radius = 200,
 				dopamnt = 0, glev = 0, llev = 0,
 				insertFlag = 0, insertOut, insertBack,
 				room = 0.5, damp = 05, wir|
 
-				var globallev = (1 / radius.sqrt) - 1, //global reverberation
+				var rad = Lag.kr(radius),
+				dis = rad * 0.01,
+				globallev = (1 / dis.sqrt) - 1, //global reverberation
 				lrevRef = Ref(0),
 				p = In.ar(inbus, 1),
-				rd = Lag.kr(radius * 340), // Doppler
-				cut = ((plim - 1).reciprocal * (plim - radius)).clip(0, 1),
+				rd = radius * 340, // Doppler
+				cut = ((1 - dis) * 2).clip(0, 1);
 				//make shure level is 0 when radius reaches plim
-				rad = radius.clip(0.01, 1);
+				rad = rad.clip(1, 50);
+
 				p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-				localReverbFunc.value(lrevRef, p, wir, radius * llev, room, damp);
+				localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
 				p = HPF.ar(p, 20); // stops bass frequency blow outs by proximity
 				p = FoaTransform.ar(p + lrevRef.value, 'proximity',
 					rad * 50);
@@ -5138,6 +5144,7 @@ GUI Parameters usable in SynthDefs
 						hwCtl[0][1].visible = true;
 						hwCtl[1][1].visible = true;
 						hwCtl[0][0].value = this.ncan[currentsource];
+						hwCtl[0][1].value = this.busini[currentsource];
 					}
 					{scn[currentsource] == 1}
 					{
@@ -5151,7 +5158,6 @@ GUI Parameters usable in SynthDefs
 						hwCtl[0][1].visible = false;
 						hwCtl[1][1].visible = false;
 						hwCtl[0][0].value = this.ncan[currentsource];
-						hwCtl[0][1].value = this.busini[currentsource];
 					};
 				};
 			);
