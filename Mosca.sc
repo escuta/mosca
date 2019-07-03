@@ -279,10 +279,10 @@ GUI Parameters usable in SynthDefs
 			server:server, sampleRate:server.sampleRate.asInteger);
 
 		if (maxorder > 1) {
-			bfOrFmh = BFEncode1;
+			bfOrFmh = FMHEncode1;
 			fourOrNine = 9;
 		} {
-			bfOrFmh = FMHEncode1;
+			bfOrFmh = BFEncode1;
 			fourOrNine = 4;
 		};
 
@@ -2344,7 +2344,7 @@ GUI Parameters usable in SynthDefs
 			contract, win, rate, rand|
 			ref.value = HOAEncoder.ar(maxorder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-				Lag.kr(elevation), 6, 1, Lag.kr(radius), longest_radius);
+				Lag.kr(elevation), 0, 1, Lag.kr(radius), longest_radius);
 		};
 
 		// HoaLib
@@ -2354,7 +2354,7 @@ GUI Parameters usable in SynthDefs
 			// attenuate high freq with distance
 			ref.value = HOALibEnc3D.ar(maxorder,
 				(ref.value + sig) * (longest_radius / radius),
-				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
+				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
 		// ADTB
@@ -2364,7 +2364,7 @@ GUI Parameters usable in SynthDefs
 			// attenuate high freq with distance
 			ref.value = HOAmbiPanner.ar(maxorder,
 				(ref.value + sig) * (longest_radius / radius),
-				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 8);
+				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
 		// ATK
@@ -2391,7 +2391,7 @@ GUI Parameters usable in SynthDefs
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
-				longest_radius / radius, 10);
+				longest_radius / radius, 0.5);
 		};
 
 		// joshGrain
@@ -2402,7 +2402,7 @@ GUI Parameters usable in SynthDefs
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 				azimuth, 1 - contract,
 				elevation, 1 - contract, rho: Lag.kr(longest_radius / radius),
-				mul: 1 + (0.5 - win) + (1 - (rate / 40)));
+				mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
 		};
 
 		// VBAP
@@ -2421,7 +2421,7 @@ GUI Parameters usable in SynthDefs
 			ref.value = VBAP.ar(numoutputs,
 				(ref.value + sig) * (longest_radius / radius),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
-				((1 - contract) + (elevexcess / 90)) * 100);
+				((1 - contract) + (elevexcess / 90)) * 100) * 0.5;
 		};
 
 		outPutFuncs = Array.newClear(3);
@@ -5135,8 +5135,8 @@ GUI Parameters usable in SynthDefs
 						loopcheck.visible = false;
 						hwCtl[0][0].visible = true;
 						hwCtl[1][0].visible = true;
-						hwCtl[0][1].visible = false;
-						hwCtl[1][1].visible = false;
+						hwCtl[0][1].visible = true;
+						hwCtl[1][1].visible = true;
 						hwCtl[0][0].value = this.ncan[currentsource];
 					}
 					{scn[currentsource] == 1}
@@ -5148,8 +5148,8 @@ GUI Parameters usable in SynthDefs
 						loopcheck.visible = false;
 						hwCtl[0][0].visible = true;
 						hwCtl[1][0].visible = true;
-						hwCtl[0][1].visible = true;
-						hwCtl[1][1].visible = true;
+						hwCtl[0][1].visible = false;
+						hwCtl[1][1].visible = false;
 						hwCtl[0][0].value = this.ncan[currentsource];
 						hwCtl[0][1].value = this.busini[currentsource];
 					};
@@ -5601,7 +5601,7 @@ GUI Parameters usable in SynthDefs
 		hwCtl[1] = Array.newClear(2);
 
 		hwCtl[1][0] = StaticText(win, Rect(55, 50, 200, 20));
-		hwCtl[1][0].string = "No. of chans.";
+		hwCtl[1][0].string = "Nb. of chans.";
 		hwCtl[1][0].visible = false;
 		hwCtl[0][0] = NumberBox(win, Rect(10, 50, 40, 20));
 		hwCtl[0][0].value = 0;
@@ -6606,7 +6606,7 @@ GUI Parameters usable in SynthDefs
 			ybox[i].action = { | num |
 				this.yboxProxy[i].valueAction = num.value;
 			};
-			ybox[i].value = 20;
+			ybox[i].value = 200;
 
 
 			zbox[i].action = { | num |
