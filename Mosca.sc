@@ -2353,7 +2353,7 @@ GUI Parameters usable in SynthDefs
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOALibEnc3D.ar(maxorder,
-				(ref.value + sig) * (longest_radius / radius),
+				(ref.value + sig) * Lag.kr((longest_radius / radius)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
@@ -2363,7 +2363,7 @@ GUI Parameters usable in SynthDefs
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOAmbiPanner.ar(maxorder,
-				(ref.value + sig) * (longest_radius / radius),
+				(ref.value + sig) * Lag.kr((longest_radius / radius)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
@@ -2419,7 +2419,7 @@ GUI Parameters usable in SynthDefs
 			// restrict between min & max
 
 			ref.value = VBAP.ar(numoutputs,
-				(ref.value + sig) * (longest_radius / radius),
+				(ref.value + sig) * Lag.kr((longest_radius / radius)),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100) * 0.5;
 		};
@@ -2468,7 +2468,7 @@ GUI Parameters usable in SynthDefs
 					rd = Lag.kr(dis * 340), // Doppler
 					cut = ((1 - dis) * 2).clip(0, 1),
 					//make shure level is 0 when radius reaches 100
-					rad = radius.clip(0.5, 50);
+					rad = radius.clip(1, 50);
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
@@ -2506,9 +2506,9 @@ GUI Parameters usable in SynthDefs
 					localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
 						wir, dis * llev, room, damp);
 
-					spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - rad)),
+					spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - dis)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
-					spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - rad)),
+					spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - dis)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(Mix.new(p) * 0.5 * cut,
