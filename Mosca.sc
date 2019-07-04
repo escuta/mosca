@@ -4856,9 +4856,9 @@ GUI Parameters usable in SynthDefs
 			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor, 0, 2pi);
 			Pen.fill;
 
-			// Pen.fillColor = Color.new255(37, 41, 48, 40);
-			// Pen.addArc(halfwidth@halfheight, 14, 0, 2pi);
-			// Pen.fill;
+			Pen.strokeColor = Color.new255(37, 41, 48, 40);
+			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor * 0.01 * longest_radius, 0, 2pi);
+			Pen.stroke;
 
 			nfontes.do { |i|
 				var x, y;
