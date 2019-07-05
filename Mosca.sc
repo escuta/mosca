@@ -1307,7 +1307,7 @@ GUI Parameters usable in SynthDefs
 					{ this.ncanbox[i].value = num.value }.defer;
 
 					if (i == currentsource) {
-						{ updateGuiCtl.value(\chan); }.defer;
+						{ updateGuiCtl.value(\src); }.defer;
 					};
 				};
 			};
@@ -1318,7 +1318,7 @@ GUI Parameters usable in SynthDefs
 					{ this.businibox[i].value = num.value }.defer;
 
 					if (i == currentsource) {
-						{ hwCtl[0][1].value = num.value; }.defer;
+						{ updateGuiCtl.value(\src); }.defer;
 					};
 				};
 			};
@@ -4857,7 +4857,8 @@ GUI Parameters usable in SynthDefs
 			Pen.fill;
 
 			Pen.strokeColor = Color.new255(37, 41, 48, 40);
-			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor * 0.01 * longest_radius, 0, 2pi);
+			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor *
+				0.01 * longest_radius, 0, 2pi);
 			Pen.stroke;
 
 			nfontes.do { |i|
@@ -4867,17 +4868,9 @@ GUI Parameters usable in SynthDefs
 				var color = lev * 0.4;
 				{x = halfwidth + (topView.x * halfheight)}.defer;
 				{y = halfheight - (topView.y * halfheight)}.defer;
-				Pen.addArc(x@y, 14, 0, 2pi);
+				Pen.addArc(x@y, 14 + (lev * 0.01 * halfheight * 2), 0, 2pi);
 				if ((this.audit[i] || isPlay) && (lev.abs <= plim)) {
-					if (lev <= 0) {
-						Pen.fillColor = Color.new255(179 + (lev * 176), 90 - (lev * 60),
-							209 - (lev * 41));
-						// from OSSIA/score "Emphasis3" down to "Pulse2"
-					} {
-						Pen.fillColor = Color.new255(179 + (lev * 20), 90 - (lev * 59),
-							209 - (lev * 165));
-						// up to "Tender1"
-					};
+					Pen.fillColor = Color.new255(179, 90,209);
 					Pen.fill;
 				} {
 					Pen.strokeColor = Color.white;
@@ -5655,21 +5648,23 @@ GUI Parameters usable in SynthDefs
 		znumbox = NumberBox(win, Rect(width - 45, ((width - zSliderHeight) * 0.5)
 			+ zSliderHeight, 40, 20));
 		znumbox.value = 0;
+		znumbox.decimals = 1;
 		znumbox.clipHi = 100;
 		znumbox.clipLo = -100;
 		znumbox.step_(0.1);
 		znumbox.scroll_step_(0.1);
 		znumbox.align = \center;
 		znumbox.action = { | num |
-			{ zslider.valueAction = (num.value * 0.01 + 0.5); }.defer;
+			{ zslider.value = (num.value * 0.005) + 0.5;
+				moveSource.value(sprite[currentsource, 0], sprite[currentsource, 1])
+			}.defer;
 		};
-
 
 		zslider = Slider.new(win, Rect(width - 35, ((width - zSliderHeight) * 0.5),
 			20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = { | num |
-			{ moveSource.value(sprite[currentsource, 0], sprite[currentsource, 1]) }.defer;
+			{ znumbox.valueAction = num.value - 0.5 * 200; }.defer;
 		};
 
 
@@ -5728,18 +5723,18 @@ GUI Parameters usable in SynthDefs
 
 		originCtl[0][5] = NumberBox(originView, Rect(170, 20, 40, 20));
 		originCtl[0][5].align = \center;
-		originCtl[0][5].step_(0.01);
-		originCtl[0][5].scroll_step_(0.01);
+		originCtl[0][5].step_(0.1);
+		originCtl[0][5].scroll_step_(0.1);
 
 		originCtl[0][6] = NumberBox(originView, Rect(170, 40, 40, 20));
 		originCtl[0][6].align = \center;
-		originCtl[0][6].step_(0.01);
-		originCtl[0][6].scroll_step_(0.01);
+		originCtl[0][6].step_(0.1);
+		originCtl[0][6].scroll_step_(0.1);
 
 		originCtl[0][7] = NumberBox(originView, Rect(170, 60, 40, 20));
 		originCtl[0][7].align = \center;
-		originCtl[0][7].step_(0.01);
-		originCtl[0][7].scroll_step_(0.01);
+		originCtl[0][7].step_(0.1);
+		originCtl[0][7].scroll_step_(0.1);
 
 		originCtl[0][5].action = { | num |
 			this.oxnumboxProxy.valueAction = num.value;
