@@ -179,7 +179,7 @@ Mosca {
 	rirList, irSpecPar, wxyzSpecPar, zSpecPar, wSpecPar,
 	spatList = #["Ambitools","HoaLib","ADTB","ATK","BF-FMH","JoshGrain","VBAP"],
 	// list of spat libs
-	lastN3D = 2, // last SN3D lib index
+	lastN3D = 2, // last N3D lib index
 	lastFUMA = 5, // last FUMA lib index
 	b2a, a2b, n2m,
 	blips,
@@ -3788,7 +3788,7 @@ GUI Parameters usable in SynthDefs
 		if (i == nfontes) {
 			^false.asBoolean;
 		} {
-			if ( (this.lib[i].value > (lastFUMA + 1)) // pass ambisonic libs
+			if ( (this.lib[i].value > lastFUMA) // pass ambisonic libs
 				&& this.espacializador[i].notNil ) {
 				^true.asBoolean;
 			} {
