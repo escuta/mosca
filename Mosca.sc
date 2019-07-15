@@ -97,10 +97,11 @@ Mosca {
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	<>cbox, <>clev, <>angle, <>ncanais, <>audit,	<>gbus, <>gbfbus, <>n3dbus, <>gbixfbus,
-	<>nonambibus,
+	<>cbox, <>clev, <>angle, <>ncanais, <>audit,	<>gbus, <>gbfbus, <>n3dbus,
+	<>gbixfbus, <>nonambibus,
 	<>playEspacGrp, <>glbRevDecGrp,
-	<>level, <>lp, <>lib, <>libName, <>convert, <>dstrv, <>dstrvtypes, <>clsrv, <>clsRvtypes,
+	<>level, <>lp, <>lib, <>libName, <>convert, <>dstrv, <>dstrvtypes, <>clsrv,
+	<>clsRvtypes,
 	<>winCtl, <>originCtl, <>hwCtl,
 	<>xbox, <>ybox, <>sombuf, <>sbus, <>mbus,
 	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
@@ -164,11 +165,11 @@ Mosca {
 
 	<>ossiaorient, <>ossiaorigine, <>ossiaplay, <>ossiatrasportLoop,
 	<>ossiatransport, <>ossiaseekback, <>ossiarec, <>ossiacart, <>ossiasphe, <>ossiaaud,
-	<>ossialoop, <>ossialib, <>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam, <>ossiaclsdel,
-	<>ossiaclsdec, <>ossiadst, <>ossiadstam, <>ossiadstdel, <>ossiadstdec, <>ossiaangle,
-	<>ossiarot, <>ossiadir, <>ossiactr, <>ossiaspread, <>ossiadiff, <>ossiaCartBack,
-	<>ossiaSpheBack, <>ossiarate, <>ossiawin, <>ossiarand, <>ossiamaster, <>ossiaMasterPlay,
-	<>ossiaMasterLib, <>ossiaMasterRev;
+	<>ossialoop, <>ossialib, <>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam,
+	<>ossiaclsdel, <>ossiaclsdec, <>ossiadst, <>ossiadstam, <>ossiadstdel, <>ossiadstdec,
+	<>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr, <>ossiaspread, <>ossiadiff,
+	<>ossiaCartBack, <>ossiaSpheBack, <>ossiarate, <>ossiawin, <>ossiarand, <>ossiamaster,
+	<>ossiaMasterPlay, <>ossiaMasterLib, <>ossiaMasterRev;
 
 	/////////////////////////////////////////
 
@@ -208,14 +209,14 @@ Mosca {
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	server, foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, width = 800, dur = 180, rirBank,
-		server = Server.local, parentOssiaNode, allCrtitical = false, decoder, maxorder = 1,
-		speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus,
+		server = Server.local, parentOssiaNode, allCrtitical = false, decoder,
+		maxorder = 1, speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus,
 		serport, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
 		guiint = 0.07, autoloop = false;
 
 		^super.new.initMosca(projDir, nsources, width, dur, rirBank,
-			server, parentOssiaNode, allCrtitical, decoder, maxorder, speaker_array, outbus,
-			suboutbus, rawformat, rawoutbus, serport, offsetheading, recchans,
+			server, parentOssiaNode, allCrtitical, decoder, maxorder, speaker_array,
+			outbus, suboutbus, rawformat, rawoutbus, serport, offsetheading, recchans,
 			recbus, guiflag, guiint, autoloop);
 	}
 
@@ -1247,7 +1248,8 @@ GUI Parameters usable in SynthDefs
 					if (guiflag) {
 						{this.dfcheck[i].value = false}.defer;
 					};
-					if((i==currentsource) && guiflag){{diffusecheck.value = false}.defer;};
+					if((i==currentsource) && guiflag){
+						{diffusecheck.value = false}.defer;};
 					sp[i] = 1;
 					df[i] = 0;
 					this.espacializador[i].set(\sp, 1);
@@ -1271,7 +1273,8 @@ GUI Parameters usable in SynthDefs
 			});
 
 			this.dfcheckProxy[i].action_({ | but |
-				if((i==currentsource) && guiflag){{diffusecheck.value = but.value}.defer;};
+				if((i==currentsource) && guiflag){
+					{diffusecheck.value = but.value}.defer;};
 				if (but.value) {
 					if (guiflag) {
 						{this.spcheck[i].value = false}.defer;
@@ -1551,7 +1554,7 @@ GUI Parameters usable in SynthDefs
 			nfontes.do {  | i |
 				var sphe = (cartval[i].x_(cartval[i].x - num.value
 					+ origine.x)).asSpherical.
-				rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+				rotate(heading).tilt(pitch).tumble(roll);
 
 				this.ossiasphe[i].v_([sphe.rho,
 					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
@@ -1592,7 +1595,7 @@ GUI Parameters usable in SynthDefs
 			nfontes.do { | i |
 				var sphe = (cartval[i].y_(cartval[i].y - num.value
 					+ origine.y)).asSpherical.
-				rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+				rotate(heading).tilt(pitch).tumble(roll);
 
 				this.ossiasphe[i].v_([sphe.rho,
 					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
@@ -1632,7 +1635,7 @@ GUI Parameters usable in SynthDefs
 			nfontes.do { | i |
 				var sphe = (cartval[i].z_(cartval[i].z - num.value
 					+ origine.z)).asSpherical.
-				rotate(pitch.neg).tilt(roll.neg).tumble(heading.neg);
+				rotate(heading).tilt(pitch).tumble(roll);
 
 				this.ossiasphe[i].v_([sphe.rho,
 					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
@@ -1664,17 +1667,19 @@ GUI Parameters usable in SynthDefs
 
 
 
-		this.pitchnumboxProxy.action_({ | num |
+		this.headingnumboxProxy.action_({ | num |
 
-			this.ossiaorient.v_([num.value, this.rollnumboxProxy.value,
-				this.headingnumboxProxy.value]);
+			this.ossiaorient.v_([num.value, this.pitchnumboxProxy.value,
+				this.rollnumboxProxy.value]);
 			this.ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var rot = this.spheval[i].rotate(pitch - num.value);
+				var euler = this.cartval[i];
 
-				this.ossiasphe[i].v_([rot.rho,
-					(rot.theta - halfPi).wrap(-pi, pi), rot.phi]);
+				euler = euler.rotate(num.value.neg).tilt(pitch).tumble(roll);
+
+				this.ossiasphe[i].v_([euler.rho,
+					euler.theta - halfPi, euler.phi]);
 
 				this.zlev[i] = this.spheval[i].z;
 
@@ -1693,7 +1698,7 @@ GUI Parameters usable in SynthDefs
 				this.ossiaCartBack = true;
 			};
 
-			pitch = num.value;
+			heading = num.value.neg;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1702,17 +1707,19 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		this.rollnumboxProxy.action_({ | num |
+		this.pitchnumboxProxy.action_({ | num |
 
-			this.ossiaorient.v_([this.pitchnumboxProxy.value, num.value,
-				this.headingnumboxProxy.value]);
+			this.ossiaorient.v_([this.headingnumboxProxy.value, num.value,
+				this.rollnumboxProxy.value]);
 			this.ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var rot = this.spheval[i].tilt(roll - num.value);
+				var euler = this.cartval[i];
 
-				this.ossiasphe[i].v_([rot.rho,
-					(rot.theta - halfPi).wrap(-pi, pi), rot.phi]);
+				euler = euler.rotate(heading).tilt(num.value.neg).tumble(roll);
+
+				this.ossiasphe[i].v_([euler.rho,
+					euler.theta - halfPi, euler.phi]);
 
 				this.zlev[i] = this.spheval[i].z;
 
@@ -1731,7 +1738,7 @@ GUI Parameters usable in SynthDefs
 				this.ossiaCartBack = true;
 			};
 
-			roll = num.value;
+			pitch = num.value.neg;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1740,17 +1747,19 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		this.headingnumboxProxy.action_({ | num |
+		this.rollnumboxProxy.action_({ | num |
 
-			this.ossiaorient.v_([this.pitchnumboxProxy.value,
-				this.rollnumboxProxy.value, num.value]);
+			this.ossiaorient.v_([this.headingnumboxProxy.value,
+				this.pitchnumboxProxy.value, num.value]);
 			this.ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var rot = this.spheval[i].tumble(heading - num.value);
+				var euler = this.cartval[i];
 
-				this.ossiasphe[i].v_([rot.rho,
-					(rot.theta - halfPi).wrap(-pi, pi), rot.phi]);
+				euler = euler.rotate(heading).tilt(pitch).tumble(num.value.neg);
+
+				this.ossiasphe[i].v_([euler.rho,
+					euler.theta - halfPi, euler.phi]);
 
 				this.zlev[i] = this.spheval[i].z;
 
@@ -1769,7 +1778,7 @@ GUI Parameters usable in SynthDefs
 				this.ossiaCartBack = true;
 			};
 
-			heading = num.value;
+			roll = num.value.neg;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1848,8 +1857,8 @@ GUI Parameters usable in SynthDefs
 
 		// a-12 encoder matrix
 		soa_a12_encoder_matrix = Matrix.with([
-			[ 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781,
-				0.707106781,
+			[ 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781,
+				0.707106781,0.707106781,
 				0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781 ],
 			[ 0.850650808, 0.525731112, 0, 0.850650808, -0.525731112, 0, -0.850650808,
 				-0.525731112, 0,
@@ -1923,7 +1932,8 @@ GUI Parameters usable in SynthDefs
 			cart.asCartesian.asSpherical.angles;
 		});
 
-		foa_a12_decoder_matrix = FoaEncoderMatrix.newDirections(spher).matrix.pseudoInverse;
+		foa_a12_decoder_matrix =
+		FoaEncoderMatrix.newDirections(spher).matrix.pseudoInverse;
 
 
 		/////////// END code for 2nd order matrices /////////////////////
@@ -2204,8 +2214,8 @@ GUI Parameters usable in SynthDefs
 					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(this.fumabus, 9);
-						sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4], sig[5],
-							sig[6], sig[7], sig[8],
+						sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4],
+							sig[5], sig[6], sig[7], sig[8],
 							azimuths.collect(_.degrad), elevations.collect(_.degrad),
 							longest_radius, radiusses);
 						nonambi = In.ar(nonambibus, numoutputs);
@@ -2769,7 +2779,8 @@ GUI Parameters usable in SynthDefs
 
 					{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ[count],
 						loop: 0, doneAction: 2), b2a),
-						bufAformat[count], Phasor.ar(0, BufRateScale.kr(bufAformat[count]),
+						bufAformat[count], Phasor.ar(0,
+						BufRateScale.kr(bufAformat[count]),
 							0, BufFrames.kr(bufAformat[count])));
 					Out.ar(0, Silent.ar);
 					}.play;
@@ -2799,7 +2810,8 @@ GUI Parameters usable in SynthDefs
 
 					(bufAformat[count].numFrames / server.sampleRate).wait;
 
-					bufAformat_soa_a12[count].write(rirBank ++ "/" ++ item ++ "_SoaA12.wav",
+					bufAformat_soa_a12[count].write(
+						rirBank ++ "/" ++ item ++ "_SoaA12.wav",
 						headerFormat: "wav", sampleFormat: "int24");
 
 					"done".postln;
@@ -2891,7 +2903,8 @@ GUI Parameters usable in SynthDefs
 						rirA12[i] = Buffer.readChannel(server,
 							rirBank ++ "/" ++ item ++ "_SoaA12.wav",
 							channels: [i]);
-						rirA12Spectrum[count, i] = Buffer.alloc(server, bufsize[count], 1);
+						rirA12Spectrum[count, i] = Buffer.alloc(server,
+							bufsize[count], 1);
 						rirA12Spectrum[count, i].preparePartConv(rirA12[i], fftsize);
 						rirA12[i].free;
 					};
@@ -3034,7 +3047,8 @@ GUI Parameters usable in SynthDefs
 				rd = Lag.kr(dis * 340); 				 // Doppler
 				playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
 
-				playerRef.value = FoaDirectO.ar(playerRef.value, directang); // directivity
+				playerRef.value = FoaDirectO.ar(playerRef.value, directang);
+				// directivity
 				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle);
 				playerRef.value = FoaTransform.ar(playerRef.value, 'push',
 					pushang, az, ele);
@@ -3082,7 +3096,8 @@ GUI Parameters usable in SynthDefs
 				intens = intens.clip(0, 4);
 				intens = intens * 0.25;*/
 
-				playerRef.value = FoaDecode.ar(playerRef.value, FoaDecoderMatrix.newAmbix1);
+				playerRef.value = FoaDecode.ar(playerRef.value,
+					FoaDecoderMatrix.newAmbix1);
 				playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
 				playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
 					focus:contr * dis.sqrt) * (1 - dis.squared) * level;
@@ -3133,7 +3148,8 @@ GUI Parameters usable in SynthDefs
 					playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
 
 					rd = Lag.kr(dis * 340);
-					playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+					playerRef.value = DelayC.ar(playerRef.value, 0.2,
+						rd/1640.0 * dopamnt);
 
 					wsinal = playerRef.value[0] * contr * Lag.kr(level) * dis * 2.0;
 
@@ -3219,7 +3235,8 @@ GUI Parameters usable in SynthDefs
 					playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
 
 					rd = Lag.kr(dis * 340);
-					playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+					playerRef.value = DelayC.ar(playerRef.value, 0.2,
+						rd/1640.0 * dopamnt);
 
 					wsinal = playerRef.value[0] * contr * level * dis * 2.0;
 
@@ -3487,7 +3504,7 @@ GUI Parameters usable in SynthDefs
 										//tocar.value(i, 1, force: true);
 										this.newtocar(i, 0, force: true);
 									} {
-										// could remake this a random start point in future
+										// could remake this a random start point
 										//tocar.value(i, 1, force: true);
 										this.newtocar(i, 0, force: true);
 									};
@@ -3597,7 +3614,8 @@ GUI Parameters usable in SynthDefs
 				this.espacializador[i].set(\azim, this.spheval[i].theta, \elev,
 					this.spheval[i].phi,
 					\radius, this.spheval[i].rho);
-				this.setSynths(i, \azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
+				this.setSynths(i, \azim, this.spheval[i].theta,
+					\elev, this.spheval[i].phi,
 					\radius, this.spheval[i].rho);
 				this.synt[i].set(\azim, this.spheval[i].theta, \elev, this.spheval[i].phi,
 					\radius, this.spheval[i].rho);
@@ -4306,8 +4324,8 @@ GUI Parameters usable in SynthDefs
 
 					if (this.hwncheckProxy[i].value) {
 
-						this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i], \busini,
-							this.busini[i],\level, level[i]],
+						this.synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i],
+							\busini, this.busini[i],\level, level[i]],
 						this.playEspacGrp).onFree({this.espacializador[i].free;
 							this.espacializador[i] = nil;
 							this.synt[i] = nil});
@@ -4893,7 +4911,8 @@ GUI Parameters usable in SynthDefs
 				lastGui =  Main.elapsedTime;
 				{
 					{ this.zlev[currentsource] = this.spheval[currentsource].z; }.defer;
-					{ zslider.value = (this.zlev[currentsource] * 0.01 + 1) * 0.5; }.defer;
+					{ zslider.value = (this.zlev[currentsource] * 0.01 + 1)
+						* 0.5; }.defer;
 					{ znumbox.value = this.zlev[currentsource]; }.defer;
 					{ win.refresh; }.defer;
 				}.defer(guiInt);
@@ -5006,7 +5025,8 @@ GUI Parameters usable in SynthDefs
 						winCtl[0][12].value = winrand[currentsource];
 						winCtl[1][12].value = winrand[currentsource].sqrt;
 					}
-					{ (libnumbox.value != (lastN3D + 1)) && (libnumbox.value != lastFUMA) }
+					{ (libnumbox.value != (lastN3D + 1))
+						&& (libnumbox.value != lastFUMA) }
 					{
 						winCtl[0][10].visible = false;
 						winCtl[1][10].visible = false;
@@ -5419,7 +5439,8 @@ GUI Parameters usable in SynthDefs
 
 				("FILE IS " ++ textField.value ++ "/filenames.txt").postln;
 				("mkdir -p" + textField.value).systemCmd;
-				filenames = File((textField.value ++ "/filenames.txt").standardizePath,"w");
+				filenames = File((textField.value ++
+					"/filenames.txt").standardizePath,"w");
 
 				libf = File((textField.value ++ "/lib.txt").standardizePath,"w");
 				loopedf = File((textField.value ++ "/looped.txt").standardizePath,"w");
@@ -5700,23 +5721,23 @@ GUI Parameters usable in SynthDefs
 
 
 		originCtl[0][2].action = { | num |
-			this.pitchnumboxProxy.valueAction = num.value;
-		};
-
-		originCtl[0][3].action = { | num |
-			this.rollnumboxProxy.valueAction = num.value;
-		};
-
-		originCtl[0][4].action = { | num |
 			this.headingnumboxProxy.valueAction = num.value;
 		};
 
+		originCtl[0][3].action = { | num |
+			this.pitchnumboxProxy.valueAction = num.value;
+		};
+
+		originCtl[0][4].action = { | num |
+			this.rollnumboxProxy.valueAction = num.value;
+		};
+
 		originCtl[1][2] = StaticText(originView, Rect(215, 20, 12, 22));
-		originCtl[1][2].string = "P:";
+		originCtl[1][2].string = "H:";
 		originCtl[1][3] = StaticText(originView, Rect(215, 40, 12, 22));
-		originCtl[1][3].string = "R:";
+		originCtl[1][3].string = "P:";
 		originCtl[1][4] = StaticText(originView, Rect(215, 60, 12, 22));
-		originCtl[1][4].string = "H:";
+		originCtl[1][4].string = "R:";
 
 		textbuf = StaticText(originView, Rect(227, 0, 45, 20));
 		textbuf.string = "Orient.";
@@ -6761,7 +6782,8 @@ GUI Parameters usable in SynthDefs
 			//	if(scncheck[i]) {
 			if(this.triggerFunc[source].notNil) {
 				this.triggerFunc[source].value;
-				if (dirrect && this.synt[source].isNil && (this.spheval[source].rho < 1)) {
+				if (dirrect && this.synt[source].isNil
+					&& (this.spheval[source].rho < 1)) {
 					this.newtocar(source, 0, force: true);
 				} {
 					//updateSynthInArgs.value(source);

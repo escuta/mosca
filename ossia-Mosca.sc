@@ -116,14 +116,14 @@
 
 		this.ossiaorient.callback_({arg num;
 
-			if (pitchnumboxProxy.value != num[0].value) {
-				pitchnumboxProxy.valueAction = num[0].value;
+			if (headingnumboxProxy.value != num[0].value) {
+				headingnumboxProxy.valueAction = num[0].value;
 			};
-			if (rollnumboxProxy.value != num[1].value) {
-				rollnumboxProxy.valueAction = num[1].value;
+			if (pitchnumboxProxy.value != num[1].value) {
+				pitchnumboxProxy.valueAction = num[1].value;
 			};
-			if (headingnumboxProxy.value != num[2].value) {
-				headingnumboxProxy.valueAction = num[2].value;
+			if (rollnumboxProxy.value != num[2].value) {
+				rollnumboxProxy.valueAction = num[2].value;
 			};
 		});
 
