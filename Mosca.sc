@@ -739,8 +739,8 @@ GUI Parameters usable in SynthDefs
 			this.xboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				this.cartval[i].x_(num.value - origine.x);
-				sphe = this.cartval[i].asSpherical.rotate(pitch.neg)
-				.tilt(roll.neg).tumble(heading.neg);
+				sphe = this.cartval[i].asSpherical.rotate(heading.neg)
+				.tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
@@ -773,8 +773,8 @@ GUI Parameters usable in SynthDefs
 			this.yboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				this.cartval[i].y_(num.value - origine.y);
-				sphe = this.cartval[i].asSpherical.rotate(pitch.neg)
-				.tilt(roll.neg).tumble(heading.neg);
+				sphe = this.cartval[i].asSpherical.rotate(heading.neg)
+				.tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
@@ -807,8 +807,8 @@ GUI Parameters usable in SynthDefs
 			this.zboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				this.cartval[i].z_(num.value - origine.z);
-				sphe = this.cartval[i].asSpherical.rotate(pitch.neg)
-				.tilt(roll.neg).tumble(heading.neg);
+				sphe = this.cartval[i].asSpherical.rotate(heading.neg)
+				.tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
@@ -1694,10 +1694,9 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \radius, this.spheval[i].rho);
 					this.synt[i].set(\radius, this.spheval[i].rho);
 				};
-
-				this.ossiaCartBack = true;
 			};
 
+			this.ossiaCartBack = true;
 			heading = num.value.neg;
 
 			if (guiflag) {
@@ -1734,10 +1733,9 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \radius, this.spheval[i].rho);
 					this.synt[i].set(\radius, this.spheval[i].rho);
 				};
-
-				this.ossiaCartBack = true;
 			};
 
+			this.ossiaCartBack = true;
 			pitch = num.value.neg;
 
 			if (guiflag) {
@@ -1774,10 +1772,9 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \radius, this.spheval[i].rho);
 					this.synt[i].set(\radius, this.spheval[i].rho);
 				};
-
-				this.ossiaCartBack = true;
 			};
 
+			this.ossiaCartBack = true;
 			roll = num.value.neg;
 
 			if (guiflag) {
