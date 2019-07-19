@@ -4608,7 +4608,7 @@ GUI Parameters usable in SynthDefs
 
 		nfontes.do { | i |
 			var line = libf.getLine(1024);
-			this.libboxProxy[i].valueAction = line.asInt;
+			this.libboxProxy[i].valueAction = line.asInteger;
 		};
 
 		nfontes.do { | i |
@@ -4621,7 +4621,7 @@ GUI Parameters usable in SynthDefs
 
 		nfontes.do { | i |
 			var line = aformatrevf.getLine(1024);
-			this.dstrvboxProxy[i].valueAction = line.asInt;
+			this.dstrvboxProxy[i].valueAction = line.asInteger;
 			//dstrv[i] 0 or 1
 		};
 
@@ -4640,12 +4640,12 @@ GUI Parameters usable in SynthDefs
 		};
 		nfontes.do { | i |
 			var line = ncanf.getLine(1024);
-			this.ncanboxProxy[i].valueAction = line.asInt;
+			this.ncanboxProxy[i].valueAction = line.asInteger;
 		};
 
 		nfontes.do { | i |
 			var line = businif.getLine(1024);
-			this.businiboxProxy[i].valueAction = line.asInt;
+			this.businiboxProxy[i].valueAction = line.asInteger;
 		};
 
 		nfontes.do { | i |
