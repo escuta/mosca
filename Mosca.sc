@@ -739,8 +739,8 @@ GUI Parameters usable in SynthDefs
 			this.xboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				this.cartval[i].x_(num.value - origine.x);
-				sphe = this.cartval[i].asSpherical.rotate(heading.neg)
-				.tilt(pitch.neg).tumble(roll.neg);
+				sphe = this.cartval[i].asSpherical.rotate(heading)
+				.tilt(pitch).tumble(roll);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
@@ -773,8 +773,8 @@ GUI Parameters usable in SynthDefs
 			this.yboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				this.cartval[i].y_(num.value - origine.y);
-				sphe = this.cartval[i].asSpherical.rotate(heading.neg)
-				.tilt(pitch.neg).tumble(roll.neg);
+				sphe = this.cartval[i].asSpherical.rotate(heading)
+				.tilt(pitch).tumble(roll);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
@@ -807,8 +807,8 @@ GUI Parameters usable in SynthDefs
 			this.zboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				this.cartval[i].z_(num.value - origine.z);
-				sphe = this.cartval[i].asSpherical.rotate(heading.neg)
-				.tilt(pitch.neg).tumble(roll.neg);
+				sphe = this.cartval[i].asSpherical.rotate(heading)
+				.tilt(pitch).tumble(roll);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (this.ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
