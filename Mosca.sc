@@ -127,6 +127,8 @@ Mosca {
 	<>spreadcheck,
 	<>diffusecheck, <>sp, <>df,
 
+	<>hdtrk,
+	
 	<>atualizarvariaveis, <>updateSynthInArgs,
 
 	<>runTriggers, <>runStops, <>runTrigger, <>runStop,
@@ -338,7 +340,7 @@ GUI Parameters usable in SynthDefs
 		this.looping = false;
 
 		if (this.serport.notNil) {
-
+			hdtrk = true;
 			SerialPort.devicePattern = this.serport;
 			// needed in serKeepItUp routine - see below
 			this.trackPort = SerialPort(this.serport, 115200, crtscts: true);
@@ -1677,6 +1679,7 @@ GUI Parameters usable in SynthDefs
 				var euler = this.cartval[i];
 
 				euler = euler.rotate(num.value.neg).tilt(pitch).tumble(roll);
+				//euler = euler.rotate(num.value).tilt(pitch).tumble(roll);
 
 				this.ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
@@ -1716,6 +1719,7 @@ GUI Parameters usable in SynthDefs
 				var euler = this.cartval[i];
 
 				euler = euler.rotate(heading).tilt(num.value.neg).tumble(roll);
+				//	euler = euler.rotate(heading).tilt(num.value).tumble(roll);
 
 				this.ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
@@ -1754,7 +1758,8 @@ GUI Parameters usable in SynthDefs
 			nfontes.do { | i |
 				var euler = this.cartval[i];
 
-				euler = euler.rotate(heading).tilt(pitch).tumble(num.value.neg);
+				//euler = euler.rotate(heading).tilt(pitch).tumble(num.value.neg);
+				euler = euler.rotate(heading).tilt(pitch).tumble(num.value);
 
 				this.ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
@@ -3601,6 +3606,9 @@ GUI Parameters usable in SynthDefs
 
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
+		p = p.neg;
+		r = r.neg;
+		h = h.neg;
 		this.pitchnumboxProxy.valueAction = p;
 		this.rollnumboxProxy.valueAction = r;
 		this.headingnumboxProxy.valueAction = h;
@@ -3631,18 +3639,20 @@ GUI Parameters usable in SynthDefs
 				//				this.procTracker(this.trackarr2[4]<<8+this.trackarr2[5],
 				//				this.trackarr2[6]<<8+this.trackarr2[7],
 				//              this.trackarr2[8]<<8+this.trackarr2[9],
-				this.procTracker(
-					(this.trackarr2[5]<<8)+this.trackarr2[4],
-					(this.trackarr2[7]<<8)+this.trackarr2[6],
-					(this.trackarr2[9]<<8)+this.trackarr2[8]
-					//,
-					//(this.trackarr2[13]<<24) + (this.trackarr2[12]<<16) +
-					//(this.trackarr2[11]<<8)
-					//+ this.trackarr2[10],
-					//(this.trackarr2[17]<<24) + (this.trackarr2[16]<<16) +
-					//(this.trackarr2[15]<<8)
-					//+ this.trackarr2[14]
-				);
+				if(hdtrk){
+					this.procTracker(
+						(this.trackarr2[5]<<8)+this.trackarr2[4],
+						(this.trackarr2[7]<<8)+this.trackarr2[6],
+						(this.trackarr2[9]<<8)+this.trackarr2[8]
+						//,
+						//(this.trackarr2[13]<<24) + (this.trackarr2[12]<<16) +
+						//(this.trackarr2[11]<<8)
+						//+ this.trackarr2[10],
+						//(this.trackarr2[17]<<24) + (this.trackarr2[16]<<16) +
+						//(this.trackarr2[15]<<8)
+						//+ this.trackarr2[14]
+					);
+				};
 				this.tracki= 0;
 			});
 		}, {
@@ -4856,7 +4866,8 @@ GUI Parameters usable in SynthDefs
 		//m,
 		moveSource,
 		zoom_factor = 1,
-		zSliderHeight = height * 2 / 3;
+		zSliderHeight = height * 2 / 3,
+		hdtrkcheck;
 
 
 		// Note there is an extreme amount repetition occurring here.
@@ -5365,7 +5376,7 @@ GUI Parameters usable in SynthDefs
 
 		});
 
-		blipcheck = CheckBox(dialView, Rect(35, 83, 60, 15), "blips").action_({ | butt |
+		blipcheck = CheckBox(dialView, Rect(35, 80, 50, 15), "blips").action_({ | butt |
 			if(butt.value) {
 				//"Looping transport".postln;
 				//this.autoloopval = true;
@@ -5375,6 +5386,23 @@ GUI Parameters usable in SynthDefs
 
 		});
 
+		if (this.serport.notNil) {
+			hdtrkcheck = CheckBox(dialView, Rect(35, 95, 60, 15), "hdtrk").action_({ | butt |
+				if(butt.value) {
+					hdtrk = true;
+				} {
+					hdtrk = false;
+					this.headingnumboxProxy.valueAction = 0;
+					this.pitchnumboxProxy.valueAction = 0;
+					this.rollnumboxProxy.valueAction = 0;
+					nfontes.do { arg i;
+						this.zboxProxy[i].valueAction = 0;
+					};
+				};	
+			});
+			hdtrkcheck.value = true;
+		};
+		
 		autoView = UserView(win, Rect(10, width - 45, 325, 40));
 
 		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
@@ -7067,7 +7095,7 @@ GUI Parameters usable in SynthDefs
 			height = view.bounds.height;
 			halfheight = height * 0.5;
 
-			dialView.bounds_(Rect(width - 100, 10, 180, 100));
+			dialView.bounds_(Rect(width - 100, 10, 180, 150));
 
 			zSliderHeight = height * 2 / 3;
 			zslider.bounds_(Rect(width - 35, ((height - zSliderHeight) * 0.5),
