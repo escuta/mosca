@@ -3606,9 +3606,13 @@ GUI Parameters usable in SynthDefs
 
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
+
+		/////////// REVISE ////
 		p = p.neg;
 		r = r.neg;
 		h = h.neg;
+		///////////////////////
+
 		this.pitchnumboxProxy.valueAction = p;
 		this.rollnumboxProxy.valueAction = r;
 		this.headingnumboxProxy.valueAction = h;
@@ -5395,9 +5399,6 @@ GUI Parameters usable in SynthDefs
 					this.headingnumboxProxy.valueAction = 0;
 					this.pitchnumboxProxy.valueAction = 0;
 					this.rollnumboxProxy.valueAction = 0;
-					nfontes.do { arg i;
-						this.zboxProxy[i].valueAction = 0;
-					};
 				};	
 			});
 			hdtrkcheck.value = true;
