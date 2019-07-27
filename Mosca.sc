@@ -128,7 +128,7 @@ Mosca {
 	<>diffusecheck, <>sp, <>df,
 
 	<>hdtrk,
-	
+
 	<>atualizarvariaveis, <>updateSynthInArgs,
 
 	<>runTriggers, <>runStops, <>runTrigger, <>runStop,
@@ -258,9 +258,9 @@ GUI Parameters usable in SynthDefs
 	}
 
 	initMosca { | projDir, nsources, iwidth, idur, rirBank, iserver, parentOssiaNode,
-		allCrtitical, decoder, imaxorder, speaker_array, outbus, suboutbus, rawformat, rawoutbus,
-		iserport, ioffsetheading, irecchans, irecbus, iguiflag,
-		iguiint, iautoloop |
+		allCrtitical, decoder, imaxorder, speaker_array, outbus, suboutbus,
+		rawformat, rawoutbus, iserport, ioffsetheading, irecchans, irecbus,
+		iguiflag, iguiint, iautoloop |
 
 		var makeSynthDefPlayers, makeSpatialisers, subOutFunc, playInFunc,
 		localReverbFunc, localReverbStereoFunc, perfectSphereFunc,
@@ -1559,7 +1559,7 @@ GUI Parameters usable in SynthDefs
 				rotate(heading).tilt(pitch).tumble(roll);
 
 				this.ossiasphe[i].v_([sphe.rho,
-					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
+					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
 
 				this.zlev[i] = this.spheval[i].z;
 
@@ -1600,7 +1600,7 @@ GUI Parameters usable in SynthDefs
 				rotate(heading).tilt(pitch).tumble(roll);
 
 				this.ossiasphe[i].v_([sphe.rho,
-					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
+					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
 
 				this.zlev[i] = this.spheval[i].z;
 
@@ -1640,7 +1640,7 @@ GUI Parameters usable in SynthDefs
 				rotate(heading).tilt(pitch).tumble(roll);
 
 				this.ossiasphe[i].v_([sphe.rho,
-					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
+					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
 
 				this.zlev[i] = this.spheval[i].z;
 
@@ -5399,11 +5399,11 @@ GUI Parameters usable in SynthDefs
 					this.headingnumboxProxy.valueAction = 0;
 					this.pitchnumboxProxy.valueAction = 0;
 					this.rollnumboxProxy.valueAction = 0;
-				};	
+				};
 			});
 			hdtrkcheck.value = true;
 		};
-		
+
 		autoView = UserView(win, Rect(10, width - 45, 325, 40));
 
 		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
@@ -7063,7 +7063,7 @@ GUI Parameters usable in SynthDefs
 			};
 
 			if ((dy > 0) && (zoom_factor >= 0.55)) {
-				zoom_factor = zoom_factor * 0.99009900990099;
+				zoom_factor = zoom_factor * 0.1;
 				win.refresh;
 			};
 		};
@@ -7085,7 +7085,7 @@ GUI Parameters usable in SynthDefs
 			spheval[currentsource]  = (spheval[currentsource] / zoom_factor) * 100;
 
 			ossiasphe[currentsource].v_([spheval[currentsource].rho,
-				spheval[currentsource].theta  - halfPi,
+				(spheval[currentsource].theta - halfPi).wrap(-pi, pi),
 				spheval[currentsource].phi]);
 		};
 

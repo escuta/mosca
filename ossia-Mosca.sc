@@ -228,7 +228,7 @@
 
 
 			this.ossiasphe[i] = OSSIA_Parameter(ossiasrc[i], "Spherical", OSSIA_vec3f,
-				domain:[[0, -pi, -1.5707963267949], [200, pi, 1.5707963267949]],
+				domain:[[0, -pi, halfPi.neg], [200, pi, halfPi]],
 				default_value:[200, 0, 0], critical:allCrtitical, repetition_filter:true);
 
 			this.ossiasphe[i].unit_(OSSIA_position.spherical);
