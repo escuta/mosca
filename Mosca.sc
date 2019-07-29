@@ -5802,8 +5802,8 @@ GUI Parameters usable in SynthDefs
 		originCtl[1][7] = StaticText(originView, Rect(155, 60, 12, 22));
 		originCtl[1][7].string = "Z:";
 
-		textbuf = StaticText(originView, Rect(165, 0, 47, 20));
-		textbuf.string = "Origine";
+		textbuf = StaticText(originView, Rect(170, 0, 47, 20));
+		textbuf.string = "Origin";
 
 
 		////////////////////////////////////////////////////////////
