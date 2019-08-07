@@ -31,9 +31,9 @@
 		this.ossiarate = Array.newClear(this.nfontes);
 		this.ossiawin = Array.newClear(this.nfontes);
 		this.ossiarand = Array.newClear(this.nfontes);
-		this.ossiaseekback = true;
-		this.ossiaCartBack = true;
-		this.ossiaSpheBack = true;
+		ossiaseekback = true;
+		ossiaCartBack = true;
+		ossiaSpheBack = true;
 
 		if (parentOssiaNode.isNil) {
 			ossiaParent = OSSIA_Device("Mosca");
@@ -188,7 +188,7 @@
 		this.ossiatransport.unit_(OSSIA_time.second);
 
 		this.ossiatransport.callback_({arg num;
-			if (this.ossiaseekback) {
+			if (ossiaseekback) {
 				this.control.seek(num.value);
 			};
 		});
@@ -237,13 +237,13 @@
 				spheval[i].rho_(num.value[0]);
 				spheval[i].theta_(num.value[1].wrap(-pi, pi) + halfPi);
 				spheval[i].phi_(num.value[2].fold(halfPi.neg, halfPi));
-				this.ossiaSpheBack = false;
-				if (this.ossiaCartBack) {
+				ossiaSpheBack = false;
+				if (ossiaCartBack) {
 					this.ossiacart[i].v_(spheval[i].rotate(pitch).tilt(roll).tumble(heading)
 						.asCartesian.asArray);
 				};
 
-				this.ossiaSpheBack = true;
+				ossiaSpheBack = true;
 			});
 
 
