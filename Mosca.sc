@@ -63,7 +63,7 @@ Mosca {
 	globDec,
 	sysex, mmcslave,
 	synthRegistry, busini, ncan,
-	<>aux1, <>aux2, <>aux3, <>aux4, <>aux5,  // aux slider values
+	aux1, aux2, aux3, aux4, aux5,  // aux slider values
 	triggerFunc, stopFunc,
 	scInBus,
 	fumabus,
@@ -76,78 +76,74 @@ Mosca {
 	libbox, lpcheck, dstrvbox, hwncheck, scncheck,
 	spcheck, dfcheck,
 	ncanbox, businibox,
-	espacializador, <>synt,
-	<>tfield,
-	<>autoloopval,
+	espacializador, synt,
+	tfield,
+	autoloopval,
 	<>autoloop,
-	<>streamdisk,
-	<>streambuf, // <>streamrate, // apparently unused
+	streamdisk,
+	streambuf, // streamrate, // apparently unused
 	origine,
-	<>oxnumboxProxy, <>oynumboxProxy, <>oznumboxProxy,
-	pitch, <>pitchnumboxProxy,
-	roll, <>rollnumboxProxy,
-	heading, <>headingnumboxProxy,
+	oxnumboxProxy, oynumboxProxy, oznumboxProxy,
+	pitch, pitchnumboxProxy,
+	roll, rollnumboxProxy,
+	heading, headingnumboxProxy,
 	// head tracking
-	<>trackarr, <>trackarr2, <>tracki, <>trackPort,
-	//<>track2arr, <>track2arr2, <>track2i,
+	trackarr, trackarr2, tracki, trackPort,
+	// track2arr, track2arr2, track2i,
 	headingOffset,
 	cartval, spheval,
 	recchans, recbus,
-	// <>mark1, <>mark2,	// 4 number arrays for marker data // apparently unused
+	// mark1, mark2,	// 4 number arrays for marker data // apparently unused
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	<>cbox, <>clev, <>angle, ncanais, audit, gbus, gbfbus, n3dbus,
+	cbox, clev, angle, ncanais, audit, gbus, gbfbus, n3dbus,
 	gbixfbus, nonambibus,
 	playEspacGrp, glbRevDecGrp,
-	<>level, <>lp, lib, libName, convert, dstrv, dstrvtypes, clsrv,
+	level, lp, lib, libName, convert, dstrv, dstrvtypes, clsrv,
 	clsRvtypes,
 	winCtl, originCtl, hwCtl,
-	<>xbox, <>ybox, <>sombuf, <>sbus, <>mbus,
-	<>rbox, <>abox, <>vbox, <>gbox, <>lbox, <>dbox, <>dpbox, <>zbox,
-	<>a1check, <>a2check, <>a3check, <>a4check, <>a5check, <>a1box, <>a2box, <>a3box,
-	<>a4box, <>a5box,
-	<>stcheck,
+	xbox, ybox, sombuf, sbus, mbus,
+	rbox, abox, vbox, gbox, lbox, dbox, dpbox, zbox,
+	a1check, a2check, a3check, a4check, a5check, a1box, a2box, a3box,
+	a4box, a5box,
+	stcheck,
 
-	//<>oxbox, <>oybox, <>ozbox,
-	//<>funcs, // apparently unused
-	//<>lastx, <>lasty, // apparently unused
-	<>zlev, <>znumbox, <>zslider,
-	<>glev,
-	<>lslider,
-	<>llev, <>rlev, <>dlev,
-	<>dplev,
-	<>auxslider1, <>auxslider2, <>auxslider3, <>auxslider4, <>auxslider5,
-	<>auxbutton1, <>auxbutton2, <>auxbutton3, <>auxbutton4, <>auxbutton5,
-	<>aux1numbox, <>aux2numbox, <>aux3numbox, <>aux4numbox, <>aux5numbox,
-	<>a1but, <>a2but, <>a3but, <>a4but, <>a5but,
+	//oxbox, oybox, ozbox,
+	//funcs, // apparently unused
+	//lastx, lasty, // apparently unused
+	zlev, znumbox, zslider,
+	glev,
+	lslider,
+	llev, rlev, dlev,
+	dplev,
+	auxslider1, auxslider2, auxslider3, auxslider4, auxslider5,
+	auxbutton1, auxbutton2, auxbutton3, auxbutton4, auxbutton5,
+	aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox,
+	a1but, a2but, a3but, a4but, a5but,
 
-	<>loopcheck, dstReverbox, clsReverbox, <>hwInCheck,
-	<>hwn, <>scInCheck, <>scn,
-	<>spreadcheck,
-	<>diffusecheck, <>sp, <>df,
+	loopcheck, dstReverbox, clsReverbox, hwInCheck,
+	hwn, scInCheck, scn,
+	spreadcheck,
+	diffusecheck, sp, df,
 
 	hdtrk,
 
-	<>atualizarvariaveis, <>updateSynthInArgs,
+	atualizarvariaveis, updateSynthInArgs,
 
 	<>runTriggers, <>runStops, <>runTrigger, <>runStop,
-	// <>isRec, // apparently unused
+	// isRec, // apparently unused
 
 	/////////////////////////////////////////////////////////
 
 	// NEW PROXY VARIABLES /////////////
 
 	<>rboxProxy, <>cboxProxy, <>aboxProxy, <>vboxProxy, <>gboxProxy, <>lboxProxy,
-	<>dboxProxy,
-	<>dpboxProxy, <>zboxProxy, <>yboxProxy, <>xboxProxy,
+	<>dboxProxy, <>dpboxProxy, <>zboxProxy, <>yboxProxy, <>xboxProxy,
 	<>a1checkProxy, <>a2checkProxy, <>a3checkProxy, <>a4checkProxy, <>a5checkProxy,
 	<>a1boxProxy, <>a2boxProxy, <>a3boxProxy, <>a4boxProxy, <>a5boxProxy,
-
 	<>stcheckProxy, <>tfieldProxy, <>libboxProxy, <>lpcheckProxy, <>dstrvboxProxy,
-	<>clsrvboxProxy,
-	<>hwncheckProxy,
-	<>scncheckProxy, <>dfcheckProxy,
+	<>clsrvboxProxy, <>hwncheckProxy, <>scncheckProxy, <>dfcheckProxy,
 	<>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
 	grainrate, ratebox, <>rateboxProxy, // setable granular rate
@@ -158,20 +154,18 @@ Mosca {
 	rm, rmbox, <>rmboxProxy, // setable local room size
 	dm, dmbox, <>dmboxProxy, // setable local dampening
 
-	clsrm,
-	clsrmbox, <>clsrmboxProxy, // setable global room size
-	clsdm,
-	clsdmbox, <>clsdmboxProxy, // setable global dampening
+	clsrm, clsrmbox, <>clsrmboxProxy, // setable global room size
+	clsdm, clsdmbox, <>clsdmboxProxy, // setable global dampening
 
 	<>masterlevProxy, masterslider,
 
-	<>ossiaorient, <>ossiaorigine, <>ossiaplay, <>ossiatrasportLoop,
-	<>ossiatransport, ossiaseekback, <>ossiarec, <>ossiacart, <>ossiasphe, <>ossiaaud,
-	<>ossialoop, <>ossialib, <>ossialev, <>ossiadp, <>ossiacls, <>ossiaclsam,
-	<>ossiaclsdel, <>ossiaclsdec, <>ossiadst, <>ossiadstam, <>ossiadstdel, <>ossiadstdec,
-	<>ossiaangle, <>ossiarot, <>ossiadir, <>ossiactr, <>ossiaspread, <>ossiadiff,
-	ossiaCartBack, ossiaSpheBack, <>ossiarate, <>ossiawin, <>ossiarand, <>ossiamaster,
-	<>ossiaMasterPlay, <>ossiaMasterLib, <>ossiaMasterRev;
+	ossiaorient, ossiaorigine, ossiaplay, ossiatrasportLoop,
+	ossiatransport, ossiaseekback, ossiarec, ossiacart, ossiasphe, ossiaaud,
+	ossialoop, ossialib, ossialev, ossiadp, ossiacls, ossiaclsam,
+	ossiaclsdel, ossiaclsdec, ossiadst, ossiadstam, ossiadstdel, ossiadstdec,
+	ossiaangle, ossiarot, ossiadir, ossiactr, ossiaspread, ossiadiff,
+	ossiaCartBack, ossiaSpheBack, ossiarate, ossiawin, ossiarand, ossiamaster,
+	ossiaMasterPlay, ossiaMasterLib, ossiaMasterRev;
 
 	/////////////////////////////////////////
 
@@ -289,11 +283,6 @@ GUI Parameters usable in SynthDefs
 			fourOrNine = 4;
 		};
 
-		synthRegistry = Array.newClear(nfontes);
-		insertFlag = Array.newClear(nfontes);
-		insertBus = Array2D.new(2, nfontes);
-		scInBus = Array.newClear(nfontes);
-
 		nfontes.do { | i |
 			synthRegistry[i] = List[];
 
@@ -314,7 +303,10 @@ GUI Parameters usable in SynthDefs
 		glbRevDecGrp = Group.after(playEspacGrp);
 		server.sync;
 
-		//this.lock = ilock;
+		synthRegistry = Array.newClear(nfontes);
+		insertFlag = Array.newClear(nfontes);
+		insertBus = Array2D.new(2, nfontes);
+		scInBus = Array.newClear(nfontes);
 
 		if (iwidth < 600) {
 			width = 600;
@@ -335,7 +327,7 @@ GUI Parameters usable in SynthDefs
 		currentsource = 0;
 		lastGui = Main.elapsedTime;
 		guiInt = iguiint;
-		this.autoloopval = iautoloop;
+		autoloopval = iautoloop;
 
 		looping = false;
 
@@ -343,21 +335,21 @@ GUI Parameters usable in SynthDefs
 			hdtrk = true;
 			SerialPort.devicePattern = serport;
 			// needed in serKeepItUp routine - see below
-			this.trackPort = SerialPort(serport, 115200, crtscts: true);
-			//this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
+			trackPort = SerialPort(serport, 115200, crtscts: true);
+			//trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
 			//	nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol
-			this.trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
+			trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
 			//protocol
-			this.trackarr2= this.trackarr.copy;
-			this.tracki= 0;
-			//this.track2arr=
+			trackarr2= trackarr.copy;
+			tracki= 0;
+			//track2arr=
 			//[247, 248, 249, 250, nil, nil, nil, nil, nil, nil, nil, nil, 255];
 			//protocol
-			//this.track2arr2= trackarr.copy;
-			//this.track2i= 0;
+			//track2arr2= trackarr.copy;
+			//track2i= 0;
 
 
-			this.trackPort.doneAction = {
+			trackPort.doneAction = {
 				"Serial port down".postln;
 				troutine.stop;
 				troutine.reset;
@@ -366,13 +358,13 @@ GUI Parameters usable in SynthDefs
 
 			troutine = Routine.new({
 				inf.do{
-					this.matchTByte(this.trackPort.read);
+					this.matchTByte(trackPort.read);
 				};
 			});
 
 			kroutine = Routine.new({
 				inf.do{
-					if (this.trackPort.isOpen.not) // if serial port is closed
+					if (trackPort.isOpen.not) // if serial port is closed
 					{
 						"Trying to reopen serial port!".postln;
 						if (SerialPort.devices.includesEqual(serport))
@@ -381,7 +373,7 @@ GUI Parameters usable in SynthDefs
 							"Device connected! Opening port!".postln;
 							troutine.stop;
 							troutine.reset;
-							this.trackPort = SerialPort(serport, 115200,
+							trackPort = SerialPort(serport, 115200,
 								crtscts: true);
 							troutine.play; // start tracker routine again
 						}
@@ -420,17 +412,17 @@ GUI Parameters usable in SynthDefs
 		busini = Array.newClear(nfontes);
 		// initial bus # in streamed audio grouping
 		// (ie. mono, stereo or b-format)
-		this.aux1 = Array.newClear(nfontes);
-		this.aux2 = Array.newClear(nfontes);
-		this.aux3 = Array.newClear(nfontes);
-		this.aux4 = Array.newClear(nfontes);
-		this.aux5 = Array.newClear(nfontes);
+		aux1 = Array.newClear(nfontes);
+		aux2 = Array.newClear(nfontes);
+		aux3 = Array.newClear(nfontes);
+		aux4 = Array.newClear(nfontes);
+		aux5 = Array.newClear(nfontes);
 
-		this.a1but = Array.newClear(nfontes);
-		this.a2but = Array.newClear(nfontes);
-		this.a3but = Array.newClear(nfontes);
-		this.a4but = Array.newClear(nfontes);
-		this.a5but = Array.newClear(nfontes);
+		a1but = Array.newClear(nfontes);
+		a2but = Array.newClear(nfontes);
+		a3but = Array.newClear(nfontes);
+		a4but = Array.newClear(nfontes);
+		a5but = Array.newClear(nfontes);
 
 		sombuf = Array.newClear(nfontes);
 		//		xoffset = Array.fill(nfontes, 0);
@@ -490,11 +482,11 @@ GUI Parameters usable in SynthDefs
 		a4box = Array.newClear(nfontes); // aux - array of num boxes in data window
 		a5box = Array.newClear(nfontes); // aux - array of num boxes in data window
 
-		this.a1but = Array.newClear(nfontes); // aux - array of buttons in data window
-		this.a2but = Array.newClear(nfontes); // aux - array of buttons in data window
-		this.a3but = Array.newClear(nfontes); // aux - array of buttons in data window
-		this.a4but = Array.newClear(nfontes); // aux - array of buttons in data window
-		this.a5but = Array.newClear(nfontes); // aux - array of buttons in data window
+		a1but = Array.newClear(nfontes); // aux - array of buttons in data window
+		a2but = Array.newClear(nfontes); // aux - array of buttons in data window
+		a3but = Array.newClear(nfontes); // aux - array of buttons in data window
+		a4but = Array.newClear(nfontes); // aux - array of buttons in data window
+		a5but = Array.newClear(nfontes); // aux - array of buttons in data window
 
 		a1check = Array.newClear(nfontes); // aux - array of buttons in data window
 		a2check = Array.newClear(nfontes); // aux - array of buttons in data window
@@ -507,8 +499,8 @@ GUI Parameters usable in SynthDefs
 		firstTime = Array.newClear(nfontes);
 
 
-		this.tfield = Array.newClear(nfontes);
-		this.streamdisk = Array.newClear(nfontes);
+		tfield = Array.newClear(nfontes);
+		streamdisk = Array.newClear(nfontes);
 
 		// busses to send audio from player to spatialiser synths
 		nfontes.do { | x |
@@ -638,7 +630,7 @@ GUI Parameters usable in SynthDefs
 			aux3[i] = 0;
 			aux4[i] = 0;
 			aux5[i] = 0;
-			this.streamdisk[i] = false;
+			streamdisk[i] = false;
 			ncan[i] = 0;
 			ncanais[i] = 0;
 			busini[i] = 0;
@@ -687,7 +679,7 @@ GUI Parameters usable in SynthDefs
 			randboxProxy[i] = AutomationGuiProxy.new(0);
 
 
-			this.libboxProxy[i].action_({ | num |
+			libboxProxy[i].action_({ | num |
 
 				libName[i] = spatList[num.value];
 
@@ -698,13 +690,13 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossialib[i].v != num.value) {
-					this.ossialib[i].v_(num.value);
+				if (ossialib[i].v != num.value) {
+					ossialib[i].v_(num.value);
 				};
 			});
 
 
-			this.dstrvboxProxy[i].action_({ | num |
+			dstrvboxProxy[i].action_({ | num |
 				case
 				{ num.value == 0 }
 				{ dstrvtypes[i] = "";
@@ -732,31 +724,31 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiadst[i].v != num.value) {
-					this.ossiadst[i].v_(num.value);
+				if (ossiadst[i].v != num.value) {
+					ossiadst[i].v_(num.value);
 				};
 			});
 
 
-			this.xboxProxy[i].action = { | num |
+			xboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				cartval[i].x_(num.value - origine.x);
 				sphe = cartval[i].asSpherical.rotate(heading)
 				.tilt(pitch).tumble(roll);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
-				if (ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
+				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
 					ossiaCartBack = false;
-					this.ossiasphe[i].v_(sphediff);
+					ossiasphe[i].v_(sphediff);
 					ossiaCartBack = true;
 				};
-				if (this.ossiacart[i].v[0] != num.value) {
-					this.ossiacart[i].v_([num.value, yboxProxy[i].value,
+				if (ossiacart[i].v[0] != num.value) {
+					ossiacart[i].v_([num.value, yboxProxy[i].value,
 						zboxProxy[i].value]);
 				};
 
 				if ( guiflag) {
-					{this.xbox[i].value = num.value}.defer;
+					{xbox[i].value = num.value}.defer;
 					{novoplot.value;}.defer;
 				};
 				if(espacializador[i].notNil || playingBF[i]) {
@@ -772,25 +764,25 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			this.yboxProxy[i].action = { | num |
+			yboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				cartval[i].y_(num.value - origine.y);
 				sphe = cartval[i].asSpherical.rotate(heading)
 				.tilt(pitch).tumble(roll);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
-				if (ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
+				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
 					ossiaCartBack = false;
-					this.ossiasphe[i].v_(sphediff);
+					ossiasphe[i].v_(sphediff);
 					ossiaCartBack = true;
 				};
-				if (this.ossiacart[i].v[1] != num.value) {
-					this.ossiacart[i].v_([xboxProxy[i].value, num.value,
+				if (ossiacart[i].v[1] != num.value) {
+					ossiacart[i].v_([xboxProxy[i].value, num.value,
 						zboxProxy[i].value]);
 				};
 
 				if (guiflag) {
-					{this.ybox[i].value = num.value}.defer;
+					{ybox[i].value = num.value}.defer;
 					{novoplot.value;}.defer;
 				};
 				if(espacializador[i].notNil || playingBF[i]){
@@ -806,20 +798,20 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			this.zboxProxy[i].action = { | num |
+			zboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				cartval[i].z_(num.value - origine.z);
 				sphe = cartval[i].asSpherical.rotate(heading)
 				.tilt(pitch).tumble(roll);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
-				if (ossiaSpheBack && (this.ossiasphe[i].v != sphediff)) {
+				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
 					ossiaCartBack = false;
-					this.ossiasphe[i].v_(sphediff);
+					ossiasphe[i].v_(sphediff);
 					ossiaCartBack = true;
 				};
-				if (this.ossiacart[i].v[2] != num.value) {
-					this.ossiacart[i].v_([xboxProxy[i].value, yboxProxy[i].value,
+				if (ossiacart[i].v[2] != num.value) {
+					ossiacart[i].v_([xboxProxy[i].value, yboxProxy[i].value,
 						num.value]);
 				};
 				zlev[i] = spheval[i].z;
@@ -840,7 +832,7 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			this.aboxProxy[i].action = { | num |
+			aboxProxy[i].action = { | num |
 				if(espacializador[i].notNil) {
 					angle[i] = num.value;
 					espacializador[i].set(\angle, num.value);
@@ -856,8 +848,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiaangle[i].v != num.value) {
-					this.ossiaangle[i].v_(num.value);
+				if (ossiaangle[i].v != num.value) {
+					ossiaangle[i].v_(num.value);
 				};
 			};
 
@@ -875,8 +867,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossialev[i].v != num.value) {
-					this.ossialev[i].v_(num.value);
+				if (ossialev[i].v != num.value) {
+					ossialev[i].v_(num.value);
 				};
 			};
 
@@ -894,8 +886,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiaclsam[i].v != num.value) {
-					this.ossiaclsam[i].v_(num.value);
+				if (ossiaclsam[i].v != num.value) {
+					ossiaclsam[i].v_(num.value);
 				};
 			};
 
@@ -913,8 +905,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiadstam[i].v != num.value) {
-					this.ossiadstam[i].v_(num.value);
+				if (ossiadstam[i].v != num.value) {
+					ossiadstam[i].v_(num.value);
 				};
 			};
 
@@ -931,8 +923,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiadstdel[i].v != num.value) {
-					this.ossiadstdel[i].v_(num.value);
+				if (ossiadstdel[i].v != num.value) {
+					ossiadstdel[i].v_(num.value);
 				};
 			};
 
@@ -949,8 +941,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiadstdec[i].v != num.value) {
-					this.ossiadstdec[i].v_(num.value);
+				if (ossiadstdec[i].v != num.value) {
+					ossiadstdec[i].v_(num.value);
 				};
 			};
 
@@ -967,8 +959,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiarot[i].v != num.value) {
-					this.ossiarot[i].v_(num.value);
+				if (ossiarot[i].v != num.value) {
+					ossiarot[i].v_(num.value);
 				};
 			};
 
@@ -985,8 +977,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiadir[i].v != num.value) {
-					this.ossiadir[i].v_(num.value);
+				if (ossiadir[i].v != num.value) {
+					ossiadir[i].v_(num.value);
 				};
 			};
 
@@ -1005,8 +997,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiactr[i].v != num.value) {
-					this.ossiactr[i].v_(num.value);
+				if (ossiactr[i].v != num.value) {
+					ossiactr[i].v_(num.value);
 				};
 			};
 
@@ -1025,8 +1017,8 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiadp[i].v != num.value) {
-					this.ossiadp[i].v_(num.value);
+				if (ossiadp[i].v != num.value) {
+					ossiadp[i].v_(num.value);
 				};
 			};
 
@@ -1040,7 +1032,7 @@ GUI Parameters usable in SynthDefs
 					{aux1numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					{this.a1box[i].value = num.value}.defer;
+					{a1box[i].value = num.value}.defer;
 				};
 			};
 
@@ -1053,7 +1045,7 @@ GUI Parameters usable in SynthDefs
 					{aux2numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					{this.a2box[i].value = num.value}.defer;
+					{a2box[i].value = num.value}.defer;
 				};
 			};
 
@@ -1066,7 +1058,7 @@ GUI Parameters usable in SynthDefs
 					{aux3numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					{this.a3box[i].value = num.value}.defer;
+					{a3box[i].value = num.value}.defer;
 				};
 			};
 
@@ -1079,7 +1071,7 @@ GUI Parameters usable in SynthDefs
 					{aux4numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					{this.a4box[i].value = num.value}.defer;
+					{a4box[i].value = num.value}.defer;
 				};
 			};
 
@@ -1092,23 +1084,23 @@ GUI Parameters usable in SynthDefs
 					{aux5numbox.value = num.value}.defer;
 				};
 				if (guiflag) {
-					{this.a5box[i].value = num.value}.defer;
+					{a5box[i].value = num.value}.defer;
 				};
 			};
 
 			a1checkProxy[i].action = { | but |
 
 				if (but.value) {
-					this.a1but[i] = 1;
+					a1but[i] = 1;
 					this.setSynths(i, \a1check, 1);
 				}{
 					this.a1but[i] = 0;
-					this.setSynths(i, \a1check, 0);
+					setSynths(i, \a1check, 0);
 				};
 
 				if (guiflag) {
 
-					{this.a1check[i].value = but.value}.defer;
+					{a1check[i].value = but.value}.defer;
 				};
 			};
 
@@ -1122,7 +1114,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a2check, 0);
 				};
 				if (guiflag) {
-					{this.a2check[i].value = but.value}.defer;
+					{a2check[i].value = but.value}.defer;
 				};
 			};
 
@@ -1137,7 +1129,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a3check, 0);
 				};
 				if (guiflag) {
-					{this.a3check[i].value = but.value}.defer;
+					{a3check[i].value = but.value}.defer;
 				};
 			};
 
@@ -1151,7 +1143,7 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a4check, 0);
 				};
 				if (guiflag) {
-					{this.a4check[i].value = but.value}.defer;
+					{a4check[i].value = but.value}.defer;
 				};
 			};
 
@@ -1165,23 +1157,23 @@ GUI Parameters usable in SynthDefs
 					this.setSynths(i, \a5check, 0);
 				};
 				if (guiflag) {
-					{this.a5check[i].value = but.value}.defer;
+					{a5check[i].value = but.value}.defer;
 				};
 			};
 
 			stcheckProxy[i].action = { | but |
 				if (but.value) {
-					this.streamdisk[i] = true;
+					streamdisk[i] = true;
 				}{
-					this.streamdisk[i] = false;
+					streamdisk[i] = false;
 				};
 				if (guiflag) {
-					{this.stcheck[i].value = but.value}.defer;
+					{stcheck[i].value = but.value}.defer;
 				};
 			};
 
 
-			this.lpcheckProxy[i].action_({ | but |
+			lpcheckProxy[i].action_({ | but |
 				if (but.value) {
 					lp[i] = 1;
 					synt[i].set(\lp, 1);
@@ -1198,12 +1190,12 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossialoop[i].v != but.value.asBoolean) {
-					this.ossialoop[i].v_(but.value.asBoolean);
+				if (ossialoop[i].v != but.value.asBoolean) {
+					ossialoop[i].v_(but.value.asBoolean);
 				};
 			});
 
-			this.hwncheckProxy[i].action = { | but |
+			hwncheckProxy[i].action = { | but |
 				if((i==currentsource) && guiflag) {{hwInCheck.value = but.value}.defer;
 				};
 				if (but.value == true) {
@@ -1224,7 +1216,7 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			this.scncheckProxy[i].action_({ | but |
+			scncheckProxy[i].action_({ | but |
 				if((i==currentsource) && guiflag) {{scInCheck.value = but.value}.defer;};
 				if (but.value == true) {
 					if (guiflag) {
@@ -1244,7 +1236,7 @@ GUI Parameters usable in SynthDefs
 				};
 			});
 
-			this.spcheckProxy[i].action_({ | but |
+			spcheckProxy[i].action_({ | but |
 				if((i==currentsource) && guiflag){{spreadcheck.value = but.value}.defer;};
 				if (but.value) {
 					if (guiflag) {
@@ -1258,7 +1250,7 @@ GUI Parameters usable in SynthDefs
 					espacializador[i].set(\df, 0);
 					synt[i].set(\sp, 1);
 					this.setSynths(i, \ls, 1);
-					this.ossiadiff[i].v_(false);
+					ossiadiff[i].v_(false);
 				} {
 					sp[i] = 0;
 					espacializador[i].set(\sp, 0);
@@ -1269,12 +1261,12 @@ GUI Parameters usable in SynthDefs
 					{spcheck[i].value = but.value}.defer;
 				};
 
-				if (this.ossiaspread[i].v != but.value.asBoolean) {
-					this.ossiaspread[i].v_(but.value.asBoolean);
+				if (ossiaspread[i].v != but.value.asBoolean) {
+					ossiaspread[i].v_(but.value.asBoolean);
 				};
 			});
 
-			this.dfcheckProxy[i].action_({ | but |
+			dfcheckProxy[i].action_({ | but |
 				if((i==currentsource) && guiflag){
 					{diffusecheck.value = but.value}.defer;};
 				if (but.value) {
@@ -1290,7 +1282,7 @@ GUI Parameters usable in SynthDefs
 					espacializador[i].set(\sp, 0);
 					synt[i].set(\df, 1);
 					this.setSynths(i, \df, 1);
-					this.ossiaspread[i].v_(false);
+					ossiaspread[i].v_(false);
 				} {
 					df[i] = 0;
 					espacializador[i].set(\df, 0);
@@ -1301,12 +1293,12 @@ GUI Parameters usable in SynthDefs
 					{dfcheck[i].value = but.value}.defer;
 				};
 
-				if (this.ossiadiff[i].v != but.value.asBoolean) {
-					this.ossiadiff[i].v_(but.value.asBoolean);
+				if (ossiadiff[i].v != but.value.asBoolean) {
+					ossiadiff[i].v_(but.value.asBoolean);
 				};
 			});
 
-			this.ncanboxProxy[i].action = { | num |
+			ncanboxProxy[i].action = { | num |
 				ncan[i] = num.value;
 				if (guiflag ) {
 					{ ncanbox[i].value = num.value }.defer;
@@ -1317,7 +1309,7 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			this.businiboxProxy[i].action = { | num |
+			businiboxProxy[i].action = { | num |
 				busini[i] = num.value;
 				if (guiflag) {
 					{ businibox[i].value = num.value }.defer;
@@ -1328,7 +1320,7 @@ GUI Parameters usable in SynthDefs
 				};
 			};
 
-			this.rateboxProxy[i].action = { | num |
+			rateboxProxy[i].action = { | num |
 				espacializador[i].set(\grainrate, num.value);
 				this.setSynths(i, \grainrate, num.value);
 				synt[i].set(\grainrate, num.value);
@@ -1341,14 +1333,14 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiarate[i].v != num.value) {
-					this.ossiarate[i].v_(num.value);
+				if (ossiarate[i].v != num.value) {
+					ossiarate[i].v_(num.value);
 				};
 			};
 
-			this.winboxProxy[i].action = { | num |
+			winboxProxy[i].action = { | num |
 				espacializador[i].set(\winsize, num.value);
-				this.setSynths(i, \winsize, num.value);
+				setSynths(i, \winsize, num.value);
 				synt[i].set(\winsize, num.value);
 				winsize[i] = num.value;
 				if (guiflag) {
@@ -1359,14 +1351,14 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiawin[i].v != num.value) {
-					this.ossiawin[i].v_(num.value);
+				if (ossiawin[i].v != num.value) {
+					ossiawin[i].v_(num.value);
 				};
 			};
 
-			this.randboxProxy[i].action = { | num |
+			randboxProxy[i].action = { | num |
 				espacializador[i].set(\winrand, num.value);
-				this.setSynths(i, \winrand, num.value);
+				setSynths(i, \winrand, num.value);
 				synt[i].set(\winrand, num.value);
 				winrand[i] = num.value;
 				if (guiflag) {
@@ -1377,12 +1369,12 @@ GUI Parameters usable in SynthDefs
 					};
 				};
 
-				if (this.ossiarand[i].v != num.value) {
-					this.ossiarand[i].v_(num.value);
+				if (ossiarand[i].v != num.value) {
+					ossiarand[i].v_(num.value);
 				};
 			};
 
-			this.tfieldProxy[i].action = { | path |
+			tfieldProxy[i].action = { | path |
 				var sf = SoundFile.new;
 				sf.openRead(path);
 				ncanais[i] = sf.numChannels;
@@ -1393,7 +1385,7 @@ GUI Parameters usable in SynthDefs
 				};
 
 				if (path.notNil || (path.value != "")) {
-					if (this.streamdisk[i].not) {
+					if (streamdisk[i].not) {
 						sombuf[i].free;
 						sombuf[i] = Buffer.read(server, path.value, action: { | buf |
 							"Loaded file".postln;
@@ -1404,47 +1396,47 @@ GUI Parameters usable in SynthDefs
 				};
 
 				if (guiflag) {
-					{ this.tfield[i].value = path.value; }.defer;
+					{ tfield[i].value = path.value; }.defer;
 					{ updateGuiCtl.value(\chan); }.defer;
 				};
 
-				this.ossiaaud[i].description =
+				ossiaaud[i].description =
 				PathName(path.value).fileNameWithoutExtension;
 			};
 
-			control.dock(this.xboxProxy[i], "x_axisProxy_" ++ i);
-			control.dock(this.yboxProxy[i], "y_axisProxy_" ++ i);
-			control.dock(this.zboxProxy[i], "z_axisProxy_" ++ i);
-			control.dock(this.vboxProxy[i], "levelProxy_" ++ i);
-			control.dock(this.dpboxProxy[i], "dopamtProxy_" ++ i);
-			control.dock(this.gboxProxy[i], "revglobalProxy_" ++ i);
-			control.dock(this.dstrvboxProxy[i], "localrevkindProxy_" ++ i);
-			control.dock(this.lboxProxy[i], "revlocalProxy_" ++ i);
-			control.dock(this.rmboxProxy[i], "localroomProxy_" ++ i);
-			control.dock(this.dmboxProxy[i], "localdampProxy_" ++ i);
-			control.dock(this.aboxProxy[i], "angleProxy_" ++ i);
-			control.dock(this.rboxProxy[i], "rotationProxy_" ++ i);
-			control.dock(this.dboxProxy[i], "directivityProxy_" ++ i);
-			control.dock(this.cboxProxy[i], "contractionProxy_" ++ i);
-			control.dock(this.rateboxProxy[i], "grainrateProxy_" ++ i);
-			control.dock(this.winboxProxy[i], "windowsizeProxy_" ++ i);
-			control.dock(this.randboxProxy[i], "randomwindowProxy_" ++ i);
-			control.dock(this.a1boxProxy[i], "aux1Proxy_" ++ i);
-			control.dock(this.a2boxProxy[i], "aux2Proxy_" ++ i);
-			control.dock(this.a3boxProxy[i], "aux3Proxy_" ++ i);
-			control.dock(this.a4boxProxy[i], "aux4Proxy_" ++ i);
-			control.dock(this.a5boxProxy[i], "aux5Proxy_" ++ i);
-			control.dock(this.a1checkProxy[i], "aux1checkProxy_" ++ i);
-			control.dock(this.a2checkProxy[i], "aux2checkProxy_" ++ i);
-			control.dock(this.a3checkProxy[i], "aux3checkProxy_" ++ i);
-			control.dock(this.a4checkProxy[i], "aux4checkProxy_" ++ i);
-			control.dock(this.a5checkProxy[i], "aux5checkProxy_" ++ i);
-			//control.dock(this.stcheckProxy[i], "stcheckProxy_" ++ i);
+			control.dock(xboxProxy[i], "x_axisProxy_" ++ i);
+			control.dock(yboxProxy[i], "y_axisProxy_" ++ i);
+			control.dock(zboxProxy[i], "z_axisProxy_" ++ i);
+			control.dock(vboxProxy[i], "levelProxy_" ++ i);
+			control.dock(dpboxProxy[i], "dopamtProxy_" ++ i);
+			control.dock(gboxProxy[i], "revglobalProxy_" ++ i);
+			control.dock(dstrvboxProxy[i], "localrevkindProxy_" ++ i);
+			control.dock(lboxProxy[i], "revlocalProxy_" ++ i);
+			control.dock(rmboxProxy[i], "localroomProxy_" ++ i);
+			control.dock(dmboxProxy[i], "localdampProxy_" ++ i);
+			control.dock(aboxProxy[i], "angleProxy_" ++ i);
+			control.dock(rboxProxy[i], "rotationProxy_" ++ i);
+			control.dock(dboxProxy[i], "directivityProxy_" ++ i);
+			control.dock(cboxProxy[i], "contractionProxy_" ++ i);
+			control.dock(rateboxProxy[i], "grainrateProxy_" ++ i);
+			control.dock(winboxProxy[i], "windowsizeProxy_" ++ i);
+			control.dock(randboxProxy[i], "randomwindowProxy_" ++ i);
+			control.dock(a1boxProxy[i], "aux1Proxy_" ++ i);
+			control.dock(a2boxProxy[i], "aux2Proxy_" ++ i);
+			control.dock(a3boxProxy[i], "aux3Proxy_" ++ i);
+			control.dock(a4boxProxy[i], "aux4Proxy_" ++ i);
+			control.dock(a5boxProxy[i], "aux5Proxy_" ++ i);
+			control.dock(a1checkProxy[i], "aux1checkProxy_" ++ i);
+			control.dock(a2checkProxy[i], "aux2checkProxy_" ++ i);
+			control.dock(a3checkProxy[i], "aux3checkProxy_" ++ i);
+			control.dock(a4checkProxy[i], "aux4checkProxy_" ++ i);
+			control.dock(a5checkProxy[i], "aux5checkProxy_" ++ i);
+			//control.dock(stcheckProxy[i], "stcheckProxy_" ++ i);
 
 		};
 
 
-		this.masterlevProxy.action_({ | num |
+		masterlevProxy.action_({ | num |
 
 			globDec.set(\level, num.value);
 
@@ -1452,13 +1444,13 @@ GUI Parameters usable in SynthDefs
 				masterslider.value = num.value * 0.5;
 			};
 
-			if (this.ossiamaster.v != num.value) {
-				this.ossiamaster.v_(num.value);
+			if (ossiamaster.v != num.value) {
+				ossiamaster.v_(num.value);
 			};
 		});
 
 
-		this.clsrvboxProxy.action_({ | num |
+		clsrvboxProxy.action_({ | num |
 
 			clsrv = num.value;
 
@@ -1511,13 +1503,13 @@ GUI Parameters usable in SynthDefs
 				{ updateGuiCtl.value(\clsrv, num.value) }.defer;
 			};
 
-			if (this.ossiacls.v != num.value) {
-				this.ossiacls.v_(num.value);
+			if (ossiacls.v != num.value) {
+				ossiacls.v_(num.value);
 			};
 		});
 
 
-		this.clsrmboxProxy.action_({ | num |
+		clsrmboxProxy.action_({ | num |
 			glbRevDecGrp.set(\room, num.value);
 			clsrm = num.value;
 
@@ -1525,13 +1517,13 @@ GUI Parameters usable in SynthDefs
 				{originCtl[0][0].value = num.value}.defer;
 			};
 
-			if (this.ossiaclsdel.v != num.value) {
-				this.ossiaclsdel.v_(num.value);
+			if (ossiaclsdel.v != num.value) {
+				ossiaclsdel.v_(num.value);
 			};
 		});
 
 
-		this.clsdmboxProxy.action_({ | num |
+		clsdmboxProxy.action_({ | num |
 
 			glbRevDecGrp.set(\damp, num.value);
 
@@ -1541,16 +1533,16 @@ GUI Parameters usable in SynthDefs
 				{originCtl[0][0].value = num.value}.defer;
 			};
 
-			if (this.ossiaclsdec.v != num.value) {
-				this.ossiaclsdec.v_(num.value);
+			if (ossiaclsdec.v != num.value) {
+				ossiaclsdec.v_(num.value);
 			};
 		});
 
 
-		this.oxnumboxProxy.action_({ | num |
+		oxnumboxProxy.action_({ | num |
 
-			this.ossiaorigine.v_([num.value, this.oynumboxProxy.value,
-				this.oznumboxProxy.value]);
+			ossiaorigine.v_([num.value, oynumboxProxy.value,
+				oznumboxProxy.value]);
 			ossiaCartBack = false;
 
 			nfontes.do {  | i |
@@ -1558,10 +1550,10 @@ GUI Parameters usable in SynthDefs
 					+ origine.x)).asSpherical.
 				rotate(heading).tilt(pitch).tumble(roll);
 
-				this.ossiasphe[i].v_([sphe.rho,
+				ossiasphe[i].v_([sphe.rho,
 					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
 
-				this.zlev[i] = spheval[i].z;
+				zlev[i] = spheval[i].z;
 
 				if(espacializador[i].notNil || playingBF[i]) {
 					espacializador[i].set(\azim, spheval[i].theta);
@@ -1588,10 +1580,10 @@ GUI Parameters usable in SynthDefs
 
 
 
-		this.oynumboxProxy.action_({ | num |
+		oynumboxProxy.action_({ | num |
 
-			this.ossiaorigine.v_([this.oxnumboxProxy.value, num.value,
-				this.oznumboxProxy.value]);
+			ossiaorigine.v_([oxnumboxProxy.value, num.value,
+				oznumboxProxy.value]);
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
@@ -1599,10 +1591,10 @@ GUI Parameters usable in SynthDefs
 					+ origine.y)).asSpherical.
 				rotate(heading).tilt(pitch).tumble(roll);
 
-				this.ossiasphe[i].v_([sphe.rho,
+				ossiasphe[i].v_([sphe.rho,
 					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
 
-				this.zlev[i] = spheval[i].z;
+				zlev[i] = spheval[i].z;
 
 				if(espacializador[i].notNil || playingBF[i]) {
 					espacializador[i].set(\azim, spheval[i].theta);
@@ -1628,10 +1620,10 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		this.oznumboxProxy.action_({ | num |
+		oznumboxProxy.action_({ | num |
 
-			this.ossiaorigine.v_([this.oxnumboxProxy.value,
-				this.oynumboxProxy.value, num.value]);
+			ossiaorigine.v_([oxnumboxProxy.value,
+				oynumboxProxy.value, num.value]);
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
@@ -1639,10 +1631,10 @@ GUI Parameters usable in SynthDefs
 					+ origine.z)).asSpherical.
 				rotate(heading).tilt(pitch).tumble(roll);
 
-				this.ossiasphe[i].v_([sphe.rho,
+				ossiasphe[i].v_([sphe.rho,
 					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
 
-				this.zlev[i] = spheval[i].z;
+				zlev[i] = spheval[i].z;
 
 				if(espacializador[i].notNil || playingBF[i]) {
 					espacializador[i].set(\azim, spheval[i].theta);
@@ -1669,10 +1661,10 @@ GUI Parameters usable in SynthDefs
 
 
 
-		this.headingnumboxProxy.action_({ | num |
+		headingnumboxProxy.action_({ | num |
 
-			this.ossiaorient.v_([num.value, this.pitchnumboxProxy.value,
-				this.rollnumboxProxy.value]);
+			ossiaorient.v_([num.value, pitchnumboxProxy.value,
+				rollnumboxProxy.value]);
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
@@ -1681,10 +1673,10 @@ GUI Parameters usable in SynthDefs
 				euler = euler.rotate(num.value.neg).tilt(pitch).tumble(roll);
 				//euler = euler.rotate(num.value).tilt(pitch).tumble(roll);
 
-				this.ossiasphe[i].v_([euler.rho,
+				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
 
-				this.zlev[i] = spheval[i].z;
+				zlev[i] = spheval[i].z;
 
 				if(espacializador[i].notNil || playingBF[i]) {
 					espacializador[i].set(\azim, spheval[i].theta);
@@ -1709,10 +1701,10 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		this.pitchnumboxProxy.action_({ | num |
+		pitchnumboxProxy.action_({ | num |
 
-			this.ossiaorient.v_([this.headingnumboxProxy.value, num.value,
-				this.rollnumboxProxy.value]);
+			ossiaorient.v_([headingnumboxProxy.value, num.value,
+				rollnumboxProxy.value]);
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
@@ -1721,10 +1713,10 @@ GUI Parameters usable in SynthDefs
 				euler = euler.rotate(heading).tilt(num.value.neg).tumble(roll);
 				//	euler = euler.rotate(heading).tilt(num.value).tumble(roll);
 
-				this.ossiasphe[i].v_([euler.rho,
+				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
 
-				this.zlev[i] = spheval[i].z;
+				zlev[i] = spheval[i].z;
 
 				if(espacializador[i].notNil || playingBF[i]) {
 					espacializador[i].set(\azim, spheval[i].theta);
@@ -1749,10 +1741,10 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		this.rollnumboxProxy.action_({ | num |
+		rollnumboxProxy.action_({ | num |
 
-			this.ossiaorient.v_([this.headingnumboxProxy.value,
-				this.pitchnumboxProxy.value, num.value]);
+			ossiaorient.v_([headingnumboxProxy.value,
+				pitchnumboxProxy.value, num.value]);
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
@@ -1761,10 +1753,10 @@ GUI Parameters usable in SynthDefs
 				//euler = euler.rotate(heading).tilt(pitch).tumble(num.value.neg);
 				euler = euler.rotate(heading).tilt(pitch).tumble(num.value);
 
-				this.ossiasphe[i].v_([euler.rho,
+				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
 
-				this.zlev[i] = spheval[i].z;
+				zlev[i] = spheval[i].z;
 
 				if(espacializador[i].notNil || playingBF[i]) {
 					espacializador[i].set(\azim, spheval[i].theta);
@@ -1789,15 +1781,15 @@ GUI Parameters usable in SynthDefs
 		});
 
 
-		control.dock(this.clsrvboxProxy, "globrevkindProxy");
-		control.dock(this.clsrmboxProxy, "localroomProxy");
-		control.dock(this.clsdmboxProxy, "localdampProxy");
-		control.dock(this.oxnumboxProxy, "oxProxy");
-		control.dock(this.oynumboxProxy, "oyProxy");
-		control.dock(this.oznumboxProxy, "ozProxy");
-		control.dock(this.pitchnumboxProxy, "pitchProxy");
-		control.dock(this.rollnumboxProxy, "rollProxy");
-		control.dock(this.headingnumboxProxy, "headingProxy");
+		control.dock(clsrvboxProxy, "globrevkindProxy");
+		control.dock(clsrmboxProxy, "localroomProxy");
+		control.dock(clsdmboxProxy, "localdampProxy");
+		control.dock(oxnumboxProxy, "oxProxy");
+		control.dock(oynumboxProxy, "oyProxy");
+		control.dock(oznumboxProxy, "ozProxy");
+		control.dock(pitchnumboxProxy, "pitchProxy");
+		control.dock(rollnumboxProxy, "rollProxy");
+		control.dock(headingnumboxProxy, "headingProxy");
 
 
 		///////////////////////////////////////////////////
@@ -1806,7 +1798,7 @@ GUI Parameters usable in SynthDefs
 		playInFunc = Array.newClear(4);
 		// one for File, Stereo, BFormat, Stream - streamed file;
 
-		this.streambuf = Array.newClear(nfontes);
+		streambuf = Array.newClear(nfontes);
 
 		// array of functions, 1 for each source (if defined),
 		// that will be launched on Automation's "play"
@@ -3310,7 +3302,6 @@ GUI Parameters usable in SynthDefs
 
 		//////// END SYNTHDEFS ///////////////
 
-		///// launch GUI was here
 
 		updateSynthInArgs = { | source |
 			{
@@ -3342,11 +3333,11 @@ GUI Parameters usable in SynthDefs
 				this.setSynths(source, \aux4, aux4[source]);
 				this.setSynths(source, \aux5, aux5[source]);
 
-				this.setSynths(source, \a1check, this.a1but[source]);
-				this.setSynths(source, \a2check, this.a2but[source]);
-				this.setSynths(source, \a3check, this.a3but[source]);
-				this.setSynths(source, \a4check, this.a4but[source]);
-				this.setSynths(source, \a5check, this.a5but[source]);
+				this.setSynths(source, \a1check, a1but[source]);
+				this.setSynths(source, \a2check, a2but[source]);
+				this.setSynths(source, \a3check, a3but[source]);
+				this.setSynths(source, \a4check, a4but[source]);
+				this.setSynths(source, \a5check, a5but[source]);
 			}.fork;
 		};
 
@@ -3371,8 +3362,8 @@ GUI Parameters usable in SynthDefs
 						\azim, spheval[i].theta,
 						\elev, spheval[i].phi,
 						\radius, spheval[i].rho,
-						//\xoffset, this.xoffset[i],
-						//\yoffset, this.yoffset[i],
+						//\xoffset, xoffset[i],
+						//\yoffset, yoffset[i],
 						\sp, sp[i],
 						\df, df[i],
 						\grainrate, grainrate[i];
@@ -3401,9 +3392,9 @@ GUI Parameters usable in SynthDefs
 						\azim, spheval[i].theta,
 						\elev, spheval[i].phi,
 						\radius, spheval[i].rho,
-						//\xoffset, this.xoffset[i],
-						//\yoffset, this.yoffset[i],
-						//\mz, this.zval[i].value,
+						//\xoffset, xoffset[i],
+						//\yoffset, yoffset[i],
+						//\mz, zval[i].value,
 						\sp, sp[i],
 						\df, df[i],
 						\grainrate, grainrate[i];
@@ -3473,13 +3464,13 @@ GUI Parameters usable in SynthDefs
 					| i |
 					{
 						//("scn = " ++ scn[i]).postln;
-						if ((this.tfieldProxy[i].value != "") ||
+						if ((tfieldProxy[i].value != "") ||
 							((scn[i] > 0) && (ncan[i] > 0))
-							|| (this.hwncheckProxy[i].value && (ncan[i] > 0)) ) {
+							|| (hwncheckProxy[i].value && (ncan[i] > 0)) ) {
 							//var source = Point.new;
 							// should use cartesian but it's giving problems
-							//source.set(this.xval[i] + this.xoffset[i],
-							//this.yval[i] + this.yoffset[i]);
+							//source.set(xval[i] + xoffset[i],
+							//yval[i] + yoffset[i]);
 							//source.set(cartval[i].x, cartval[i].y);
 							//("audit = " ++ audit[i]).postln;
 							//("distance " ++ i ++ " = " ++ source.rho).postln;
@@ -3496,7 +3487,7 @@ GUI Parameters usable in SynthDefs
 							} {
 								if(synt[i].isPlaying.not && (isPlay || audit[i])
 									&& (firstTime[i]
-										|| (this.tfieldProxy[i].value == ""))) {
+										|| (tfieldProxy[i].value == ""))) {
 									//this.triggerFunc[i].value; // play SC input synth
 									firstTime[i] = false;
 									runTrigger.value(i);
@@ -3521,7 +3512,7 @@ GUI Parameters usable in SynthDefs
 					// so here we monitor when the transport reaches end
 
 					if (control.now > dur) {
-						if (this.autoloopval) {
+						if (autoloopval) {
 							control.seek; // note, onSeek not called
 						} {
 							this.blindControlStop; // stop everything
@@ -3531,7 +3522,7 @@ GUI Parameters usable in SynthDefs
 
 				if (isPlay) {
 					ossiaseekback = false;
-					this.ossiatransport.v_(control.now);
+					ossiatransport.v_(control.now);
 					ossiaseekback = true;
 				};
 			});
@@ -3542,7 +3533,6 @@ GUI Parameters usable in SynthDefs
 
 		///////////////
 
-		//// LAUNCH GUI
 		if (serport.notNil) {
 			//troutine = this.trackerRoutine; // start parsing of serial head tracker data
 			//	kroutine = this.serialKeepItUp;
@@ -3550,15 +3540,14 @@ GUI Parameters usable in SynthDefs
 			kroutine.play;
 		};
 
-
-		//server.sync;
+		/// OSSIA bindings
 
 		this.ossia(parentOssiaNode, allCrtitical);
 
 		//// LAUNCH INITIAL SYNTH
 
-			globDec = Synth.new(\globDecodeSynth,
-				target:glbRevDecGrp,addAction: \addToTail);
+		globDec = Synth.new(\globDecodeSynth,
+			target:glbRevDecGrp,addAction: \addToTail);
 
 	} // end initMosca
 
@@ -3613,9 +3602,9 @@ GUI Parameters usable in SynthDefs
 		h = h.neg;
 		///////////////////////
 
-		this.pitchnumboxProxy.valueAction = p;
-		this.rollnumboxProxy.valueAction = r;
-		this.headingnumboxProxy.valueAction = h;
+		pitchnumboxProxy.valueAction = p;
+		rollnumboxProxy.valueAction = r;
+		headingnumboxProxy.valueAction = h;
 		nfontes.do { | i |
 
 			if(espacializador[i].notNil) {
@@ -3636,31 +3625,31 @@ GUI Parameters usable in SynthDefs
 
 	matchTByte { |byte|  // match incoming headtracker data
 
-		if(this.trackarr[this.tracki].isNil or:{this.trackarr[this.tracki]==byte}, {
-			this.trackarr2[this.tracki]= byte;
-			this.tracki= this.tracki+1;
-			if(this.tracki>=this.trackarr.size, {
-				//				this.procTracker(this.trackarr2[4]<<8+this.trackarr2[5],
-				//				this.trackarr2[6]<<8+this.trackarr2[7],
-				//              this.trackarr2[8]<<8+this.trackarr2[9],
+		if(trackarr[tracki].isNil or:{trackarr[tracki]==byte}, {
+			trackarr2[tracki]= byte;
+			tracki= tracki+1;
+			if(tracki>=trackarr.size, {
+				//				this.procTracker(trackarr2[4]<<8+trackarr2[5],
+				//				trackarr2[6]<<8+trackarr2[7],
+				//              trackarr2[8]<<8+trackarr2[9],
 				if(hdtrk){
 					this.procTracker(
-						(this.trackarr2[5]<<8)+this.trackarr2[4],
-						(this.trackarr2[7]<<8)+this.trackarr2[6],
-						(this.trackarr2[9]<<8)+this.trackarr2[8]
+						(trackarr2[5]<<8)+trackarr2[4],
+						(trackarr2[7]<<8)+trackarr2[6],
+						(trackarr2[9]<<8)+trackarr2[8]
 						//,
-						//(this.trackarr2[13]<<24) + (this.trackarr2[12]<<16) +
-						//(this.trackarr2[11]<<8)
-						//+ this.trackarr2[10],
-						//(this.trackarr2[17]<<24) + (this.trackarr2[16]<<16) +
-						//(this.trackarr2[15]<<8)
-						//+ this.trackarr2[14]
+						//(trackarr2[13]<<24) + (trackarr2[12]<<16) +
+						//(trackarr2[11]<<8)
+						//+ trackarr2[10],
+						//(trackarr2[17]<<24) + (trackarr2[16]<<16) +
+						//(trackarr2[15]<<8)
+						//+ trackarr2[14]
 					);
 				};
-				this.tracki= 0;
+				tracki= 0;
 			});
 		}, {
-			this.tracki= 0;
+			tracki= 0;
 		});
 	}
 
@@ -3669,22 +3658,22 @@ GUI Parameters usable in SynthDefs
 	trackerRoutine { Routine.new
 		( {
 			inf.do{
-				//this.trackPort.read.postln;
-				this.matchTByte(this.trackPort.read);
+				//trackPort.read.postln;
+				this.matchTByte(trackPort.read);
 			};
 		})
 	}
 
 	serialKeepItUp {Routine.new({
 		inf.do{
-			if (this.trackPort.isOpen.not) // if serial port is closed
+			if (trackPort.isOpen.not) // if serial port is closed
 			{
 				"Trying to reopen serial port!".postln;
 				if (SerialPort.devices.includesEqual(serport))
 				// and if device is actually connected
 				{
 					"Device connected! Opening port!".postln;
-					this.trackPort = SerialPort(serport, 115200, crtscts: true);
+					trackPort = SerialPort(serport, 115200, crtscts: true);
 					this.trackerRoutine; // start tracker routine again
 				}
 
@@ -3808,8 +3797,8 @@ GUI Parameters usable in SynthDefs
 
 	// no longer necessary as added a autoloop creation argument
 	playAutomationLooped {
-		//this.autoloopval = true;
-		this.autoloop.valueAction = true;
+		//autoloopval = true;
+		autoloop.valueAction = true;
 		control.play;
 	}
 
@@ -3845,15 +3834,15 @@ GUI Parameters usable in SynthDefs
 
 	newtocar {
 		| i, tpos, force = false |
-		var path = this.tfieldProxy[i].value;
+		var path = tfieldProxy[i].value;
 
-		if (this.streamdisk[i]) {
+		if (streamdisk[i]) {
 			var sframe, srate;
 			// sframe = tpos * srate;
 			// stdur = sf.numFrames / srate; // needed?
-			this.streambuf[i] = Buffer.cueSoundFile(server, path, 0,
+			streambuf[i] = Buffer.cueSoundFile(server, path, 0,
 				ncanais[i], 131072);
-			//		this.streambuf[i] = srate; //??
+			//		streambuf[i] = srate; //??
 			("Creating buffer for source: " ++ i).postln;
 		};
 
@@ -3869,9 +3858,9 @@ GUI Parameters usable in SynthDefs
 		/// STREAM FROM DISK
 
 
-		if ((path != "") && this.hwncheckProxy[i].value.not
-			&& this.scncheckProxy[i].value.not
-			&& this.streamdisk[i]) {
+		if ((path != "") && hwncheckProxy[i].value.not
+			&& scncheckProxy[i].value.not
+			&& streamdisk[i]) {
 			"Content Streamed from disk".postln;
 			if (audit[i].not || force) { // if source is testing don't relaunch synths
 
@@ -3884,7 +3873,7 @@ GUI Parameters usable in SynthDefs
 						\level, level[i]],
 					playEspacGrp).onFree({espacializador[i].free;
 						espacializador[i] = nil; synt[i] = nil;
-						this.streambuf[i].free;
+						streambuf[i].free;
 					});
 
 					// set lib, convert and dstrv variables when stynths are lauched
@@ -3917,7 +3906,7 @@ GUI Parameters usable in SynthDefs
 
 					if (azimuths.isNil) {
 
-						if ((this.libboxProxy[i].value > lastFUMA)
+						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
 							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
@@ -3934,7 +3923,7 @@ GUI Parameters usable in SynthDefs
 							\contr, clev[i], \room, rm[i], \damp, dm[i],
 							\grainrate, grainrate[i], \winsize, winsize[i],
 							\winrand, winrand[i]] ++
-						wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						synt[i], addAction:\addAfter).onFree({
 						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
@@ -3963,7 +3952,7 @@ GUI Parameters usable in SynthDefs
 						\level, level[i]],
 					playEspacGrp).onFree({espacializador[i].free;
 						espacializador[i] = nil; synt[i] = nil;
-						this.streambuf[i].free;
+						streambuf[i].free;
 					});
 
 					// set lib, convert and dstrv variables when stynths are lauched
@@ -3996,7 +3985,7 @@ GUI Parameters usable in SynthDefs
 
 					if (azimuths.isNil) {
 
-						if ((this.libboxProxy[i].value > lastFUMA)
+						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
 							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
@@ -4014,7 +4003,7 @@ GUI Parameters usable in SynthDefs
 							\room, rm[i], \damp, dm[i], \contr, clev[i],
 							\grainrate, grainrate[i], \winsize, winsize[i],
 							\winrand, winrand[i]] ++
-						zSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						synt[i], addAction: \addAfter).onFree({
 						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
@@ -4074,7 +4063,7 @@ GUI Parameters usable in SynthDefs
 						playEspacGrp).onFree({espacializador[i].free;
 						espacializador[i] = nil; synt[i] = nil;
 						playingBF[i] = false;
-						this.streambuf[i].free;
+						streambuf[i].free;
 					});
 
 					espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
@@ -4084,7 +4073,7 @@ GUI Parameters usable in SynthDefs
 							\room, rm[i], \damp, dm[i],
 							\grainrate, grainrate[i], \winsize, winsize[i],
 							\winrand, winrand[i]] ++
-						wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						synt[i], addAction: \addAfter).onFree({
 						if (convertor.notNil) {
 							if (convert[i]) {
@@ -4105,9 +4094,9 @@ GUI Parameters usable in SynthDefs
 		/// END STREAM FROM DISK
 
 		// check this logic - what should override what?
-		if ((path != "") && (this.hwncheckProxy[i].value.not
-			|| this.scncheckProxy[i].value.not)
-		&& this.streamdisk[i].not) {
+		if ((path != "") && (hwncheckProxy[i].value.not
+			|| scncheckProxy[i].value.not)
+		&& streamdisk[i].not) {
 
 			//{
 			case
@@ -4150,7 +4139,7 @@ GUI Parameters usable in SynthDefs
 
 				if (azimuths.isNil) {
 
-					if ((this.libboxProxy[i].value > lastFUMA)
+					if ((libboxProxy[i].value > lastFUMA)
 						&& nonAmbi2FuMa.isNil) {
 						nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 							target:glbRevDecGrp).onFree({
@@ -4166,7 +4155,7 @@ GUI Parameters usable in SynthDefs
 						\room, rm[i], \damp, dm[i], \contr, clev[i],
 						\grainrate, grainrate[i], \winsize, winsize[i],
 						\winrand, winrand[i]]  ++
-					wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+					wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					synt[i], addAction: \addAfter).onFree({
 					if (azimuths.isNil) {
 						if (this.nonAmbi2FuMaNeeded(0).not
@@ -4225,7 +4214,7 @@ GUI Parameters usable in SynthDefs
 
 				if (azimuths.isNil) {
 
-					if ((this.libboxProxy[i].value > lastFUMA) && nonAmbi2FuMa.isNil) {
+					if ((libboxProxy[i].value > lastFUMA) && nonAmbi2FuMa.isNil) {
 						nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 							target:glbRevDecGrp).onFree({
 							nonAmbi2FuMa = nil;
@@ -4242,7 +4231,7 @@ GUI Parameters usable in SynthDefs
 						\room, rm[i], \damp, dm[i], \contr, clev[i],
 						\grainrate, grainrate[i], \winsize, winsize[i],
 						\winrand, winrand[i]] ++
-					zSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+					zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					synt[i], addAction: \addAfter).onFree({
 					if (azimuths.isNil) {
 						if (this.nonAmbi2FuMaNeeded(0).not
@@ -4312,7 +4301,7 @@ GUI Parameters usable in SynthDefs
 						\contr, clev[i], \room, rm[i], \damp, dm[i],
 						\grainrate, grainrate[i], \winsize, winsize[i],
 						\winrand, winrand[i]] ++
-					wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+					wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					synt[i], addAction: \addAfter).onFree({
 					if (convertor.notNil) {
 						if (convert[i]) {
@@ -4328,12 +4317,12 @@ GUI Parameters usable in SynthDefs
 			updatesourcevariables.value(i);
 
 		} {
-			if ((this.scncheckProxy[i].value) || (this.hwncheckProxy[i])) {
+			if ((scncheckProxy[i].value) || (hwncheckProxy[i])) {
 
 				case
 				{ ncan[i] == 1 } {
 
-					if (this.hwncheckProxy[i].value) {
+					if (hwncheckProxy[i].value) {
 
 						synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i],
 							\busini, busini[i],\level, level[i]],
@@ -4380,7 +4369,7 @@ GUI Parameters usable in SynthDefs
 
 					if (azimuths.isNil) {
 
-						if ((this.libboxProxy[i].value > lastFUMA)
+						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
 							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
@@ -4397,7 +4386,7 @@ GUI Parameters usable in SynthDefs
 							\room, rm[i], \damp, dm[i], \contr, clev[i],
 							\grainrate, grainrate[i], \winsize, winsize[i],
 							\winrand, winrand[i]] ++
-						wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						synt[i], addAction: \addAfter).onFree({
 						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
@@ -4420,7 +4409,7 @@ GUI Parameters usable in SynthDefs
 				}
 				{ ncan[i] == 2 } {
 
-					if (this.hwncheckProxy[i].value) {
+					if (hwncheckProxy[i].value) {
 
 						synt[i] = Synth.new(\playStereoHWBus,
 							[\outbus, sbus[i], \busini,
@@ -4468,7 +4457,7 @@ GUI Parameters usable in SynthDefs
 
 					if (azimuths.isNil) {
 
-						if ((this.libboxProxy[i].value > lastFUMA)
+						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
 							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
@@ -4486,7 +4475,7 @@ GUI Parameters usable in SynthDefs
 							\contr, clev[i], \room, rm[i], \damp, dm[i],
 							\grainrate, grainrate[i], \winsize, winsize[i],
 							\winrand, winrand[i]] ++
-						zSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						synt[i], addAction: \addAfter).onFree({
 						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
@@ -4532,7 +4521,7 @@ GUI Parameters usable in SynthDefs
 						};
 					};
 
-					if (this.hwncheckProxy[i].value) {
+					if (hwncheckProxy[i].value) {
 
 						synt[i] = Synth.new(\playBFormat++libName[i]++"HWBus_"
 							++ncan[i],
@@ -4571,7 +4560,7 @@ GUI Parameters usable in SynthDefs
 							\contr, clev[i], \room, rm[i], \damp, dm[i],
 							\grainrate, grainrate[i], \winsize, winsize[i],
 							\winrand, winrand[i]] ++
-						wSpecPar.value(max(this.dstrvboxProxy[i].value - 3, 0)),
+						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						synt[i], addAction: \addAfter).onFree({
 						if (convertor.notNil) {
 							if (convert[i]) {
@@ -4614,28 +4603,28 @@ GUI Parameters usable in SynthDefs
 		nfontes.do { | i |
 			var line = filenames.getLine(1024);
 			if(line!="NULL") {
-				this.tfieldProxy[i].valueAction = line;
+				tfieldProxy[i].valueAction = line;
 			} {
-				this.tfieldProxy[i].valueAction = "";
+				tfieldProxy[i].valueAction = "";
 			};
 		};
 
 		nfontes.do { | i |
 			var line = libf.getLine(1024);
-			this.libboxProxy[i].valueAction = line.asInteger;
+			libboxProxy[i].valueAction = line.asInteger;
 		};
 
 		nfontes.do { | i |
 			var line = loopedf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
-			this.lpcheckProxy[i].valueAction = flag;
+			lpcheckProxy[i].valueAction = flag;
 			//lp[i] 0 or 1
 		};
 
 		nfontes.do { | i |
 			var line = aformatrevf.getLine(1024);
-			this.dstrvboxProxy[i].valueAction = line.asInteger;
+			dstrvboxProxy[i].valueAction = line.asInteger;
 			//dstrv[i] 0 or 1
 		};
 
@@ -4650,28 +4639,28 @@ GUI Parameters usable in SynthDefs
 			var line = diffusef.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
-			this.dfcheckProxy[i].valueAction = flag;
+			dfcheckProxy[i].valueAction = flag;
 		};
 		nfontes.do { | i |
 			var line = ncanf.getLine(1024);
-			this.ncanboxProxy[i].valueAction = line.asInteger;
+			ncanboxProxy[i].valueAction = line.asInteger;
 		};
 
 		nfontes.do { | i |
 			var line = businif.getLine(1024);
-			this.businiboxProxy[i].valueAction = line.asInteger;
+			businiboxProxy[i].valueAction = line.asInteger;
 		};
 
 		nfontes.do { | i |
 			var line = stcheckf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
-			this.stcheckProxy[i].valueAction = flag;
+			stcheckProxy[i].valueAction = flag;
 		};
 
 		//		nfontes.do { arg i;
 		//	var line = hwinf.getLine(1024);
-		//	this.hwncheckProxy[i].valueAction = line;
+		//	hwncheckProxy[i].valueAction = line;
 		// };
 		nfontes.do { | i |
 			var line = hwinf.getLine(1024);
@@ -4680,9 +4669,9 @@ GUI Parameters usable in SynthDefs
 
 			//("line = " ++ line.asString).postln;
 
-			//this.hwncheckProxy[i].valueAction = line.booleanValue;
+			//hwncheckProxy[i].valueAction = line.booleanValue;
 			// why, why, why is this asBoolean necessary!
-			this.hwncheckProxy[i].valueAction = flag;
+			hwncheckProxy[i].valueAction = flag;
 		};
 
 
@@ -4690,7 +4679,7 @@ GUI Parameters usable in SynthDefs
 			var line = scinf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
-			this.scncheckProxy[i].value = flag;
+			scncheckProxy[i].value = flag;
 		};
 
 
@@ -4716,13 +4705,13 @@ GUI Parameters usable in SynthDefs
 		//1.wait;
 		/*nfontes.do { arg i;
 
-		var newpath = this.tfieldProxy[i].value;
+		var newpath = tfieldProxy[i].value;
 		//	server.sync;
-		if (this.streamdisk[i].not && (this.tfieldProxy[i].value != "")) {
+		if (streamdisk[i].not && (tfieldProxy[i].value != "")) {
 		i.postln;
 		newpath.postln;
 
-		this.sombuf[i] = Buffer.read(server, newpath, action: {arg buf;
+		sombuf[i] = Buffer.read(server, newpath, action: {arg buf;
 		"Loaded file".postln;
 		});
 		};
@@ -4773,7 +4762,7 @@ GUI Parameters usable in SynthDefs
 
 		control.quit;
 		if (serport.notNil) {
-			this.trackPort.close;
+			trackPort.close;
 			//				this.trackerRoutine.stop;
 			//				this.serialKeepItUp.stop;
 		};
@@ -4786,11 +4775,11 @@ GUI Parameters usable in SynthDefs
 		n3dbus.free;
 		nfontes.do { | x |
 			espacializador[x].free;
-			this.mbus[x].free;
-			this.sbus[x].free;
+			mbus[x].free;
+			sbus[x].free;
 			//      bfbus.[x].free;
-			this.sombuf[x].free;
-			this.streambuf[x].free;
+			sombuf[x].free;
+			streambuf[x].free;
 			synt[x].free;
 			scInBus[x].free;
 			//		kespac[x].stop;
@@ -4922,10 +4911,10 @@ GUI Parameters usable in SynthDefs
 			if (period > guiInt) {
 				lastGui =  Main.elapsedTime;
 				{
-					{ this.zlev[currentsource] = spheval[currentsource].z; }.defer;
-					{ zslider.value = (this.zlev[currentsource] * 0.01 + 1)
+					{ zlev[currentsource] = spheval[currentsource].z; }.defer;
+					{ zslider.value = (zlev[currentsource] * 0.01 + 1)
 						* 0.5; }.defer;
-					{ znumbox.value = this.zlev[currentsource]; }.defer;
+					{ znumbox.value = zlev[currentsource]; }.defer;
 					{ win.refresh; }.defer;
 				}.defer(guiInt);
 			};
@@ -4936,8 +4925,8 @@ GUI Parameters usable in SynthDefs
 				\chan,
 				{ var selector;
 
-					if (this.hwncheckProxy[currentsource].value.not
-						&& this.scncheckProxy[currentsource].value.not) {
+					if (hwncheckProxy[currentsource].value.not
+						&& scncheckProxy[currentsource].value.not) {
 						selector = ncanais[currentsource];
 					} {
 						selector = ncan[currentsource];
@@ -5057,7 +5046,7 @@ GUI Parameters usable in SynthDefs
 				\dstrv,
 				{ dstReverbox.value = num.value;
 					case
-					{this.dstrvboxProxy[currentsource].value == 0}
+					{dstrvboxProxy[currentsource].value == 0}
 					{
 						winCtl[2][4].visible = false;
 						winCtl[1][4].visible = false;
@@ -5069,8 +5058,8 @@ GUI Parameters usable in SynthDefs
 						winCtl[1][6].visible = false;
 						winCtl[0][6].visible = false;
 					}
-					{(this.dstrvboxProxy[currentsource].value >= 0)
-						&& (this.dstrvboxProxy[currentsource].value < 3)}
+					{(dstrvboxProxy[currentsource].value >= 0)
+						&& (dstrvboxProxy[currentsource].value < 3)}
 					{
 						winCtl[2][4].visible = true;
 						winCtl[1][4].visible = true;
@@ -5088,7 +5077,7 @@ GUI Parameters usable in SynthDefs
 						winCtl[0][6].value = dm[currentsource];
 						winCtl[1][6].value = dm[currentsource];
 					}
-					{this.dstrvboxProxy[currentsource].value >= 3}
+					{dstrvboxProxy[currentsource].value >= 3}
 					{
 						winCtl[2][4].visible = true;
 						winCtl[1][4].visible = true;
@@ -5106,7 +5095,7 @@ GUI Parameters usable in SynthDefs
 				\clsrv,
 				{ clsReverbox.value = num.value;
 					case
-					{this.clsrvboxProxy.value == 0}
+					{clsrvboxProxy.value == 0}
 					{
 						winCtl[0][3].visible = false;
 						winCtl[1][3].visible = false;
@@ -5117,8 +5106,8 @@ GUI Parameters usable in SynthDefs
 						originCtl[0][1].visible = false;
 						originCtl[1][1].visible = false;
 					}
-					{(this.clsrvboxProxy.value >= 0)
-						&& (this.clsrvboxProxy.value < 3)}
+					{(clsrvboxProxy.value >= 0)
+						&& (clsrvboxProxy.value < 3)}
 					{
 						winCtl[0][3].visible = true;
 						winCtl[1][3].visible = true;
@@ -5129,7 +5118,7 @@ GUI Parameters usable in SynthDefs
 						originCtl[0][1].visible = true;
 						originCtl[1][1].visible = true;
 					}
-					{this.clsrvboxProxy.value >= 3}
+					{clsrvboxProxy.value >= 3}
 					{
 						winCtl[0][3].visible = true;
 						winCtl[1][3].visible = true;
@@ -5154,8 +5143,8 @@ GUI Parameters usable in SynthDefs
 						bload.visible = true;
 						bstream.visible = true;
 						loopcheck.visible = true;
-						{ bstream.value = this.streamdisk[currentsource].value; }.defer;
-						{ loopcheck.value = this.lp[currentsource].value; }.defer;
+						{ bstream.value = streamdisk[currentsource].value; }.defer;
+						{ loopcheck.value = lp[currentsource].value; }.defer;
 					}
 					{hwn[currentsource] == 1}
 					{
@@ -5349,7 +5338,7 @@ GUI Parameters usable in SynthDefs
 		.action_({ | but |
 			var bool = but.value.asBoolean;
 
-			this.ossiaaud[currentsource].v_(bool);
+			ossiaaud[currentsource].v_(bool);
 			{ win.refresh; }.defer;
 		});
 
@@ -5383,9 +5372,9 @@ GUI Parameters usable in SynthDefs
 		blipcheck = CheckBox(dialView, Rect(35, 80, 50, 15), "blips").action_({ | butt |
 			if(butt.value) {
 				//"Looping transport".postln;
-				//this.autoloopval = true;
+				//autoloopval = true;
 			} {
-				//		this.autoloopval = false;
+				//		autoloopval = false;
 			};
 
 		});
@@ -5396,9 +5385,9 @@ GUI Parameters usable in SynthDefs
 					hdtrk = true;
 				} {
 					hdtrk = false;
-					this.headingnumboxProxy.valueAction = 0;
-					this.pitchnumboxProxy.valueAction = 0;
-					this.rollnumboxProxy.valueAction = 0;
+					headingnumboxProxy.valueAction = 0;
+					pitchnumboxProxy.valueAction = 0;
+					rollnumboxProxy.valueAction = 0;
 				};
 			});
 			hdtrkcheck.value = true;
@@ -5482,8 +5471,8 @@ GUI Parameters usable in SynthDefs
 
 
 				nfontes.do { | i |
-					if(this.tfieldProxy[i].value != "") {
-						filenames.write(this.tfieldProxy[i].value ++ "\n")
+					if(tfieldProxy[i].value != "") {
+						filenames.write(tfieldProxy[i].value ++ "\n")
 					} {
 						filenames.write("NULL\n")
 					};
@@ -5581,9 +5570,9 @@ GUI Parameters usable in SynthDefs
 
 			loopcheck.value = lp[currentsource].value;
 
-			updateGuiCtl.value(\lib, this.libboxProxy[currentsource].value);
+			updateGuiCtl.value(\lib, libboxProxy[currentsource].value);
 
-			updateGuiCtl.value(\dstrv, this.dstrvboxProxy[currentsource].value);
+			updateGuiCtl.value(\dstrv, dstrvboxProxy[currentsource].value);
 
 			updateGuiCtl.value(\src);
 
@@ -5599,16 +5588,16 @@ GUI Parameters usable in SynthDefs
 			zslider.value = (zlev[currentsource] * 0.01 + 1) * 0.5;
 			znumbox.value = zlev[currentsource];
 
-			auxslider1.value = this.aux1[currentsource];
-			aux1numbox.value = this.aux1[currentsource];
-			auxslider2.value = this.aux2[currentsource];
-			aux2numbox.value = this.aux2[currentsource];
-			auxslider3.value = this.aux3[currentsource];
-			aux3numbox.value = this.aux3[currentsource];
-			auxslider4.value = this.aux4[currentsource];
-			aux4numbox.value = this.aux4[currentsource];
-			auxslider5.value = this.aux5[currentsource];
-			aux5numbox.value = this.aux5[currentsource];
+			auxslider1.value = aux1[currentsource];
+			aux1numbox.value = aux1[currentsource];
+			auxslider2.value = aux2[currentsource];
+			aux2numbox.value = aux2[currentsource];
+			auxslider3.value = aux3[currentsource];
+			aux3numbox.value = aux3[currentsource];
+			auxslider4.value = aux4[currentsource];
+			aux4numbox.value = aux4[currentsource];
+			auxslider5.value = aux5[currentsource];
+			aux5numbox.value = aux5[currentsource];
 
 			if(audit[currentsource]) {
 				// don't change button if we are playing via automation
@@ -5747,15 +5736,15 @@ GUI Parameters usable in SynthDefs
 
 
 		originCtl[0][2].action = { | num |
-			this.headingnumboxProxy.valueAction = num.value;
+			headingnumboxProxy.valueAction = num.value;
 		};
 
 		originCtl[0][3].action = { | num |
-			this.pitchnumboxProxy.valueAction = num.value;
+			pitchnumboxProxy.valueAction = num.value;
 		};
 
 		originCtl[0][4].action = { | num |
-			this.rollnumboxProxy.valueAction = num.value;
+			rollnumboxProxy.valueAction = num.value;
 		};
 
 		originCtl[1][2] = StaticText(originView, Rect(215, 20, 12, 22));
@@ -5784,15 +5773,15 @@ GUI Parameters usable in SynthDefs
 		originCtl[0][7].scroll_step_(0.1);
 
 		originCtl[0][5].action = { | num |
-			this.oxnumboxProxy.valueAction = num.value;
+			oxnumboxProxy.valueAction = num.value;
 		};
 
 		originCtl[0][6].action = { | num |
-			this.oynumboxProxy.valueAction = num.value;
+			oynumboxProxy.valueAction = num.value;
 		};
 
 		originCtl[0][7].action = { | num |
-			this.oznumboxProxy.valueAction = num.value;
+			oznumboxProxy.valueAction = num.value;
 		};
 
 		originCtl[1][5] = StaticText(originView, Rect(155, 20, 12, 22));
@@ -5885,7 +5874,7 @@ GUI Parameters usable in SynthDefs
 		masterslider.orientation(\vertical);
 		masterslider.value = 0.5;
 		masterslider.action = { | num |
-			this.masterlevProxy.valueAction = num.value * 2;
+			masterlevProxy.valueAction = num.value * 2;
 		};
 
 		/////////////////////////////////////////////////////////////////////////
@@ -5900,7 +5889,7 @@ GUI Parameters usable in SynthDefs
 		// add the list of impule response if one is provided by rirBank
 
 		clsReverbox.action_({ | num |
-			this.clsrvboxProxy.valueAction = num.value;
+			clsrvboxProxy.valueAction = num.value;
 		});
 		clsReverbox.value = 0;
 
@@ -6273,20 +6262,20 @@ GUI Parameters usable in SynthDefs
 
 			Dialog.openPanel(
 				control.stopRecording;
-				this.ossiarec.v_(false);
+				ossiarec.v_(false);
 				{ | path |
 					{
 						if (str) {
-							this.streamdisk[currentsource] = true;
+							streamdisk[currentsource] = true;
 							stcheck[currentsource].valueAction = true;
 						};
-						this.tfieldProxy[currentsource].valueAction = path;}.defer;
+						tfieldProxy[currentsource].valueAction = path;}.defer;
 				},
 				{
 					"cancelled".postln;
-					this.streamdisk[currentsource] = false;
-					{this.tfieldProxy[currentsource].value = "";}.defer;
-					{this.tfield[currentsource].value = "";}.defer;
+					streamdisk[currentsource] = false;
+					{tfieldProxy[currentsource].value = "";}.defer;
+					{tfield[currentsource].value = "";}.defer;
 					stcheck[currentsource].valueAction = false;
 				};
 			);
@@ -6448,26 +6437,26 @@ GUI Parameters usable in SynthDefs
 			lpcheck[i] = CheckBox.new(wdados, Rect(70, 40 + (i*20), 40, 20));
 
 			lpcheck[i].action_({ | but |
-				this.lpcheckProxy[i].valueAction = but.value;
+				lpcheckProxy[i].valueAction = but.value;
 			});
 
 			hwncheck[i] = CheckBox.new( wdados, Rect(85, 40 + (i*20), 40, 20));
 
 			hwncheck[i].action_({ | but |
-				this.hwncheckProxy[i].valueAction = but.value;
+				hwncheckProxy[i].valueAction = but.value;
 			});
 
 
 			scncheck[i] = CheckBox.new( wdados, Rect(100, 40 + (i*20), 40, 20));
 
 			scncheck[i].action_({ | but |
-				this.scncheckProxy[i].valueAction = but.value;
+				scncheckProxy[i].valueAction = but.value;
 			});
 
 			spcheck[i] = CheckBox.new(wdados, Rect(115, 40 + (i*20), 40, 20));
 
 			spcheck[i].action_({ | but |
-				this.spcheckProxy[i].valueAction = but.value;
+				spcheckProxy[i].valueAction = but.value;
 			});
 
 
@@ -6475,7 +6464,7 @@ GUI Parameters usable in SynthDefs
 			dfcheck[i] = CheckBox.new(wdados, Rect(130, 40 + (i*20), 40, 20));
 
 			dfcheck[i].action_({ | but |
-				this.dfcheckProxy[i].valueAction = but.value;
+				dfcheckProxy[i].valueAction = but.value;
 			});
 
 
@@ -6527,42 +6516,42 @@ GUI Parameters usable in SynthDefs
 
 			a1check[i] = CheckBox.new( wdados, Rect(750, 40 + (i*20), 40, 20));
 			a1check[i].action = { | but |
-				this.a1checkProxy[i].valueAction = but.value;
+				a1checkProxy[i].valueAction = but.value;
 			};
 
 
 
 			a2check[i] = CheckBox.new( wdados, Rect(765, 40 + (i*20), 40, 20));
 			a2check[i].action = { | but |
-				this.a2checkProxy[i].valueAction = but.value;
+				a2checkProxy[i].valueAction = but.value;
 			};
 
 
 			a3check[i] = CheckBox.new( wdados, Rect(780, 40 + (i*20), 40, 20));
 			a3check[i].action = { | but |
-				this.a3checkProxy[i].valueAction = but.value;
+				a3checkProxy[i].valueAction = but.value;
 			};
 
 
 			a4check[i] = CheckBox.new( wdados, Rect(795, 40 + (i*20), 40, 20));
 			a4check[i].action = { | but |
-				this.a4checkProxy[i].valueAction = but.value;
+				a4checkProxy[i].valueAction = but.value;
 			};
 
 
 			a5check[i] = CheckBox.new( wdados, Rect(810, 40 + (i*20), 40, 20));
 			a5check[i].action = { | but |
-				this.a5checkProxy[i].valueAction = but.value;
+				a5checkProxy[i].valueAction = but.value;
 			};
 
 
 
-			this.tfield[i] = TextField(wdados, Rect(825, 40+ (i*20), 100, 20));
-			//this.tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
+			tfield[i] = TextField(wdados, Rect(825, 40+ (i*20), 100, 20));
+			//tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
 			stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
 			stcheck[i].action = { | but |
-				this.stcheckProxy[i].valueAction = but.value;
+				stcheckProxy[i].valueAction = but.value;
 			};
 
 			textbuf = StaticText(wdados, Rect(940, 40 + (i*20), 50, 20));
@@ -6601,7 +6590,7 @@ GUI Parameters usable in SynthDefs
 			a4box[i].font = Font(Font.defaultSansFace, 9);
 			a5box[i].font = Font(Font.defaultSansFace, 9);
 
-			this.tfield[i].font = Font(Font.defaultSansFace, 9);
+			tfield[i].font = Font(Font.defaultSansFace, 9);
 
 			xbox[i].decimals = 3;
 			ybox[i].decimals = 3;
@@ -6612,31 +6601,31 @@ GUI Parameters usable in SynthDefs
 
 
 			a1box[i].action = { | num |
-				this.a1boxProxy[i].valueAction = num.value;
+				a1boxProxy[i].valueAction = num.value;
 			};
 
 
 			a2box[i].action = { | num |
-				this.a2boxProxy[i].valueAction = num.value;
+				a2boxProxy[i].valueAction = num.value;
 			};
 
 
 			a3box[i].action = { | num |
-				this.a3boxProxy[i].valueAction = num.value;
+				a3boxProxy[i].valueAction = num.value;
 			};
 
 			a4box[i].action = { | num |
-				this.a4boxProxy[i].valueAction = num.value;
+				a4boxProxy[i].valueAction = num.value;
 			};
 
 			a5box[i].action = { | num |
-				this.a5boxProxy[i].valueAction = num.value;
+				a5boxProxy[i].valueAction = num.value;
 			};
 
 
 
-			this.tfield[i].action = { | path |
-				this.tfieldProxy[i].valueAction = path.value;
+			tfield[i].action = { | path |
+				tfieldProxy[i].valueAction = path.value;
 			};
 
 
@@ -6646,19 +6635,19 @@ GUI Parameters usable in SynthDefs
 
 			// gradually pinching these and putting up above
 
-			this.xbox[i].action = { | num |
-				this.xboxProxy[i].valueAction = num.value;
+			xbox[i].action = { | num |
+				xboxProxy[i].valueAction = num.value;
 			};
 
 
 			ybox[i].action = { | num |
-				this.yboxProxy[i].valueAction = num.value;
+				yboxProxy[i].valueAction = num.value;
 			};
 			ybox[i].value = 200;
 
 
 			zbox[i].action = { | num |
-				this.zboxProxy[i].valueAction = num.value;
+				zboxProxy[i].valueAction = num.value;
 			};
 
 
@@ -6702,21 +6691,21 @@ GUI Parameters usable in SynthDefs
 
 
 			libbox[i].action = { | num |
-				this.libboxProxy[i].valueAction = num.value;
+				libboxProxy[i].valueAction = num.value;
 			};
 			libbox[i].value = 0;
 
 			dstrvbox[i].action = { | num |
-				this.dstrvboxProxy[i].valueAction = num.value;
+				dstrvboxProxy[i].valueAction = num.value;
 			};
 			dstrvbox[i].value = 0;
 
 			abox[i].action = { | num |
-				this.aboxProxy[i].valueAction = num.value;
+				aboxProxy[i].valueAction = num.value;
 			};
 
 			vbox[i].action = { | num |
-				this.vboxProxy[i].valueAction = num.value;
+				vboxProxy[i].valueAction = num.value;
 			};
 
 
@@ -6732,60 +6721,60 @@ GUI Parameters usable in SynthDefs
 			randbox[i].value = 0;
 
 			gbox[i].action = { | num |
-				this.gboxProxy[i].valueAction = num.value;
+				gboxProxy[i].valueAction = num.value;
 			};
 
 			lbox[i].action = { | num |
-				this.lboxProxy[i].valueAction = num.value;
+				lboxProxy[i].valueAction = num.value;
 			};
 
 			rmbox[i].action = { | num |
-				this.rmboxProxy[i].valueAction = num.value;
+				rmboxProxy[i].valueAction = num.value;
 			};
 
 			dmbox[i].action = { | num |
-				this.dmboxProxy[i].valueAction = num.value;
+				dmboxProxy[i].valueAction = num.value;
 			};
 
 			rbox[i].action = { | num |
-				this.rboxProxy[i].valueAction = num.value;
+				rboxProxy[i].valueAction = num.value;
 			};
 
 
 			dbox[i].action = { | num |
-				this.dboxProxy[i].valueAction = num.value;
+				dboxProxy[i].valueAction = num.value;
 			};
 
 
 			cbox[i].action = { | num |
-				this.cboxProxy[i].valueAction = num.value;
+				cboxProxy[i].valueAction = num.value;
 			};
 
 
 			dpbox[i].action = { | num |
-				this.dpboxProxy[i].valueAction = num.value;
+				dpboxProxy[i].valueAction = num.value;
 			};
 
 
 			ncanbox[i].action = { | num |
-				this.ncanboxProxy[i].valueAction = num.value;
+				ncanboxProxy[i].valueAction = num.value;
 			};
 
 
 			businibox[i].action = { | num |
-				this.businiboxProxy[i].valueAction = num.value;
+				businiboxProxy[i].valueAction = num.value;
 			};
 
 			ratebox[i].action = { | num |
-				this.rateboxProxy[i].valueAction = num.value;
+				rateboxProxy[i].valueAction = num.value;
 			};
 
 			winbox[i].action = { | num |
-				this.winboxProxy[i].valueAction = num.value;
+				winboxProxy[i].valueAction = num.value;
 			};
 
 			randbox[i].action = { | num |
-				this.randboxProxy[i].valueAction = num.value;
+				randboxProxy[i].valueAction = num.value;
 			};
 
 
@@ -6857,7 +6846,7 @@ GUI Parameters usable in SynthDefs
 		control.onEnd = {
 			//	control.stop;
 			control.seek;
-			if(this.autoloopval) {
+			if(autoloopval) {
 				//control.play;
 			};
 			/*
@@ -6899,7 +6888,7 @@ GUI Parameters usable in SynthDefs
 			isPlay = true;
 			//runTriggers.value;
 
-			this.ossiaplay.v_(true);
+			ossiaplay.v_(true);
 			{win.refresh;}.defer;
 
 		};
@@ -6929,7 +6918,7 @@ GUI Parameters usable in SynthDefs
 
 			if (time == 0) {
 				ossiaseekback = false;
-				this.ossiatransport.v_(0);
+				ossiatransport.v_(0);
 				ossiaseekback = true;
 			};
 
@@ -6953,10 +6942,10 @@ GUI Parameters usable in SynthDefs
 
 		control.onStop = {
 
-			if(this.autoloopval.not) {
+			if(autoloopval.not) {
 				//("Control now = " ++ control.now ++ " dur = " ++ dur).postln;
 			};
-			if(this.autoloopval.not || (control.now.round != dur)) {
+			if(autoloopval.not || (control.now.round != dur)) {
 				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++
 					control.now).postln;
 				runStops.value;
@@ -6982,7 +6971,7 @@ GUI Parameters usable in SynthDefs
 				control.play;
 			};
 
-			this.ossiaplay.v_(false);
+			ossiaplay.v_(false);
 			{win.refresh;}.defer;
 		};
 
@@ -7136,20 +7125,20 @@ GUI Parameters usable in SynthDefs
 			//	dcheck[currentsource].valueAction = butt.value;
 		});
 
-		this.autoloop = CheckBox(autoView, Rect(273, 20, 140, 20), "Loop").action_({
+		autoloop = CheckBox(autoView, Rect(273, 20, 140, 20), "Loop").action_({
 			| butt |
 			//("Doppler is " ++ butt.value).postln;
 			if(butt.value) {
 				"Looping transport".postln;
-				this.autoloopval = true;
+				autoloopval = true;
 			} {
-				this.autoloopval = false;
+				autoloopval = false;
 			};
 
-			this.ossiatrasportLoop.v_(butt.value);
+			ossiatrasportLoop.v_(butt.value);
 		});
 
-		this.autoloop.value = this.autoloopval;
+		autoloop.value = autoloopval;
 
 		sysex  = { | src, sysex |
 			// This should be more elaborate - other things might trigger it...fix this!
