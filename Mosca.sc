@@ -266,6 +266,7 @@ GUI Parameters usable in SynthDefs
 		nfontes = nsources;
 		maxorder = imaxorder;
 		server = iserver;
+
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
 		n2m = FoaEncoderMatrix.newHoa1();
@@ -283,17 +284,6 @@ GUI Parameters usable in SynthDefs
 			fourOrNine = 4;
 		};
 
-		nfontes.do { | i |
-			synthRegistry[i] = List[];
-
-			scInBus[i] = Bus.audio(server, 1);
-
-			insertBus[0, i] = Bus.audio(server, fourOrNine);
-			insertBus[1, i] = Bus.audio(server, fourOrNine);
-
-			insertFlag[i] = 0;
-		};
-
 		n3dbus = Bus.audio(server, bFormNumChan); // global b-format ACN-SN3D bus
 		fumabus = Bus.audio(server, fourOrNine);
 		gbus = Bus.audio(server, 1); // global reverb bus
@@ -307,6 +297,18 @@ GUI Parameters usable in SynthDefs
 		insertFlag = Array.newClear(nfontes);
 		insertBus = Array2D.new(2, nfontes);
 		scInBus = Array.newClear(nfontes);
+
+
+		nfontes.do { | i |
+			synthRegistry[i] = List[];
+
+			scInBus[i] = Bus.audio(server, 1);
+
+			insertBus[0, i] = Bus.audio(server, fourOrNine);
+			insertBus[1, i] = Bus.audio(server, fourOrNine);
+
+			insertFlag[i] = 0;
+		};
 
 		if (iwidth < 600) {
 			width = 600;
