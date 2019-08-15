@@ -1,7 +1,7 @@
 title::Mosca
 summary::GUI-assisted authoring of sound fields
 categories::Libraries>Ambisonic Toolkit, Libraries>HOA
-related::Guides/Intro-to-the-ATK, Guides/HOAguide, Tutorials/AutomationIntro, Guides/OssiaReference
+related::Guide/guide-Mosca, Guides/Intro-to-the-ATK, Guides/HOAguide, Tutorials/AutomationIntro, Guides/OssiaReference
 
 DESCRIPTION::
 
@@ -21,52 +21,87 @@ external decoders such as Ambdec. Mosca has its own transport provided by the
 link::Tutorials/AutomationIntro##Automation quark:: for recording and playback of
 source data. This can be used independently or may be synchronised to a DAW using Midi
 Machine Control (MMC) messages. This function has been tested to work with Ardour and
-Jack.
+Jack. The integration link::Guides/OssiaReference##ossia-sclang:: also allows
+for exposing each one of Mosca's parameters to be controled with the interactive sequencer
+link::https://ossia.io##Ossia/score:: as well as any other application featuring OSCQuerry
+or plain OSC communication.
 
-Mono and stereo sources are set indiviualy to be spatialized with Ugens form a selection
-of libraries (Ambitools, HoaLib, ADT, ATK, Josh, BF-FMH, Josh, VBAP). For B-format signals
-the selection can only be made between Abitools and ATK. All sources are subject to high
-frequency attenuation with distance. Adding to the sensation of nearness  ATK  a proximity effect,
-adding a bass boost to proximal sources among other phase effects to simulate wave
-curvature.
+subsection::Sources
+
+Mono and stereo sources are spatialized with ugens form a selection of libraries
+(Ambitools, HoaLib, ADT, ATK, BF-FMH, Josh & VBAP). These ugen options can be set
+indiviualy for each sources. For B-format signals, theonly available options are Abitools,
+uisng a beam formation technic, and ATK, where the soundfiels are angled in space using "push"
+transformations. All sources are subject to high frequency attenuation with distance.
+For a better sensation of nearness, ATK implements a proximity effect, adding a bass boost to
+proximal sources among other phase effects to simulate wave curvature. To that same effect,
+the Ambitools encoder makes use of "Near Field Compensation". Generaly, the diferences between
+libraries can be sumurized as follows:
+
+table::
+    ## Ambitools || most realistic but CPU demanding
+    ## HoaLib    || lightweight and neutral sounding
+    ## ADT       || lightweight and broad sounding
+    ## ATK       || 1st order only but many options
+    ## BF-FMH    || 2nd order max
+    ## Josh      || 1st order granular effect
+    ## VBAP      || light and precise but less homogeneous
+::
+
+note::
+Results are mainly dependant on the source material. ADT and ATK would be better for wide, deep
+immesive sounds where ponctual, narow sounds would be better located with VBAP ...
+::
+
+subsection::Reverberation
 
 Reverberation is performed either using a B-format tail room impulse response (RIR)
-- the preferred method - or using the FreeVerb reverberator, options selectable on
-creation of a Mosca instance. With both options, two reverberation level controls are
-included in the GUI to set close and distant levels. A further two reverb types are
-selectable in the GUI on a per-source basis for both RIR and allpass reverberation
-modes. The default reverb type uses John Chowning's technique of applying "local" and
-"global" reverberation to sources (CHOWNING). The "Close" reverberation of the GUI in
-this case is "global" and is audible by the listener from all directions when the source
-is close whereas "distant" reverb is "local" in scope and is encoded as a 2nd order
-ambisonic signal along with the dry signal. This predominates as the source becomes more
-distant. The second type of reverberation may be described as a "2nd order diffuse
-A-format reverberation". This technique produces reverberation weighted in the direction
-of sound events encoded in the dry ambisonic signal and involves conversion to and from
-A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal
-is converted to a 12-channel A-format signal and then either a) convolved with a
-B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse
-spectrum, or, as in the case of the allpass option, b) passed through a 12-channel bank
-of allpass filters before being converted back to a 2nd order B-format diffuse signal.
-Please note that the 2nd order diffuse reverberation may require the user to set a
-larger audio output buffer and thus increase the latency of the system. The "Chowning"
-type reverberation is more efficient and the "allpass" option, more still.
+- the preferred method - or using reverberators crated with supercollider's AllpassC and FreeVerb
+ugens. With both options, two reverberation level controls are included in the GUI for
+setting close and distant levels. "Close" reverberation in this case is "global" and is audible by
+the listener from all directions when the source is close. As it is global, it's type is applyed
+to the entire scene. "Distant" reverb on the other hand is "local" in scope and, selected and
+applayed on a per-source basis. It is processed by the individualy selected spatializer along with
+the dry signal. This effect predominates as the source becomes more distant. For ambisonic
+signals, the "Close" reverberation may be described as a "2nd order diffuse A-format
+reverberation". This technique produces reverberation weighted in the direction of sound events
+and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded
+2nd order ambisonic signal is converted to a 12-channel A-format signal and then either
 
-Mosca also has other features including a scalable Doppler Effect on moving sources,
-looping of sources loaded from file, adjustment of virtual loudspeaker angle of stereo
-sources and in the case of B-format sources: a rotation control, adjustment of
-"directivity" (see ATK documentation) and a control of "contraction", whereby the
-B-format signal may be crossfaded with its W component and which is spatialised as a 2nd
-order ambisonic signal.
+list::
+##convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format
+impulse spectrum
+##passed through Freeverb or allpass ugens before being converted back to a 2nd order B-format
+diffuse signal
+::
+
+For non-ambisonic signal (VBAP), a part of the original source signal is mixed with the W
+component of the B-format reverb input for an omnidirectional effect.
+These options are drawing from John Chowning's technique of applying "local" and "global"
+reverberation to sources (CHOWNING)
+
+note::
+Please remember that this diffuse reverberation process, especially with large impulse responses,
+may require the user to increase the audio buffer size, thus adding more latency.
+::
+
+subsection::Additional Features
+
+It is also possible to add a scalable Doppler Effect on moving sources, as well as looping sources
+loaded from file, adjusting of virtual loudspeaker angle for stereo sources and in the case of
+B-format sources: rotating the soundfield and adjusting it's "directivity"
+(see ATK documentation). A "contraction" controls enables crossfades between B-format signals and
+their raw W component, changing the sound from ponctual to omnidirectional.
 
 Mosca supports methods for making "A-format inserts" on any source spatialised in the
 GUI. In this way, the user may write a filtering synth and apply it to the sound without
-disrupting the encoded spatial characteristics. Please see the code examples below for
-more information.
+disrupting the encoded spatial characteristics. Please see the
+link::Guide/guide-Mosca##guide:: for examples.
 
 Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield
 and an appropriate Arduino board such as an Uno. Mosca may also run GUI-free and has a
-mechanism for coded control of the interface. See below for more information.
+mechanism for coded control of the interface (Setup example in the
+link::Guide/guide-Mosca##guide::).
 
 subsection::Acknowledgments
 
@@ -79,9 +114,13 @@ Pierre Lecompte, the link::https://github.com/CICM/HoaLibrary-Faust##faust versi
 the link::http://hoalibrary.mshparisnord.fr/en##HoaLibrary:: by Pierre Guillot, the
 link::https://bitbucket.org/ambidecodertoolbox/adt/src/master/##AmbiDecoderToolbox:: and
 sevral other supercollider pluggins for spatial renderding.
-controlling the
-Neels Hofmeyr's
-link::https://github.com/neeels/Automation/##Automation quark::.
+Augmented controll has been granted by the integrating the
+link::https://github.com/neeels/Automation/##Automation quark:: by Neels Hofmeyr
+and link::https://github.com/OSSIA/ossia-sclang##ossia-sclang::, made possible by
+link::https://github.com/pchdev##Pierre Cochard::,
+link::https://github.com/jcelerier##Jean-Michaël Celerier:: and the
+link::https://github.com/OSSIA##OSSIA Team::.
+
 
 Many thanks to Joseph Anderson, Neels Hofmeyr and members of the SuperCollider list for
 their assistance and valuable suggestions.
@@ -90,12 +129,22 @@ subsection::References
 
 strong::ANDERSON::, Joseph. Authoring complex Ambisonic soundfields:
 An artist's tips & tricks.
-In: DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby,
+DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby,
 UK: 2011.
 
 strong::CHOWNING::, John M. The Simulation of Moving Sound Sources.
 Computer Music Journal, v. 1,
 n. 3, p. 48-52, 1977.
+
+strong::GROND::, Florian & strong::LECOMPTE::, Pierre. Higher Order Ambisonics for
+SuperCollider.
+Linux Audio Conference, Jean MONNET University. Saint-Etienne
+France: 2017.
+
+strong::CELERIER::, Jean-Michaël. Authoring interactive media : a logical & temporal
+approach.
+Ph. D dissertations, University of BOrdeaux,
+France: 2018.
 
 
 CLASSMETHODS::
@@ -104,9 +153,8 @@ METHOD:: new
 Create Mosca instance, prepare RIR spectrum data and synth internals.
 
 ARGUMENT:: projDir
-Path to project directory. The project directory must have 2 subdirectories named "rir"
-and "auto". The first contains B-format RIRs to be used for reverberation and the second
-may be initially empty.
+Path to project directory. this will guive a deffault path for browsing sound files or
+saving and loading automations.
 
 ARGUMENT:: nsources
 The number of sources to be spatialised.
@@ -118,21 +166,41 @@ ARGUMENT:: dur
 Duration in seconds of automation transport.
 
 ARGUMENT:: rirBank
-B-Format ambisonic room impulse response (contained in projDir/rir). Ensure that it has
-the same sample rate as your system. Default is the string "FreeVerb" which makes Mosca
-use the FreeVerb reverberator in place of an RIR.
+Path to B-Format ambisonic room impulse responses folder. Ensure that it has
+the same sample rate as your system.
 
 ARGUMENT:: server
 Server used. Default is Server.default.
 
-ARGUMENT:: decoder
-Name of ambisonic decoder to be used. See the following ATK links:
-http://doc.sccode.org/Classes/FoaDecode.html http://doc.sccode.org/Classes/
-FoaDecoderMatrix.html http://doc.sccode.org/Classes/FoaDecoderKernel.html
+ARGUMENT:: parentOssiaNode
+An OSSIA_Node that will contain all of Mosca's parameters.
+It would most likely be an OSSIA_Device. see link::Guides/OssiaReference::
 
-Note. If decoder is left blank, Mosca will send raw 1st order and 2nd order signals to
-the outputs for external decoding with, for example, AmbDec: http://
-kokkinizita.linuxaudio.org/linuxaudio/
+ARGUMENT:: allCrtitical
+Set all OSSIA_Parameter to "critical" for websocket communication exclusively.
+(necessary when used outside of a local network). Only relevant when exposing an
+OSCQuerry server
+
+ARGUMENT:: decoder
+The ambisonic decoder to be used. See the following for ATK
+list::
+##link::Classes/FoaDecode::
+##link::Classes/FoaDecoderMatrix::
+##link::Classes/FoaDecoderKernel::
+::
+
+for Higher order ambisonics, see the
+link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##tutorial for the AmbiDecoderToolbox::.
+note::If decoder is left blank, Mosca will send raw ambisonic signal to
+the "rawoutbus" for external decoding with, for example,
+link::http://kokkinizita.linuxaudio.org/linuxaudio/##AmbDec::.
+Non-ambisonic signal will still ouput normaly to "outbus".
+If the string "internal" is passed as the decoder argument, Mosca will use either the BFDecode1
+(1st order) or the FMHDecode1 (2nd order) ugens.
+::
+
+ARGUMENT:: maxorder
+Maximum Ambisonics order for the rendering system. Default is 1, Mosca's limit (SC_HOA) is 5.
 
 ARGUMENT:: speaker_array
 Speaker setup defined with nested array in the form
@@ -145,20 +213,11 @@ Index of the first output bus, all other channels folow sequentialy.
 ARGUMENT:: suboutbus
 Index of the output bus for subwoofers, the signal is a mono mix of all other channels.
 
-ARGUMENT:: rawbusfuma
-Starting bus for raw first order ambisonic output. First and second order ambisonic
-output may be separated from each other (to enable use of different external decoders)
-and from channels dedicated to decoder output. Default is zero.
+ARGUMENT:: rawformat
+Starting bus for raw first ambisonic output.
 
-ARGUMENT:: rawbusambix
-Starting bus for raw second order ambisonic output. First and second order ambisonic
-output may be separated from each other (to enable use of different external decoders)
-and from channels dedicated to decoder output. Default is zero.
-
-ARGUMENT:: maxorder
-Ambisonics order for raw output to external decoder. Default is 2. 1st order may be used
-with an extenal decoder to take advantage of ATK 1st order features such as proximity
-effect and frequency spreading (see "Contraction"above).
+ARGUMENT:: rawoutbus
+Starting bus for raw first order ambisonic output.
 
 ARGUMENT:: serport
 Name of serial port to receive headtracking data. Eg. "/dev/ttyACM0". For use with a
@@ -167,8 +226,9 @@ binaural decoder. Default is nil.
 ARGUMENT:: offsetheading
 Value in degrees radians to offset heading value of the connected Arduino 9-axes Motion
 Shield. Default is 0. This may be used to adjust for the "magnetic declination" of your
-local region, calibrating the shield to true north (see: https://en.wikipedia.org/wiki/
-Magnetic_declination and http://www.magnetic-declination.com/). It may also be used to
+local region, calibrating the shield to true north (see link::https://en.wikipedia.org/wiki/
+Magnetic_declination##the wikipedia entry:: and link::http://www.magnetic-declination.com::).
+It may also be used to
 rotate North to the direction of your computer monitor. Eg. If when you are facing the
 monitor and the offsetheading is set to the default 0, you see a heading value (bottom-
 right of window) of 2.6, set the value to -2.6. The heading value will now be set to
@@ -819,553 +879,3 @@ Path to automation directory.
 
 
 EXAMPLES::
-
-A video tutorial of Mosca is available here: http://escuta.org/moscavideo
-
-Please ensure that SuperCollider is installed with plugins
-from: https://github.com/supercollider/sc3-plugins
-It is also necessary to install the ATK
-Kernels: http://www.ambisonictoolkit.net/download/kernels
-
-The user must set up a project directory with subdirectories "rir" and "auto". RIRs
-should have the first 100 or 120ms silenced to act as "tail" reverberator and must be
-placed in the "rir" directory. For convenience, please download the "moscaproject.zip"
-file on the following page which contains the file structure, example RIRs and B-format
-recordings as well as other information and demos. Note that the example RIR is recorded
-at 48kHz:
-
-http://escuta.org/mosca
-
-Please then see the methods and code examples below.
-
-Once you have successfully opened the GUI, read this:
-
-NOTES ON GUI COMPONENTS
-
-- Source pull down menu. Select a source
-
-- Doppler. The user must also use the "Doppler Amount" slider to adjust the effect
-
-- Loop. Loop sounds loaded from file
-
-- A-format reverb. By default the system uses the more efficient Chowning-style reverb
-described above. This toggle applies a second order diffuse 2nd order reverberation to
-mono and stereo sources as well as "contracted" B-format material (see below). Note that
-the reverberation applied to B-format signals is always via A-format transformation.
-
-- HW-in. Toggle this to read audio from hardware inputs. The user must specify the
-number of channels and the staring bus (starting with zero) in the two fields beneath
-the toggle. Note this will override any loaded sound file. It is up to the user to
-manage the start busses for the various source. If for example source 1 is a 4 channel
-signal and starts on bus zero, a second stereo source myst use a starting bus of 4 or
-higher.
-
-- SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number
-of channels in the GUI but does not need to specify the starting bus. See code examples
-below for more information. Like HW-in, selecting SC-in for a particular source will
-disable any sound file that has been loaded.
-
-- Linear Intensity. Select this to apply linear attenuation of itensity with distance.
-By default, intensity is adjusted in proportion to the invesrse square root of
-proximity.
-
-- load audio. Load a sound file for a given a source.
-
-- show data. Open and close a data window for all sources showing all parameters.
-
-- show nodes. Show SuperCollider node tree.
-
-- show aux. Open and close an auxiliary controller window for a source. These sliders
-do not affect spatialisation of the source, however the data produced is sent to any
-"registered" SuperCollider synth is recorded and reproduced by the GUI's transport.
-See the code examples for more information.
-
-- audition. Use this button to audition a given source. Note that the transport also
-plays and cues sounds, "audition" should only be used to test sounds with the interface.
-
-- record audio. Records audio as a wav file to the project directory defined by the
-"projDir" class method. The number of channels recorded and the starting bus are defined
-by the "recchans" and "recbus" class methods respectively (see below).
-
-- blips. Check this box to include audible blips at the begining of the recording.
-This may be useful when post synchronising the recorded audio with footage taken on a
-video camera.
-
-- Level. Adjust playback level of source.
-
-- Doppler amount. See b) above.
-
-- Close Reverb. Adjust level of reverberation for proximal sources.
-
-- Distant Reverb. Adjust level of reverberation for distant sources.
-
-- Angle. Adjust angle of virtual speaker pair for stereo sources.
-The default is 1.05 radians or 60 degrees.
-
-- Rotate. Rotate a B-format signal on the horizontal plane.
-
-- Directivity. Adjust the directivity of B-format signal (see ATK documentation)
-
-- Contraction. In the case of B-format input, contraction is a cross-fade between
-B-format signal an its W component. Note that the "contracted" signal is spatialised
-with 2nd order ambisonics when using an external decoder. When the user is decoding
-with a 1st order decoder from the ATK, mono and stereo signals are encoded as
-omnidirectional B-format signals and angled in space using the ATK's "push"
-transformation. In this this case contraction varies between an omnidirectional signal
-and a spatially focussed signal.
-
-- Spread / Diffuse. As mentioned above, when using a 1st order decoder, mono and stereo
-signals are signals are encoded as omni B-format signals before being "pushed" into an
-angular location (if fully "contracted"). The Spread and Diffuse toggles allow the user
-to select two other methods to diffuse the signal omni-directionally. See "spread
-diffusion encoder" and "frequency spreading encoder" here: http://doc.sccode.org
-/Classes/FoaEncode.html
-
-- Z-axis. Manipulate the Z-axis of current source.
-
-- Automation transport. Includes a "play/stop" button, a return to start button,
-a record button and a "snapshot" button of current values button. The Automation
-transport also contains a slider to move the "play head". Loaded sounds which are not
-looped will start at the beginning of the file at "0" on the transport and the transport
-fader may be used to advance through these sounds as well as advance through the
-recorded fader settings.
-
-- save auto / load auto. Save/load to/from a chosen directory.
-
-- Slave to MMC. Slave the transport to incoming Midi Machine Control data.
-This has been tested with Ardour and Jack on Linux.
-
-- Loop. Loop the transport.
-
-- Orientation (when used with Arduino 9-axes Motion Shield headtracking device
-(see below). The values are for heading, roll and pitch and are in degrees radians.
-
-code::
-/*
-Make sure the server is stopped before running this block of example code for first time
-
-OPEN THE MOSCA GUI (edit to suit your situation)
-*/
-
-(
-s = Server.local;
-s.quit;
-o = s.options;
-//o.numAudioBusChannels = 2048;
-o.numInputBusChannels = 32;
-o.numOutputBusChannels = 15;
-// eg. 2 for stereo, 4 for 1st order ambisonics & 9 for 2nd order
-o.memSize = 64 * 8192;
-o.numAudioBusChannels = 2048;
-o.numWireBufs = 512;
-s.waitForBoot {
-
-// Add a SC internal decoder (1st order only)
-// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
-//~decoder = FoaDecoderKernel.newUHJ;
-s.sync;
-~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
-//5.wait;
-s.sync;
-
-MIDIIn.connect(inport: 0, device: 0);  // must connect to MIDI for MMC synch
-s.sync;
-
-/*Create a project directory and in it create to more directories "rir" and "auto".
-Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings
-see the zip archive here: http://escuta.org/mosca
-
-Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180,
-rir:"allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order
-and 1st order signals out of SC's outputs for decoding with an external decoder. */
-
-// Use FreeVerb filter reverberation
-
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 11, width: 965,
-dur: 60, rir: "FreeVerb", freeroom: 0.5, freedamp: 0.5, decoder: ~decoder);
-
-// without headtracking with rir supplied in the zip file mentioned above.
-
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width:
-//965, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
-::
-
-subsection::Serial devices & head tracking
-
-The Arduino and 9-Axes Motion Shield and supporting Arduino board such as the Uno
-(tested) should be placed on top of the headphones with the USB socket of the Arduino
-directed to the left of the user. In this orientation the USB cable can run down
-left-hand side of headphones together with audio lead. Use the Arduino project files in
-the directory "arduinoHeadTrack" in the git sources to configure the Arduino and shield.
-See https://www.arduino.cc for more information on the Arduino.
-
-When using Mosca with a head-tracker, it is useful to access the serial device with a
-persistant name. To do this on Debian/Ubuntu Linux, first get information about an
-attached device with a line such as:
-
-udevadm info -a -p  $(udevadm info -q path -n /dev/ttyACM0)
-
-Search for the block of data that contains reference to the Arduino and take note of the
-values for idVendor and idProduct. Then create a file /etc/udev/rules.d/10-local.rules
-and add contents such as the following (edit this line and above to your needs):
-
-ACTION=="add", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", MODE:="0666",
-SYMLINK+="head_tracker"
-
-To load this without rebooting, type: sudo udevadm control --reload-rules
-
-Then disconnect and reconnect your device. In the above example it can be accessed at
-/dev/head_tracker for example.
-
-code::
-// with headtracking (used with binaural decoder)
-
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width:
-//865, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/
-//head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
-
-
-
-// Use RIR and send raw 1st order ambi sginal to outputs (channels 2-10)
-//using no decoder, a raworder of 1 and rawbus value of 2.
-
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width:
-//995, dur: 60, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
-
-
-s.sync;
-
-
-// use the following to experiment with heading adjustments
-//~testMosca.offsetHeading(0.38);
-};
-
-)
-
-// If you close the Mosca window, don't forget to free the decoder afterwards
-
-(
-~decoder.free;
-MIDIIn.disconnect(inport: 0, device: 0);
-)
-
-
-/*
-USING SUPERCOLLIDER SYNTHS AS INPUT
-
-Must have SC-in selected on GUI for particular source and the number of channels entered
-(either 1, 2 or 4).
-
-In this example, two sources are dedicated in the GUI. Source 1 and 2 each with 1
-channel (in "No. of Channels) and select "SC-in" for both sources.
-
-Write a synthdef. Note that you must specify an out bus in the arguments as well as any
-GUI data that you wish to use (in this example mx and my). For a full list of GUI data
-available run: */
-
-Mosca.printSynthParams
-
-(
-SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
-	var source, source2, point, freqAdjust, delEnv, dis;
-        var mod;
-	point = Point.new;
-	point.set(mx, my);
-	dis = point.rho;
-//	mod = SinOsc.kr(5 + (dis * 4), 0, 0.4);
-mod = 0;
-	dis = Lag.kr(dis, 0.1);
-
-	freqAdjust = dis * 1;
-	delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
-	sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
-	source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-				doneAction: 2) + mod);
-	Out.ar(outbus, source);
-// or try stereo with 2 channels set in gui
-//	source2 = Pulse.ar(freq + 3 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-//			doneAction: 2) + mod);
-//	Out.ar(outbus, [source, source2]);
-
-}).send(s);
-)
-
-/*
-Set up first source
-
-The user must create a "Trigger function" that contains synths. This function will be
-called when "audition" a particular source or when the transport's play button is
-selected in the GUI. The user must use the getSCBus method to set the bus number for the
-particular source (sources numbered from 1 on) as well as "onFree" of the Synth class to
-deregister the synth (with the method deregisterSynth). The method registerSynth is used
-to register it.
-
-These simple sounds work best with some doppler set in GUI and some reverb.
-*/
-
-(
-~source1PlayFunc = {
-~mySynth = Synth.new("test-out", [\freq, 220, \outbus,
-~testMosca.getSCBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1,
-~mySynth)});
-
-~testMosca.registerSynth(1, ~mySynth);
-};
-~source1StopFunc = {~mySynth.free; };
-~testMosca.setTriggerFunc(1, ~source1PlayFunc);
-~testMosca.setStopFunc(1, ~source1StopFunc);
-)
-
-// second source
-(
-~source2PlayFunc = {
-~myOtherSynth = Synth.new("test-out", [\freq, 550, \outbus,
-~testMosca.getSCBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2,
-~myOtherSynth)});
-
-~testMosca.registerSynth(2, ~myOtherSynth);
-};
-~source2StopFunc = {~myOtherSynth.free; };
-
-~testMosca.setTriggerFunc(2, ~source2PlayFunc);
-~testMosca.setStopFunc(2, ~source2StopFunc);
-)
-
-
-/* MAKE AN EFFECTS INSERT
-In the GUI, play something in source #1. Filter it with a synth. Note that the source
-and the filter may be launched in either order.
-
-Note - presently in development
-*/
-
-
-SynthDef(\Echo, {|aformatIn, aformatOut|
-	var sig, delayTime = 0.6;
-        sig = In.ar(aformatOut, 4);
-	delayTime = 0.6;
-        sig = CombC.ar(sig*0.5, 2, delayTime, 6) + sig;
-	Out.ar(aformatIn, sig)
-}).add;
-
-y = Synth(\Echo, [\aformatIn, ~testMosca.getFoaInsertIn(1), \aformatOut,
-~testMosca.getFoaInsertOut(1)], addAction: \addToTail);
-
-y.free; // free the filter
-
-~testMosca.releaseInsert(1) // return to sound with no filter
-
-// If you have an external decoder, try this with a 2nd order mono source (will use 12-
-// channel A-format)
-
-SynthDef(\Filter, {|aformatIn, aformatOut|
-	var sig = In.ar(aformatOut, 12);
-	sig = RLPF.ar(sig, FSinOsc.kr( 0.2, 0, 3600, 4000), 0.9);
-	Out.ar(aformatIn, sig)
-}).add;
-z = Synth(\Filter, [\aformatIn, ~testMosca.getSoaInsertIn(1), \aformatOut,
-		~testMosca.getSoaInsertOut(1)], addAction: \addToTail);
-
-z.free; // free the filter
-~testMosca.releaseInsert(1) // return to sound with no filter
-
-::
-
-subsection::Coded Mosca
-
-The GUI does not control internal variables directly, but rather via proxies of the
-class AutomationGuiProxy. This enables Mosca to run with or without a GUI as it is
-the proxies that save and read Automation data to and from disk and not the GUI elements
-themselves. Ordinarily the user does not need to know about this technical detail,
-however the proxies serve another useful purpose, they can be used for coded control
-of Mosca, with or without an active GUI. Proxies objects behave like GUI elements in
-that they have a value and an assigned function that when called upon, acts on that
-variable. So for example, if we wish to get the current x-position for a particular
-source we may use: myMoscaInstanceName.xboxProxy[i].value, where i is the number of the
-source with the index starting at zero. We may use the method valueAction to set the
-value of a proxy and have its value propagated through the system. So for example, if we
-wish to change the position of the x-coordenate for source 2 to 0.5, we use:
-myMoscaInstanceName.xboxProxy[1].valueAction = 0.5. The following is a list of available
-proxies:
-
-xboxProxy - x-coord (-1 - 1)
-
-yboxProxy - y-coord (-1 - 1)
-
-zboxProxy - z-coord (-1 - 1)
-
-dcheckProxy - Doppler checkbox (flag))
-
-lpcheckProxy - loop checkbox (flag)
-
-rvcheckProxy - A-format reverb checkbox (flag)
-
-hwncheckProxy - Hardware-in checkbox (flag)
-
-scncheckProxy - SuperCollider-in checkbox (flag)
-
-lncheckProxy - linear intensity (flag)
-
-ncanboxProxy - number of channels (1,2 or 4)
-
-businiboxProxy - start bus (0 - n)
-
-vboxProxy - level (0 - 1)
-
-dpboxProxy - Doppler amount (0 - 1)
-
-gboxProxy - close reverb (0 -1)
-
-lboxProxy - distant reverb (0 -1)
-
-cboxProxy - contraction (0 -1)
-
-spcheckProxy - spread checkbox (flag)
-
-dfcheckProxy - diffuse checkbox (flag)
-
-aboxProxy - angle (0 - 3.14rad)
-
-rboxProxy - rotation (-3.14 - 3.14rad)
-
-dboxProxy - Directivity angle (0 - 1.57rad)
-
-a1checkProxy - auxiliary 1 button (flag)
-
-a2checkProxy - auxiliary 2 button (flag)
-
-a3checkProxy - auxiliary 3 button (flag)
-
-a4checkProxy - auxiliary 4 button (flag)
-
-a5checkProxy - auxiliary 5 button (flag)
-
-a1boxProxy - auxiliary 1 level (0-1)
-
-a2boxProxy - auxiliary 2 level (0-1)
-
-a3boxProxy - auxiliary 3 level (0-1)
-
-a4boxProxy - auxiliary 4 level (0-1)
-
-a5boxProxy - auxiliary 5 level (0-1)
-
-stcheckProxy - stream check (data window) (flag)
-
-tfieldProxy - file path (data window) (path)
-
-code::
-// CODED CONTROL OF MOSCA
-
-As described above in this help file (see "CODED CONTROL OF MOSCA" in Description),
-Mosca may be controlled via proxies. To use the following block of code, have the Mosca
-GUI running with a sound loaded in source 1 and with "audition" selcted and the "level"
-turned up. Run the block of code below to control the x, y and z coordinates. You may
-also use this form of control in non-GUI mode (see below).
-
-(
-// orbit derived from code by WillS: http://cplussplussatplay.blogspot.com.br/2011/09/
-// simple-2d-orbit.html
-
-// "constants"
-var grav_const = 6.6742e-11;
-var earth_mass = 5.975e24;
-// variables
-var radius = 6.37814e6;
-var angle = 0;
-var grav_accel = 0;
-var body_pos_x = 1.4e6; // An X axis position of the body to be attracted
-var body_pos_y = 7.5e5; // A Y axis position of the body to be attracted
-var body_vel_x = 0.0;   // Body velocity split into two components, X and Y
-var body_vel_y = 8.5e3;
-var scale = 10000 * 250;
-~orbit = t             // set ~orbit to false to turn orbit off (see after end of block)
-
-Routine {
-	while ( {~orbit}, {
-		radius = (pow(body_pos_x, 2) + pow(body_pos_y, 2)).sqrt;
-		grav_accel = (grav_const * (earth_mass / pow(radius, 2)));
-		angle = atan2(body_pos_x, body_pos_y);
-		body_vel_x = body_vel_x + (sin(angle) * grav_accel);
-		body_vel_y = body_vel_y + (cos(angle) * grav_accel);
-		body_pos_x = body_pos_x - body_vel_x;
-		body_pos_y = body_pos_y - body_vel_y;
-		// Control x,y and z values for source 1
-		~testMosca.xboxProxy[0].valueAction = (body_pos_x / scale);
-		~testMosca.yboxProxy[0].valueAction = (body_pos_y / scale);
-		~testMosca.zboxProxy[0].valueAction = (body_pos_y / scale);
-				// duplicate Y for Z-axis
-		0.02.wait;
-	};
-	);
-}.play;
-
-)
-
-~orbit = false    // turn off orbit
-
-
-// RUNNING MOSCA WITHOUT A GUI
-
-1. As a first step, run the first block of code above in these Examples
-	to open a Mosca GUI.
-2. Record some Automation data and save to disk, taking note of the address.
-3. Edit the block of code below to include the correct paths for your saved
-	Automation file.
-4. Run the code and use the commands below the block to control playback.
-
-(
-s = Server.local;
-s.quit;
-o = s.options;
-//o.numAudioBusChannels = 2048;
-o.numInputBusChannels = 32;
-o.numOutputBusChannels = 15;
-// eg. 2 for stereo, 4 for 1st order ambisonics & 9 for 2nd order
-o.memSize = 64 * 8192;
-o.numAudioBusChannels = 2048;
-o.numWireBufs = 512;
-s.waitForBoot {
-
-// Add a SC internal decoder (1st order only)
-// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
-//~decoder = FoaDecoderKernel.newUHJ;
-s.sync;
-~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
-s.sync;
-
-MIDIIn.connect(inport: 0, device: 0);
-s.sync;
-
-// without headtracking with rir supplied in the zip file mentioned above.
-
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865,
-dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, guiflag: false);
-
-
-// with headtracking (should only be used with binaural decoder)
-
-/*
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865,
-dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker",
-offsetheading: -2.6, recchans: 2, recbus: 0, guiflag: false);
-*/
-
-	~testMosca.control.load("/path/to/your/automation/file");
-	~testMosca.loadNonAutomationData("/path/to/your/automation/file");
-};
-
-)
-
-~testMosca.blindControlPlay    // play Automation
-~testMosca.blindControlStop    // stop Automation
-~testMosca.control.seek(5.0) // jump to the 5 second mark
-
-// Use this block to free a no-gui Mosca instance when finished
-(
-~testMosca.free;
-~decoder.free;
-MIDIIn.disconnect(inport: 0, device: 0);
-)
-
-::
