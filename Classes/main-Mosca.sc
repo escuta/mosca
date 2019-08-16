@@ -120,6 +120,7 @@ Mosca {
 
 	<>masterlevProxy, masterslider,
 
+	<parentOssiaNode,
 	ossiaorient, ossiaorigine, ossiaplay, ossiatrasportLoop,
 	ossiatransport, ossiaseekback, ossiarec, ossiacart, ossiasphe, ossiaaud,
 	ossialoop, ossialib, ossialev, ossiadp, ossiacls, ossiaclsam,
@@ -212,7 +213,7 @@ GUI Parameters usable in SynthDefs
 
 	}
 
-	initMosca { | projDir, nsources, iwidth, idur, rirBank, iserver, parentOssiaNode,
+	initMosca { | projDir, nsources, iwidth, idur, rirBank, iserver, iparentOssiaNode,
 		allCrtitical, decoder, imaxorder, speaker_array, outbus, suboutbus,
 		rawformat, rawoutbus, iserport, ioffsetheading, irecchans, irecbus,
 		iguiflag, iguiint, iautoloop |
@@ -227,6 +228,7 @@ GUI Parameters usable in SynthDefs
 		nfontes = nsources;
 		maxorder = imaxorder;
 		server = iserver;
+		parentOssiaNode = iparentOssiaNode;
 
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
@@ -1267,7 +1269,7 @@ GUI Parameters usable in SynthDefs
 					{ ncanbox[i].value = num.value }.defer;
 
 					if (i == currentsource) {
-						{ updateGuiCtl.value(\src); }.defer;
+						{ updateGuiCtl.value(\chan); }.defer;
 					};
 				};
 			};
@@ -3505,7 +3507,7 @@ GUI Parameters usable in SynthDefs
 
 		/// OSSIA bindings
 
-		this.ossia(parentOssiaNode, allCrtitical);
+		this.ossia(allCrtitical);
 
 		//// LAUNCH INITIAL SYNTH
 

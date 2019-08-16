@@ -18,7 +18,7 @@ may be downloaded here: http://escuta.org/mosca
 
 + Mosca {
 
-	ossia { |parentOssiaNode, allCrtitical|
+	ossia { |allCrtitical|
 
 		var ossiaParent, ossiasrc, ossiaAutomation, ossiaMasterPlay,
 		ossiaMasterLib, ossiaMasterRev, ossiaAtk, ossiaJosh;
@@ -54,7 +54,7 @@ may be downloaded here: http://escuta.org/mosca
 		ossiaSpheBack = true;
 
 		if (parentOssiaNode.isNil) {
-			ossiaParent = OSSIA_Device("Mosca");
+			ossiaParent = OSSIA_Device("SC");
 			ossiaParent.exposeOSC();
 		} {
 			ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");

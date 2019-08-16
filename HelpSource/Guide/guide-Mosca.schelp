@@ -3,125 +3,205 @@ summary::Usagae exemples for Mosca
 categories::Libraries>Ambisonic Toolkit, Libraries>HOA
 related::Classes/Mosca
 
-A video tutorial of Mosca is available here: http://escuta.org/moscavideo
+A link::http://escuta.org/moscavideo##video tutorial:: for Mosca is available online
 
-Please ensure that SuperCollider is installed with plugins
-from: https://github.com/supercollider/sc3-plugins
-It is also necessary to install the ATK
-Kernels: http://www.ambisonictoolkit.net/download/kernels
+The user can set up a project directory with an "auto" subdirectory. A Folder containig room
+impulse resonses (RIRs) must also be provided for reverb convolutions. RIRs should have the
+first 100 or 120ms silenced to act as "tail" reverberator. For convenience, please download the
+"moscaproject.zip" file on the link::http://escuta.org/mosca##Mosca page:: which contains the file
+structure, example RIRs and B-format recordings as well as other information and demos. Note
+that the RIR example is recorded at 48kHz
 
-The user must set up a project directory with subdirectories "rir" and "auto". RIRs
-should have the first 100 or 120ms silenced to act as "tail" reverberator and must be
-placed in the "rir" directory. For convenience, please download the "moscaproject.zip"
-file on the following page which contains the file structure, example RIRs and B-format
-recordings as well as other information and demos. Note that the example RIR is recorded
-at 48kHz:
+section::Basic Setup
 
-http://escuta.org/mosca
+subsection::Binaural
 
-Please then see the methods and code examples below.
+code::
+(
+Server.killAll;                   // Make sure no servers are booted yet
+s = Server.local;                 // Use deffault server
+o = s.options;
+o.numInputBusChannels = 32;       // Allow for many possible inputs
+o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
+o.numAudioBusChannels = 2048;
+o.numWireBufs = 512;
+s.waitForBoot {
+	// Booting scsynth server before setting up Mosca
 
-Once you have successfully opened the GUI, read this:
+	// Set global variable passed as Mosca's argument
+	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
-NOTES ON GUI COMPONENTS
+	s.sync;
+	MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
+	s.sync;
 
-- Source pull down menu. Select a source
+	~moscaInstance = Mosca(
+		//projDir: "/path/to/project/folder",
+		//rirBank: "/path/to/rirBank/folder",
+		nsources: 11, // Set the number of sources
+		decoder: ~decoder,
+	);
 
-- Doppler. The user must also use the "Doppler Amount" slider to adjust the effect
+};
+)
+::
 
-- Loop. Loop sounds loaded from file
+subsection::Speaker Array
 
-- A-format reverb. By default the system uses the more efficient Chowning-style reverb
-described above. This toggle applies a second order diffuse 2nd order reverberation to
-mono and stereo sources as well as "contracted" B-format material (see below). Note that
-the reverberation applied to B-format signals is always via A-format transformation.
+This example describes
+it allows for 2nd order ambisonic with the "internal" decoder. This speaker setup actually allows
+for 3rd order ambisonic with a custom ADT decoder (commented out).
+See link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##the AmbiDecoderToolbox tutorial::.
 
-- HW-in. Toggle this to read audio from hardware inputs. The user must specify the
+code::
+(
+Server.killAll;              // Make sure no servers are running yet
+s = Server.local;            // Use deffault server
+o = s.options;
+o.numInputBusChannels = 32;  // Allow for many possible inputs
+o.numOutputBusChannels = 24;
+o.numAudioBusChannels = 2048;
+o.numWireBufs = 512;
+s.waitForBoot {
+	// Booting scsynth server before setting up Mosca
+
+	// Set global variable passed as Mosca's argument
+	// ~decoder = ChateauBonnefont3; // ADT Dome
+	~decoder = "internal";
+	~order = 2;
+	~out = 4;       // The speacker array starts at the 5th output of the soundcard
+	~sub = [0, 1];  // 2 subwoofers are plugged into outputs 0 and 1
+    ~setup = [ [ 0, 90, 1.601], [ -45, 50, 1.565 ], [ -135, 50, 1.565 ], [ 135, 50, 1.565 ],
+        [ 45, 50, 1.565 ], [ -30, 20, 2.062 ], [ -90, 20, 2.062 ], [ -150, 20, 2.062 ],
+        [ 150, 20, 2.062 ], [ 90, 20, 2.062 ], [ 30, 20, 2.062 ], [ -22.5, -3, 2.829 ],
+        [ -67.5, -3, 2.829 ], [ -112.5, -3, 2.829 ], [ -157.5, -3, 2.829 ],
+		[ 157.5, -3, 2.829 ], [ 112.5, -3, 2.829 ], [ 67.5, -3, 2.829 ],
+		[ 22.5, -3, 2.829 ] ];
+
+	s.sync;
+	MIDIIn.connect();  // must connect to MIDI for MMC synch
+	s.sync;
+	~moscaInstance = Mosca(
+		// projDir: "/path/to/project/folder",
+		// rirBank: "/path/to/rirBank/folder",
+		nsources: 11,          // Set the number of sources
+		speaker_array:~setup,
+		maxorder:~order,
+		outbus:~out,
+		suboutbus:~sub,
+		decoder: ~decoder,
+	);
+
+};
+)
+::
+
+section::GUI components
+
+subsection:: Top left
+
+list::
+
+##Source index number. you can change the selected source by right clicking on the background,
+openning or closing a drop down-menu. Once sources are placed around the center of the pannel,
+they can be selected again with a left click in their vicinity.
+
+##HW-in. Toggle this to read audio from hardware inputs. The user must specify the
 number of channels and the staring bus (starting with zero) in the two fields beneath
 the toggle. Note this will override any loaded sound file. It is up to the user to
 manage the start busses for the various source. If for example source 1 is a 4 channel
-signal and starts on bus zero, a second stereo source myst use a starting bus of 4 or
+signal and starts on bus zero, a second stereo source must use a starting bus of 4 or
 higher.
 
-- SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number
+##SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number
 of channels in the GUI but does not need to specify the starting bus. See code examples
 below for more information. Like HW-in, selecting SC-in for a particular source will
 disable any sound file that has been loaded.
 
-- Linear Intensity. Select this to apply linear attenuation of itensity with distance.
-By default, intensity is adjusted in proportion to the invesrse square root of
-proximity.
+##load. Load a sound file for a given source.
 
-- load audio. Load a sound file for a given a source.
+##stream. Stream a sound file from disk for a given source.
 
-- show data. Open and close a data window for all sources showing all parameters.
+##Loop. Loop sounds loaded from file
 
-- show nodes. Show SuperCollider node tree.
+##audition. Use this button to audition a given source. Note that the transport also
+plays and cues sounds, "audition" button should only be used to test sounds with the interface.
 
-- show aux. Open and close an auxiliary controller window for a source. These sliders
-do not affect spatialisation of the source, however the data produced is sent to any
-"registered" SuperCollider synth is recorded and reproduced by the GUI's transport.
-See the code examples for more information.
+##Library. Drop-down menu for selecting spatializers Ugens. see Description/Sources in
+link::Classes/Mosca:: for more informations.
 
-- audition. Use this button to audition a given source. Note that the transport also
-plays and cues sounds, "audition" should only be used to test sounds with the interface.
+##Level. Adjust the source's level.
 
-- record audio. Records audio as a wav file to the project directory defined by the
-"projDir" class method. The number of channels recorded and the starting bus are defined
-by the "recchans" and "recbus" class methods respectively (see below).
+##Doppler amount. Adjust the source's doppler amount.
 
-- blips. Check this box to include audible blips at the begining of the recording.
-This may be useful when post synchronising the recorded audio with footage taken on a
-video camera.
+##Contraction. Allows the expension of the signal from spatially focussed to omnidirectional,
+mainly accomplished with cross-fades between B-format signals an their W component.
 
-- Level. Adjust playback level of source.
+##Distant Reverb. Drop-down menu for selecting spatializers Ugens.
 
-- Doppler amount. See b) above.
+##Dst. amount. Adjust the source's distant reverberation for amount.
 
-- Close Reverb. Adjust level of reverberation for proximal sources.
+##Dst. amount. Adjust individual level of reverberation for distant sources.
 
-- Distant Reverb. Adjust level of reverberation for distant sources.
+##Dst. amount. Adjust the level of reverberation for distant sources.
 
-- Angle. Adjust angle of virtual speaker pair for stereo sources.
+##Close Reverb. Adjust the source proximal reverberation for amount.
+
+##A-format reverb. By default the system uses the more efficient Chowning-style reverb
+described above. This toggle applies a second order diffuse 2nd order reverberation to
+mono and stereo sources as well as "contracted" B-format material (see below). Note that
+the reverberation applied to B-format signals is always via A-format transformation.
+
+##Angle. Adjust angle of virtual speaker pair for stereo sources.
 The default is 1.05 radians or 60 degrees.
 
-- Rotate. Rotate a B-format signal on the horizontal plane.
+##Rotate. Rotate a B-format signal on the horizontal plane.
 
-- Directivity. Adjust the directivity of B-format signal (see ATK documentation)
+##Directivity. Adjust the directivity of B-format signal (see ATK documentation)
 
-- Contraction. In the case of B-format input, contraction is a cross-fade between
-B-format signal an its W component. Note that the "contracted" signal is spatialised
-with 2nd order ambisonics when using an external decoder. When the user is decoding
-with a 1st order decoder from the ATK, mono and stereo signals are encoded as
-omnidirectional B-format signals and angled in space using the ATK's "push"
-transformation. In this this case contraction varies between an omnidirectional signal
-and a spatially focussed signal.
-
-- Spread / Diffuse. As mentioned above, when using a 1st order decoder, mono and stereo
+##Spread / Diffuse. As mentioned above, when using a 1st order decoder, mono and stereo
 signals are signals are encoded as omni B-format signals before being "pushed" into an
 angular location (if fully "contracted"). The Spread and Diffuse toggles allow the user
 to select two other methods to diffuse the signal omni-directionally. See "spread
 diffusion encoder" and "frequency spreading encoder" here: http://doc.sccode.org
 /Classes/FoaEncode.html
 
-- Z-axis. Manipulate the Z-axis of current source.
+##show data. Open or close a data window for all sources showing all parameters.
 
-- Automation transport. Includes a "play/stop" button, a return to start button,
+##show nodes. Show SuperCollider node tree.
+
+##show aux. Open and close an auxiliary controller window for a source. These sliders
+do not affect spatialisation of the source, however the data produced is sent to any
+"registered" SuperCollider synth is recorded and reproduced by the GUI's transport.
+See the code examples for more information.
+
+##record audio. Records audio as a wav file to the project directory defined by the
+"projDir" class method. The number of channels recorded and the starting bus are defined
+by the "recchans" and "recbus" class methods respectively (see below).
+
+##blips. Check this box to include audible blips at the begining of the recording.
+This may be useful when post synchronising the recorded audio with footage taken on a
+video camera.
+
+##Z-axis. Manipulate the Z-axis of current source.
+
+##Automation transport. Includes a "play/stop" button, a return to start button,
 a record button and a "snapshot" button of current values button. The Automation
 transport also contains a slider to move the "play head". Loaded sounds which are not
 looped will start at the beginning of the file at "0" on the transport and the transport
 fader may be used to advance through these sounds as well as advance through the
 recorded fader settings.
 
-- save auto / load auto. Save/load to/from a chosen directory.
+##save auto / load auto. Save/load to/from a chosen directory.
 
-- Slave to MMC. Slave the transport to incoming Midi Machine Control data.
+##Slave to MMC. Slave the transport to incoming Midi Machine Control data.
 This has been tested with Ardour and Jack on Linux.
 
-- Loop. Loop the transport.
+##Loop. Loop the transport.
 
-- Orientation (when used with Arduino 9-axes Motion Shield headtracking device
+##Orientation (when used with Arduino 9-axes Motion Shield headtracking device
 (see below). The values are for heading, roll and pitch and are in degrees radians.
+::
 
 code::
 /*

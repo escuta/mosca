@@ -3,6 +3,16 @@ summary::GUI-assisted authoring of sound fields
 categories::Libraries>Ambisonic Toolkit, Libraries>HOA
 related::Guide/guide-Mosca, Guides/Intro-to-the-ATK, Guides/HOAguide, Tutorials/AutomationIntro, Guides/OssiaReference
 
+WARNING::
+Installing the link::https://github.com/scrime-u-bordeaux/sc3-pluginsHOA##HOA fork:: of
+SuperCollider's sc3-plugins is required. This fork is kept up to date, only differing from the
+original repos with additional HOAUgens.
+It is also necessary to install the ATK
+link:: http://www.ambisonictoolkit.net/download/kernels##Kernels:: and
+link:: http://www.ambisonictoolkit.net/download/matrices##Matrices:: as
+described in the download page
+::
+
 DESCRIPTION::
 
 Mosca is a SuperCollider class for GUI-assisted production of sound fields with
@@ -175,6 +185,9 @@ Server used. Default is Server.default.
 ARGUMENT:: parentOssiaNode
 An OSSIA_Node that will contain all of Mosca's parameters.
 It would most likely be an OSSIA_Device. see link::Guides/OssiaReference::
+note::If parentOssiaNode is left blank, an OSSIA_Device named "SC" is created and can be accesed
+with the .parentOssiaNode method
+::
 
 ARGUMENT:: allCrtitical
 Set all OSSIA_Parameter to "critical" for websocket communication exclusively.
@@ -255,7 +268,6 @@ returns:: New instance.
 
 METHOD:: printSynthParams
 Print GUI Parameters usable in SynthDefs.
-
 
 returns:: A string.
 
@@ -879,3 +891,39 @@ Path to automation directory.
 
 
 EXAMPLES::
+
+The following is a basic Binaural Setup, see link::Guide/guide-Mosca:: for more examples
+
+code::
+(
+Server.killAll;                   // Make sure no servers are running yet
+s = Server.local;                 // Use deffault server
+// Create and name an OSSIA_Device to contain all of Mosca's parameters
+~supercoll = OSSIA_Device('SC');
+~supercoll.exposeOSC;             // Enable OSC communication with the OSSIA_Device
+o = s.options;
+o.numInputBusChannels = 32;       // Allow for many possible inputs
+o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
+o.numAudioBusChannels = 2048;
+o.numWireBufs = 512;
+s.waitForBoot {
+	// Booting scsynth server before setting up Mosca
+
+	// Set global variable passed as Mosca's arguments
+	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
+
+	s.sync;
+	MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
+	s.sync;
+
+	~moscaInstance = Mosca(
+		//projDir: "/path/to/project/folder",
+		//rirBank: "/path/to/rirBank/folder",
+		nsources: 11, // Set the number of sources
+		decoder: ~decoder,
+		parentOssiaNode:~supercoll;
+	);
+
+};
+)
+::
