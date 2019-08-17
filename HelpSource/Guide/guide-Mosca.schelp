@@ -28,7 +28,7 @@ o.numWireBufs = 512;
 s.waitForBoot {
 	// Booting scsynth server before setting up Mosca
 
-	// Set global variable passed as Mosca's argument
+	// Create global variables passed as Mosca's arguments
 	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
 	s.sync;
@@ -37,21 +37,20 @@ s.waitForBoot {
 
 	~moscaInstance = Mosca(
 		//projDir: "/path/to/project/folder",
-		//rirBank: "/path/to/rirBank/folder",
-		nsources: 11, // Set the number of sources
-		decoder: ~decoder,
+		decoder: ~decoder
 	);
-
 };
 )
 ::
 
 subsection::Speaker Array
 
-This example describes
-it allows for 2nd order ambisonic with the "internal" decoder. This speaker setup actually allows
-for 3rd order ambisonic with a custom ADT decoder (commented out).
-See link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##the AmbiDecoderToolbox tutorial::.
+The initialisation exemple below is inteded for rendering on the 19.2 Dome at
+link::https://scrime.u-bordeaux.fr/##Le SCRIME:: (University of Bordeaux, France) with the 2nd order
+"internal" decoder. This speaker setup actually allows for 3rd order ambisonic with a custom ADT
+decoder (commented out). See
+link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##the AmbiDecoderToolbox tutorial:: and the decoder
+argument in link::Classes/Mosca::.
 
 code::
 (
@@ -65,7 +64,7 @@ o.numWireBufs = 512;
 s.waitForBoot {
 	// Booting scsynth server before setting up Mosca
 
-	// Set global variable passed as Mosca's argument
+	// Create global variables passed as Mosca's arguments
 	// ~decoder = ChateauBonnefont3; // ADT Dome
 	~decoder = "internal";
 	~order = 2;
@@ -81,17 +80,15 @@ s.waitForBoot {
 	s.sync;
 	MIDIIn.connect();  // must connect to MIDI for MMC synch
 	s.sync;
+
 	~moscaInstance = Mosca(
 		// projDir: "/path/to/project/folder",
-		// rirBank: "/path/to/rirBank/folder",
-		nsources: 11,          // Set the number of sources
 		speaker_array:~setup,
 		maxorder:~order,
 		outbus:~out,
 		suboutbus:~sub,
-		decoder: ~decoder,
+		decoder: ~decoder
 	);
-
 };
 )
 ::
@@ -102,9 +99,9 @@ subsection:: Top left
 
 list::
 
-##Source index number. you can change the selected source by right clicking on the background,
-openning or closing a drop down-menu. Once sources are placed around the center of the pannel,
-they can be selected again with a left click in their vicinity.
+##Source index number ("Source 1" initially). you can change the selected source by right clicking
+on the background, openning or closing a drop down-menu. Once sources are placed around the center
+of the pannel, they can be selected again with a left click in their vicinity.
 
 ##HW-in. Toggle this to read audio from hardware inputs. The user must specify the
 number of channels and the staring bus (starting with zero) in the two fields beneath
@@ -114,20 +111,20 @@ signal and starts on bus zero, a second stereo source must use a starting bus of
 higher.
 
 ##SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number
-of channels in the GUI but does not need to specify the starting bus. See code examples
-below for more information. Like HW-in, selecting SC-in for a particular source will
-disable any sound file that has been loaded.
+of channels in the GUI but does not need to specify the starting bus. Like HW-in, selecting SC-in
+for a particular source will disable any sound file that has been loaded. see the exemple below in
+strong::Using Supercollider synths as inputs::.
 
 ##load. Load a sound file for a given source.
 
 ##stream. Stream a sound file from disk for a given source.
 
-##Loop. Loop sounds loaded from file
+##Loop. Loop the loaded soudfile file.
 
 ##audition. Use this button to audition a given source. Note that the transport also
-plays and cues sounds, "audition" button should only be used to test sounds with the interface.
+plays and cues sounds, the "audition" button should only be used to test sounds with the interface.
 
-##Library. Drop-down menu for selecting spatializers Ugens. see Description/Sources in
+##Library. Drop-down menu for selecting spatializer Ugens. See Description/Sources in
 link::Classes/Mosca:: for more informations.
 
 ##Level. Adjust the source's level.
@@ -137,60 +134,82 @@ link::Classes/Mosca:: for more informations.
 ##Contraction. Allows the expension of the signal from spatially focussed to omnidirectional,
 mainly accomplished with cross-fades between B-format signals an their W component.
 
-##Distant Reverb. Drop-down menu for selecting spatializers Ugens.
+##Distant Reverb. Drop-down menu for selecting distant reverb types.
+see Description/Reverberation in link::Classes/Mosca:: for more informations.
 
-##Dst. amount. Adjust the source's distant reverberation for amount.
+##Dst. amount. If a Distant Reverb is selected, this controls the distant
+reverberation amount for the current source.
 
-##Dst. amount. Adjust individual level of reverberation for distant sources.
+##Dst. room/delay. If "freeverb" is selected for Distant Reverb, this controls the local
+"room size" parameter. If "allpass" is selected, the value is applayed to the local delay time.
 
-##Dst. amount. Adjust the level of reverberation for distant sources.
+##Dst. damp/decay. If "freeverb" is selected for Distant Reverb, this controls the local
+"room dampenning" parameter. If "allpass" is selected, the value is applayed to the local
+decay speed.
 
-##Close Reverb. Adjust the source proximal reverberation for amount.
+##Close Reverb. Adjust the source's proximal reverberation amount.
 
-##A-format reverb. By default the system uses the more efficient Chowning-style reverb
-described above. This toggle applies a second order diffuse 2nd order reverberation to
-mono and stereo sources as well as "contracted" B-format material (see below). Note that
-the reverberation applied to B-format signals is always via A-format transformation.
+##Angle. If the source is stereo, this controls the angle of the virtual speaker pair.
+The default is 1.05 radians (60 degrees).
 
-##Angle. Adjust angle of virtual speaker pair for stereo sources.
-The default is 1.05 radians or 60 degrees.
+##Rotate. If the source is 4 channel and above (B-format), this controls the rotation of the signal
+on the horizontal plane.
 
-##Rotate. Rotate a B-format signal on the horizontal plane.
+##Directivity. If the source is 4 channel and above (B-format) and the "ATK" Library is selected,
+this controls the directivity of the B-format signal (see ATK documentation)
 
-##Directivity. Adjust the directivity of B-format signal (see ATK documentation)
-
-##Spread / Diffuse. As mentioned above, when using a 1st order decoder, mono and stereo
-signals are signals are encoded as omni B-format signals before being "pushed" into an
-angular location (if fully "contracted"). The Spread and Diffuse toggles allow the user
+##Spread / Diffuse. If the "ATK" Library is selected, these toggles allow the user
 to select two other methods to diffuse the signal omni-directionally. See "spread
-diffusion encoder" and "frequency spreading encoder" here: http://doc.sccode.org
-/Classes/FoaEncode.html
+diffusion encoder" and "frequency spreading encoder" in link::Classes/FoaEncode::
+
+##Grain rate. If the "Josh" Library is selected, this controls the rate at which new grains are
+created (in Hz).
+
+##Window size. If the "Josh" Library is selected, this controls The window size in seconds.
+
+##Rand. win. If the "Josh" Library is selected, this controls a randomness factor for Window size.
+::
+
+see link::Classes/MonoGrainBF::
+
+subsection::Top Right
+
+list::
+
+##show aux. Open and close an auxiliary controller window for a source. These sliders
+do not affect spatialisation, however the data produced is sent to any "registered" SuperCollider
+synth. After Initialising the GUI, see the exemple below in
+strong::Using Supercollider synths as inputs::.
 
 ##show data. Open or close a data window for all sources showing all parameters.
 
 ##show nodes. Show SuperCollider node tree.
 
-##show aux. Open and close an auxiliary controller window for a source. These sliders
-do not affect spatialisation of the source, however the data produced is sent to any
-"registered" SuperCollider synth is recorded and reproduced by the GUI's transport.
-See the code examples for more information.
-
 ##record audio. Records audio as a wav file to the project directory defined by the
 "projDir" class method. The number of channels recorded and the starting bus are defined
-by the "recchans" and "recbus" class methods respectively (see below).
+by the "recchans" and "recbus" arguments respectively.
 
 ##blips. Check this box to include audible blips at the begining of the recording.
 This may be useful when post synchronising the recorded audio with footage taken on a
 video camera.
+::
 
-##Z-axis. Manipulate the Z-axis of current source.
+subsection::Left
 
-##Automation transport. Includes a "play/stop" button, a return to start button,
-a record button and a "snapshot" button of current values button. The Automation
-transport also contains a slider to move the "play head". Loaded sounds which are not
-looped will start at the beginning of the file at "0" on the transport and the transport
-fader may be used to advance through these sounds as well as advance through the
-recorded fader settings.
+list::
+
+##Z-axis. Manipulate the Z-axis of the current source.
+::
+
+subsection::Botom Left
+
+list::
+
+##Automation transport. Includes a "play/stop" button, a return to start button, a record button and
+a "snapshot" button of current values. The Automation transport also contains a slider to move the
+"play head". Loaded sounds which are not looped will start at the beginning of the file, at "0" on
+the transport, and the transport fader may be used to advance through these sounds as well as
+advance through the recorded automations.
 
 ##save auto / load auto. Save/load to/from a chosen directory.
 
@@ -198,60 +217,343 @@ recorded fader settings.
 This has been tested with Ardour and Jack on Linux.
 
 ##Loop. Loop the transport.
-
-##Orientation (when used with Arduino 9-axes Motion Shield headtracking device
-(see below). The values are for heading, roll and pitch and are in degrees radians.
 ::
 
+subsection::Botom Left
+
+list::
+
+##Close Reverb. Drop-down menu for selecting close reverb types. see Description/Reverberation in
+link::Classes/Mosca:: for more informations.
+
+##Cls. room/delay. If "freeverb" is selected for Close Reverb, this controls the global
+"room size" parameter. If "allpass" is selected, the value is applayed to the global delay time.
+
+##Dst. damp/decay. If "freeverb" is selected for close Reverb, this controls the global
+"room dampenning" parameter. If "allpass" is selected, the value is applayed to the global
+decay speed.
+
+##M. Master output level.
+
+##X. Listener's position on the X axis in meters.
+
+##Y. Listener's position on the Y axis in meters.
+
+##Z. Listener's position on the Z axis in meters.
+
+##H. Listener's orientation around the Z axis in radiants.
+
+##P. Listener's orientation around the X axis in radiants.
+
+##R. Listener's orientation around the Y axis in radiants.
+::
+
+section::Initialisation options
+
+subsection:: Binaural or Raw output
+
+The exemple below offers different rendering and output options. The raw output setup is comented out,
+to enable it instead of binaural, simply switch the comments between the "o.numOutputBusChannels" the
+"~decoder", the "~order" and the "setup" variables. "raw format" and "raw output" are ignored if a
+decoder is provided so thy do not need to be comented to initialize binaural rendering.
+
 code::
-/*
-Make sure the server is stopped before running this block of example code for first time
-
-OPEN THE MOSCA GUI (edit to suit your situation)
-*/
-
 (
-s = Server.local;
-s.quit;
+~supercoll = OSSIA_Device('SC');  // Create and name OSSIA_Device to contain all parameters
+~supercoll.exposeOSC;             // Evaluate this line while OSSIA/score is learning incoming OSC
+Server.killAll;                   // Make sure no servers are booted yet
+s = Server.local;                 // Use deffault server
 o = s.options;
-//o.numAudioBusChannels = 2048;
-o.numInputBusChannels = 32;
-o.numOutputBusChannels = 15;
-// eg. 2 for stereo, 4 for 1st order ambisonics & 9 for 2nd order
-o.memSize = 64 * 8192;
+o.numInputBusChannels = 32;       // Allow for many possible inputs
+o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
+// o.numOutputBusChannels = 22;       // 13 non-ambisonic + 9 B-format (2nd order)
 o.numAudioBusChannels = 2048;
 o.numWireBufs = 512;
 s.waitForBoot {
+	// Booting scsynth server before setting up Mosca
 
-// Add a SC internal decoder (1st order only)
-// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
-//~decoder = FoaDecoderKernel.newUHJ;
-s.sync;
-~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
-//5.wait;
-s.sync;
+	// Create global variables passed as Mosca's arguments
+	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
+	// ~decoder = nil; // Raw output
+	~order = 1;
+	// ~order = 2;
+	~out = 0;     // Use te first available Output
+	~sub = nil;   // No subwoofers
+	~setup = nil; // No speaker setup (headphones)
+	/* ~setup = [ [ -60, 18, 10 ], [ 60, 18, 10 ], [ 0, 18, 10 ], [ -120, 18, 10 ], [ 120, 18, 10 ],
+	[ 180, 18, 10 ], [ 0, 90, 10 ], [ -60, 51, 10 ], [ 60, 51, 10 ], [ 0, 51, 10 ], [ 180, 51, 10 ],
+	[ -120, 51, 10 ], [ 120, 51, 10 ] ]; // 13.1 speaker setup for "Planetario De Pamplona"
+	*/
 
-MIDIIn.connect(inport: 0, device: 0);  // must connect to MIDI for MMC synch
-s.sync;
+	s.sync;
+	MIDIIn.connect();  // must connect to MIDI for MMC synch
+	s.sync;
 
-/*Create a project directory and in it create to more directories "rir" and "auto".
-Place your ambisonic rirs in the rir folder. For some demo rirs and ambisonic recordings
-see the zip archive here: http://escuta.org/mosca
-
-Create Mosca instance with arguments (projDir, nsources: 1, width: 800, dur: 180,
-rir:"allpass", server, decoder). If <decoder> is left blank, Mosca will send 2nd order
-and 1st order signals out of SC's outputs for decoding with an external decoder. */
-
-// Use FreeVerb filter reverberation
-
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 11, width: 965,
-dur: 60, rir: "FreeVerb", freeroom: 0.5, freedamp: 0.5, decoder: ~decoder);
-
-// without headtracking with rir supplied in the zip file mentioned above.
-
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width:
-//965, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder);
+	~moscaInstance = Mosca(
+		// projDir: "/path/to/project/folder",
+		nsources: 18,             // Set the number of sources
+		width: 850,               // Set initial GUI size
+		dur: 360,                 // Set transport duration
+	    // rirBank: "/path/to/rirBank/folder",
+		server:s,
+		parentOssiaNode:~supercoll,
+		decoder: ~decoder,
+		maxorder:~order,
+		speaker_array:~setup,
+		outbus:~out,
+		suboutbus:~sub,
+		rawformat:'FuMa',
+		// Set Ambisonic Format for raw B-format output, use FuMa for using Ambdec external decoder
+		rawoutbus:14
+		// Set raw B-format output bus, spearate from the non-ambisonic signal from "outbus"
+	);
+}
+)
 ::
+
+section::Coded control
+
+The GUI does not control internal variables directly, but rather via proxies of the
+class AutomationGuiProxy. This enables Mosca to run with or without a GUI as it is
+the proxies that save and read Automation data to and from disk and not the GUI elements
+themselves. Ordinarily the user does not need to know about this technical detail,
+however the proxies serve another useful purpose, they can be used for coded control
+of Mosca, with or without an active GUI. Proxies objects behave like GUI elements in
+that they have a value and an assigned function that when called upon, acts on that
+variable. So for example, if we wish to get the current x-position for a particular
+source we may use: myMoscaInstanceName.xboxProxy[i].value, where i is the index number
+of the source (starting at zero). We may use the method valueAction to set the value of
+a proxy and have its value propagated through the system. So for example, if we wish to
+change the position of the x-coordenate for source 2 to 0.5, we use:
+myMoscaInstanceName.xboxProxy[1].valueAction = 0.5. See list below.
+
+subsection::Per source Proxies
+
+list::
+
+##xboxProxy - x-coord [-200, 200] in meters
+
+##yboxProxy - y-coord [-200, 200] in meters
+
+##zboxProxy - z-coord [-200, 200] in meters
+
+##hwncheckProxy - Hardware-in checkbox (flag)
+
+##scncheckProxy - SuperCollider-in checkbox (flag)
+
+##ncanboxProxy - number of channels [1, 2, 4, 9, 16, 25, 36]
+
+##businiboxProxy - start bus [0, n]
+
+##lpcheckProxy - loop checkbox (flag)
+
+##libboxProxy - Library selection [0, 6]
+
+##vboxProxy - level [0, 2]
+
+##dpboxProxy - Doppler amount [0, 1]
+
+##cboxProxy - contraction [0, 1]
+
+##dstrvboxProxy - Distant Reverb [0, 2 + rirBank]
+
+##lboxProxy - distant reverb amount [0, 1]
+
+##rmboxProxy - Dst. room/delay [0, 1]
+
+##dmboxProxy - Dst. damp/decay [0, 1]
+
+##gboxProxy - close reverb amount [0, 1]
+
+##aboxProxy - angle [0, pi] in radiants
+
+##rboxProxy - rotation [-pi, pi] in radiants
+
+##dboxProxy - Directivity angle [0, pi/2] in radiants
+
+##spcheckProxy - spread checkbox (flag)
+
+##dfcheckProxy - diffuse checkbox (flag)
+
+##rateboxProxy - Grain rate [1, 60] in hertz
+
+##winboxProxy - Window size [0, 0.2] in seconds
+
+##randboxProxy - Random window [0, 1] % of Window size
+
+##a1checkProxy - auxiliary 1 button (flag)
+
+##a2checkProxy - auxiliary 2 button (flag)
+
+##a3checkProxy - auxiliary 3 button (flag)
+
+##a4checkProxy - auxiliary 4 button (flag)
+
+##a5checkProxy - auxiliary 5 button (flag)
+
+##a1boxProxy - auxiliary 1 level [0, 1]
+
+##a2boxProxy - auxiliary 2 level [0, 1]
+
+##a3boxProxy - auxiliary 3 level [0, 1]
+
+##a4boxProxy - auxiliary 4 level [0, 1]
+
+##a5boxProxy - auxiliary 5 level [0, 1]
+
+##stcheckProxy - stream check (data window) (flag)
+
+##tfieldProxy - file path (data window) (path)
+::
+
+subsection::Global Proxies
+
+accesed without [i] index
+
+list::
+
+##clsrvboxProxy - Distant Reverb [0, 2 + rirBank]
+
+##clsrmboxProxy - Cls. room/delay [0, 1]
+
+##clsdmboxProxy - Cls. damp/decay [0, 1]
+
+##masterlevProxy - Master level [0, 2]
+
+##oxnumboxProxy - Listener position on the X axis [-200, 200] in meters
+
+##oynumboxProxy - Listener position on the Y axis [-200, 200] in meters
+
+##oznumboxProxy - Listener position on the Z axis [-200, 200] in meters
+
+##headingnumboxProxy - Listener orientation around the Z axis [-pi, pi] in radiants
+
+##pitchnumboxProxy - Listener orientation around the X axis [-pi, pi] in radiants
+
+##rollnumboxProxy - Listener orientation around the Y axis [-pi, pi] in radiants
+::
+
+code::
+(
+// orbit derived from code by WillS: http://cplussplussatplay.blogspot.com.br/2011/09/
+// simple-2d-orbit.html
+
+// "constants"
+var grav_const = 6.6742e-11;
+var earth_mass = 5.975e24;
+// variables
+var radius = 60.37814e6;
+var angle = 0;
+var grav_accel = 0;
+var body_pos_x = 1.4e6; // An X axis position of the body to be attracted
+var body_pos_y = 7.5e5; // A Y axis position of the body to be attracted
+var body_vel_x = 0.0;   // Body velocity split into two components, X and Y
+var body_vel_y = 8.5e3;
+var scale = 10000 * 250;
+~orbit = t             // set ~orbit to false to turn orbit off (see after end of block)
+
+Routine {
+	while ( {~orbit}, {
+		radius = (pow(body_pos_x, 2) + pow(body_pos_y, 2)).sqrt;
+		grav_accel = (grav_const * (earth_mass / pow(radius, 2)));
+		angle = atan2(body_pos_x, body_pos_y);
+		body_vel_x = body_vel_x + (sin(angle) * grav_accel);
+		body_vel_y = body_vel_y + (cos(angle) * grav_accel);
+		body_pos_x = body_pos_x - body_vel_x;
+		body_pos_y = body_pos_y - body_vel_y;
+		// Control x,y and z values for source 1
+		~moscaInstance.xboxProxy[0].valueAction = (body_pos_x / scale);
+		~moscaInstance.yboxProxy[0].valueAction = (body_pos_y / scale);
+		~moscaInstance.zboxProxy[0].valueAction = (body_pos_y / scale);
+				// duplicate Y for Z-axis
+		0.02.wait;
+	};
+	);
+}.play;
+
+)
+
+~orbit = false    // turn off orbit
+::
+
+subsection::Runnig Mosca Without a GUI
+
+subsection::Automation
+
+list::
+##As a first step, run the first block of code above in these Examples to open a Mosca GUI.
+##Record some Automation data and save to disk, taking note of the address.
+##Edit the block of code below to include the correct paths for your saved Automation file.
+##Run the code and use the commands below the block to control playback.
+::
+
+code::
+Server.killAll;
+s = Server.local;
+o = s.options;
+o.numInputBusChannels = 32;
+o.numOutputBusChannels = 2;
+o.numAudioBusChannels = 2048;
+o.numWireBufs = 512;
+s.waitForBoot {
+	// Booting scsynth server before setting up Mosca
+
+	// Create global variables passed as Mosca's arguments
+	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
+
+	s.sync;
+	MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
+	s.sync;
+
+	~moscaInstance = Mosca(
+		//projDir: "/path/to/project/folder",
+		decoder: ~decoder,
+		guiflag:false
+	);
+
+	~moscaInstance.control.load("/path/to/your/automation/file");
+	~moscaInstance.loadNonAutomationData("/path/to/your/automation/file");
+};
+
+)
+
+~moscaInstance.blindControlPlay    // play Automation
+~moscaInstance.blindControlStop    // stop Automation
+~moscaInstance.control.seek(5.0) // jump to the 5 second mark
+
+// Use this block to free a no-gui Mosca instance when finished
+(
+~moscaInstance.free;
+~decoder.free;
+MIDIIn.disconnect(inport: 0, device: 0);
+)
+::
+
+subsection::OSSIA
+
+With or without the GUI, once the Mosca's root node has been exposed through an
+OSSIA_Device, all parameters are accessible from
+link::https://www.ossia.io##OSSIA/score:: or any other application able to communicate
+through OSC or OSCQuerry. See link::Guides/OssiaReference::.
+
+For simple OSC communication, you can learn all of mosca's parameters easealy by creating
+and naming OSC device in OSSIA/score (keep deffault ports and adresses), then right
+clicking on the device and selecting the "learning" mode. you can then start mosca with
+a deffault OSSIA_Device and runnig the "~myOssiaDevice.exposeOSC()" method. All parameters
+should then appear in score's "learning" window.
+
+note::
+The ".exposeOSC()" method will send all messages to the OSC device for learning. it can be
+called before, during or after Mosca's initialisation. Regardless, it is only relevant
+if score is in OSC learning mode, or if the parameters have already been learned.
+::
+
+If no OSSIA_Device was passed to Mosca as the "parentOssiaNode" argument (above example),
+on will be created internaly. It can then be accessed and exposed wih the
+code::
+~moscaInstance.parentOssiaNode.exposeOSC();
+::
+method. Simply make sure to enable "learning" in OSSIA/score before running it.
 
 section::Serial devices & head tracking
 
@@ -260,7 +562,7 @@ The Arduino and 9-Axes Motion Shield and supporting Arduino board such as the Un
 directed to the left of the user. In this orientation the USB cable can run down
 left-hand side of headphones together with audio lead. Use the Arduino project files in
 the directory "arduinoHeadTrack" in the git sources to configure the Arduino and shield.
-See https://www.arduino.cc for more information on the Arduino.
+See link::https://www.arduino.cc:: for more information on the Arduino.
 
 When using Mosca with a head-tracker, it is useful to access the serial device with a
 persistant name. To do this on Debian/Ubuntu Linux, first get information about an
@@ -281,73 +583,73 @@ Then disconnect and reconnect your device. In the above example it can be access
 /dev/head_tracker for example.
 
 code::
-// with headtracking (used with binaural decoder)
+(
+Server.killAll;
+s = Server.local;
+o = s.options;
+o.numInputBusChannels = 32;
+o.numOutputBusChannels = 2;
+o.numAudioBusChannels = 2048;
+o.numWireBufs = 512;
+s.waitForBoot {
+	// Booting scsynth server before setting up Mosca
 
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width:
-//865, dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/
-//head_tracker", offsetheading: -2.6, recchans: 2, recbus: 0);
+	// Create global variables passed as Mosca's arguments
+	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
 
-
-// Use RIR and send raw 1st order ambi sginal to outputs (channels 2-10)
-//using no decoder, a raworder of 1 and rawbus value of 2.
-
-//~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width:
-//995, dur: 60, rir: "QL14Tail2Sec.amb", rawbusfoa: 2, rawbussoa: 6, raworder: 2);
-
+~moscaInstance = Mosca(projDir: "/path/to/your/moscaproject",
+	nsources: 12,
+	width: 865,
+	dur: 60,
+	decoder: ~decoder,
+	serport: "/dev/head_tracker",
+	offsetheading: -2.6,
+	recchans: 2,
+	recbus: 0);
 
 s.sync;
 
 
 // use the following to experiment with heading adjustments
-//~testMosca.offsetHeading(0.38);
+~moscaInstance.offsetHeading(0.38);
 };
 
 )
 
 // If you close the Mosca window, don't forget to free the decoder afterwards
-
-(
 ~decoder.free;
-MIDIIn.disconnect(inport: 0, device: 0);
-)
+::
 
+section::Use with Supercollider synths.
 
-/*
-USING SUPERCOLLIDER SYNTHS AS INPUT
+SC-in must be selected in GUI for the particular source and the number of channels entered
+(either 1, 2, 4, 9, 25 or 36).
 
-Must have SC-in selected on GUI for particular source and the number of channels entered
-(either 1, 2 or 4).
+In the example below, two sources are dedicated in the GUI. Source 1 and 2, each with 1
+channel (in "No. of Channels"). "SC-in" is select for both.
 
-In this example, two sources are dedicated in the GUI. Source 1 and 2 each with 1
-channel (in "No. of Channels) and select "SC-in" for both sources.
+Write a Synthdef. Note that you must specify an out bus in the arguments as well as any
+GUI data that you wish to use ("radius" in this example).
 
-Write a synthdef. Note that you must specify an out bus in the arguments as well as any
-GUI data that you wish to use (in this example mx and my). For a full list of GUI data
-available run: */
+code::
 
-Mosca.printSynthParams
+// For a full list of GUI data available run the folowing line
+Mosca.printSynthParams;
 
 (
-SynthDef("test-out", { arg outbus=0, freq=440, mx, my;
-	var source, source2, point, freqAdjust, delEnv, dis;
-        var mod;
-	point = Point.new;
-	point.set(mx, my);
-	dis = point.rho;
-//	mod = SinOsc.kr(5 + (dis * 4), 0, 0.4);
-mod = 0;
-	dis = Lag.kr(dis, 0.1);
-
-	freqAdjust = dis * 1;
+SynthDef("test-out", { | outbus=0, freq=440, radius |
+	var source, source2, point, freqAdjust, delEnv,
+	dis = Lag.kr(dis / 200, 0.1);
+	freqAdjust = dis;
 	delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
 	sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
 	source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-				doneAction: 2) + mod);
+				doneAction: 2));
 	Out.ar(outbus, source);
 // or try stereo with 2 channels set in gui
 //	source2 = Pulse.ar(freq + 3 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-//			doneAction: 2) + mod);
+//			doneAction: 2));
 //	Out.ar(outbus, [source, source2]);
 
 }).send(s);
@@ -369,37 +671,40 @@ These simple sounds work best with some doppler set in GUI and some reverb.
 (
 ~source1PlayFunc = {
 ~mySynth = Synth.new("test-out", [\freq, 220, \outbus,
-~testMosca.getSCBus(1)]).onFree({"done".postln; ~testMosca.deregisterSynth(1,
+~moscaInstance.getSCBus(1)]).onFree({"done".postln; ~moscaInstance.deregisterSynth(1,
 ~mySynth)});
 
-~testMosca.registerSynth(1, ~mySynth);
+~moscaInstance.registerSynth(1, ~mySynth);
 };
 ~source1StopFunc = {~mySynth.free; };
-~testMosca.setTriggerFunc(1, ~source1PlayFunc);
-~testMosca.setStopFunc(1, ~source1StopFunc);
+~moscaInstance.setTriggerFunc(1, ~source1PlayFunc);
+~moscaInstance.setStopFunc(1, ~source1StopFunc);
 )
 
 // second source
 (
 ~source2PlayFunc = {
 ~myOtherSynth = Synth.new("test-out", [\freq, 550, \outbus,
-~testMosca.getSCBus(2)]).onFree({"done".postln; ~testMosca.deregisterSynth(2,
+~moscaInstance.getSCBus(2)]).onFree({"done".postln; ~moscaInstance.deregisterSynth(2,
 ~myOtherSynth)});
 
-~testMosca.registerSynth(2, ~myOtherSynth);
+~moscaInstance.registerSynth(2, ~myOtherSynth);
 };
 ~source2StopFunc = {~myOtherSynth.free; };
 
-~testMosca.setTriggerFunc(2, ~source2PlayFunc);
-~testMosca.setStopFunc(2, ~source2StopFunc);
+~moscaInstance.setTriggerFunc(2, ~source2PlayFunc);
+~moscaInstance.setStopFunc(2, ~source2StopFunc);
 )
+::
 
+subsection::Effect Insert
 
-/* MAKE AN EFFECTS INSERT
+note::work in progress (currently retired)::
+
+code::
+/*
 In the GUI, play something in source #1. Filter it with a synth. Note that the source
 and the filter may be launched in either order.
-
-Note - presently in development
 */
 
 
@@ -411,12 +716,12 @@ SynthDef(\Echo, {|aformatIn, aformatOut|
 	Out.ar(aformatIn, sig)
 }).add;
 
-y = Synth(\Echo, [\aformatIn, ~testMosca.getFoaInsertIn(1), \aformatOut,
-~testMosca.getFoaInsertOut(1)], addAction: \addToTail);
+y = Synth(\Echo, [\aformatIn, ~moscaInstance.getFoaInsertIn(1), \aformatOut,
+~moscaInstance.getFoaInsertOut(1)], addAction: \addToTail);
 
 y.free; // free the filter
 
-~testMosca.releaseInsert(1) // return to sound with no filter
+~moscaInstance.releaseInsert(1) // return to sound with no filter
 
 // If you have an external decoder, try this with a 2nd order mono source (will use 12-
 // channel A-format)
@@ -426,209 +731,10 @@ SynthDef(\Filter, {|aformatIn, aformatOut|
 	sig = RLPF.ar(sig, FSinOsc.kr( 0.2, 0, 3600, 4000), 0.9);
 	Out.ar(aformatIn, sig)
 }).add;
-z = Synth(\Filter, [\aformatIn, ~testMosca.getSoaInsertIn(1), \aformatOut,
-		~testMosca.getSoaInsertOut(1)], addAction: \addToTail);
+z = Synth(\Filter, [\aformatIn, ~moscaInstance.getSoaInsertIn(1), \aformatOut,
+		~moscaInstance.getSoaInsertOut(1)], addAction: \addToTail);
 
 z.free; // free the filter
-~testMosca.releaseInsert(1) // return to sound with no filter
-
-::
-
-section::Coded Mosca
-
-The GUI does not control internal variables directly, but rather via proxies of the
-class AutomationGuiProxy. This enables Mosca to run with or without a GUI as it is
-the proxies that save and read Automation data to and from disk and not the GUI elements
-themselves. Ordinarily the user does not need to know about this technical detail,
-however the proxies serve another useful purpose, they can be used for coded control
-of Mosca, with or without an active GUI. Proxies objects behave like GUI elements in
-that they have a value and an assigned function that when called upon, acts on that
-variable. So for example, if we wish to get the current x-position for a particular
-source we may use: myMoscaInstanceName.xboxProxy[i].value, where i is the number of the
-source with the index starting at zero. We may use the method valueAction to set the
-value of a proxy and have its value propagated through the system. So for example, if we
-wish to change the position of the x-coordenate for source 2 to 0.5, we use:
-myMoscaInstanceName.xboxProxy[1].valueAction = 0.5. The following is a list of available
-proxies:
-
-xboxProxy - x-coord (-1 - 1)
-
-yboxProxy - y-coord (-1 - 1)
-
-zboxProxy - z-coord (-1 - 1)
-
-dcheckProxy - Doppler checkbox (flag))
-
-lpcheckProxy - loop checkbox (flag)
-
-rvcheckProxy - A-format reverb checkbox (flag)
-
-hwncheckProxy - Hardware-in checkbox (flag)
-
-scncheckProxy - SuperCollider-in checkbox (flag)
-
-lncheckProxy - linear intensity (flag)
-
-ncanboxProxy - number of channels (1,2 or 4)
-
-businiboxProxy - start bus (0 - n)
-
-vboxProxy - level (0 - 1)
-
-dpboxProxy - Doppler amount (0 - 1)
-
-gboxProxy - close reverb (0 -1)
-
-lboxProxy - distant reverb (0 -1)
-
-cboxProxy - contraction (0 -1)
-
-spcheckProxy - spread checkbox (flag)
-
-dfcheckProxy - diffuse checkbox (flag)
-
-aboxProxy - angle (0 - 3.14rad)
-
-rboxProxy - rotation (-3.14 - 3.14rad)
-
-dboxProxy - Directivity angle (0 - 1.57rad)
-
-a1checkProxy - auxiliary 1 button (flag)
-
-a2checkProxy - auxiliary 2 button (flag)
-
-a3checkProxy - auxiliary 3 button (flag)
-
-a4checkProxy - auxiliary 4 button (flag)
-
-a5checkProxy - auxiliary 5 button (flag)
-
-a1boxProxy - auxiliary 1 level (0-1)
-
-a2boxProxy - auxiliary 2 level (0-1)
-
-a3boxProxy - auxiliary 3 level (0-1)
-
-a4boxProxy - auxiliary 4 level (0-1)
-
-a5boxProxy - auxiliary 5 level (0-1)
-
-stcheckProxy - stream check (data window) (flag)
-
-tfieldProxy - file path (data window) (path)
-
-code::
-// CODED CONTROL OF MOSCA
-
-As described above in this help file (see "CODED CONTROL OF MOSCA" in Description),
-Mosca may be controlled via proxies. To use the following block of code, have the Mosca
-GUI running with a sound loaded in source 1 and with "audition" selcted and the "level"
-turned up. Run the block of code below to control the x, y and z coordinates. You may
-also use this form of control in non-GUI mode (see below).
-
-(
-// orbit derived from code by WillS: http://cplussplussatplay.blogspot.com.br/2011/09/
-// simple-2d-orbit.html
-
-// "constants"
-var grav_const = 6.6742e-11;
-var earth_mass = 5.975e24;
-// variables
-var radius = 6.37814e6;
-var angle = 0;
-var grav_accel = 0;
-var body_pos_x = 1.4e6; // An X axis position of the body to be attracted
-var body_pos_y = 7.5e5; // A Y axis position of the body to be attracted
-var body_vel_x = 0.0;   // Body velocity split into two components, X and Y
-var body_vel_y = 8.5e3;
-var scale = 10000 * 250;
-~orbit = t             // set ~orbit to false to turn orbit off (see after end of block)
-
-Routine {
-	while ( {~orbit}, {
-		radius = (pow(body_pos_x, 2) + pow(body_pos_y, 2)).sqrt;
-		grav_accel = (grav_const * (earth_mass / pow(radius, 2)));
-		angle = atan2(body_pos_x, body_pos_y);
-		body_vel_x = body_vel_x + (sin(angle) * grav_accel);
-		body_vel_y = body_vel_y + (cos(angle) * grav_accel);
-		body_pos_x = body_pos_x - body_vel_x;
-		body_pos_y = body_pos_y - body_vel_y;
-		// Control x,y and z values for source 1
-		~testMosca.xboxProxy[0].valueAction = (body_pos_x / scale);
-		~testMosca.yboxProxy[0].valueAction = (body_pos_y / scale);
-		~testMosca.zboxProxy[0].valueAction = (body_pos_y / scale);
-				// duplicate Y for Z-axis
-		0.02.wait;
-	};
-	);
-}.play;
-
-)
-
-~orbit = false    // turn off orbit
-
-
-// RUNNING MOSCA WITHOUT A GUI
-
-1. As a first step, run the first block of code above in these Examples
-	to open a Mosca GUI.
-2. Record some Automation data and save to disk, taking note of the address.
-3. Edit the block of code below to include the correct paths for your saved
-	Automation file.
-4. Run the code and use the commands below the block to control playback.
-
-(
-s = Server.local;
-s.quit;
-o = s.options;
-//o.numAudioBusChannels = 2048;
-o.numInputBusChannels = 32;
-o.numOutputBusChannels = 15;
-// eg. 2 for stereo, 4 for 1st order ambisonics & 9 for 2nd order
-o.memSize = 64 * 8192;
-o.numAudioBusChannels = 2048;
-o.numWireBufs = 512;
-s.waitForBoot {
-
-// Add a SC internal decoder (1st order only)
-// See the ATK docs for more info: http://doc.sccode.org/Classes/FoaDecode.html
-//~decoder = FoaDecoderKernel.newUHJ;
-s.sync;
-~decoder = FoaDecoderKernel.newCIPIC(21); // Binaural
-s.sync;
-
-MIDIIn.connect(inport: 0, device: 0);
-s.sync;
-
-// without headtracking with rir supplied in the zip file mentioned above.
-
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865,
-dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, guiflag: false);
-
-
-// with headtracking (should only be used with binaural decoder)
-
-/*
-~testMosca = Mosca.new(projDir: "/path/to/your/moscaproject", nsources: 12, width: 865,
-dur: 60, rir: "QL14Tail2Sec.amb", decoder: ~decoder, serport: "/dev/head_tracker",
-offsetheading: -2.6, recchans: 2, recbus: 0, guiflag: false);
-*/
-
-	~testMosca.control.load("/path/to/your/automation/file");
-	~testMosca.loadNonAutomationData("/path/to/your/automation/file");
-};
-
-)
-
-~testMosca.blindControlPlay    // play Automation
-~testMosca.blindControlStop    // stop Automation
-~testMosca.control.seek(5.0) // jump to the 5 second mark
-
-// Use this block to free a no-gui Mosca instance when finished
-(
-~testMosca.free;
-~decoder.free;
-MIDIIn.disconnect(inport: 0, device: 0);
-)
+~moscaInstance.releaseInsert(1) // return to sound with no filter
 
 ::

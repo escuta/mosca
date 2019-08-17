@@ -59,7 +59,7 @@ may be downloaded here: http://escuta.org/mosca
 		// Note there is an extreme amount repetition occurring here.
 		// See the calling function. fix
 
-		win = Window.new("Mosca", Rect(0, width, width, height)).front;
+		win = Window("Mosca", Rect(0, width, width, height)).front;
 		win.background = Color.new255( 200, 200, 200 ); // OSSIA/score "HalfLight"
 
 		win.drawFunc = {
@@ -370,7 +370,7 @@ may be downloaded here: http://escuta.org/mosca
 			);
 		};
 
-		wdados = Window.new("Data", Rect(width, 0, 960, (nfontes*20)+60 ),
+		wdados = Window("Data", Rect(width, 0, 960, (nfontes*20)+60 ),
 			scroll: true);
 		wdados.userCanClose = false;
 		wdados.alwaysOnTop = true;
@@ -388,7 +388,7 @@ may be downloaded here: http://escuta.org/mosca
 			{wdados.visible = false;};
 		});
 
-		waux = Window.new("Auxiliary Controllers", Rect(width, (nfontes*20)+114,
+		waux = Window("Auxiliary Controllers", Rect(width, (nfontes*20)+114,
 			260, 250 ));
 		waux.userCanClose = false;
 		waux.alwaysOnTop = true;
@@ -468,11 +468,11 @@ may be downloaded here: http://escuta.org/mosca
 		});
 
 
-		auxslider1 = Slider.new(waux, Rect(40, 20, 20, 160));
-		auxslider2 = Slider.new(waux, Rect(80, 20, 20, 160));
-		auxslider3 = Slider.new(waux, Rect(120, 20, 20, 160));
-		auxslider4 = Slider.new(waux, Rect(160, 20, 20, 160));
-		auxslider5 = Slider.new(waux, Rect(200, 20, 20, 160));
+		auxslider1 = Slider(waux, Rect(40, 20, 20, 160));
+		auxslider2 = Slider(waux, Rect(80, 20, 20, 160));
+		auxslider3 = Slider(waux, Rect(120, 20, 20, 160));
+		auxslider4 = Slider(waux, Rect(160, 20, 20, 160));
+		auxslider5 = Slider(waux, Rect(200, 20, 20, 160));
 
 		aux1numbox = NumberBox(waux, Rect(30, 185, 40, 20));
 		aux2numbox = NumberBox(waux, Rect(70, 185, 40, 20));
@@ -631,14 +631,14 @@ may be downloaded here: http://escuta.org/mosca
 					preset = lastAutomation;
 				};
 			};
-			dwin = GUI.window.new(title, bounds);
+			dwin = GUI.window(title, bounds);
 			dwin.onClose = {
 				if (success.not){
 					onFailure.value(textField.value);
 					"Aborted save".postln;
 				};
 			};
-			textField = GUI.textField.new(dwin, Rect(0, 0, bounds.width, bounds.height));
+			textField = GUI.textField(dwin, Rect(0, 0, bounds.width, bounds.height));
 			textField.value = preset;
 			textField.action = {
 				success = true;
@@ -726,14 +726,14 @@ may be downloaded here: http://escuta.org/mosca
 					preset = lastAutomation;
 				};
 			};
-			dwin = GUI.window.new(title, bounds);
+			dwin = GUI.window(title, bounds);
 			dwin.onClose = {
 				if (success.not){
 					onFailure.value(textField.value);
 					"Aborted load!".postln;
 				};
 			};
-			textField = GUI.textField.new(dwin, Rect(0, 0, bounds.width, bounds.height));
+			textField = GUI.textField(dwin, Rect(0, 0, bounds.width, bounds.height));
 			textField.value = preset;
 			textField.action = {
 				success = true;
@@ -889,7 +889,7 @@ may be downloaded here: http://escuta.org/mosca
 			}.defer;
 		};
 
-		zslider = Slider.new(win, Rect(width - 35, ((width - zSliderHeight) * 0.5),
+		zslider = Slider(win, Rect(width - 35, ((width - zSliderHeight) * 0.5),
 			20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = { | num |
@@ -1050,7 +1050,7 @@ may be downloaded here: http://escuta.org/mosca
 			{cbox[currentsource].valueAction = num.value;}.defer;
 		};
 
-		winCtl[1][2] = Slider.new(win, Rect(50, 170, 110, 20));
+		winCtl[1][2] = Slider(win, Rect(50, 170, 110, 20));
 		winCtl[1][2].value = 1;
 		winCtl[1][2].action = { | num |
 			{cbox[currentsource].valueAction = num.value;}.defer;
@@ -1063,7 +1063,7 @@ may be downloaded here: http://escuta.org/mosca
 		textbuf = StaticText(originView, Rect(136, 0, 20, 20));
 		textbuf.string = "M";
 
-		masterslider = Slider.new(originView, Rect(132, 20, 20, 60));
+		masterslider = Slider(originView, Rect(132, 20, 20, 60));
 		masterslider.orientation(\vertical);
 		masterslider.value = 0.5;
 		masterslider.action = { | num |
@@ -1184,7 +1184,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][5].visible = false;
 
-		winCtl[1][5] = Slider.new(win, Rect(50, 230, 110, 20));
+		winCtl[1][5] = Slider(win, Rect(50, 230, 110, 20));
 		winCtl[1][5].value = 0.5;
 		winCtl[1][5].action = { | num |
 			{rmbox[currentsource].valueAction = num.value;}.defer;
@@ -1210,7 +1210,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][6].visible = false;
 
-		winCtl[1][6] = Slider.new(win, Rect(50, 250, 110, 20));
+		winCtl[1][6] = Slider(win, Rect(50, 250, 110, 20));
 		winCtl[1][6].value = 0.5;
 		winCtl[1][6].action = { | num |
 			{dmbox[currentsource].valueAction = num.value;}.defer;
@@ -1236,7 +1236,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][3].visible = false;
 
-		winCtl[1][3] = Slider.new(win, Rect(50, 270, 110, 20));
+		winCtl[1][3] = Slider(win, Rect(50, 270, 110, 20));
 		winCtl[1][3].value = 0;
 		winCtl[1][3].action = { | num |
 			{gbox[currentsource].valueAction = num.value;}.defer;
@@ -1267,7 +1267,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][7].visible = false;
 
-		winCtl[1][7] = Slider.new(win, Rect(50, 290, 110, 20));
+		winCtl[1][7] = Slider(win, Rect(50, 290, 110, 20));
 		//	b = ControlSpec(0.0, 3.14, \linear, 0.01); // min, max, mapping, step
 		winCtl[1][7].value = 1.0471975511966 / pi;
 		winCtl[1][7].action = { | num |
@@ -1302,7 +1302,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][8].visible = false;
 
-		winCtl[1][8] = Slider.new(win, Rect(50, 290, 110, 20));
+		winCtl[1][8] = Slider(win, Rect(50, 290, 110, 20));
 		winCtl[1][8].value = 0.5;
 		winCtl[1][8].action = { | num |
 			{rbox[currentsource].valueAction = num.value * 2pi - pi;}.defer;
@@ -1328,7 +1328,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][9].visible = false;
 
-		winCtl[1][9] = Slider.new(win, Rect(50, 310, 110, 20));
+		winCtl[1][9] = Slider(win, Rect(50, 310, 110, 20));
 		winCtl[1][9].value = 0;
 		winCtl[1][9].action = { | num |
 			{dbox[currentsource].valueAction = num.value * pi * 0.5;}.defer;
@@ -1371,7 +1371,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][10].visible = false;
 
-		winCtl[1][10] = Slider.new(win, Rect(50, 330, 110, 20));
+		winCtl[1][10] = Slider(win, Rect(50, 330, 110, 20));
 		winCtl[1][10].value = 0.15254237288136;
 		winCtl[1][10].action = { | num |
 			{ratebox[currentsource].valueAction = (num.value * 59) + 1;}.defer;
@@ -1397,7 +1397,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 		winCtl[0][11].visible = false;
 
-		winCtl[1][11] = Slider.new(win, Rect(50, 350, 110, 20));
+		winCtl[1][11] = Slider(win, Rect(50, 350, 110, 20));
 		winCtl[1][11].value = 0.5;
 		winCtl[1][11].action = { | num |
 			{winbox[currentsource].valueAction = num.value * 0.2;}.defer;
@@ -1625,28 +1625,28 @@ may be downloaded here: http://escuta.org/mosca
 
 			libbox[i] = NumberBox(wdados, Rect(20, 40 + (i*20), 25, 20));
 
-			dstrvbox[i] = NumberBox.new(wdados, Rect(45, 40 + (i*20), 25, 20));
+			dstrvbox[i] = NumberBox(wdados, Rect(45, 40 + (i*20), 25, 20));
 
-			lpcheck[i] = CheckBox.new(wdados, Rect(70, 40 + (i*20), 40, 20));
+			lpcheck[i] = CheckBox(wdados, Rect(70, 40 + (i*20), 40, 20));
 
 			lpcheck[i].action_({ | but |
 				lpcheckProxy[i].valueAction = but.value;
 			});
 
-			hwncheck[i] = CheckBox.new( wdados, Rect(85, 40 + (i*20), 40, 20));
+			hwncheck[i] = CheckBox( wdados, Rect(85, 40 + (i*20), 40, 20));
 
 			hwncheck[i].action_({ | but |
 				hwncheckProxy[i].valueAction = but.value;
 			});
 
 
-			scncheck[i] = CheckBox.new( wdados, Rect(100, 40 + (i*20), 40, 20));
+			scncheck[i] = CheckBox( wdados, Rect(100, 40 + (i*20), 40, 20));
 
 			scncheck[i].action_({ | but |
 				scncheckProxy[i].valueAction = but.value;
 			});
 
-			spcheck[i] = CheckBox.new(wdados, Rect(115, 40 + (i*20), 40, 20));
+			spcheck[i] = CheckBox(wdados, Rect(115, 40 + (i*20), 40, 20));
 
 			spcheck[i].action_({ | but |
 				spcheckProxy[i].valueAction = but.value;
@@ -1654,7 +1654,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 
-			dfcheck[i] = CheckBox.new(wdados, Rect(130, 40 + (i*20), 40, 20));
+			dfcheck[i] = CheckBox(wdados, Rect(130, 40 + (i*20), 40, 20));
 
 			dfcheck[i].action_({ | but |
 				dfcheckProxy[i].valueAction = but.value;
@@ -1707,32 +1707,32 @@ may be downloaded here: http://escuta.org/mosca
 			a5box[i].clipHi = 1;
 			a5box[i].clipLo = 0;
 
-			a1check[i] = CheckBox.new( wdados, Rect(750, 40 + (i*20), 40, 20));
+			a1check[i] = CheckBox( wdados, Rect(750, 40 + (i*20), 40, 20));
 			a1check[i].action = { | but |
 				a1checkProxy[i].valueAction = but.value;
 			};
 
 
 
-			a2check[i] = CheckBox.new( wdados, Rect(765, 40 + (i*20), 40, 20));
+			a2check[i] = CheckBox( wdados, Rect(765, 40 + (i*20), 40, 20));
 			a2check[i].action = { | but |
 				a2checkProxy[i].valueAction = but.value;
 			};
 
 
-			a3check[i] = CheckBox.new( wdados, Rect(780, 40 + (i*20), 40, 20));
+			a3check[i] = CheckBox( wdados, Rect(780, 40 + (i*20), 40, 20));
 			a3check[i].action = { | but |
 				a3checkProxy[i].valueAction = but.value;
 			};
 
 
-			a4check[i] = CheckBox.new( wdados, Rect(795, 40 + (i*20), 40, 20));
+			a4check[i] = CheckBox( wdados, Rect(795, 40 + (i*20), 40, 20));
 			a4check[i].action = { | but |
 				a4checkProxy[i].valueAction = but.value;
 			};
 
 
-			a5check[i] = CheckBox.new( wdados, Rect(810, 40 + (i*20), 40, 20));
+			a5check[i] = CheckBox( wdados, Rect(810, 40 + (i*20), 40, 20));
 			a5check[i].action = { | but |
 				a5checkProxy[i].valueAction = but.value;
 			};
@@ -1742,7 +1742,7 @@ may be downloaded here: http://escuta.org/mosca
 			tfield[i] = TextField(wdados, Rect(825, 40+ (i*20), 100, 20));
 			//tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
-			stcheck[i] = CheckBox.new( wdados, Rect(925, 40 + (i*20), 40, 20));
+			stcheck[i] = CheckBox( wdados, Rect(925, 40 + (i*20), 40, 20));
 			stcheck[i].action = { | but |
 				stcheckProxy[i].valueAction = but.value;
 			};
@@ -2171,7 +2171,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		furthest = halfheight * 20;
 
-		sprite = Array2D.new(nfontes, 2);
+		sprite = Array2D(nfontes, 2);
 		nfontes.do { | i |
 			sprite.put(i, 0, 0);
 			sprite.put(i, 1, furthest);

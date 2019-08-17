@@ -19,7 +19,40 @@ may be downloaded here: http://escuta.org/mosca
 
 + Mosca {
 
-		auditionFunc { |source, bool|
+	*printSynthParams {
+		var string =
+		"
+
+GUI Parameters usable in SynthDefs
+
+\\level | level [0, 2]
+\\dopamnt | Doppler ammount [0, 1]
+\\angle | Stereo angle | default 1.05 (60 degrees) [0, pi]
+\\glev | Global/Close reverb level [0, 1]
+\\llev | Local/Distant reverb level [0, 1]
+\\azim | azimuth coord [-pi, pi]
+\\elev | elevation coord [-pi, pi]
+\\radius | spherical radius [0, 200]
+\\rotAngle | B-format rotation angle [-pi, pi]
+\\directang | B-format directivity [0, pi/2]
+\\contr | Contraction: fade between WXYZ & W [0, 1]
+\\aux1 | Auxiliary slider 1 value [0, 1]
+\\aux2 | Auxiliary slider 2 value [0, 1]
+\\aux3 | Auxiliary slider 3 value [0, 1]
+\\aux4 | Auxiliary slider 4 value [0, 1]
+\\aux5 | Auxiliary slider 5 value [0, 1]
+\\a1check | Auxiliary checkbox/button [0 or 1]
+\\a2check | Auxiliary checkbox/button [0 or 1]
+\\a3check | Auxiliary checkbox/button [0 or 1]
+\\a4check | Auxiliary checkbox/button [0 or 1]
+\\a5check | Auxiliary checkbox/button [0 or 1]
+
+";
+		^string;
+
+	}
+
+	auditionFunc { |source, bool|
 		if(isPlay.not) {
 			if(bool) {
 				firstTime[source] = true;
@@ -299,7 +332,7 @@ may be downloaded here: http://escuta.org/mosca
 		};
 	}
 
-		loadNonAutomationData { | path |
+	loadNonAutomationData { | path |
 		var libf, loopedf, aformatrevf, hwinf, scinf,
 		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
 		//("THE PATH IS " ++ path ++ "/filenames.txt").postln;

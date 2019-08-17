@@ -136,7 +136,7 @@ Mosca {
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum, rirA12Spectrum,
 	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
 	rirList, irSpecPar, wxyzSpecPar, zSpecPar, wSpecPar,
-	spatList = #["Ambitools","HoaLib","ADTB","ATK","BF-FMH","JoshGrain","VBAP"],
+	spatList = #["Ambitools","HoaLib","ADTB","ATK","BF-FMH","Josh","VBAP"],
 	// list of spat libs
 	lastN3D = 2, // last N3D lib index
 	lastFUMA = 5, // last FUMA lib index
@@ -178,40 +178,6 @@ Mosca {
 			recbus, guiflag, guiint, autoloop);
 	}
 
-
-
-	*printSynthParams {
-		var string =
-		"
-
-GUI Parameters usable in SynthDefs
-
-\\level | level | 0 - 1 |
-\\dopamnt | Doppler ammount | 0 - 1 |
-\\angle | Stereo angle | default 1.05 (60 degrees) | 0 - 3.14 |
-\\glev | Global/Close reverb level | 0 - 1 |
-\\llev | Local/Distant reverb level | 0 - 1 |
-\\azim | azimuth coord | -3.14 - 3.14 |
-\\elev | elevation coord | -3.14 - 3.14 |
-\\radius | spherical radius | 0 - 1 |
-\\rotAngle | B-format rotation angle | -3.14 - 3.14 |
-\\directang | B-format directivity | 0 - 1.57 |
-\\contr | Contraction: fade between WXYZ & W | 0 - 1 |
-\\aux1 | Auxiliary slider 1 value | 0 - 1 |
-\\aux2 | Auxiliary slider 2 value | 0 - 1 |
-\\aux3 | Auxiliary slider 3 value | 0 - 1 |
-\\aux4 | Auxiliary slider 4 value | 0 - 1 |
-\\aux5 | Auxiliary slider 5 value | 0 - 1 |
-\\a1check | Auxiliary checkbox/button | 0 or 1 |
-\\a2check | Auxiliary checkbox/button | 0 or 1 |
-\\a3check | Auxiliary checkbox/button | 0 or 1 |
-\\a4check | Auxiliary checkbox/button | 0 or 1 |
-\\a5check | Auxiliary checkbox/button | 0 or 1 |
-
-";
-		^string;
-
-	}
 
 	initMosca { | projDir, nsources, iwidth, idur, rirBank, iserver, iparentOssiaNode,
 		allCrtitical, decoder, imaxorder, speaker_array, outbus, suboutbus,
@@ -540,18 +506,18 @@ GUI Parameters usable in SynthDefs
 
 		//set up automationProxy for single parameters outside of the previous loop,
 		// not to be docked
-		masterlevProxy = AutomationGuiProxy.new(1);
-		clsrvboxProxy = AutomationGuiProxy.new(0);
-		clsrmboxProxy = AutomationGuiProxy.new(0.5); // cls roomsize proxy
-		clsdmboxProxy = AutomationGuiProxy.new(0.5); // cls dampening proxy
+		masterlevProxy = AutomationGuiProxy(1);
+		clsrvboxProxy = AutomationGuiProxy(0);
+		clsrmboxProxy = AutomationGuiProxy(0.5); // cls roomsize proxy
+		clsdmboxProxy = AutomationGuiProxy(0.5); // cls dampening proxy
 
-		oxnumboxProxy = AutomationGuiProxy.new(0.0);
-		oynumboxProxy = AutomationGuiProxy.new(0.0);
-		oznumboxProxy = AutomationGuiProxy.new(0.0);
+		oxnumboxProxy = AutomationGuiProxy(0.0);
+		oynumboxProxy = AutomationGuiProxy(0.0);
+		oznumboxProxy = AutomationGuiProxy(0.0);
 
-		pitchnumboxProxy = AutomationGuiProxy.new(0.0);
-		rollnumboxProxy = AutomationGuiProxy.new(0.0);
-		headingnumboxProxy = AutomationGuiProxy.new(0.0);
+		pitchnumboxProxy = AutomationGuiProxy(0.0);
+		rollnumboxProxy = AutomationGuiProxy(0.0);
+		headingnumboxProxy = AutomationGuiProxy(0.0);
 
 		control = Automation(dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
@@ -603,45 +569,45 @@ GUI Parameters usable in SynthDefs
 			playingBF[i] = false;
 			firstTime[i] = true;
 
-			rboxProxy[i] = AutomationGuiProxy.new(0.0);
-			cboxProxy[i] = AutomationGuiProxy.new(0.0);
-			aboxProxy[i] = AutomationGuiProxy.new(1.0471975511966);
-			vboxProxy[i] = AutomationGuiProxy.new(1.0);
-			gboxProxy[i] = AutomationGuiProxy.new(0.0);
-			lboxProxy[i] = AutomationGuiProxy.new(0.0);
-			rmboxProxy[i]= AutomationGuiProxy.new(0.5);
-			dmboxProxy[i]= AutomationGuiProxy.new(0.5);
-			dboxProxy[i] = AutomationGuiProxy.new(0.0);
-			dpboxProxy[i] = AutomationGuiProxy.new(0.0);
-			zboxProxy[i] = AutomationGuiProxy.new(0.0);
-			yboxProxy[i] = AutomationGuiProxy.new(200.0);
-			xboxProxy[i] = AutomationGuiProxy.new(0.0);
-			a1checkProxy[i] = AutomationGuiProxy.new(false);
-			a2checkProxy[i] = AutomationGuiProxy.new(false);
-			a3checkProxy[i] = AutomationGuiProxy.new(false);
-			a4checkProxy[i] = AutomationGuiProxy.new(false);
-			a5checkProxy[i] = AutomationGuiProxy.new(false);
-			a1boxProxy[i] = AutomationGuiProxy.new(0.0);
-			a2boxProxy[i] = AutomationGuiProxy.new(0.0);
-			a3boxProxy[i] = AutomationGuiProxy.new(0.0);
-			a4boxProxy[i] = AutomationGuiProxy.new(0.0);
-			a5boxProxy[i] = AutomationGuiProxy.new(0.0);
+			rboxProxy[i] = AutomationGuiProxy(0.0);
+			cboxProxy[i] = AutomationGuiProxy(0.0);
+			aboxProxy[i] = AutomationGuiProxy(1.0471975511966);
+			vboxProxy[i] = AutomationGuiProxy(1.0);
+			gboxProxy[i] = AutomationGuiProxy(0.0);
+			lboxProxy[i] = AutomationGuiProxy(0.0);
+			rmboxProxy[i]= AutomationGuiProxy(0.5);
+			dmboxProxy[i]= AutomationGuiProxy(0.5);
+			dboxProxy[i] = AutomationGuiProxy(0.0);
+			dpboxProxy[i] = AutomationGuiProxy(0.0);
+			zboxProxy[i] = AutomationGuiProxy(0.0);
+			yboxProxy[i] = AutomationGuiProxy(200.0);
+			xboxProxy[i] = AutomationGuiProxy(0.0);
+			a1checkProxy[i] = AutomationGuiProxy(false);
+			a2checkProxy[i] = AutomationGuiProxy(false);
+			a3checkProxy[i] = AutomationGuiProxy(false);
+			a4checkProxy[i] = AutomationGuiProxy(false);
+			a5checkProxy[i] = AutomationGuiProxy(false);
+			a1boxProxy[i] = AutomationGuiProxy(0.0);
+			a2boxProxy[i] = AutomationGuiProxy(0.0);
+			a3boxProxy[i] = AutomationGuiProxy(0.0);
+			a4boxProxy[i] = AutomationGuiProxy(0.0);
+			a5boxProxy[i] = AutomationGuiProxy(0.0);
 
-			hwncheckProxy[i] = AutomationGuiProxy.new(false);
+			hwncheckProxy[i] = AutomationGuiProxy(false);
 
-			tfieldProxy[i] = AutomationGuiProxy.new("");
-			libboxProxy[i] = AutomationGuiProxy.new(lib[i]);
-			lpcheckProxy[i] = AutomationGuiProxy.new(false);
-			dstrvboxProxy[i] = AutomationGuiProxy.new(0);
-			scncheckProxy[i] = AutomationGuiProxy.new(false);
-			dfcheckProxy[i] = AutomationGuiProxy.new(false);
-			spcheckProxy[i] = AutomationGuiProxy.new(false);
-			ncanboxProxy[i] = AutomationGuiProxy.new(0);
-			businiboxProxy[i] = AutomationGuiProxy.new(0);
-			stcheckProxy[i] = AutomationGuiProxy.new(false);
-			rateboxProxy[i] = AutomationGuiProxy.new(10.0);
-			winboxProxy[i] = AutomationGuiProxy.new(0.1);
-			randboxProxy[i] = AutomationGuiProxy.new(0);
+			tfieldProxy[i] = AutomationGuiProxy("");
+			libboxProxy[i] = AutomationGuiProxy(lib[i]);
+			lpcheckProxy[i] = AutomationGuiProxy(false);
+			dstrvboxProxy[i] = AutomationGuiProxy(0);
+			scncheckProxy[i] = AutomationGuiProxy(false);
+			dfcheckProxy[i] = AutomationGuiProxy(false);
+			spcheckProxy[i] = AutomationGuiProxy(false);
+			ncanboxProxy[i] = AutomationGuiProxy(0);
+			businiboxProxy[i] = AutomationGuiProxy(0);
+			stcheckProxy[i] = AutomationGuiProxy(false);
+			rateboxProxy[i] = AutomationGuiProxy(10.0);
+			winboxProxy[i] = AutomationGuiProxy(0.1);
+			randboxProxy[i] = AutomationGuiProxy(0);
 
 
 			libboxProxy[i].action_({ | num |
@@ -1305,7 +1271,7 @@ GUI Parameters usable in SynthDefs
 
 			winboxProxy[i].action = { | num |
 				espacializador[i].set(\winsize, num.value);
-				setSynths(i, \winsize, num.value);
+				this.setSynths(i, \winsize, num.value);
 				synt[i].set(\winsize, num.value);
 				winsize[i] = num.value;
 				if (guiflag) {
@@ -1323,7 +1289,7 @@ GUI Parameters usable in SynthDefs
 
 			randboxProxy[i].action = { | num |
 				espacializador[i].set(\winrand, num.value);
-				setSynths(i, \winrand, num.value);
+				this.setSynths(i, \winrand, num.value);
 				synt[i].set(\winrand, num.value);
 				winrand[i] = num.value;
 				if (guiflag) {
@@ -1436,7 +1402,7 @@ GUI Parameters usable in SynthDefs
 					if (convertor.notNil) {
 						convertor.set(\gate, 1);
 					} {
-						convertor = Synth.new(\ambiConverter, [\gate, 1],
+						convertor = Synth(\ambiConverter, [\gate, 1],
 							target:glbRevDecGrp).onFree({
 							convertor = nil;
 						});
@@ -1446,7 +1412,7 @@ GUI Parameters usable in SynthDefs
 				if (revGlobal.notNil)
 				{ revGlobal.set(\gate, 0); };
 
-				revGlobal = Synth.new(\revGlobalAmb++clsRvtypes,
+				revGlobal = Synth(\revGlobalAmb++clsRvtypes,
 					[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
 						\room, clsrm, \damp, clsdm] ++
 					irSpecPar.value(max((clsrv - 3), 0)),
@@ -2010,7 +1976,7 @@ GUI Parameters usable in SynthDefs
 				sig;
 			};
 
-			SynthDef.new("nonAmbi2FuMa", {
+			SynthDef("nonAmbi2FuMa", {
 				var sig = In.ar(nonambibus, numoutputs);
 				sig = FoaEncode.ar(sig,
 					FoaEncoderMatrix.newDirections(emulate_array.degrad));
@@ -2042,7 +2008,7 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = true;
 				convert_direct = false;
 
-				SynthDef.new("ambiConverter", { | gate = 1 |
+				SynthDef("ambiConverter", { | gate = 1 |
 					var n3dsig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					n3dsig = In.ar(n3dbus, bFormNumChan);
@@ -2050,7 +2016,7 @@ GUI Parameters usable in SynthDefs
 					Out.ar(fumabus, n3dsig);
 				}).add;
 
-				SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+				SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 					var sig, nonambi;
 					sig = In.ar(fumabus, bFormNumChan) * level;
 					nonambi = In.ar(nonambibus, numoutputs) * level;
@@ -2067,7 +2033,7 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = false;
 				convert_direct = true;
 
-				SynthDef.new("ambiConverter", { | gate = 1 |
+				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(fumabus, fourOrNine);
@@ -2096,7 +2062,7 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = true;
 				convert_direct = false;
 
-				SynthDef.new("ambiConverter", { | gate = 1 |
+				SynthDef("ambiConverter", { | gate = 1 |
 					var n3dsig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					n3dsig = In.ar(n3dbus, 4);
@@ -2110,7 +2076,7 @@ GUI Parameters usable in SynthDefs
 						elevations = Array.fill(numoutputs, { 0 });
 					};
 
-					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+					SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(fumabus, 4);
 						sig = BFDecode1.ar1(sig[0], sig[1], sig[2], sig[3],
@@ -2126,7 +2092,7 @@ GUI Parameters usable in SynthDefs
 				} {
 
 					if (speaker_array.notNil) {
-						SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+						SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 							var sig, nonambi;
 							sig = In.ar(fumabus, 4);
 							sig = FoaDecode.ar(sig, decoder);
@@ -2138,7 +2104,7 @@ GUI Parameters usable in SynthDefs
 						}).add;
 
 					} {
-						SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+						SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 							var sig, nonambi;
 							sig = In.ar(fumabus, 4);
 							sig = FoaDecode.ar(sig, decoder);
@@ -2162,7 +2128,7 @@ GUI Parameters usable in SynthDefs
 						elevations = Array.fill(numoutputs, { 0 });
 					};
 
-					SynthDef.new("ambiConverter", { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var n3dsig, env;
 						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						n3dsig = In.ar(n3dbus, 9);
@@ -2170,7 +2136,7 @@ GUI Parameters usable in SynthDefs
 						Out.ar(fumabus, n3dsig);
 					}).add;
 
-					SynthDef.new("globDecodeSynth",  { | sub = 1, level = 1 |
+					SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(fumabus, 9);
 						sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4],
@@ -2189,7 +2155,7 @@ GUI Parameters usable in SynthDefs
 					convert_n3d = false;
 					convert_direct = true;
 
-					SynthDef.new("ambiConverter", { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
 						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						sig = In.ar(fumabus, fourOrNine);
@@ -2217,7 +2183,7 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = false;
 				convert_direct = true;
 
-				SynthDef.new("ambiConverter", { | gate = 1 |
+				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(fumabus, 9);
@@ -2245,7 +2211,7 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = false;
 				convert_direct = true;
 
-				SynthDef.new("ambiConverter", { | gate = 1 |
+				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(fumabus, 9);
@@ -2275,7 +2241,7 @@ GUI Parameters usable in SynthDefs
 				convert_n3d = false;
 				convert_direct = true;
 
-				SynthDef.new("ambiConverter", { | gate = 1 |
+				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					sig = In.ar(fumabus, 9);
@@ -2423,7 +2389,7 @@ GUI Parameters usable in SynthDefs
 				{ (i > lastN3D) && (i <= lastFUMA) } { out_type = 1 }
 				{ i > lastFUMA } { out_type = 2 };
 
-				SynthDef.new(item++"Chowning"++rev_type, {
+				SynthDef(item++"Chowning"++rev_type, {
 					| inbus, azim = 0, elev = 0, radius = 200,
 					dopamnt = 0, glev = 0, llev = 0,
 					insertFlag = 0, insertOut, insertBack,
@@ -2455,7 +2421,7 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 
-				SynthDef.new(item++"StereoChowning"++rev_type, {
+				SynthDef(item++"StereoChowning"++rev_type, {
 					| inbus, azim = 0, elev = 0, radius = 0,
 					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 					insertFlag = 0, insertOut, insertBack,
@@ -2483,14 +2449,14 @@ GUI Parameters usable in SynthDefs
 					spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - dis)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(Mix.new(p) * 0.5 * cut,
+					outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
 						(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
 						globallev.clip(0, 1) * glev);
 				}).add;
 			};
 
 
-			SynthDef.new("ATK2Chowning"++rev_type, {
+			SynthDef("ATK2Chowning"++rev_type, {
 				| inbus, radius = 200,
 				dopamnt = 0, glev = 0, llev = 0,
 				insertFlag = 0, insertOut, insertBack,
@@ -2522,7 +2488,7 @@ GUI Parameters usable in SynthDefs
 		// allpass reverbs
 		if (maxorder == 1) {
 
-			SynthDef.new("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
+			SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
 				sig = In.ar(gbus, 1);
@@ -2540,7 +2506,7 @@ GUI Parameters usable in SynthDefs
 
 		} {
 
-			SynthDef.new("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
+			SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, w, x, y, z, r, s, t, u, v,
 				soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
 				sigx = In.ar(gbixfbus, 9);
@@ -2588,7 +2554,7 @@ GUI Parameters usable in SynthDefs
 
 		if (maxorder == 1) {
 
-			SynthDef.new("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
+			SynthDef("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
 				sig = In.ar(gbus, 1);
@@ -2606,7 +2572,7 @@ GUI Parameters usable in SynthDefs
 
 		} {
 
-			SynthDef.new("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
+			SynthDef("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, w, x, y, z, r, s, t, u, v,
 				soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
 				sigx = In.ar(gbixfbus, 9);
@@ -2833,7 +2799,7 @@ GUI Parameters usable in SynthDefs
 
 			if (maxorder == 1) {
 
-				SynthDef.new("revGlobalAmb_conv",  { | gate = 1,
+				SynthDef("revGlobalAmb_conv",  { | gate = 1,
 					fluir, frdir, bldir, bruir |
 					var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 					sigx = In.ar(gbixfbus, 4);
@@ -2870,7 +2836,7 @@ GUI Parameters usable in SynthDefs
 
 				});
 
-				SynthDef.new("revGlobalAmb_conv",  { | gate = 1, a0ir, a1ir, a2ir, a3ir,
+				SynthDef("revGlobalAmb_conv",  { | gate = 1, a0ir, a1ir, a2ir, a3ir,
 					a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 					var env, w, x, y, z, r, s, t, u, v,
 					soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
@@ -2972,14 +2938,14 @@ GUI Parameters usable in SynthDefs
 		makeSynthDefPlayers = { | type, i = 0 |
 			// 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
 
-			SynthDef.new("playMono"++type, { | outbus, bufnum = 0, rate = 1,
+			SynthDef("playMono"++type, { | outbus, bufnum = 0, rate = 1,
 				level = 1, tpos = 0, lp = 0, busini |
 				var playerRef = Ref(0);
 				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 1);
 				Out.ar(outbus, playerRef.value * level);
 			}).add;
 
-			SynthDef.new("playStereo"++type, { | outbus, bufnum = 0, rate = 1,
+			SynthDef("playStereo"++type, { | outbus, bufnum = 0, rate = 1,
 				level = 1, tpos = 0, lp = 0, busini |
 				var playerRef = Ref(0);
 				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 2);
@@ -2987,7 +2953,7 @@ GUI Parameters usable in SynthDefs
 			}).add;
 
 
-			SynthDef.new("playBFormatATK"++type++"_4", {
+			SynthDef("playBFormatATK"++type++"_4", {
 				| bufnum = 0, rate = 1, level = 1, tpos = 0, lp = 0,
 				rotAngle = 0, azim = 0, elev = 0, radius = 200,
 				glev, llev, directang = 0, contr, dopamnt, busini,
@@ -3017,7 +2983,7 @@ GUI Parameters usable in SynthDefs
 			}).add;
 
 
-			SynthDef.new("playBFormatAmbitools"++type++"_4", {
+			SynthDef("playBFormatAmbitools"++type++"_4", {
 				| outbus, bufnum = 0, rate = 1,
 				level = 1, tpos = 0, lp = 0, rotAngle = 0,
 				azim = 0, elev = 0, radius = 0,
@@ -3080,7 +3046,7 @@ GUI Parameters usable in SynthDefs
 
 			[9, 16, 25, 36].do { |item, count|
 
-				SynthDef.new("playBFormatATK"++type++"_"++item, {
+				SynthDef("playBFormatATK"++type++"_"++item, {
 					| outbus, bufnum = 0, rate = 1,
 					level = 1, tpos = 0, lp = 0, rotAngle = 0,
 					azim = 0, elev = 0, radius = 0,
@@ -3170,7 +3136,7 @@ GUI Parameters usable in SynthDefs
 				}).add;
 
 
-				SynthDef.new("playBFormatAmbitools"++type++"_"++item, {
+				SynthDef("playBFormatAmbitools"++type++"_"++item, {
 					| outbus, bufnum = 0, rate = 1,
 					level = 1, tpos = 0, lp = 0, rotAngle = 0,
 					azim = 0, elev = 0, radius = 0,
@@ -3511,7 +3477,7 @@ GUI Parameters usable in SynthDefs
 
 		//// LAUNCH INITIAL SYNTH
 
-		globDec = Synth.new(\globDecodeSynth,
+		globDec = Synth(\globDecodeSynth,
 			target:glbRevDecGrp,addAction: \addToTail);
 
 	} // end initMosca

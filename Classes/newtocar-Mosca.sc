@@ -54,7 +54,7 @@ may be downloaded here: http://escuta.org/mosca
 				{ ncanais[i] == 1} {
 					"1 channel".postln;
 
-					synt[i] = Synth.new(\playMonoStream, [\outbus, mbus[i],
+					synt[i] = Synth(\playMonoStream, [\outbus, mbus[i],
 						\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 						\level, level[i]],
 					playEspacGrp).onFree({espacializador[i].free;
@@ -83,7 +83,7 @@ may be downloaded here: http://escuta.org/mosca
 						if (convertor.notNil) {
 							convertor.set(\gate, 1);
 						} {
-							convertor = Synth.new(\ambiConverter, [\gate, 1],
+							convertor = Synth(\ambiConverter, [\gate, 1],
 								target:glbRevDecGrp).onFree({
 								convertor = nil;
 							});
@@ -94,14 +94,14 @@ may be downloaded here: http://escuta.org/mosca
 
 						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
-							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+							nonAmbi2FuMa = Synth(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
 								nonAmbi2FuMa = nil;
 							});
 						};
 					};
 
-					espacializador[i] = Synth.new(libName[i]++"Chowning"
+					espacializador[i] = Synth(libName[i]++"Chowning"
 						++dstrvtypes[i],
 						[\inbus, mbus[i], \insertFlag, insertFlag[i],
 							\insertIn, insertBus[0,i],
@@ -133,7 +133,7 @@ may be downloaded here: http://escuta.org/mosca
 				{ ncanais[i] == 2} {
 					"2 channel".postln;
 
-					synt[i] = Synth.new(\playStereoStream, [\outbus, sbus[i],
+					synt[i] = Synth(\playStereoStream, [\outbus, sbus[i],
 						\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 						\level, level[i]],
 					playEspacGrp).onFree({espacializador[i].free;
@@ -162,7 +162,7 @@ may be downloaded here: http://escuta.org/mosca
 						if (convertor.notNil) {
 							convertor.set(\gate, 1);
 						} {
-							convertor = Synth.new(\ambiConverter, [\gate, 1],
+							convertor = Synth(\ambiConverter, [\gate, 1],
 								target:glbRevDecGrp).onFree({
 								convertor = nil;
 							});
@@ -173,14 +173,14 @@ may be downloaded here: http://escuta.org/mosca
 
 						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
-							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+							nonAmbi2FuMa = Synth(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
 								nonAmbi2FuMa = nil;
 							});
 						};
 					};
 
-					espacializador[i] = Synth.new(libName[i]++"StereoChowning"
+					espacializador[i] = Synth(libName[i]++"StereoChowning"
 						++dstrvtypes[i],
 						[\inbus, sbus[i], \angle, angle[i],
 							\insertFlag, insertFlag[i],
@@ -232,14 +232,14 @@ may be downloaded here: http://escuta.org/mosca
 						if (convertor.notNil) {
 							convertor.set(\gate, 1);
 						} {
-							convertor = Synth.new(\ambiConverter, [\gate, 1],
+							convertor = Synth(\ambiConverter, [\gate, 1],
 								target:glbRevDecGrp).onFree({
 								convertor = nil;
 							});
 						};
 					};
 
-					synt[i] = Synth.new("playBFormat"++libName[i]++"Stream_"
+					synt[i] = Synth("playBFormat"++libName[i]++"Stream_"
 						++ncanais[i],
 						[\outbus, mbus[i], \bufnum, streambuf[i].bufnum, \contr, clev[i],
 							\rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i],
@@ -252,7 +252,7 @@ may be downloaded here: http://escuta.org/mosca
 						streambuf[i].free;
 					});
 
-					espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
+					espacializador[i] = Synth(\ATK2Chowning++dstrvtypes[i],
 						[\insertFlag, insertFlag[i], \contr, clev[i],
 							\insertIn, insertBus[0,i],
 							\insertOut, insertBus[1,i],
@@ -288,7 +288,7 @@ may be downloaded here: http://escuta.org/mosca
 			case
 			{ ncanais[i] == 1} { // arquivo mono
 
-				synt[i] = Synth.new(\playMonoFile, [\outbus, mbus[i],
+				synt[i] = Synth(\playMonoFile, [\outbus, mbus[i],
 					\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 					\level, level[i]],
 				playEspacGrp).onFree({espacializador[i].free;
@@ -316,7 +316,7 @@ may be downloaded here: http://escuta.org/mosca
 					if (convertor.notNil) {
 						convertor.set(\gate, 1);
 					} {
-						convertor = Synth.new(\ambiConverter, [\gate, 1],
+						convertor = Synth(\ambiConverter, [\gate, 1],
 							target:glbRevDecGrp).onFree({
 								convertor = nil;
 						});
@@ -327,14 +327,14 @@ may be downloaded here: http://escuta.org/mosca
 
 					if ((libboxProxy[i].value > lastFUMA)
 						&& nonAmbi2FuMa.isNil) {
-						nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+						nonAmbi2FuMa = Synth(\nonAmbi2FuMa,
 							target:glbRevDecGrp).onFree({
 							nonAmbi2FuMa = nil;
 						});
 					};
 				};
 
-				espacializador[i] = Synth.new(libName[i]++"Chowning"++dstrvtypes[i],
+				espacializador[i] = Synth(libName[i]++"Chowning"++dstrvtypes[i],
 					[\inbus, mbus[i], \insertFlag, insertFlag[i],
 						\insertIn, insertBus[0,i],
 						\insertOut, insertBus[1,i],
@@ -363,7 +363,7 @@ may be downloaded here: http://escuta.org/mosca
 			}
 			{ ncanais[i] == 2 } {
 
-				synt[i] = Synth.new(\playStereoFile, [\outbus, sbus[i],
+				synt[i] = Synth(\playStereoFile, [\outbus, sbus[i],
 					\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
 					\level, level[i]],
 				playEspacGrp).onFree({espacializador[i].free;
@@ -391,7 +391,7 @@ may be downloaded here: http://escuta.org/mosca
 					if (convertor.notNil) {
 						convertor.set(\gate, 1);
 					} {
-						convertor = Synth.new(\ambiConverter, [\gate, 1],
+						convertor = Synth(\ambiConverter, [\gate, 1],
 							target:glbRevDecGrp).onFree({
 							convertor = nil;
 						});
@@ -401,14 +401,14 @@ may be downloaded here: http://escuta.org/mosca
 				if (azimuths.isNil) {
 
 					if ((libboxProxy[i].value > lastFUMA) && nonAmbi2FuMa.isNil) {
-						nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+						nonAmbi2FuMa = Synth(\nonAmbi2FuMa,
 							target:glbRevDecGrp).onFree({
 							nonAmbi2FuMa = nil;
 						});
 					};
 				};
 
-				espacializador[i] = Synth.new(libName[i]++"StereoChowning"
+				espacializador[i] = Synth(libName[i]++"StereoChowning"
 					++dstrvtypes[i],
 					[\inbus, sbus[i], \angle, angle[i],
 						\insertFlag, insertFlag[i],
@@ -460,14 +460,14 @@ may be downloaded here: http://escuta.org/mosca
 					if (convertor.notNil) {
 						convertor.set(\gate, 1);
 					} {
-						convertor = Synth.new(\ambiConverter, [\gate, 1],
+						convertor = Synth(\ambiConverter, [\gate, 1],
 							target:glbRevDecGrp).onFree({
 							convertor = nil;
 						});
 					};
 				};
 
-				synt[i] = Synth.new("playBFormat"++libName[i]++"File_"++ncanais[i],
+				synt[i] = Synth("playBFormat"++libName[i]++"File_"++ncanais[i],
 					[\outbus, mbus[i], \bufnum, sombuf[i].bufnum, \contr, clev[i],
 						\rate, 1, \tpos, tpos, \lp,
 						lp[i], \level, level[i],
@@ -480,7 +480,7 @@ may be downloaded here: http://escuta.org/mosca
 					playingBF[i] = false;
 				});
 
-				espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
+				espacializador[i] = Synth(\ATK2Chowning++dstrvtypes[i],
 					[\inbus, mbus[i], \insertFlag, insertFlag[i],
 						\insertIn, insertBus[0,i],
 						\insertOut, insertBus[1,i],
@@ -510,14 +510,14 @@ may be downloaded here: http://escuta.org/mosca
 
 					if (hwncheckProxy[i].value) {
 
-						synt[i] = Synth.new(\playMonoHWBus, [\outbus, mbus[i],
+						synt[i] = Synth(\playMonoHWBus, [\outbus, mbus[i],
 							\busini, busini[i],\level, level[i]],
 						playEspacGrp).onFree({espacializador[i].free;
 							espacializador[i] = nil;
 							synt[i] = nil});
 
 					} {
-						synt[i] = Synth.new(\playMonoSWBus, [\outbus, mbus[i],
+						synt[i] = Synth(\playMonoSWBus, [\outbus, mbus[i],
 							\busini, scInBus[i], // use "index" method?
 							\level, level[i]],
 						playEspacGrp).onFree({espacializador[i].free;
@@ -546,7 +546,7 @@ may be downloaded here: http://escuta.org/mosca
 						if (convertor.notNil) {
 							convertor.set(\gate, 1);
 						} {
-							convertor = Synth.new(\ambiConverter, [\gate, 1],
+							convertor = Synth(\ambiConverter, [\gate, 1],
 								target:glbRevDecGrp).onFree({
 								convertor = nil;
 							});
@@ -557,14 +557,14 @@ may be downloaded here: http://escuta.org/mosca
 
 						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
-							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+							nonAmbi2FuMa = Synth(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
 								nonAmbi2FuMa = nil;
 							});
 						};
 					};
 
-					espacializador[i] = Synth.new(libName[i]++"Chowning"
+					espacializador[i] = Synth(libName[i]++"Chowning"
 						++dstrvtypes[i],
 						[\inbus, mbus[i], \insertFlag, insertFlag[i],
 							\insertIn, insertBus[0,i],
@@ -597,7 +597,7 @@ may be downloaded here: http://escuta.org/mosca
 
 					if (hwncheckProxy[i].value) {
 
-						synt[i] = Synth.new(\playStereoHWBus,
+						synt[i] = Synth(\playStereoHWBus,
 							[\outbus, sbus[i], \busini,
 							busini[i],
 							\level, level[i]], playEspacGrp).onFree({
@@ -605,7 +605,7 @@ may be downloaded here: http://escuta.org/mosca
 							espacializador[i] = nil;
 							synt[i] = nil});
 					} {
-						synt[i] = Synth.new(\playStereoSWBus, [\outbus, sbus[i],
+						synt[i] = Synth(\playStereoSWBus, [\outbus, sbus[i],
 							\busini, scInBus[i],
 							\level, level[i]], playEspacGrp).onFree({
 							espacializador[i].free;
@@ -634,7 +634,7 @@ may be downloaded here: http://escuta.org/mosca
 						if (convertor.notNil) {
 							convertor.set(\gate, 1);
 						} {
-							convertor = Synth.new(\ambiConverter, [\gate, 1],
+							convertor = Synth(\ambiConverter, [\gate, 1],
 								target:glbRevDecGrp).onFree({
 								convertor = nil;
 							});
@@ -645,14 +645,14 @@ may be downloaded here: http://escuta.org/mosca
 
 						if ((libboxProxy[i].value > lastFUMA)
 							&& nonAmbi2FuMa.isNil) {
-							nonAmbi2FuMa = Synth.new(\nonAmbi2FuMa,
+							nonAmbi2FuMa = Synth(\nonAmbi2FuMa,
 								target:glbRevDecGrp).onFree({
 								nonAmbi2FuMa = nil;
 							});
 						};
 					};
 
-					espacializador[i] = Synth.new(libName[i]++"StereoChowning"
+					espacializador[i] = Synth(libName[i]++"StereoChowning"
 						++dstrvtypes[i],
 						[\inbus, sbus[i], \angle, angle[i],
 							\insertFlag, insertFlag[i],
@@ -700,7 +700,7 @@ may be downloaded here: http://escuta.org/mosca
 						if (convertor.notNil) {
 							convertor.set(\gate, 1);
 						} {
-							convertor = Synth.new(\ambiConverter, [\gate, 1],
+							convertor = Synth(\ambiConverter, [\gate, 1],
 								target:glbRevDecGrp).onFree({
 								convertor = nil;
 							});
@@ -709,7 +709,7 @@ may be downloaded here: http://escuta.org/mosca
 
 					if (hwncheckProxy[i].value) {
 
-						synt[i] = Synth.new(\playBFormat++libName[i]++"HWBus_"
+						synt[i] = Synth(\playBFormat++libName[i]++"HWBus_"
 							++ncan[i],
 							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
 								\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
@@ -724,7 +724,7 @@ may be downloaded here: http://escuta.org/mosca
 
 					} {
 
-						synt[i] = Synth.new(\playBFormat++libName[i]++"SWBus_"
+						synt[i] = Synth(\playBFormat++libName[i]++"SWBus_"
 							++ncan[i],
 							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
 								\contr, clev[i], \rate, 1, \tpos, tpos,
@@ -739,7 +739,7 @@ may be downloaded here: http://escuta.org/mosca
 						});
 					};
 
-					espacializador[i] = Synth.new(\ATK2Chowning++dstrvtypes[i],
+					espacializador[i] = Synth(\ATK2Chowning++dstrvtypes[i],
 						[\inbus, mbus[i], \insertFlag, insertFlag[i],
 							\insertIn, insertBus[0,i],
 							\insertOut, insertBus[1,i],
