@@ -1991,7 +1991,7 @@ Mosca {
 
 		if (suboutbus.notNil) {
 			subOutFunc = { |signal, sublevel = 1|
-				var subOut = Mix.ar(signal) * sublevel * 0.5;
+				var subOut = Mix(signal) * sublevel * 0.5;
 				Out.ar(suboutbus, subOut);
 			};
 		} {
