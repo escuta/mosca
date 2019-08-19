@@ -14,39 +14,10 @@ described in the download page
 ::
 
 DESCRIPTION::
-
-Mosca is a SuperCollider class for GUI-assisted production of sound fields with
-simulated moving or stationary sound sources.
-
-Input sources may be any combination of mono, stereo or B-format material and the
-signals may originate from file, from hardware inputs (physical or from other
-applications via Jack) or from SuperCollider's own synths. In the case of
-synth input, each are associated by the user with a particular source in the GUI and
-registered in a synth registry. This way, they are spatialised by the GUI and also
-receive data from the GUI pertaining to the source (eg. x, y and z coordinates or
-auxiliary fader data). Ambisonic Sound fields may be decoded using a variety of built in
-decoders (including binaural), Faust Ugens created with the AmbiDecodertoolbox (see
-link::Tutorials/Exercise_09_HOA_decoding_for_speaker_arrays##HOA decoding::) or with
-external decoders such as Ambdec. Mosca has its own transport provided by the
-link::Tutorials/AutomationIntro##Automation quark:: for recording and playback of
-source data. This can be used independently or may be synchronised to a DAW using Midi
-Machine Control (MMC) messages. This function has been tested to work with Ardour and
-Jack. The integration link::Guides/OssiaReference##ossia-sclang:: also allows
-for exposing each one of Mosca's parameters to be controled with the interactive sequencer
-link::https://ossia.io##Ossia/score:: as well as any other application featuring OSCQuerry
-or plain OSC communication.
+Mosca is a SuperCollider class for GUI-assisted production of sound fields with simulated moving or stationary sound sources. Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from hardware inputs (physical or from other applications via Jack) or from SuperCollider's own synths. In the case of synth input, each is associated by the user with a particular source in the GUI and registered in a synth registry. This way, they are spatialised by the GUI and also receive data from the GUI pertaining to the source (eg. x, y and z coordinates or auxiliary fader data). Ambisonic Sound fields may be decoded using a variety of built-in decoders (including binaural), Faust Ugens created with the AmbiDecodertoolbox (see link::Tutorials/Exercise_09_HOA_decoding_for_speaker_arrays##HOA decoding::) or with external decoders such as Ambdec. Mosca has its own transport provided by the link::Tutorials/AutomationIntro##Automation quark:: for recording and playback of source data. This can be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack. The integration of link::Guides/OssiaReference##ossia-sclang:: also allows Mosca's individual parameters to be controled with the interactive sequencer link::https://ossia.io##Ossia/score:: as well as any other application featuring OSCQuerry or plain OSC communication.
 
 subsection::Sources
-
-Mono and stereo sources are spatialized with ugens form a selection of libraries
-(Ambitools, HoaLib, ADT, ATK, BF-FMH, Josh & VBAP). These ugen options can be set
-indiviualy for each sources. For B-format signals, theonly available options are Abitools,
-uisng a beam formation technic, and ATK, where the soundfiels are angled in space using "push"
-transformations. All sources are subject to high frequency attenuation with distance.
-For a better sensation of nearness, ATK implements a proximity effect, adding a bass boost to
-proximal sources among other phase effects to simulate wave curvature. To that same effect,
-the Ambitools encoder makes use of "Near Field Compensation". Generaly, the diferences between
-libraries can be sumurized as follows:
+Mono and stereo sources may be spatialized with ugens from a selection of libraries (Ambitools, HoaLib, ADT, ATK, BF-FMH, Josh & VBAP) set indiviualy for each source. For B-format input signals, which are already ambisonically encoded, the available options for transformation the ATK and Abitools. The ATK is used to implement push transformations to manipulate the angular location of sources as well as to perform rotations of the source sound field and to manipulate its directivity. Ambitools is used to implement a beam formation technique. All sources are subject to high frequency attenuation with distance. For a better sensation of nearness, ATK implements a proximity effect, adding a bass boost to proximal sources among other phase effects to simulate wave curvature. To that same effect, the Ambitools encoder makes use of "Near Field Compensation". Generally, the differences between libraries can be summarised as follows:
 
 table::
     ## Ambitools || most realistic but CPU demanding
@@ -59,49 +30,25 @@ table::
 ::
 
 note::
-Results are mainly dependant on the source material. ADT and ATK would be better for wide, deep
-immesive sounds where ponctual, narow sounds would be better located with VBAP ...
+The results of any particular spatialisation library are often dependant on the source material. ADT and ATK may be more suited to wide and deep immersive sounds where more focussed, narrow sounds may be better located by the listener with VBAP. ...
 ::
 
 subsection::Reverberation
-
-Reverberation is performed either using a B-format tail room impulse response (RIR)
-- the preferred method - or using reverberators crated with supercollider's AllpassC and FreeVerb
-ugens. With both options, two reverberation level controls are included in the GUI for
-setting close and distant levels. "Close" reverberation in this case is "global" and is audible by
-the listener from all directions when the source is close. As it is global, it's type is applyed
-to the entire scene. "Distant" reverb on the other hand is "local" in scope and, selected and
-applayed on a per-source basis. It is processed by the individualy selected spatializer along with
-the dry signal. This effect predominates as the source becomes more distant. For ambisonic
-signals, the "Close" reverberation may be described as a "2nd order diffuse A-format
-reverberation". This technique produces reverberation weighted in the direction of sound events
-and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded
-2nd order ambisonic signal is converted to a 12-channel A-format signal and then either
+Reverberation is performed either using a B-format tail room impulse responses (RIRs) or by using reverberators crated with SuperCollider's AllpassC and FreeVerb ugens. With both options, two reverberation level controls are included in the GUI for setting close and distant levels. "Close" reverberation in this case is "global" and is audible by the listener from all directions when the source is close. As it is global, it's type is applied to the entire scene. "Distant" reverb on the other hand is "local" in scope and selected and applied on a per-source basis. It is processed by the individually selected spatialiser along with the dry signal. This effect predominates as the source becomes more distant. For ambisonic signals, the "Close" reverberation may be described as a "2nd order diffuse A-format reverberation". This technique produces reverberation weighted in the direction of sound events and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either:
 
 list::
-##convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format
-impulse spectrum
-##passed through Freeverb or allpass ugens before being converted back to a 2nd order B-format
-diffuse signal
+##convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum
+##passed through Freeverb or allpass ugens before being converted back to a 2nd order B-format diffuse signal
 ::
 
-For non-ambisonic signal (VBAP), a part of the original source signal is mixed with the W
-component of the B-format reverb input for an omnidirectional effect.
-These options are drawing from John Chowning's technique of applying "local" and "global"
-reverberation to sources (CHOWNING)
+For non-ambisonic signals, spatialised with VBAP, a part of the original source signal is mixed with the W component of the B-format reverb input for an omnidirectional effect. These options are drawing from John Chowning's technique of applying "local" and "global" reverberation to sources (CHOWNING)
 
 note::
-Please remember that this diffuse reverberation process, especially with large impulse responses,
-may require the user to increase the audio buffer size, thus adding more latency.
+Please remember that this diffuse reverberation process, especially with large impulse responses, may require the user to increase the audio buffer size, thus adding more latency.
 ::
 
 subsection::Additional Features
-
-It is also possible to add a scalable Doppler Effect on moving sources, as well as looping sources
-loaded from file, adjusting of virtual loudspeaker angle for stereo sources and in the case of
-B-format sources: rotating the soundfield and adjusting it's "directivity"
-(see ATK documentation). A "contraction" controls enables crossfades between B-format signals and
-their raw W component, changing the sound from ponctual to omnidirectional.
+Additional features include a scalable Doppler Effect on moving sources, the looping of sources loaded or streamed from file and the adjustment of the virtual loudspeaker angle for stereo sources. Further, a "contraction" control enables crossfades between B-format signals and their raw W component. In the case B-format input signals the contraction changes the sound from having omnidirectional characteristics to becoming a focussed point source. When using the ATK in the case as mono or stereo input sources (the latter of which are treated as two mono sources with adjustable angle from one another) with the ATK, a de-contraction of the focussed source will render it omnidirectional.
 
 Mosca supports methods for making "A-format inserts" on any source spatialised in the
 GUI. In this way, the user may write a filtering synth and apply it to the sound without
