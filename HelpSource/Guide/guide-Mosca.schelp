@@ -194,7 +194,7 @@ This may be useful when post synchronising the recorded audio with footage taken
 video camera.
 ::
 
-subsection::Left
+subsection::Right
 
 list::
 
@@ -219,7 +219,7 @@ This has been tested with Ardour and Jack on Linux.
 ##Loop. Loop the transport.
 ::
 
-subsection::Botom Left
+subsection::Botom Right
 
 list::
 

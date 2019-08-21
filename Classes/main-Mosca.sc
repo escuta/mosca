@@ -218,8 +218,8 @@ Mosca {
 		gbus = Bus.audio(server, 1); // global reverb bus
 		gbfbus = Bus.audio(server, fourOrNine); // global b-format bus
 		gbixfbus = Bus.audio(server, fourOrNine); // global n3d b-format bus
-		playEspacGrp = Group.tail;
-		glbRevDecGrp = Group.after(playEspacGrp);
+		playEspacGrp = ParGroup.tail;
+		glbRevDecGrp = ParGroup.after(playEspacGrp);
 		server.sync;
 
 		synthRegistry = Array.newClear(nfontes);
