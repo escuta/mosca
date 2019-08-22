@@ -153,7 +153,7 @@ list::
 ##blips. Check this box to include audible blips at the begining of the recording. This may be useful when post synchronising the recorded audio with footage taken on a video camera.
 ::
 
-subsection::Left
+subsection::Right
 
 list::
 
@@ -173,7 +173,7 @@ list::
 ##Loop. Loop the transport.
 ::
 
-subsection::Botom Left
+subsection::Botom Right
 
 list::
 
