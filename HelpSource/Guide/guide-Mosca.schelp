@@ -5,12 +5,7 @@ related::Classes/Mosca
 
 A link::http://escuta.org/moscavideo##video tutorial:: for Mosca is available online
 
-The user can set up a project directory with an "auto" subdirectory. A Folder containig room
-impulse resonses (RIRs) must also be provided for reverb convolutions. RIRs should have the
-first 100 or 120ms silenced to act as "tail" reverberator. For convenience, please download the
-"moscaproject.zip" file on the link::http://escuta.org/mosca##Mosca page:: which contains the file
-structure, example RIRs and B-format recordings as well as other information and demos. Note
-that the RIR example is recorded at 48kHz
+The user can set up a project directory with an "auto" subdirectory. A Folder containig room impulse resonses (RIRs) must also be provided for reverb convolutions. RIRs should have the first 100 or 120ms silenced to act as "tail" reverberator. For convenience, please download the "moscaproject.zip" file on the link::http://escuta.org/mosca##Mosca page:: which contains the file structure, example RIRs and B-format recordings as well as other information and demos. Note that the RIR example is recorded at 48kHz
 
 section::Basic Setup
 
@@ -45,12 +40,7 @@ s.waitForBoot {
 
 subsection::Speaker Array
 
-The initialisation exemple below is inteded for rendering on the 19.2 Dome at
-link::https://scrime.u-bordeaux.fr/##Le SCRIME:: (University of Bordeaux, France) with the 2nd order
-"internal" decoder. This speaker setup actually allows for 3rd order ambisonic with a custom ADT
-decoder (commented out). See
-link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##the AmbiDecoderToolbox tutorial:: and the decoder
-argument in link::Classes/Mosca::.
+The initialisation example below is intended for rendering on the 19.2 Dome at link::https://scrime.u-bordeaux.fr/##Le SCRIME:: (University of Bordeaux, France) with the 2nd order "internal" decoder. This speaker setup allows for 3rd order ambisonic with a custom ADT decoder (commented out). Speaker coefficients are given in the following format for 3-dimensional loudspeaker arrays with units in degrees and metres: [AZIMUTH, ELEVATION, RADIUS]. The elevation coefficient should be omitted for 2-dimensional arrays: [AZIMUTH, RADIUS]. See link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##the AmbiDecoderToolbox tutorial:: for further information and the decoder argument in link::Classes/Mosca::.
 
 code::
 (
@@ -99,21 +89,11 @@ subsection:: Top left
 
 list::
 
-##Source index number ("Source 1" initially). you can change the selected source by right clicking
-on the background, openning or closing a drop down-menu. Once sources are placed around the center
-of the pannel, they can be selected again with a left click in their vicinity.
+##Source index number ("Source 1" initially). you can change the selected source by right clicking on the background, openning or closing a drop down-menu. Once sources are placed around the center of the pannel, they can be selected again with a left click in their vicinity.
 
-##HW-in. Toggle this to read audio from hardware inputs. The user must specify the
-number of channels and the staring bus (starting with zero) in the two fields beneath
-the toggle. Note this will override any loaded sound file. It is up to the user to
-manage the start busses for the various source. If for example source 1 is a 4 channel
-signal and starts on bus zero, a second stereo source must use a starting bus of 4 or
-higher.
+##HW-in. Toggle this to read audio from hardware inputs. The user must specify the number of channels and the staring bus (starting with zero) in the two fields beneath the toggle. Note this will override any loaded sound file. It is up to the user to manage the start busses for the various source. If for example source 1 is a 4 channel signal and starts on bus zero, a second stereo source must use a starting bus of 4 or higher.
 
-##SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number
-of channels in the GUI but does not need to specify the starting bus. Like HW-in, selecting SC-in
-for a particular source will disable any sound file that has been loaded. see the exemple below in
-strong::Using Supercollider synths as inputs::.
+##SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number of channels in the GUI but does not need to specify the starting bus. Like HW-in, selecting SC-in for a particular source will disable any sound file that has been loaded. see the exemple below in strong::Using Supercollider synths as inputs::.
 
 ##load. Load a sound file for a given source.
 
@@ -121,49 +101,35 @@ strong::Using Supercollider synths as inputs::.
 
 ##Loop. Loop the loaded soudfile file.
 
-##audition. Use this button to audition a given source. Note that the transport also
-plays and cues sounds, the "audition" button should only be used to test sounds with the interface.
+##audition. Use this button to audition a given source. Note that the transport also plays and cues sounds, the "audition" button should only be used to test sounds with the interface.
 
-##Library. Drop-down menu for selecting spatializer Ugens. See Description/Sources in
-link::Classes/Mosca:: for more informations.
+##Library. Drop-down menu for selecting spatializer Ugens. See Description/Sources in link::Classes/Mosca:: for more informations.
 
 ##Level. Adjust the source's level.
 
 ##Doppler amount. Adjust the source's doppler amount.
 
-##Contraction. Allows the expension of the signal from spatially focussed to omnidirectional,
-mainly accomplished with cross-fades between B-format signals an their W component.
+##Contraction. Allows the expension of the signal from spatially focussed to omnidirectional, mainly accomplished with cross-fades between B-format signals an their W component.
 
-##Distant Reverb. Drop-down menu for selecting distant reverb types.
-see Description/Reverberation in link::Classes/Mosca:: for more informations.
+##Distant Reverb. Drop-down menu for selecting distant reverb types. see Description/Reverberation in link::Classes/Mosca:: for more informations.
 
-##Dst. amount. If a Distant Reverb is selected, this controls the distant
-reverberation amount for the current source.
+##Dst. amount. If a Distant Reverb is selected, this controls the distant reverberation amount for the current source.
 
-##Dst. room/delay. If "freeverb" is selected for Distant Reverb, this controls the local
-"room size" parameter. If "allpass" is selected, the value is applayed to the local delay time.
+##Dst. room/delay. If "freeverb" is selected for Distant Reverb, this controls the local "room size" parameter. If "allpass" is selected, the value is applayed to the local delay time.
 
-##Dst. damp/decay. If "freeverb" is selected for Distant Reverb, this controls the local
-"room dampenning" parameter. If "allpass" is selected, the value is applayed to the local
-decay speed.
+##Dst. damp/decay. If "freeverb" is selected for Distant Reverb, this controls the local"room dampenning" parameter. If "allpass" is selected, the value is applayed to the local decay speed.
 
 ##Close Reverb. Adjust the source's proximal reverberation amount.
 
-##Angle. If the source is stereo, this controls the angle of the virtual speaker pair.
-The default is 1.05 radians (60 degrees).
+##Angle. If the source is stereo, this controls the angle of the virtual speaker pair. The default is 1.05 radians (60 degrees).
 
-##Rotate. If the source is 4 channel and above (B-format), this controls the rotation of the signal
-on the horizontal plane.
+##Rotate. If the source is 4 channel and above (B-format), this controls the rotation of the signal on the horizontal plane.
 
-##Directivity. If the source is 4 channel and above (B-format) and the "ATK" Library is selected,
-this controls the directivity of the B-format signal (see ATK documentation)
+##Directivity. If the source is 4 channel and above (B-format) and the "ATK" Library is selected, this controls the directivity of the B-format signal (see ATK documentation)
 
-##Spread / Diffuse. If the "ATK" Library is selected, these toggles allow the user
-to select two other methods to diffuse the signal omni-directionally. See "spread
-diffusion encoder" and "frequency spreading encoder" in link::Classes/FoaEncode::
+##Spread / Diffuse. If the "ATK" Library is selected, these toggles allow the user to select two other methods to diffuse the signal omni-directionally. See "spread diffusion encoder" and "frequency spreading encoder" in link::Classes/FoaEncode::
 
-##Grain rate. If the "Josh" Library is selected, this controls the rate at which new grains are
-created (in Hz).
+##Grain rate. If the "Josh" Library is selected, this controls the rate at which new grains are created (in Hz).
 
 ##Window size. If the "Josh" Library is selected, this controls The window size in seconds.
 
@@ -176,22 +142,15 @@ subsection::Top Right
 
 list::
 
-##show aux. Open and close an auxiliary controller window for a source. These sliders
-do not affect spatialisation, however the data produced is sent to any "registered" SuperCollider
-synth. After Initialising the GUI, see the exemple below in
-strong::Using Supercollider synths as inputs::.
+##show aux. Open and close an auxiliary controller window for a source. These sliders do not affect spatialisation, however the data produced is sent to any "registered" SuperCollider synth. After Initialising the GUI, see the exemple below in strong::Using Supercollider synths as inputs::.
 
 ##show data. Open or close a data window for all sources showing all parameters.
 
 ##show nodes. Show SuperCollider node tree.
 
-##record audio. Records audio as a wav file to the project directory defined by the
-"projDir" class method. The number of channels recorded and the starting bus are defined
-by the "recchans" and "recbus" arguments respectively.
+##record audio. Records audio as a wav file to the project directory defined by the "projDir" class method. The number of channels recorded and the starting bus are defined by the "recchans" and "recbus" arguments respectively.
 
-##blips. Check this box to include audible blips at the begining of the recording.
-This may be useful when post synchronising the recorded audio with footage taken on a
-video camera.
+##blips. Check this box to include audible blips at the begining of the recording. This may be useful when post synchronising the recorded audio with footage taken on a video camera.
 ::
 
 subsection::Left
@@ -205,16 +164,11 @@ subsection::Botom Left
 
 list::
 
-##Automation transport. Includes a "play/stop" button, a return to start button, a record button and
-a "snapshot" button of current values. The Automation transport also contains a slider to move the
-"play head". Loaded sounds which are not looped will start at the beginning of the file, at "0" on
-the transport, and the transport fader may be used to advance through these sounds as well as
-advance through the recorded automations.
+##Automation transport. Includes a "play/stop" button, a return to start button, a record button and a "snapshot" button of current values. The Automation transport also contains a slider to move the "play head". Loaded sounds which are not looped will start at the beginning of the file, at "0" on the transport, and the transport fader may be used to advance through these sounds as well as advance through the recorded automations.
 
 ##save auto / load auto. Save/load to/from a chosen directory.
 
-##Slave to MMC. Slave the transport to incoming Midi Machine Control data.
-This has been tested with Ardour and Jack on Linux.
+##Slave to MMC. Slave the transport to incoming Midi Machine Control data. This has been tested with Ardour and Jack on Linux.
 
 ##Loop. Loop the transport.
 ::
@@ -223,15 +177,11 @@ subsection::Botom Left
 
 list::
 
-##Close Reverb. Drop-down menu for selecting close reverb types. see Description/Reverberation in
-link::Classes/Mosca:: for more informations.
+##Close Reverb. Drop-down menu for selecting close reverb types. see Description/Reverberation in link::Classes/Mosca:: for more informations.
 
-##Cls. room/delay. If "freeverb" is selected for Close Reverb, this controls the global
-"room size" parameter. If "allpass" is selected, the value is applayed to the global delay time.
+##Cls. room/delay. If "freeverb" is selected for Close Reverb, this controls the global "room size" parameter. If "allpass" is selected, the value is applayed to the global delay time.
 
-##Dst. damp/decay. If "freeverb" is selected for close Reverb, this controls the global
-"room dampenning" parameter. If "allpass" is selected, the value is applayed to the global
-decay speed.
+##Dst. damp/decay. If "freeverb" is selected for close Reverb, this controls the global "room dampenning" parameter. If "allpass" is selected, the value is applayed to the global decay speed.
 
 ##M. Master output level.
 
@@ -252,10 +202,7 @@ section::Initialisation options
 
 subsection:: Binaural or Raw output
 
-The exemple below offers different rendering and output options. The raw output setup is comented out,
-to enable it instead of binaural, simply switch the comments between the "o.numOutputBusChannels" the
-"~decoder", the "~order" and the "setup" variables. "raw format" and "raw output" are ignored if a
-decoder is provided so thy do not need to be comented to initialize binaural rendering.
+The exemple below offers different rendering and output options. The raw output setup is comented out, to enable it instead of binaural, simply switch the comments between the "o.numOutputBusChannels" the "~decoder", the "~order" and the "setup" variables. "raw format" and "raw output" are ignored if a decoder is provided so thy do not need to be comented to initialize binaural rendering.
 
 code::
 (
@@ -313,19 +260,7 @@ s.waitForBoot {
 
 section::Coded control
 
-The GUI does not control internal variables directly, but rather via proxies of the
-class AutomationGuiProxy. This enables Mosca to run with or without a GUI as it is
-the proxies that save and read Automation data to and from disk and not the GUI elements
-themselves. Ordinarily the user does not need to know about this technical detail,
-however the proxies serve another useful purpose, they can be used for coded control
-of Mosca, with or without an active GUI. Proxies objects behave like GUI elements in
-that they have a value and an assigned function that when called upon, acts on that
-variable. So for example, if we wish to get the current x-position for a particular
-source we may use: myMoscaInstanceName.xboxProxy[i].value, where i is the index number
-of the source (starting at zero). We may use the method valueAction to set the value of
-a proxy and have its value propagated through the system. So for example, if we wish to
-change the position of the x-coordenate for source 2 to 0.5, we use:
-myMoscaInstanceName.xboxProxy[1].valueAction = 0.5. See list below.
+The GUI does not control internal variables directly, but rather via proxies of the class AutomationGuiProxy. This enables Mosca to run with or without a GUI as it is the proxies that save and read Automation data to and from disk and not the GUI elements themselves. Ordinarily the user does not need to know about this technical detail, however the proxies serve another useful purpose, they can be used for coded control of Mosca, with or without an active GUI. Proxies objects behave like GUI elements in that they have a value and an assigned function that when called upon, acts on that variable. So for example, if we wish to get the current x-position for a particular source we may use: myMoscaInstanceName.xboxProxy[i].value, where i is the index number of the source (starting at zero). We may use the method valueAction to set the value of a proxy and have its value propagated through the system. So for example, if we wish to change the position of the x-coordenate for source 2 to 0.5, we use: myMoscaInstanceName.xboxProxy[1].valueAction = 0.5. See list below.
 
 subsection::Per source Proxies
 
@@ -531,25 +466,15 @@ MIDIIn.disconnect(inport: 0, device: 0);
 
 subsection::OSSIA
 
-With or without the GUI, once the Mosca's root node has been exposed through an
-OSSIA_Device, all parameters are accessible from
-link::https://www.ossia.io##OSSIA/score:: or any other application able to communicate
-through OSC or OSCQuerry. See link::Guides/OssiaReference::.
+With or without the GUI, once the Mosca's root node has been exposed through an OSSIA_Device, all parameters are accessible from link::https://www.ossia.io##OSSIA/score:: or any other application able to communicate through OSC or OSCQuerry. See link::Guides/OssiaReference::.
 
-For simple OSC communication, you can learn all of mosca's parameters easealy by creating
-and naming OSC device in OSSIA/score (keep deffault ports and adresses), then right
-clicking on the device and selecting the "learning" mode. you can then start mosca with
-a deffault OSSIA_Device and runnig the "~myOssiaDevice.exposeOSC()" method. All parameters
-should then appear in score's "learning" window.
+For simple OSC communication, you can learn all of mosca's parameters easealy by creating and naming OSC device in OSSIA/score (keep deffault ports and adresses), then right clicking on the device and selecting the "learning" mode. you can then start mosca with a deffault OSSIA_Device and runnig the "~myOssiaDevice.exposeOSC()" method. All parameters should then appear in score's "learning" window.
 
 note::
-The ".exposeOSC()" method will send all messages to the OSC device for learning. it can be
-called before, during or after Mosca's initialisation. Regardless, it is only relevant
-if score is in OSC learning mode, or if the parameters have already been learned.
+The ".exposeOSC()" method will send all messages to the OSC device for learning. it can be called before, during or after Mosca's initialisation. Regardless, it is only relevant if score is in OSC learning mode, or if the parameters have already been learned.
 ::
 
-If no OSSIA_Device was passed to Mosca as the "parentOssiaNode" argument (above example),
-on will be created internaly. It can then be accessed and exposed wih the
+If no OSSIA_Device was passed to Mosca as the "parentOssiaNode" argument (above example), on will be created internaly. It can then be accessed and exposed wih the
 code::
 ~moscaInstance.parentOssiaNode.exposeOSC();
 ::
@@ -557,30 +482,19 @@ method. Simply make sure to enable "learning" in OSSIA/score before running it.
 
 section::Serial devices & head tracking
 
-The Arduino and 9-Axes Motion Shield and supporting Arduino board such as the Uno
-(tested) should be placed on top of the headphones with the USB socket of the Arduino
-directed to the left of the user. In this orientation the USB cable can run down
-left-hand side of headphones together with audio lead. Use the Arduino project files in
-the directory "arduinoHeadTrack" in the git sources to configure the Arduino and shield.
-See link::https://www.arduino.cc:: for more information on the Arduino.
+The Arduino and 9-Axes Motion Shield and supporting Arduino board such as the Uno (tested) should be placed on top of the headphones with the USB socket of the Arduino directed to the left of the user. In this orientation the USB cable can run down left-hand side of headphones together with audio lead. Use the Arduino project files in the directory "arduinoHeadTrack" in the git sources to configure the Arduino and shield. See link::https://www.arduino.cc:: for more information on the Arduino.
 
-When using Mosca with a head-tracker, it is useful to access the serial device with a
-persistant name. To do this on Debian/Ubuntu Linux, first get information about an
-attached device with a line such as:
+When using Mosca with a head-tracker, it is useful to access the serial device with a persistant name. To do this on Debian/Ubuntu Linux, first get information about an attached device with a line such as:
 
 udevadm info -a -p  $(udevadm info -q path -n /dev/ttyACM0)
 
-Search for the block of data that contains reference to the Arduino and take note of the
-values for idVendor and idProduct. Then create a file /etc/udev/rules.d/10-local.rules
-and add contents such as the following (edit this line and above to your needs):
+Search for the block of data that contains reference to the Arduino and take note of the values for idVendor and idProduct. Then create a file /etc/udev/rules.d/10-local.rules and add contents such as the following (edit this line and above to your needs):
 
-ACTION=="add", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", MODE:="0666",
-SYMLINK+="head_tracker"
+ACTION=="add", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", MODE:="0666", SYMLINK+="head_tracker"
 
 To load this without rebooting, type: sudo udevadm control --reload-rules
 
-Then disconnect and reconnect your device. In the above example it can be accessed at
-/dev/head_tracker for example.
+Then disconnect and reconnect your device. In the above example it can be accessed at /dev/head_tracker for example.
 
 code::
 (
@@ -623,14 +537,11 @@ s.sync;
 
 section::Use with Supercollider synths.
 
-SC-in must be selected in GUI for the particular source and the number of channels entered
-(either 1, 2, 4, 9, 25 or 36).
+SC-in must be selected in GUI for the particular source and the number of channels entered (either 1, 2, 4, 9, 25 or 36).
 
-In the example below, two sources are dedicated in the GUI. Source 1 and 2, each with 1
-channel (in "No. of Channels"). "SC-in" is select for both.
+In the example below, two sources are dedicated in the GUI. Source 1 and 2, each with 1 channel (in "No. of Channels"). "SC-in" is select for both.
 
-Write a Synthdef. Note that you must specify an out bus in the arguments as well as any
-GUI data that you wish to use ("radius" in this example).
+Write a Synthdef. Note that you must specify an out bus in the arguments as well as any GUI data that you wish to use ("radius" in this example).
 
 code::
 
@@ -658,12 +569,7 @@ SynthDef("test-out", { | outbus=0, freq=440, radius |
 /*
 Set up first source
 
-The user must create a "Trigger function" that contains synths. This function will be
-called when "audition" a particular source or when the transport's play button is
-selected in the GUI. The user must use the getSCBus method to set the bus number for the
-particular source (sources numbered from 1 on) as well as "onFree" of the Synth class to
-deregister the synth (with the method deregisterSynth). The method registerSynth is used
-to register it.
+The user must create a "Trigger function" that contains synths. This function will be called when "audition" a particular source or when the transport's play button is selected in the GUI. The user must use the getSCBus method to set the bus number for the particular source (sources numbered from 1 on) as well as "onFree" of the Synth class to deregister the synth (with the method deregisterSynth). The method registerSynth is used to register it.
 
 These simple sounds work best with some doppler set in GUI and some reverb.
 */
