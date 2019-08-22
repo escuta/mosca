@@ -40,7 +40,7 @@ s.waitForBoot {
 
 subsection::Speaker Array
 
-The initialisation example below is intended for rendering on the 19.2 Dome at link::https://scrime.u-bordeaux.fr/##Le SCRIME:: (University of Bordeaux, France) with the 2nd order "internal" decoder. This speaker setup allows for 3rd order ambisonic with a custom ADT decoder (commented out). Speaker coefficients are given in the following format for 3-dimensional loudspeaker arrays with units in degrees and metres: [AZIMUTH, ELEVATION, RADIUS]. The elevation coefficient should be omitted for 2-dimensional arrays: [AZIMUTH, RADIUS]. See link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##the AmbiDecoderToolbox tutorial:: for further information and the decoder argument in link::Classes/Mosca::.
+The initialisation example below is intended for rendering on the 19.2 Dome at link::https://scrime.u-bordeaux.fr/##Le SCRIME:: (University of Bordeaux, France) with the 2nd order "internal" decoder. This speaker setup allows for 3rd order ambisonic with a custom ADT decoder (commented out). Speaker coefficients are given in the following format for 3-dimensional loudspeaker arrays with units in degrees and metres: [AZIMUTH, ELEVATION, RADIUS]. The elevation coefficient should be omitted for 2-dimensional arrays: [AZIMUTH, RADIUS]. See link::Tutorials/Exercise_14_HOA_ADT_DecoderHelper##the AmbiDecoderToolbox tutorial:: for further information as well as link::Classes/Mosca:: for information on the decoder argument.
 
 code::
 (
