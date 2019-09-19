@@ -631,14 +631,14 @@ may be downloaded here: http://escuta.org/mosca
 					preset = lastAutomation;
 				};
 			};
-			dwin = GUI.window(title, bounds);
+			dwin = Window(title, bounds);
 			dwin.onClose = {
 				if (success.not){
 					onFailure.value(textField.value);
 					"Aborted save".postln;
 				};
 			};
-			textField = GUI.textField(dwin, Rect(0, 0, bounds.width, bounds.height));
+			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height));
 			textField.value = preset;
 			textField.action = {
 				success = true;
@@ -726,14 +726,14 @@ may be downloaded here: http://escuta.org/mosca
 					preset = lastAutomation;
 				};
 			};
-			dwin = GUI.window(title, bounds);
+			dwin = Window(title, bounds);
 			dwin.onClose = {
 				if (success.not){
 					onFailure.value(textField.value);
 					"Aborted load!".postln;
 				};
 			};
-			textField = GUI.textField(dwin, Rect(0, 0, bounds.width, bounds.height));
+			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height));
 			textField.value = preset;
 			textField.action = {
 				success = true;

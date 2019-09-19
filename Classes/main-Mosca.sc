@@ -140,6 +140,7 @@ Mosca {
 	// list of spat libs
 	lastN3D = 2, // last N3D lib index
 	lastFUMA = 5, // last FUMA lib index
+	playList = #["File","HWBus","SWBus","Stream"],
 	b2a, a2b, n2m,
 	blips,
 	maxorder,
@@ -219,7 +220,7 @@ Mosca {
 		gbfbus = Bus.audio(server, fourOrNine); // global b-format bus
 		gbixfbus = Bus.audio(server, fourOrNine); // global n3d b-format bus
 		playEspacGrp = ParGroup.tail;
-		glbRevDecGrp = ParGroup.after(playEspacGrp);
+		glbRevDecGrp = Group.after(playEspacGrp);
 		server.sync;
 
 		synthRegistry = Array.newClear(nfontes);
@@ -1725,10 +1726,6 @@ Mosca {
 
 		///////////////////////////////////////////////////
 
-
-		playInFunc = Array.newClear(4);
-		// one for File, Stereo, BFormat, Stream - streamed file;
-
 		streambuf = Array.newClear(nfontes);
 
 		// array of functions, 1 for each source (if defined),
@@ -1948,7 +1945,6 @@ Mosca {
 				sig = Array.fill(numoutputs, { |i| DelayN.ar(sig[i],
 					delaytime:adjust[i][0], mul:adjust[i][1]) });
 			};
-
 		} {
 
 			var emulate_array, vbap_setup;
@@ -1982,7 +1978,6 @@ Mosca {
 					FoaEncoderMatrix.newDirections(emulate_array.degrad));
 				Out.ar(fumabus, sig);
 			}).add;
-
 		};
 
 
@@ -2271,6 +2266,38 @@ Mosca {
 			};
 		};
 
+		// Make File-in SynthDefs
+
+		playInFunc = Array.newClear(4);
+		// one for File, Stereo, BFormat, Stream - streamed file;
+
+		playInFunc[0] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			// Note it needs all the variables
+			var spos = tpos * BufSampleRate.kr(bufnum),
+			scaledRate = rate * BufRateScale.kr(bufnum);
+			playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
+				loop: lp, doneAction:2);
+		};
+
+		// Make HWBus-in SynthDefs
+
+		playInFunc[1] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			playerRef.value = In.ar(busini + server.inputBus.index, channum);
+		};
+
+		// Make SCBus-in SynthDefs
+
+		playInFunc[2] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			playerRef.value = In.ar(busini, channum);
+		};
+
+		playInFunc[3] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			// Note it needs all the variables
+			var trig;
+			playerRef.value = DiskIn.ar(channum, bufnum, lp);
+			trig = Done.kr(playerRef.value);
+			FreeSelf.kr(trig);
+		};
 
 		spatFuncs = Array.newClear(spatList.size);
 		// contains the synthDef blocks for each spatialyers lib
@@ -2382,108 +2409,373 @@ Mosca {
 		makeSpatialisers = { | rev_type |
 			var out_type = 0;
 
-			spatList.do{ |item, i|
+			spatList.do { |item, i|
 
 				case
 				{ i <= lastN3D } { out_type = 0 }
 				{ (i > lastN3D) && (i <= lastFUMA) } { out_type = 1 }
 				{ i > lastFUMA } { out_type = 2 };
 
-				SynthDef(item++"Chowning"++rev_type, {
-					| inbus, azim = 0, elev = 0, radius = 200,
+				playList.do { |play_type, j|
+
+					SynthDef(item++play_type++rev_type, {
+						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini
+						azim = 0, elev = 0, radius = 200,
+						dopamnt = 0, glev = 0, llev = 0,
+						insertFlag = 0, insertOut, insertBack,
+						room = 0.5, damp = 05, wir, df, sp,
+						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
+
+						var rad = Lag.kr(radius),
+						dis = rad * 0.01,
+						globallev = (1 / dis.sqrt) - 1, //global reverberation
+						locallev, lrevRef = Ref(0),
+						az = azim - halfPi,
+						p = Ref(0),
+						rd = dis * 340, // Doppler
+						cut = ((1 - dis) * 2).clip(0, 1);
+						//make shure level is 0 when radius reaches 100
+						rad = rad.clip(1, 50);
+
+						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
+
+						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+						localReverbFunc.value(lrevRef, p, wir, dis * llev,
+							// local reverberation
+							room, damp);
+
+						spatFuncs[i].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
+							winsize, grainrate, winrand);
+
+						outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
+							globallev.clip(0, 1) * glev);
+					}).add;
+
+
+					SynthDef(item++"Stereo"++play_type++rev_type, {
+						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini
+						azim = 0, elev = 0, radius = 0,
+						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
+						insertFlag = 0, insertOut, insertBack,
+						room = 0.5, damp = 05, wir, df, sp,
+						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
+
+						var rad = Lag.kr(radius),
+						dis = rad * 0.01,
+						globallev = (1 / dis.sqrt) - 1, //global reverberation
+						lrev1Ref = Ref(0), lrev2Ref = Ref(0),
+						az = Lag.kr(azim - halfPi),
+						p = Ref(0),
+						rd = dis * 340, // Doppler
+						cut = ((1 - dis) * 2).clip(0, 1);
+						//make shure level is 0 when radius reaches 100
+						rad = rad.clip(1, 50);
+
+						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 2);
+
+						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+						localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
+							wir, dis * llev, room, damp);
+
+						spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - dis)),
+							elev, df, sp, contr, winsize, grainrate, winrand);
+						spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - dis)),
+							elev, df, sp, contr, winsize, grainrate, winrand);
+
+						outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
+							(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
+							globallev.clip(0, 1) * glev);
+					}).add;
+				};
+
+/*				SynthDef("ATK2Chowning"++rev_type, {
+					| inbus, radius = 200,
 					dopamnt = 0, glev = 0, llev = 0,
 					insertFlag = 0, insertOut, insertBack,
-					room = 0.5, damp = 05, wir, df, sp,
-					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
+					room = 0.5, damp = 05, wir|
 
 					var rad = Lag.kr(radius),
 					dis = rad * 0.01,
 					globallev = (1 / dis.sqrt) - 1, //global reverberation
-					locallev, lrevRef = Ref(0),
-					az = azim - halfPi,
+					lrevRef = Ref(0),
 					p = In.ar(inbus, 1),
-					rd = dis * 340, // Doppler
+					rd = radius * 340, // Doppler
 					cut = ((1 - dis) * 2).clip(0, 1);
-					//make shure level is 0 when radius reaches 100
+					//make shure level is 0 when radius reaches plim
 					rad = rad.clip(1, 50);
 
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-					localReverbFunc.value(lrevRef, p, wir, dis * llev,
-						// local reverberation
-						room, damp);
-
-					spatFuncs[i].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
-						winsize, grainrate, winrand);
+					localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
+					p = HPF.ar(p, 20); // stops bass frequency blow outs by proximity
+					p = FoaTransform.ar(p + lrevRef.value, 'proximity',
+						rad * 50);
 
 					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
 						globallev.clip(0, 1) * glev);
-				}).add;
+				}).add;*/
 
-
-				SynthDef(item++"StereoChowning"++rev_type, {
-					| inbus, azim = 0, elev = 0, radius = 0,
-					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
-					insertFlag = 0, insertOut, insertBack,
-					room = 0.5, damp = 05, wir, df, sp,
-					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
-
-					var rad = Lag.kr(radius),
-					dis = rad * 0.01,
-					globallev = (1 / dis.sqrt) - 1, //global reverberation
-					lrev1Ref = Ref(0), lrev2Ref = Ref(0),
-					az = Lag.kr(azim - halfPi),
-					p = In.ar(inbus, 2),
-					rd = dis * 340, // Doppler
-					cut = ((1 - dis) * 2).clip(0, 1);
-					//make shure level is 0 when radius reaches 100
-					rad = rad.clip(1, 50);
-
-					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-					localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
-						wir, dis * llev, room, damp);
-
-					spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - dis)),
-						elev, df, sp, contr, winsize, grainrate, winrand);
-					spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - dis)),
-						elev, df, sp, contr, winsize, grainrate, winrand);
-
-					outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
-						(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
-						globallev.clip(0, 1) * glev);
-				}).add;
-			};
-
-
-			SynthDef("ATK2Chowning"++rev_type, {
-				| inbus, radius = 200,
-				dopamnt = 0, glev = 0, llev = 0,
-				insertFlag = 0, insertOut, insertBack,
-				room = 0.5, damp = 05, wir|
-
-				var rad = Lag.kr(radius),
-				dis = rad * 0.01,
-				globallev = (1 / dis.sqrt) - 1, //global reverberation
-				lrevRef = Ref(0),
-				p = In.ar(inbus, 1),
-				rd = radius * 340, // Doppler
-				cut = ((1 - dis) * 2).clip(0, 1);
-				//make shure level is 0 when radius reaches plim
-				rad = rad.clip(1, 50);
-
-				p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-				localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
-				p = HPF.ar(p, 20); // stops bass frequency blow outs by proximity
-				p = FoaTransform.ar(p + lrevRef.value, 'proximity',
-					rad * 50);
-
-				outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
-					globallev.clip(0, 1) * glev);
-			}).add;
-
+			}
 		}; //end makeSpatialisers
+
+		// makeSynthDefPlayers = { | type, i = 0 |
+		// 	// 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
+		//
+		// 	SynthDef("playMono"++type, { | outbus, bufnum = 0, rate = 1,
+		// 		level = 1, tpos = 0, lp = 0, busini |
+		// 		var playerRef = Ref(0);
+		// 		playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 1);
+		// 		Out.ar(outbus, playerRef.value * level);
+		// 	}).add;
+		//
+		// 	SynthDef("playStereo"++type, { | outbus, bufnum = 0, rate = 1,
+		// 		level = 1, tpos = 0, lp = 0, busini |
+		// 		var playerRef = Ref(0);
+		// 		playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 2);
+		// 		Out.ar(outbus, playerRef.value * level);
+		// 	}).add;
+		//
+		//
+		// 	SynthDef("playBFormatATK"++type++"_4", {
+		// 		| bufnum = 0, rate = 1, level = 1, tpos = 0, lp = 0,
+		// 		rotAngle = 0, azim = 0, elev = 0, radius = 200,
+		// 		glev, llev, directang = 0, contr, dopamnt, busini,
+		// 		insertFlag = 0, insertOut, insertBack |
+		//
+		// 		var playerRef = Ref(0),
+		// 		pushang, az, ele, globallev,
+		// 		rd, dis = radius.clip(0.01, 1);
+		//
+		// 		az = azim - halfPi;
+		// 		pushang = dis * halfPi; // degree of sound field displacement
+		//
+		// 		playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 4);
+		// 		playerRef.value = LPF.ar(playerRef.value, (1 - dis) * 18000 + 2000);
+		// 		// attenuate high freq with distance
+		// 		rd = Lag.kr(dis * 340); 				 // Doppler
+		// 		playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+		//
+		// 		playerRef.value = FoaDirectO.ar(playerRef.value, directang);
+		// 		// directivity
+		// 		playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle);
+		// 		playerRef.value = FoaTransform.ar(playerRef.value, 'push',
+		// 		pushang, az, ele);
+		//
+		// 		globallev = (1 / radius.sqrt) - 1; // lower tail of curve to zero
+		// 		outPutFuncs[1].value(nil, playerRef.value, globallev);
+		// 	}).add;
+		//
+		//
+		// 	SynthDef("playBFormatAmbitools"++type++"_4", {
+		// 		| outbus, bufnum = 0, rate = 1,
+		// 		level = 1, tpos = 0, lp = 0, rotAngle = 0,
+		// 		azim = 0, elev = 0, radius = 0,
+		// 		glev, llev, directang = 0, contr, dopamnt,
+		// 		busini, insertFlag = 0 |
+		//
+		// 		var playerRef, wsinal, pushang = 0,
+		// 		aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+		//
+		// 		az, ele, dis, globallev, locallev,
+		// 		gsig, //lsig, intens,
+		// 		rd;
+		//
+		// 		dis = radius;
+		//
+		// 		az = azim - halfPi;
+		// 		az = CircleRamp.kr(az, 0.1, -pi, pi);
+		// 		ele = Lag.kr(elev);
+		// 		// ele = elev;
+		// 		dis = Select.kr(dis < 0, [dis, 0]);
+		// 		dis = Select.kr(dis > 1, [dis, 1]);
+		// 		playerRef = Ref(0);
+		// 		playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 4);
+		//
+		// 		rd = Lag.kr(dis * 340);
+		// 		playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
+		//
+		// 		wsinal = playerRef.value[0] * contr * level * dis * 2.0;
+		//
+		// 		//Out.ar(outbus, wsinal);
+		//
+		// 		// global reverb
+		// 		globallev = 1 / dis.sqrt;
+		// 		/*intens = globallev - 1;
+		// 		intens = intens.clip(0, 4);
+		// 		intens = intens * 0.25;*/
+		//
+		// 		playerRef.value = FoaDecode.ar(playerRef.value,
+		// 		FoaDecoderMatrix.newAmbix1);
+		// 		playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
+		// 		playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
+		// 		focus:contr * dis.sqrt) * (1 - dis.squared) * level;
+		//
+		// 		Out.ar(n3dbus, playerRef.value);
+		//
+		// 		globallev = globallev - 1.0; // lower tail of curve to zero
+		// 		globallev = globallev.clip(0, 1);
+		// 		globallev = globallev * glev * 6;
+		//
+		// 		gsig = playerRef.value[0] * globallev;
+		//
+		// 		//locallev = dis  * llev * 5;
+		// 		//lsig = playerRef.value[0] * locallev;
+		//
+		// 		//gsig = (playerRef.value * globallev) + (playerRef.value * locallev);
+		// 		// b-format
+		// 		Out.ar(gbixfbus, gsig);
+		// 	}).add;
+		//
+		//
+		// 	[9, 16, 25, 36].do { |item, count|
+		//
+		// 		SynthDef("playBFormatATK"++type++"_"++item, {
+		// 			| outbus, bufnum = 0, rate = 1,
+		// 			level = 1, tpos = 0, lp = 0, rotAngle = 0,
+		// 			azim = 0, elev = 0, radius = 0,
+		// 			glev, llev, directang = 0, contr, dopamnt,
+		// 			busini, insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
+		// 			aFormatBusOutSoa, aFormatBusInSoa |
+		//
+		// 			var playerRef, wsinal, pushang = 0,
+		// 			aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+		//
+		// 			az, ele, dis, globallev, locallev,
+		// 			gsig, lsig, rd,
+		// 			intens;
+		// 			dis = radius;
+		//
+		// 			az = azim - halfPi;
+		// 			// az = CircleRamp.kr(az, 0.1, -pi, pi);
+		// 			// ele = Lag.kr(elev);
+		// 			ele = elev;
+		// 			pushang = dis * halfPi; // degree of sound field displacement
+		// 			dis = Select.kr(dis < 0, [dis, 0]);
+		// 			dis = Select.kr(dis > 1, [dis, 1]);
+		// 			playerRef = Ref(0);
+		// 			playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
+		//
+		// 			rd = Lag.kr(dis * 340);
+		// 			playerRef.value = DelayC.ar(playerRef.value, 0.2,
+		// 			rd/1640.0 * dopamnt);
+		//
+		// 			wsinal = playerRef.value[0] * contr * Lag.kr(level) * dis * 2.0;
+		//
+		// 			Out.ar(outbus, wsinal);
+		//
+		// 			// global reverb
+		// 			globallev = 1 / dis.sqrt;
+		// 			intens = globallev - 1;
+		// 			intens = intens.clip(0, 4);
+		// 			intens = intens * 0.25;
+		//
+		// 			playerRef.value = FoaEncode.ar(playerRef.value,
+		// 			n2m);
+		// 			playerRef.value = FoaDirectO.ar(playerRef.value, directang);
+		// 			// directivity
+		//
+		// 			playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
+		// 			Lag.kr(level) * intens * (1 - contr));
+		//
+		// 			playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang,
+		// 			az, ele);
+		//
+		// 			// convert to A-format and send to a-format out busses
+		// 			aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
+		// 			Out.ar(aFormatBusOutFoa, aFormatFoa);
+		// 			// aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
+		// 			// Out.ar(aFormatBusOutSoa, aFormatSoa);
+		//
+		// 			// flag switchable selector of a-format signal (from insert or not)
+		// 			aFormatFoa = Select.ar(insertFlag, [aFormatFoa,
+		// 			InFeedback.ar(aFormatBusInFoa, 4)]);
+		// 			//aFormatSoa = Select.ar(insertFlag, [aFormatSoa,
+		// 			//InFeedback.ar(aFormatBusInSoa, 12)]);
+		//
+		// 			// convert back to b-format
+		// 			ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
+		// 			//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa,
+		// 			//soa_a12_encoder_matrix);
+		//
+		// 			// not sure if the b2a/a2b process degrades signal.
+		// 			// Just in case it does:
+		// 			playerRef.value = Select.ar(insertFlag, [playerRef.value,
+		// 			ambSigFoaProcessed]);
+		// 			//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
+		//
+		// 			Out.ar(fumabus, playerRef.value);
+		//
+		// 			globallev = globallev - 1.0; // lower tail of curve to zero
+		// 			globallev = globallev.clip(0, 1);
+		// 			globallev = globallev * glev * 6;
+		// 			gsig = playerRef.value[0] * globallev;
+		//
+		// 			locallev = dis * llev * 5;
+		// 			lsig = playerRef.value[0] * locallev;
+		//
+		// 			gsig = (playerRef.value * globallev) + (playerRef.value * locallev);
+		// 			// b-format
+		// 			Out.ar(gbfbus, gsig);
+		// 		}).add;
+		//
+		//
+		// 		SynthDef("playBFormatAmbitools"++type++"_"++item, {
+		// 			| outbus, bufnum = 0, rate = 1,
+		// 			level = 1, tpos = 0, lp = 0, rotAngle = 0,
+		// 			azim = 0, elev = 0, radius = 0,
+		// 			glev, llev, directang = 0, contr, dopamnt,
+		// 			busini, insertFlag = 0 |
+		//
+		// 			var playerRef, wsinal, pushang = 0,
+		// 			aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
+		//
+		// 			az, ele, dis, globallev, locallev, gsig, //lsig, intens,
+		// 			rd;
+		// 			dis = radius;
+		//
+		// 			az = azim - halfPi;
+		// 			az = CircleRamp.kr(az, 0.1, -pi, pi);
+		// 			ele = Lag.kr(elev);
+		// 			// ele = elev;
+		// 			dis = Select.kr(dis < 0, [dis, 0]);
+		// 			dis = Select.kr(dis > 1, [dis, 1]);
+		// 			playerRef = Ref(0);
+		// 			playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
+		//
+		// 			rd = Lag.kr(dis * 340);
+		// 			playerRef.value = DelayC.ar(playerRef.value, 0.2,
+		// 			rd/1640.0 * dopamnt);
+		//
+		// 			wsinal = playerRef.value[0] * contr * level * dis * 2.0;
+		//
+		// 			Out.ar(outbus, wsinal);
+		//
+		// 			// global reverb
+		// 			globallev = 1 / dis.sqrt;
+		// 			/*intens = globallev - 1;
+		// 			intens = intens.clip(0, 4);
+		// 			intens = intens * 0.25;*/
+		//
+		// 			playerRef.value = HOATransRotateAz.ar(count + 2, playerRef.value,
+		// 			rotAngle);
+		// 			playerRef.value = HOABeamDirac2Hoa.ar(count + 2, playerRef.value, 1,
+		// 				az, ele,
+		// 			focus:contr * dis.sqrt) * (1 - dis.squared) * level;
+		//
+		// 			Out.ar(n3dbus, playerRef.value);
+		//
+		// 			globallev = globallev - 1.0; // lower tail of curve to zero
+		// 			globallev = globallev.clip(0, 1);
+		// 			globallev = globallev * glev * 6;
+		// 			gsig = playerRef.value[0] * globallev;
+		//
+		// 			Out.ar(gbixfbus, gsig);
+		// 		}).add;
+		// 	};
+		//
+		// }; //end makeSynthDefPlayers
 
 		// allpass reverbs
 		if (maxorder == 1) {
@@ -2934,303 +3226,6 @@ Mosca {
 			this.gui;
 		};
 
-
-		makeSynthDefPlayers = { | type, i = 0 |
-			// 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
-
-			SynthDef("playMono"++type, { | outbus, bufnum = 0, rate = 1,
-				level = 1, tpos = 0, lp = 0, busini |
-				var playerRef = Ref(0);
-				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 1);
-				Out.ar(outbus, playerRef.value * level);
-			}).add;
-
-			SynthDef("playStereo"++type, { | outbus, bufnum = 0, rate = 1,
-				level = 1, tpos = 0, lp = 0, busini |
-				var playerRef = Ref(0);
-				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 2);
-				Out.ar(outbus, playerRef.value * level);
-			}).add;
-
-
-			SynthDef("playBFormatATK"++type++"_4", {
-				| bufnum = 0, rate = 1, level = 1, tpos = 0, lp = 0,
-				rotAngle = 0, azim = 0, elev = 0, radius = 200,
-				glev, llev, directang = 0, contr, dopamnt, busini,
-				insertFlag = 0, insertOut, insertBack |
-
-				var playerRef = Ref(0),
-				pushang, az, ele, globallev,
-				rd, dis = radius.clip(0.01, 1);
-
-				az = azim - halfPi;
-				pushang = dis * halfPi; // degree of sound field displacement
-
-				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 4);
-				playerRef.value = LPF.ar(playerRef.value, (1 - dis) * 18000 + 2000);
-				// attenuate high freq with distance
-				rd = Lag.kr(dis * 340); 				 // Doppler
-				playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
-
-				playerRef.value = FoaDirectO.ar(playerRef.value, directang);
-				// directivity
-				playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle);
-				playerRef.value = FoaTransform.ar(playerRef.value, 'push',
-					pushang, az, ele);
-
-				globallev = (1 / radius.sqrt) - 1; // lower tail of curve to zero
-				outPutFuncs[1].value(nil, playerRef.value, globallev);
-			}).add;
-
-
-			SynthDef("playBFormatAmbitools"++type++"_4", {
-				| outbus, bufnum = 0, rate = 1,
-				level = 1, tpos = 0, lp = 0, rotAngle = 0,
-				azim = 0, elev = 0, radius = 0,
-				glev, llev, directang = 0, contr, dopamnt,
-				busini, insertFlag = 0 |
-
-				var playerRef, wsinal, pushang = 0,
-				aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
-
-				az, ele, dis, globallev, locallev,
-				gsig, //lsig, intens,
-				rd;
-
-				dis = radius;
-
-				az = azim - halfPi;
-				az = CircleRamp.kr(az, 0.1, -pi, pi);
-				ele = Lag.kr(elev);
-				// ele = elev;
-				dis = Select.kr(dis < 0, [dis, 0]);
-				dis = Select.kr(dis > 1, [dis, 1]);
-				playerRef = Ref(0);
-				playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, 4);
-
-				rd = Lag.kr(dis * 340);
-				playerRef.value = DelayC.ar(playerRef.value, 0.2, rd/1640.0 * dopamnt);
-
-				wsinal = playerRef.value[0] * contr * level * dis * 2.0;
-
-				//Out.ar(outbus, wsinal);
-
-				// global reverb
-				globallev = 1 / dis.sqrt;
-				/*intens = globallev - 1;
-				intens = intens.clip(0, 4);
-				intens = intens * 0.25;*/
-
-				playerRef.value = FoaDecode.ar(playerRef.value,
-					FoaDecoderMatrix.newAmbix1);
-				playerRef.value = HOATransRotateAz.ar(1, playerRef.value, rotAngle);
-				playerRef.value = HOABeamDirac2Hoa.ar(1, playerRef.value, 1, az, ele,
-					focus:contr * dis.sqrt) * (1 - dis.squared) * level;
-
-				Out.ar(n3dbus, playerRef.value);
-
-				globallev = globallev - 1.0; // lower tail of curve to zero
-				globallev = globallev.clip(0, 1);
-				globallev = globallev * glev * 6;
-
-				gsig = playerRef.value[0] * globallev;
-
-				//locallev = dis  * llev * 5;
-				//lsig = playerRef.value[0] * locallev;
-
-				//gsig = (playerRef.value * globallev) + (playerRef.value * locallev);
-				// b-format
-				Out.ar(gbixfbus, gsig);
-			}).add;
-
-
-			[9, 16, 25, 36].do { |item, count|
-
-				SynthDef("playBFormatATK"++type++"_"++item, {
-					| outbus, bufnum = 0, rate = 1,
-					level = 1, tpos = 0, lp = 0, rotAngle = 0,
-					azim = 0, elev = 0, radius = 0,
-					glev, llev, directang = 0, contr, dopamnt,
-					busini, insertFlag = 0, aFormatBusOutFoa, aFormatBusInFoa,
-					aFormatBusOutSoa, aFormatBusInSoa |
-
-					var playerRef, wsinal, pushang = 0,
-					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
-
-					az, ele, dis, globallev, locallev,
-					gsig, lsig, rd,
-					intens;
-					dis = radius;
-
-					az = azim - halfPi;
-					// az = CircleRamp.kr(az, 0.1, -pi, pi);
-					// ele = Lag.kr(elev);
-					ele = elev;
-					pushang = dis * halfPi; // degree of sound field displacement
-					dis = Select.kr(dis < 0, [dis, 0]);
-					dis = Select.kr(dis > 1, [dis, 1]);
-					playerRef = Ref(0);
-					playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
-
-					rd = Lag.kr(dis * 340);
-					playerRef.value = DelayC.ar(playerRef.value, 0.2,
-						rd/1640.0 * dopamnt);
-
-					wsinal = playerRef.value[0] * contr * Lag.kr(level) * dis * 2.0;
-
-					Out.ar(outbus, wsinal);
-
-					// global reverb
-					globallev = 1 / dis.sqrt;
-					intens = globallev - 1;
-					intens = intens.clip(0, 4);
-					intens = intens * 0.25;
-
-					playerRef.value = FoaEncode.ar(playerRef.value,
-						n2m);
-					playerRef.value = FoaDirectO.ar(playerRef.value, directang);
-					// directivity
-
-					playerRef.value = FoaTransform.ar(playerRef.value, 'rotate', rotAngle,
-						Lag.kr(level) * intens * (1 - contr));
-
-					playerRef.value = FoaTransform.ar(playerRef.value, 'push', pushang,
-						az, ele);
-
-					// convert to A-format and send to a-format out busses
-					aFormatFoa = FoaDecode.ar(playerRef.value, b2a);
-					Out.ar(aFormatBusOutFoa, aFormatFoa);
-					// aFormatSoa = AtkMatrixMix.ar(ambSigSoa, soa_a12_decoder_matrix);
-					// Out.ar(aFormatBusOutSoa, aFormatSoa);
-
-					// flag switchable selector of a-format signal (from insert or not)
-					aFormatFoa = Select.ar(insertFlag, [aFormatFoa,
-						InFeedback.ar(aFormatBusInFoa, 4)]);
-					//aFormatSoa = Select.ar(insertFlag, [aFormatSoa,
-					//InFeedback.ar(aFormatBusInSoa, 12)]);
-
-					// convert back to b-format
-					ambSigFoaProcessed = FoaEncode.ar(aFormatFoa, a2b);
-					//ambSigSoaProcessed = AtkMatrixMix.ar(aFormatSoa,
-					//soa_a12_encoder_matrix);
-
-					// not sure if the b2a/a2b process degrades signal.
-					// Just in case it does:
-					playerRef.value = Select.ar(insertFlag, [playerRef.value,
-						ambSigFoaProcessed]);
-					//ambSigSoa = Select.ar(insertFlag, [ambSigSoa, ambSigSoaProcessed]);
-
-					Out.ar(fumabus, playerRef.value);
-
-					globallev = globallev - 1.0; // lower tail of curve to zero
-					globallev = globallev.clip(0, 1);
-					globallev = globallev * glev * 6;
-					gsig = playerRef.value[0] * globallev;
-
-					locallev = dis * llev * 5;
-					lsig = playerRef.value[0] * locallev;
-
-					gsig = (playerRef.value * globallev) + (playerRef.value * locallev);
-					// b-format
-					Out.ar(gbfbus, gsig);
-				}).add;
-
-
-				SynthDef("playBFormatAmbitools"++type++"_"++item, {
-					| outbus, bufnum = 0, rate = 1,
-					level = 1, tpos = 0, lp = 0, rotAngle = 0,
-					azim = 0, elev = 0, radius = 0,
-					glev, llev, directang = 0, contr, dopamnt,
-					busini, insertFlag = 0 |
-
-					var playerRef, wsinal, pushang = 0,
-					aFormatFoa, aFormatSoa, ambSigFoaProcessed, ambSigSoaProcessed,
-
-					az, ele, dis, globallev, locallev, gsig, //lsig, intens,
-					rd;
-					dis = radius;
-
-					az = azim - halfPi;
-					az = CircleRamp.kr(az, 0.1, -pi, pi);
-					ele = Lag.kr(elev);
-					// ele = elev;
-					dis = Select.kr(dis < 0, [dis, 0]);
-					dis = Select.kr(dis > 1, [dis, 1]);
-					playerRef = Ref(0);
-					playInFunc[i].value(playerRef, busini, bufnum, tpos, lp, rate, item);
-
-					rd = Lag.kr(dis * 340);
-					playerRef.value = DelayC.ar(playerRef.value, 0.2,
-						rd/1640.0 * dopamnt);
-
-					wsinal = playerRef.value[0] * contr * level * dis * 2.0;
-
-					Out.ar(outbus, wsinal);
-
-					// global reverb
-					globallev = 1 / dis.sqrt;
-					/*intens = globallev - 1;
-					intens = intens.clip(0, 4);
-					intens = intens * 0.25;*/
-
-					playerRef.value = HOATransRotateAz.ar(count + 2, playerRef.value,
-						rotAngle);
-					playerRef.value = HOABeamDirac2Hoa.ar(count + 2, playerRef.value, 1,
-						az, ele,
-						focus:contr * dis.sqrt) * (1 - dis.squared) * level;
-
-					Out.ar(n3dbus, playerRef.value);
-
-					globallev = globallev - 1.0; // lower tail of curve to zero
-					globallev = globallev.clip(0, 1);
-					globallev = globallev * glev * 6;
-					gsig = playerRef.value[0] * globallev;
-
-					Out.ar(gbixfbus, gsig);
-				}).add;
-			};
-
-		}; //end makeSynthDefPlayers
-
-		// Make File-in SynthDefs
-
-		playInFunc[0] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-			// Note it needs all the variables
-			var spos = tpos * BufSampleRate.kr(bufnum),
-			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
-				loop: lp, doneAction:2);
-		};
-
-		makeSynthDefPlayers.("File", 0);
-
-		// Make HWBus-in SynthDefs
-
-		playInFunc[1] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-			playerRef.value =  In.ar(busini + server.inputBus.index, channum);
-		};
-
-		makeSynthDefPlayers.("HWBus", 1);
-
-		// Make SCBus-in SynthDefs
-
-		playInFunc[2] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-			playerRef.value =  In.ar(busini, channum);
-		};
-
-		makeSynthDefPlayers.("SWBus", 2);
-
-		playInFunc[3] = { | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-			// Note it needs all the variables
-			var trig;
-			playerRef.value = DiskIn.ar(channum, bufnum, lp);
-			trig = Done.kr(playerRef.value);
-			FreeSelf.kr(trig);
-		};
-
-		makeSynthDefPlayers.("Stream", 3);
-
-
 		//////// END SYNTHDEFS ///////////////
 
 
@@ -3407,16 +3402,14 @@ Mosca {
 							//("distance " ++ i ++ " = " ++ source.rho).postln;
 							if (cartval[i].rho > plim) {
 								firstTime[i] = true;
-								if(synt[i].isPlaying) {
+								if(espacializador[i].isPlaying) {
 									//synthRegistry[i].free;
 									runStop.value(i); // to kill SC input synths
 									espacializador[i].free; // just in case...
-									synt[i].free;
-									synt[i] = nil;
 									espacializador[i] = nil;
 								};
 							} {
-								if(synt[i].isPlaying.not && (isPlay || audit[i])
+								if(espacializador[i].isPlaying.not && (isPlay || audit[i])
 									&& (firstTime[i]
 										|| (tfieldProxy[i].value == ""))) {
 									//this.triggerFunc[i].value; // play SC input synth
