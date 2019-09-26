@@ -54,14 +54,6 @@ may be downloaded here: http://escuta.org/mosca
 				{ ncanais[i] == 1} {
 					"1 channel".postln;
 
-/*					synt[i] = Synth(\playMonoStream, [\outbus, mbus[i],
-						\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-						\level, level[i]],
-					playEspacGrp).onFree({espacializador[i].free;
-						espacializador[i] = nil; synt[i] = nil;
-						streambuf[i].free;
-					});*/
-
 					// set lib, convert and dstrv variables when stynths are lauched
 					// for the tracking functions to stay relevant
 
@@ -103,12 +95,23 @@ may be downloaded here: http://escuta.org/mosca
 
 					espacializador[i] = Synth(libName[i]++"Stream"
 						++dstrvtypes[i],
-						[\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+						[\bufnum, streambuf[i].bufnum,
+							\lp, lp[i],
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
 							\insertFlag, insertFlag[i],
-							\insertIn, insertBus[0,i],
-							\insertOut, insertBus[1,i],
-							\contr, clev[i], \room, rm[i], \damp, dm[i],
-							\grainrate, grainrate[i], \winsize, winsize[i],
+							\insertOut, insertBus[0,i],
+							\insertBack, insertBus[1,i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\level, level[i],
+							\grainrate, grainrate[i],
+							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
 						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
@@ -130,19 +133,11 @@ may be downloaded here: http://escuta.org/mosca
 					});
 
 					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);
+					//updatesourcevariables.value(i);
 
 				}
 				{ ncanais[i] == 2} {
 					"2 channel".postln;
-
-/*					synt[i] = Synth(\playStereoStream, [\outbus, sbus[i],
-						\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-						\level, level[i]],
-					playEspacGrp).onFree({espacializador[i].free;
-						espacializador[i] = nil; synt[i] = nil;
-						streambuf[i].free;
-					});*/
 
 					// set lib, convert and dstrv variables when stynths are lauched
 					// for the tracking functions to stay relevant
@@ -184,13 +179,24 @@ may be downloaded here: http://escuta.org/mosca
 					};
 
 					espacializador[i] = Synth(libName[i]++"StereoStream"++dstrvtypes[i],
-						[\bufnum, streambuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+						[\bufnum, streambuf[i].bufnum,
 							\angle, angle[i],
+							\lp, lp[i],
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
 							\insertFlag, insertFlag[i],
-							\insertIn, insertBus[0,i],
-							\insertOut, insertBus[1,i],
-							\room, rm[i], \damp, dm[i], \contr, clev[i],
-							\grainrate, grainrate[i], \winsize, winsize[i],
+							\insertOut, insertBus[0,i],
+							\insertBack, insertBus[1,i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\level, level[i],
+							\grainrate, grainrate[i],
+							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
 						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
@@ -211,7 +217,7 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					});
 
-					updatesourcevariables.value(i);
+					//updatesourcevariables.value(i);
 
 				}
 				{ ncanais[i] >= 4} {
@@ -245,12 +251,25 @@ may be downloaded here: http://escuta.org/mosca
 					};
 
 					espacializador[i] = Synth(libName[i]++"BFormatStream"++ncanais[i],
-						[\bufnum, streambuf[i].bufnum, \contr, clev[i],
-							\rate, 1, \tpos, tpos, \lp, lp[i], \level, level[i],
+						[\bufnum, streambuf[i].bufnum,
+							\rotAngle, rlev[i],
+							\directang, dlev[i],
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
 							\insertFlag, insertFlag[i],
-							\insertIn, insertBus[0,i],
-							\insertOut, insertBus[1,i],
-							\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]] ++
+							\insertOut, insertBus[0,i],
+							\insertBack, insertBus[1,i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\level, level[i],
+							\grainrate, grainrate[i],
+							\winsize, winsize[i],
+							\winrand, winrand[i]] ++
 						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
 						espacializador[i] = nil;
@@ -267,7 +286,7 @@ may be downloaded here: http://escuta.org/mosca
 
 				};
 
-				updatesourcevariables.value(i);
+				//updatesourcevariables.value(i);
 
 			};
 		};
@@ -282,13 +301,6 @@ may be downloaded here: http://escuta.org/mosca
 			//{
 			case
 			{ ncanais[i] == 1} { // arquivo mono
-
-/*				synt[i] = Synth(\playMonoFile, [\outbus, mbus[i],
-					\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-					\level, level[i]],
-				playEspacGrp).onFree({espacializador[i].free;
-					espacializador[i] = nil;
-					synt[i] = nil});*/
 
 				// set lib, convert and dstrv variables when stynths are lauched
 				// for the tracking functions to stay relevant
@@ -330,13 +342,24 @@ may be downloaded here: http://escuta.org/mosca
 				};
 
 				espacializador[i] = Synth(libName[i]++"File"++dstrvtypes[i],
-					[\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+					[\bufnum, sombuf[i].bufnum,
+						\lp, lp[i],
+						\azim, spheval[i].theta,
+						\elev, spheval[i].phi,
+						\radius, spheval[i].rho,
+						\dopamnt, dplev[i],
+						\glev, glev[i],
+						\llev, llev[i],
 						\insertFlag, insertFlag[i],
-						\insertIn, insertBus[0,i],
-						\insertOut, insertBus[1,i],
-						\room, rm[i], \damp, dm[i], \contr, clev[i],
-						\grainrate, grainrate[i], \winsize, winsize[i],
-						\winrand, winrand[i]]  ++
+						\insertOut, insertBus[0,i],
+						\insertBack, insertBus[1,i],
+						\contr, clev[i],
+						\room, rm[i],
+						\damp, dm[i],
+						\level, level[i],
+						\grainrate, grainrate[i],
+						\winsize, winsize[i],
+						\winrand, winrand[i]] ++
 					wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					playEspacGrp).onFree({
 					espacializador[i] = nil;
@@ -355,17 +378,10 @@ may be downloaded here: http://escuta.org/mosca
 					};
 				});
 
-				updatesourcevariables.value(i);
+				//updatesourcevariables.value(i);
 
 			}
 			{ ncanais[i] == 2 } {
-
-				/*synt[i] = Synth(\playStereoFile, [\outbus, sbus[i],
-					\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-					\level, level[i]],
-				playEspacGrp).onFree({espacializador[i].free;
-					espacializador[i] = nil;
-					synt[i] = nil});*/
 
 				// set lib, convert and dstrv variables when stynths are lauched
 				// for the tracking functions to stay relevant
@@ -406,13 +422,24 @@ may be downloaded here: http://escuta.org/mosca
 				};
 
 				espacializador[i] = Synth(libName[i]++"StereoFile"++dstrvtypes[i],
-					[\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
+					[\bufnum, sombuf[i].bufnum,
 						\angle, angle[i],
+						\lp, lp[i],
+						\azim, spheval[i].theta,
+						\elev, spheval[i].phi,
+						\radius, spheval[i].rho,
+						\dopamnt, dplev[i],
+						\glev, glev[i],
+						\llev, llev[i],
 						\insertFlag, insertFlag[i],
-						\insertIn, insertBus[0,i],
-						\insertOut, insertBus[1,i],
-						\room, rm[i], \damp, dm[i], \contr, clev[i],
-						\grainrate, grainrate[i], \winsize, winsize[i],
+						\insertOut, insertBus[0,i],
+						\insertBack, insertBus[1,i],
+						\contr, clev[i],
+						\room, rm[i],
+						\damp, dm[i],
+						\level, level[i],
+						\grainrate, grainrate[i],
+						\winsize, winsize[i],
 						\winrand, winrand[i]] ++
 					zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					playEspacGrp).onFree({
@@ -433,7 +460,7 @@ may be downloaded here: http://escuta.org/mosca
 				});
 
 				//atualizarvariaveis.value;
-				updatesourcevariables.value(i);
+				//updatesourcevariables.value(i);
 
 			}
 			{ ncanais[i] >= 4 } {
@@ -466,12 +493,25 @@ may be downloaded here: http://escuta.org/mosca
 				};
 
 				espacializador[i] = Synth(libName[i]++"BFormatFile"++ncanais[i]++dstrvtypes[i],
-					[\bufnum, sombuf[i].bufnum, \rate, 1, \tpos, tpos, \lp, lp[i],
-						\contr, clev[i], \level, level[i],
+					[\bufnum, sombuf[i].bufnum,
+						\rotAngle, rlev[i],
+						\directang, dlev[i],
+						\azim, spheval[i].theta,
+						\elev, spheval[i].phi,
+						\radius, spheval[i].rho,
+						\dopamnt, dplev[i],
+						\glev, glev[i],
+						\llev, llev[i],
 						\insertFlag, insertFlag[i],
-						\insertIn, insertBus[0,i],
-						\insertOut, insertBus[1,i],
-						\grainrate, grainrate[i], \winsize, winsize[i], \winrand, winrand[i]] ++
+						\insertOut, insertBus[0,i],
+						\insertBack, insertBus[1,i],
+						\contr, clev[i],
+						\room, rm[i],
+						\damp, dm[i],
+						\level, level[i],
+						\grainrate, grainrate[i],
+						\winsize, winsize[i],
+						\winrand, winrand[i]] ++
 					wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					playEspacGrp).onFree({espacializador[i].free;
 					espacializador[i] = nil;
@@ -485,51 +525,22 @@ may be downloaded here: http://escuta.org/mosca
 					};
 				});
 
-/*				espacializador[i] = Synth(\ATK2Chowning++dstrvtypes[i],
-					[\inbus, mbus[i], \insertFlag, insertFlag[i],
-						\insertIn, insertBus[0,i],
-						\insertOut, insertBus[1,i],
-						\contr, clev[i], \room, rm[i], \damp, dm[i],
-						\grainrate, grainrate[i], \winsize, winsize[i],
-						\winrand, winrand[i]] ++
-					wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
-					synt[i], addAction: \addAfter).onFree({
-					if (convertor.notNil) {
-						if (convert[i]) {
-							if (this.converterNeeded(0).not) {
-								convertor.set(\gate, 0);
-							};
-						};
-					};
-				});*/
-
 			};
 
-			updatesourcevariables.value(i);
+			//updatesourcevariables.value(i);
 
 		} {
 			if ((scncheckProxy[i].value) || (hwncheckProxy[i])) {
 
-				var witch;
+				var witch, bus;
 
 				if (hwncheckProxy[i].value) {
 
 					witch = "HWBus";
-
-/*					synt[i] = Synth(\playMonoHWBus, [\outbus, mbus[i],
-						\busini, busini[i],\level, level[i]],
-					playEspacGrp).onFree({espacializador[i].free;
-						espacializador[i] = nil;
-						synt[i] = nil});*/
+					bus = busini[i];
 				} {
 					witch = "SWBus";
-
-/*					synt[i] = Synth(\playMonoSWBus, [\outbus, mbus[i],
-						\busini, scInBus[i], // use "index" method?
-						\level, level[i]],
-					playEspacGrp).onFree({espacializador[i].free;
-						espacializador[i] = nil;
-						synt[i] = nil});*/
+					bus = scInBus[i];
 				};
 
 				case
@@ -576,11 +587,22 @@ may be downloaded here: http://escuta.org/mosca
 
 					espacializador[i] = Synth(libName[i]++witch
 						++dstrvtypes[i],
-						[\inbus, mbus[i], \insertFlag, insertFlag[i],
-							\insertIn, insertBus[0,i],
-							\insertOut, insertBus[1,i],
-							\room, rm[i], \damp, dm[i], \contr, clev[i],
-							\grainrate, grainrate[i], \winsize, winsize[i],
+						[\busini, busini[i],
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\insertFlag, insertFlag[i],
+							\insertOut, insertBus[0,i],
+							\insertBack, insertBus[1,i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\level, level[i],
+							\grainrate, grainrate[i],
+							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
 						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
@@ -601,28 +623,10 @@ may be downloaded here: http://escuta.org/mosca
 					});
 
 					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);
+					//updatesourcevariables.value(i);
 
 				}
 				{ ncan[i] == 2 } {
-
-/*					if (hwncheckProxy[i].value) {
-
-						synt[i] = Synth(\playStereoHWBus,
-							[\outbus, sbus[i], \busini,
-							busini[i],
-							\level, level[i]], playEspacGrp).onFree({
-							espacializador[i].free;
-							espacializador[i] = nil;
-							synt[i] = nil});
-					} {
-						synt[i] = Synth(\playStereoSWBus, [\outbus, sbus[i],
-							\busini, scInBus[i],
-							\level, level[i]], playEspacGrp).onFree({
-							espacializador[i].free;
-							espacializador[i] = nil;
-							synt[i] = nil});
-					};*/
 
 					// set lib, convert and dstrv variables when stynths are lauched
 					// for the tracking functions to stay relevant
@@ -665,12 +669,23 @@ may be downloaded here: http://escuta.org/mosca
 
 					espacializador[i] = Synth(libName[i]++"Stereo"++witch
 						++dstrvtypes[i],
-						[\inbus, sbus[i], \angle, angle[i],
+						[\busini, busini[i],
+							\angle, angle[i],
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
 							\insertFlag, insertFlag[i],
-							\insertIn, insertBus[0,i],
-							\insertOut, insertBus[1,i],
-							\contr, clev[i], \room, rm[i], \damp, dm[i],
-							\grainrate, grainrate[i], \winsize, winsize[i],
+							\insertOut, insertBus[0,i],
+							\insertBack, insertBus[1,i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\level, level[i],
+							\grainrate, grainrate[i],
+							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
 						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
@@ -691,7 +706,7 @@ may be downloaded here: http://escuta.org/mosca
 					});
 
 					//atualizadstrvariaveis.value;
-					updatesourcevariables.value(i);
+					//updatesourcevariables.value(i);
 
 				}
 				{ ncan[i] >= 4 } {
@@ -718,46 +733,27 @@ may be downloaded here: http://escuta.org/mosca
 							});
 						};
 					};
-/*
-					if (hwncheckProxy[i].value) {
-
-						synt[i] = Synth(\playBFormat++libName[i]++"HWBus_"
-							++ncan[i],
-							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
-								\contr, clev[i], \rate, 1, \tpos, tpos, \level, level[i],
-								\insertFlag, insertFlag[i],
-								\insertIn, insertBus[0,i],
-								\insertOut, insertBus[1,i],
-								\busini, busini[i]],playEspacGrp).onFree({
-							espacializador[i].free;
-							espacializador[i] = nil;
-							synt[i] = nil;
-						});
-
-					} {
-
-						synt[i] = Synth(\playBFormat++libName[i]++"SWBus_"
-							++ncan[i],
-							[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \outbus, mbus[i],
-								\contr, clev[i], \rate, 1, \tpos, tpos,
-								\level, level[i],
-								\insertFlag, insertFlag[i],
-								\insertIn, insertBus[0,i],
-								\insertOut, insertBus[1,i],
-								\busini, scInBus[i] ],playEspacGrp).onFree({
-							espacializador[i].free;
-							espacializador[i] = nil;
-							synt[i] = nil;
-						});
-					};*/
 
 					espacializador[i] = Synth(libName[i]++"BFormat"++witch++
 						ncan[i]++dstrvtypes[i],
-						[\inbus, mbus[i], \insertFlag, insertFlag[i],
-							\insertIn, insertBus[0,i],
-							\insertOut, insertBus[1,i],
-							\contr, clev[i], \room, rm[i], \damp, dm[i],
-							\grainrate, grainrate[i], \winsize, winsize[i],
+						[\busini, busini[i],
+							\rotAngle, rlev[i],
+							\directang, dlev[i],
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\insertFlag, insertFlag[i],
+							\insertOut, insertBus[0,i],
+							\insertBack, insertBus[1,i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\level, level[i],
+							\grainrate, grainrate[i],
+							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
 						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
@@ -772,7 +768,7 @@ may be downloaded here: http://escuta.org/mosca
 					});
 
 					//atualizarvariaveis.value;
-					updatesourcevariables.value(i);
+					//updatesourcevariables.value(i);
 
 				};
 			};

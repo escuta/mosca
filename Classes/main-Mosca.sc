@@ -1479,29 +1479,15 @@ Mosca {
 
 			nfontes.do {  | i |
 				var sphe = (cartval[i].x_(cartval[i].x - num.value
-					+ origine.x)).asSpherical.
-				rotate(heading).tilt(pitch).tumble(roll);
+					+ origine.x)).rotate(heading).tilt(pitch).tumble(roll);
 
 				ossiasphe[i].v_([sphe.rho,
-					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
+					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
 
 				zlev[i] = spheval[i].z;
-
-				if(espacializador[i].notNil || playingBF[i]) {
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
 			};
 
 			ossiaCartBack = true;
-
 			origine.x_(num.value);
 
 			if (guiflag) {
@@ -1520,29 +1506,16 @@ Mosca {
 
 			nfontes.do { | i |
 				var sphe = (cartval[i].y_(cartval[i].y - num.value
-					+ origine.y)).asSpherical.
+					+ origine.y)).
 				rotate(heading).tilt(pitch).tumble(roll);
 
 				ossiasphe[i].v_([sphe.rho,
-					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
+					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
 
 				zlev[i] = spheval[i].z;
-
-				if(espacializador[i].notNil || playingBF[i]) {
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
-
-				ossiaCartBack = true;
 			};
 
+			ossiaCartBack = true;
 			origine.y_(num.value);
 
 			if (guiflag) {
@@ -1560,29 +1533,16 @@ Mosca {
 
 			nfontes.do { | i |
 				var sphe = (cartval[i].z_(cartval[i].z - num.value
-					+ origine.z)).asSpherical.
+					+ origine.z)).
 				rotate(heading).tilt(pitch).tumble(roll);
 
 				ossiasphe[i].v_([sphe.rho,
-					(sphe.theta + halfPi).wrap(-pi, pi), sphe.phi]);
+					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
 
 				zlev[i] = spheval[i].z;
-
-				if(espacializador[i].notNil || playingBF[i]) {
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
-
-				ossiaCartBack = true;
 			};
 
+			ossiaCartBack = true;
 			origine.z_(num.value);
 
 			if (guiflag) {
@@ -1603,24 +1563,11 @@ Mosca {
 				var euler = cartval[i];
 
 				euler = euler.rotate(num.value.neg).tilt(pitch).tumble(roll);
-				//euler = euler.rotate(num.value).tilt(pitch).tumble(roll);
 
 				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
 
 				zlev[i] = spheval[i].z;
-
-				if(espacializador[i].notNil || playingBF[i]) {
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
 			};
 
 			ossiaCartBack = true;
@@ -1643,24 +1590,11 @@ Mosca {
 				var euler = cartval[i];
 
 				euler = euler.rotate(heading).tilt(num.value.neg).tumble(roll);
-				//	euler = euler.rotate(heading).tilt(num.value).tumble(roll);
 
 				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
 
 				zlev[i] = spheval[i].z;
-
-				if(espacializador[i].notNil || playingBF[i]) {
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
 			};
 
 			ossiaCartBack = true;
@@ -1682,25 +1616,12 @@ Mosca {
 			nfontes.do { | i |
 				var euler = cartval[i];
 
-				//euler = euler.rotate(heading).tilt(pitch).tumble(num.value.neg);
 				euler = euler.rotate(heading).tilt(pitch).tumble(num.value);
 
 				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
 
 				zlev[i] = spheval[i].z;
-
-				if(espacializador[i].notNil || playingBF[i]) {
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
 			};
 
 			ossiaCartBack = true;
@@ -2307,7 +2228,7 @@ Mosca {
 			contract, win, rate, rand|
 			ref.value = HOAEncoder.ar(maxorder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-				Lag.kr(elevation), 0, 1, radius, longest_radius);
+				Lag.kr(elevation), 0, 1, Lag.kr(radius), longest_radius);
 		};
 
 		// HoaLib
@@ -2316,7 +2237,7 @@ Mosca {
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOALibEnc3D.ar(maxorder,
-				(ref.value + sig) * (longest_radius / radius),
+				(ref.value + sig) * Lag.kr(longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
@@ -2326,7 +2247,7 @@ Mosca {
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = HOAmbiPanner.ar(maxorder,
-				(ref.value + sig) * (longest_radius / radius),
+				(ref.value + sig) * Lag.kr(longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 		};
 
@@ -2336,7 +2257,7 @@ Mosca {
 			var diffuse, spread, omni,
 			sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
 			// attenuate high freq with distance
-			rad = longest_radius / radius;
+			rad = Lag.kr(longest_radius / radius);
 			sig = (sig + ref.value) * rad;
 			omni = FoaEncode.ar(sig, foaEncoderOmni);
 			spread = FoaEncode.ar(sig, foaEncoderSpread);
@@ -2354,7 +2275,7 @@ Mosca {
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
-				longest_radius / radius, 0.5);
+				Lag.kr(longest_radius / radius), 0.5);
 		};
 
 		// joshGrain
@@ -2363,8 +2284,8 @@ Mosca {
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
-				azimuth, 1 - contract,
-				elevation, 1 - contract, rho: longest_radius / radius,
+				azimuth, 1 - contract, elevation, 1 - contract,
+				rho: Lag.kr(longest_radius / radius),
 				mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
 		};
 
@@ -2419,8 +2340,8 @@ Mosca {
 				playList.do { |play_type, j|
 
 					SynthDef(item++play_type++rev_type, {
-						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini
-						azim = 0, elev = 0, radius = 200,
+						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+						azim = 0, elev = 0, radius = 200, level = 1,
 						dopamnt = 0, glev = 0, llev = 0,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
@@ -2438,7 +2359,7 @@ Mosca {
 						rad = rad.clip(1, 50);
 
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
-
+						p = p * level;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 						localReverbFunc.value(lrevRef, p, wir, dis * llev,
@@ -2454,8 +2375,8 @@ Mosca {
 
 
 					SynthDef(item++"Stereo"++play_type++rev_type, {
-						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini
-						azim = 0, elev = 0, radius = 0,
+						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+						azim = 0, elev = 0, radius = 0, level = 1,
 						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
@@ -2473,7 +2394,7 @@ Mosca {
 						rad = rad.clip(1, 50);
 
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 2);
-
+						p = p * level;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 						localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
@@ -3400,7 +3321,7 @@ Mosca {
 							//source.set(cartval[i].x, cartval[i].y);
 							//("audit = " ++ audit[i]).postln;
 							//("distance " ++ i ++ " = " ++ source.rho).postln;
-							if (cartval[i].rho > plim) {
+							if (spheval[i].rho > plim) {
 								firstTime[i] = true;
 								if(espacializador[i].isPlaying) {
 									//synthRegistry[i].free;
