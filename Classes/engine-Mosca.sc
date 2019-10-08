@@ -101,19 +101,15 @@ GUI Parameters usable in SynthDefs
 		pitchnumboxProxy.valueAction = p;
 		rollnumboxProxy.valueAction = r;
 		headingnumboxProxy.valueAction = h;
+
 		nfontes.do { | i |
 
 			if(espacializador[i].notNil) {
 
 				espacializador[i].set(\azim, spheval[i].theta, \elev,
 					spheval[i].phi, \radius, spheval[i].rho);
-				this.setSynths(i, \azim, spheval[i].theta,
-					\elev, spheval[i].phi,
-					\radius, spheval[i].rho);
 			};
-
 		};
-
 	}
 
 	matchTByte { |byte|  // match incoming headtracker data
