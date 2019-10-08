@@ -98,12 +98,6 @@ GUI Parameters usable in SynthDefs
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 
-		/////////// REVISE ////
-		p = p.neg;
-		r = r.neg;
-		h = h.neg;
-		///////////////////////
-
 		pitchnumboxProxy.valueAction = p;
 		rollnumboxProxy.valueAction = r;
 		headingnumboxProxy.valueAction = h;
@@ -112,12 +106,9 @@ GUI Parameters usable in SynthDefs
 			if(espacializador[i].notNil) {
 
 				espacializador[i].set(\azim, spheval[i].theta, \elev,
-					spheval[i].phi,
-					\radius, spheval[i].rho);
+					spheval[i].phi, \radius, spheval[i].rho);
 				this.setSynths(i, \azim, spheval[i].theta,
 					\elev, spheval[i].phi,
-					\radius, spheval[i].rho);
-				synt[i].set(\azim, spheval[i].theta, \elev, spheval[i].phi,
 					\radius, spheval[i].rho);
 			};
 
