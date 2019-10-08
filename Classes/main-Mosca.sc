@@ -1414,8 +1414,7 @@ Mosca {
 				{ revGlobal.set(\gate, 0); };
 
 				revGlobal = Synth(\revGlobalAmb++clsRvtypes,
-					[\gbfbus, gbfbus, \gbixfbus, gbixfbus, \gate, 1,
-						\room, clsrm, \damp, clsdm] ++
+					[\gate, 1, \room, clsrm, \damp, clsdm] ++
 					irSpecPar.value(max((clsrv - 3), 0)),
 					glbRevDecGrp).register.onFree({
 					if (revGlobal.isPlaying.not) {
@@ -1442,11 +1441,11 @@ Mosca {
 
 
 		clsrmboxProxy.action_({ | num |
-			glbRevDecGrp.set(\room, num.value);
+			revGlobal.set(\room, num.value);
 			clsrm = num.value;
 
 			if (guiflag) {
-				{originCtl[0][0].value = num.value}.defer;
+				{originCtl[1][0].value = num.value}.defer;
 			};
 
 			if (ossiaclsdel.v != num.value) {
@@ -1457,12 +1456,11 @@ Mosca {
 
 		clsdmboxProxy.action_({ | num |
 
-			glbRevDecGrp.set(\damp, num.value);
-
+			revGlobal.set(\damp, num.value);
 			clsdm = num.value;
 
 			if (guiflag) {
-				{originCtl[0][0].value = num.value}.defer;
+				{originCtl[1][1].value = num.value}.defer;
 			};
 
 			if (ossiaclsdec.v != num.value) {
@@ -1616,7 +1614,7 @@ Mosca {
 			nfontes.do { | i |
 				var euler = cartval[i];
 
-				euler = euler.rotate(heading).tilt(pitch).tumble(num.value);
+				euler = euler.rotate(heading).tilt(pitch).tumble(num.value.neg);
 
 				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
@@ -2707,8 +2705,8 @@ Mosca {
 				sig = In.ar(gbus, 1);
 				sigx = FoaEncode.ar(sigx, n2m);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-				sigf = FoaDecode.ar(sigf, b2a);
 				sig = sig + sigf + sigx;
+				sig = FoaDecode.ar(sig, b2a);
 				16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
 					{ Rand(0, 0.001) },
 					damp * 2)});
@@ -2773,8 +2771,8 @@ Mosca {
 				sig = In.ar(gbus, 1);
 				sigx = FoaEncode.ar(sigx, n2m);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-				sigf = FoaDecode.ar(sigf, b2a);
 				sig = sig + sigf + sigx;
+				sigf = FoaDecode.ar(sigf, b2a);
 				convsig = [
 					FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
 					FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp)];
@@ -2801,7 +2799,7 @@ Mosca {
 					FreeVerb2.ar(sig[6], sig[7], mix: 1, room: room, damp: damp),
 					FreeVerb2.ar(sig[8], sig[9], mix: 1, room: room, damp: damp),
 					FreeVerb2.ar(sig[10], sig[11], mix: 1, room: room, damp: damp)];
-				tmpsig = tmpsig.flat * 4 * env;
+				tmpsig = tmpsig.flat * env;
 				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig,
 					soa_a12_encoder_matrix);
 				soaSig = [w, x, y, z, r, s, t, u, v];
@@ -3019,8 +3017,8 @@ Mosca {
 					sig = In.ar(gbus, 1);
 					sigx = FoaEncode.ar(sigx, n2m);
 					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-					sigf = FoaDecode.ar(sigf, b2a);
 					sig = sig + sigf + sigx;
+					sig = FoaDecode.ar(sig, b2a);
 					convsig = [
 						PartConv.ar(sig[0], fftsize, fluir),
 						PartConv.ar(sig[1], fftsize, frdir),
@@ -3054,7 +3052,7 @@ Mosca {
 					var env, w, x, y, z, r, s, t, u, v,
 					soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
 					sigx = In.ar(gbixfbus, 9);
-					sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
+					sigx = HOAConvert.ar(2, sigx, \ACN_N3D, \FuMa);
 					sig = In.ar(gbus, 1);
 					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 					sig = sig + sigf + sigx;
@@ -3117,6 +3115,7 @@ Mosca {
 			};
 
 			if (maxorder == 1) {
+
 				irSpecPar = { |i|
 					[\fluir, rirFLUspectrum[i],
 						\frdir, rirFRDspectrum[i],
