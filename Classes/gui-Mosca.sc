@@ -20,9 +20,7 @@ may be downloaded here: http://escuta.org/mosca
 
 	gui {
 
-		var sprite,
-		furthest,
-		dist,
+		var furthest,
 		itensdemenu,
 		event, brec, bplay, bload, bstream, loadOrStream, bnodes,
 		dopcheque2,
@@ -885,7 +883,7 @@ may be downloaded here: http://escuta.org/mosca
 		znumbox.align = \center;
 		znumbox.action = { | num |
 			{ zslider.value = (num.value * 0.005) + 0.5;
-				moveSource.value(sprite[currentsource, 0], sprite[currentsource, 1])
+				zboxProxy[currentsource].valueAction = num.value;
 			}.defer;
 		};
 
@@ -2171,21 +2169,18 @@ may be downloaded here: http://escuta.org/mosca
 
 		furthest = halfheight * 20;
 
-		sprite = Array2D(nfontes, 2);
-		nfontes.do { | i |
-			sprite.put(i, 0, 0);
-			sprite.put(i, 1, furthest);
-		};
-
 		win.view.mouseDownAction = { | view, mx, my, modifiers, buttonNumber, clickCount |
 			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
 			case
 			{mouseButton == 0} {
-				var closest = [0, furthest]; // save sources index and distance from click
+				var x = ((mx - halfwidth) / halfheight) * 100 / zoom_factor,
+				y = ((halfheight - my) / halfheight) * 100 / zoom_factor,
+				closest = [0, furthest]; // save sources index and distance from click
 				// initialize at the furthest point
+
 				nfontes.do { | i |
-					var dis = ((mx - sprite[i, 0].value).squared
-						+ (my - sprite[i, 1].value).squared).sqrt;
+					var dis = ((x - spheval[i].x).squared
+						+ (y - spheval[i].y).squared).sqrt;
 					// claculate distance from click
 					if(dis < closest[1].value) {
 						closest[1] = dis;
@@ -2245,7 +2240,7 @@ may be downloaded here: http://escuta.org/mosca
 			};
 
 			if ((dy > 0) && (zoom_factor >= 0.55)) {
-				zoom_factor = zoom_factor * 0.1;
+				zoom_factor = zoom_factor * 0.99;
 				win.refresh;
 			};
 		};
@@ -2256,15 +2251,11 @@ may be downloaded here: http://escuta.org/mosca
 				(halfheight - y) / halfheight,
 				(zslider.value - 0.5) * 2 * zoom_factor);
 
-			// save raw mouseposition for selecting closest source on click
-			sprite.put(currentsource, 0, x);
-			sprite.put(currentsource, 1, y);
-
 			spheval[currentsource].rho_(car2sphe.rho);
 			spheval[currentsource].theta_(car2sphe.theta);
 			spheval[currentsource].phi_(car2sphe.phi);
 
-			spheval[currentsource]  = (spheval[currentsource] / zoom_factor) * 100;
+			spheval[currentsource] = (spheval[currentsource] / zoom_factor) * 100;
 
 			ossiasphe[currentsource].v_([spheval[currentsource].rho,
 				(spheval[currentsource].theta - halfPi).wrap(-pi, pi),

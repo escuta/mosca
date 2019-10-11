@@ -108,8 +108,8 @@ may be downloaded here: http://escuta.org/mosca
 		});
 
 		ossiaorigine = OSSIA_Parameter(ossiaParent, "Origine", OSSIA_vec3f,
-			[[-20, -20, -20], [20, 20, 20]], [0, 0, 0],
-			'wrap', allCrtitical, repetition_filter:true);
+			[[-200, -200, -200], [200, 200, 200]], [0, 0, 0],
+			allCrtitical, repetition_filter:true);
 
 		ossiaorigine.unit_(OSSIA_position.cart3D);
 
