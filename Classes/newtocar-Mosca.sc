@@ -735,7 +735,7 @@ may be downloaded here: http://escuta.org/mosca
 					};
 
 					espacializador[i] = Synth(libName[i]++"BFormat"++witch++
-						ncan[i]++dstrvtypes[i],
+						4++dstrvtypes[i],
 						[\busini, busini[i],
 							\rotAngle, rlev[i],
 							\directang, dlev[i],
