@@ -65,7 +65,6 @@ GUI Parameters usable in SynthDefs
 			} {
 				runStop.value(source);
 				espacializador[source].free;
-				espacializador[source] = nil;
 				audit[source] = false;
 				"stopping!".postln;
 			};
@@ -98,9 +97,9 @@ GUI Parameters usable in SynthDefs
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 
-		pitchnumboxProxy.valueAction = p;
-		rollnumboxProxy.valueAction = r;
-		headingnumboxProxy.valueAction = h;
+		// pitchnumboxProxy.valueAction = p;
+		// rollnumboxProxy.valueAction = r;
+		// headingnumboxProxy.valueAction = h;
 	}
 
 	matchTByte { |byte|  // match incoming headtracker data
@@ -133,8 +132,6 @@ GUI Parameters usable in SynthDefs
 		});
 	}
 
-
-
 	trackerRoutine { Routine.new
 		( {
 			inf.do{
@@ -156,7 +153,6 @@ GUI Parameters usable in SynthDefs
 					trackPort = SerialPort(serport, 115200, crtscts: true);
 					this.trackerRoutine; // start tracker routine again
 				}
-
 			};
 			1.wait;
 		};
@@ -166,7 +162,6 @@ GUI Parameters usable in SynthDefs
 		| angle |
 		headingOffset = angle;
 	}
-
 
 	registerSynth { // selection of Mosca arguments for use in synths
 		| source, synth |
@@ -179,7 +174,6 @@ GUI Parameters usable in SynthDefs
 
 		};
 	}
-
 
 	getSynthRegistry { // selection of Mosca arguments for use in synths
 		| source |
@@ -194,7 +188,6 @@ GUI Parameters usable in SynthDefs
 		}
 	}
 
-
 	setSynths {
 		|source, param, value|
 
@@ -205,7 +198,6 @@ GUI Parameters usable in SynthDefs
 				item.set(param, value);
 			}
 		});
-
 	}
 
 	getInsertIn {
@@ -406,14 +398,12 @@ GUI Parameters usable in SynthDefs
 			hwncheckProxy[i].valueAction = flag;
 		};
 
-
 		nfontes.do { | i |
 			var line = scinf.getLine(1024);
 			var flag;
 			if (line == "true") {flag = true;} {flag = false;};
 			scncheckProxy[i].value = flag;
 		};
-
 
 		filenames.close;
 
@@ -470,7 +460,6 @@ GUI Parameters usable in SynthDefs
 		};
 		isPlay = true;
 		control.play;
-
 		//runTriggers.value;
 	}
 

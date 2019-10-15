@@ -315,7 +315,6 @@ Mosca {
 			});
 
 			headingOffset = offsetheading;
-
 		};
 
 
@@ -679,7 +678,7 @@ Mosca {
 						zboxProxy[i].value]);
 				};
 
-				if ( guiflag) {
+				if (guiflag) {
 					{xbox[i].value = num.value}.defer;
 					{novoplot.value;}.defer;
 				};
