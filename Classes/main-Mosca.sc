@@ -1428,6 +1428,7 @@ Mosca {
 						};
 					};
 				});
+
 			};
 
 			if (guiflag) {
@@ -3031,16 +3032,18 @@ Mosca {
 
 			} {
 
+				rirA12 = Array.newClear(12);
+				rirA12Spectrum = Array2D(rirNum, 12);
+
 				rirList.do({ |item, count|
 
-					rirA12 = Array.newClear(12);
-					rirA12Spectrum = Array2D(rirNum, 12);
 					12.do { | i |
 						rirA12[i] = Buffer.readChannel(server,
 							rirBank ++ "/" ++ item ++ "_SoaA12.wav",
 							channels: [i]);
 						rirA12Spectrum[count, i] = Buffer.alloc(server,
 							bufsize[count], 1);
+						server.sync;
 						rirA12Spectrum[count, i].preparePartConv(rirA12[i], fftsize);
 						rirA12[i].free;
 					};
@@ -3070,7 +3073,7 @@ Mosca {
 						PartConv.ar(sig[9], fftsize, a9ir),
 						PartConv.ar(sig[10], fftsize, a10ir),
 						PartConv.ar(sig[11], fftsize, a11ir)];
-					tmpsig = tmpsig * 4 * env;
+					tmpsig = tmpsig * env;
 					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig,
 						soa_a12_encoder_matrix);
 					soaSig = [w, x, y, z, r, s, t, u, v];
