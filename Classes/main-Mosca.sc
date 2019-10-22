@@ -186,8 +186,8 @@ Mosca {
 		iguiflag, iguiint, iautoloop |
 
 		var makeSynthDefPlayers, makeSpatialisers, subOutFunc, playInFunc,
-		localReverbFunc, localReverbStereoFunc, perfectSphereFunc,
-		bfOrFmh, spatFuncs, outPutFuncs,
+		localReverbFunc, localReverbStereoFunc, //localReverbBFormatFunc,
+		perfectSphereFunc, bfOrFmh, spatFuncs, outPutFuncs,
 		bFormNumChan = (imaxorder + 1).squared,
 		// add the number of channels of the b format
 		fourOrNine; // switch between 4 fuma and 9 ch Matrix
@@ -2407,6 +2407,89 @@ Mosca {
 							(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
 							globallev.clip(0, 1) * glev);
 					}).add;
+
+					if (item == "ATK") {
+
+						SynthDef(\ATKBFormat++play_type++4, {
+							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+							azim = 0, elev = 0, radius = 200, level = 1,
+							dopamnt = 0, glev = 0, llev = 0,
+							insertFlag = 0, insertOut, insertBack,
+							room = 0.5, damp = 05, wir, df, sp,
+							contr = 0, directang = 1, rotAngle = 0 |
+
+							var rad = Lag.kr(radius),
+							dis = rad * 0.01,
+							pushang = dis * halfPi, // degree of sound field displacement
+							globallev = (1 / dis.sqrt) - 1, //global reverberation
+							locallev, lrevRef = Ref(0),
+							az = azim - halfPi,
+							p = Ref(0),
+							rd = dis * 340, // Doppler
+							cut = ((1 - dis) * 2).clip(0, 1);
+							//make shure level is 0 when radius reaches 100
+							rad = rad.clip(1, 50);
+
+							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
+							p = p * level;
+							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+							localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
+							// local reverberation
+
+							p = FoaDirectO.ar(lrevRef.value + p, directang);
+							// directivity
+							p = FoaTransform.ar(p, 'rotate', rotAngle);
+							p = FoaTransform.ar(p, 'push', pushang, az, elev);
+
+							p = p * cut;
+
+							outPutFuncs[1].value(p, p,
+								globallev.clip(0, 1) * glev);
+						}).add;
+					};
+
+					if (item == "Ambitools") {
+
+						SynthDef(\AmbitoolsBFormat++play_type++4, {
+							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+							azim = 0, elev = 0, radius = 200, level = 1,
+							dopamnt = 0, glev = 0, llev = 0,
+							insertFlag = 0, insertOut, insertBack,
+							room = 0.5, damp = 05, wir, df, sp,
+							contr = 0, rotAngle = 0|
+
+							var rad = Lag.kr(radius),
+							dis = rad * 0.01,
+							pushang = dis * halfPi, // degree of sound field displacement
+							globallev = (1 / dis.sqrt) - 1, //global reverberation
+							locallev, lrevRef = Ref(0),
+							az = azim - halfPi,
+							p = Ref(0),
+							rd = dis * 340, // Doppler
+							cut = ((1 - dis) * 2).clip(0, 1);
+							//make shure level is 0 when radius reaches 100
+							rad = rad.clip(1, 50);
+
+							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
+							p = p * level;
+							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+							localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
+							// local reverberation
+
+							p = FoaEncode.ar(lrevRef.value + p, n2m);
+							// directivity
+							p = HOATransRotateAz.ar(1, p, rotAngle);
+							p = HOABeamDirac2Hoa.ar(1, p, az, elev, focus:pushang);
+
+							p = p * cut;
+
+							outPutFuncs[0].value(p, p,
+								globallev.clip(0, 1) * glev);
+						}).add;
+					};
+
 				};
 
 				//	SynthDef("playBFormatATK"++type++"_4", {
@@ -2528,75 +2611,6 @@ Mosca {
 
 			}
 		}; //end makeSpatialisers
-
-		SynthDef(\ATKBFormatHWBus4, {
-			| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-			azim = 0, elev = 0, radius = 200, level = 1,
-			dopamnt = 0, glev = 0, llev = 0,
-			insertFlag = 0, insertOut, insertBack,
-			room = 0.5, damp = 05, wir, df, sp,
-			contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
-
-			var rad = Lag.kr(radius),
-			dis = rad * 0.01,
-			globallev = (1 / dis.sqrt) - 1, //global reverberation
-			locallev, lrevRef = Ref(0),
-			az = azim - halfPi,
-			p = Ref(0),
-			rd = dis * 340, // Doppler
-			cut = ((1 - dis) * 2).clip(0, 1);
-			//make shure level is 0 when radius reaches 100
-			rad = rad.clip(1, 50);
-
-			playInFunc[1].value(p, busini, bufnum, tpos, lp, rate, 4);
-			p = p * level;
-			p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-			/*localReverbFunc.value(lrevRef, p, wir, dis * llev,
-				// local reverberation
-				room, damp);
-
-			spatFuncs[4].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
-				winsize, grainrate, winrand);
-*/
-			outPutFuncs[1].value(p * cut, p * cut,
-				globallev.clip(0, 1) * glev);
-		}).add;
-
-		SynthDef(\ATKBFormatFile4, {
-			| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-			azim = 0, elev = 0, radius = 200, level = 1,
-			dopamnt = 0, glev = 0, llev = 0,
-			insertFlag = 0, insertOut, insertBack,
-			room = 0.5, damp = 05, wir, df, sp,
-			contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
-
-			var rad = Lag.kr(radius),
-			dis = rad * 0.01,
-			globallev = (1 / dis.sqrt) - 1, //global reverberation
-			locallev, lrevRef = Ref(0),
-			az = azim - halfPi,
-			p = Ref(0),
-			rd = dis * 340, // Doppler
-			cut = ((1 - dis) * 2).clip(0, 1);
-			//make shure level is 0 when radius reaches 100
-			rad = rad.clip(1, 50);
-
-			playInFunc[0].value(p, busini, bufnum, tpos, lp, rate, 4);
-			p = p * level;
-			p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-			/*localReverbFunc.value(lrevRef, p, wir, dis * llev,
-				// local reverberation
-				room, damp);
-
-			spatFuncs[4].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
-				winsize, grainrate, winrand);
-*/
-			outPutFuncs[1].value(p * cut, p * cut,
-				globallev.clip(0, 1) * glev);
-		}).add;
-
 
 		// makeSynthDefPlayers = { | type, i = 0 |
 		// 	// 3 types : File, HWBus and SWBus - i duplicates with 0, 1 & 2
@@ -2917,6 +2931,19 @@ Mosca {
 			lrev1Ref.value = temp1 * locallev;
 			lrev2Ref.value = temp2 * locallev;
 		};
+		//
+		// localReverbBFormatFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
+		// 	locallev, room, damp |
+		// 	var temp1 = p1, temp2 = p2;
+		// 	8.do({ temp1 = AllpassC.ar(temp1, 0.08, room * { Rand(0, 0.08) } +
+		// 		{ Rand(0, 0.001) },
+		// 	damp * 2)});
+		// 	8.do({ temp2 = AllpassC.ar(temp2, 0.08, room * { Rand(0, 0.08) } +
+		// 		{ Rand(0, 0.001) },
+		// 	damp * 2)});
+		// 	lrev1Ref.value = temp1 * locallev;
+		// 	lrev2Ref.value = temp2 * locallev;
+		// };
 
 		makeSpatialisers.value(rev_type:"_pass");
 
@@ -2981,6 +3008,31 @@ Mosca {
 			lrev2Ref.value = temp[1];
 		};
 
+		// localReverbBFormatFunc = { | lrevRef, p, a0ir, a1ir, a2ir, a3ir,
+		// 	a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir, locallev,
+		// 	room = 0.5, damp = 0.5|
+		// 	var temp, sig;
+		//
+		// 	if (maxorder == 1) {
+		// 		sig = FoaDecode.ar(p, b2a);
+		// 		temp = [
+		// 			FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
+		// 		FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp)];
+		// 		lrevRef.value = FoaEncode.ar(temp.flat, a2b);
+		// 	} {
+		// 		sig = AtkMatrixMix.ar(p, soa_a12_decoder_matrix);
+		// 		temp = [
+		// 			FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
+		// 			FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp),
+		// 			FreeVerb2.ar(sig[4], sig[5], mix: 1, room: room, damp: damp),
+		// 			FreeVerb2.ar(sig[6], sig[7], mix: 1, room: room, damp: damp),
+		// 			FreeVerb2.ar(sig[8], sig[9], mix: 1, room: room, damp: damp),
+		// 		FreeVerb2.ar(sig[10], sig[11], mix: 1, room: room, damp: damp)];
+		// 		lrevRef.value = AtkMatrixMix.ar(temp.flat,
+		// 		soa_a12_encoder_matrix);
+		// 	}
+		// };
+
 		makeSpatialisers.value(rev_type:"_free");
 
 		// function for no-reverb option
@@ -2991,6 +3043,11 @@ Mosca {
 		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
 			locallev, room, damp |
 		};
+
+		// localReverbBFormatFunc = { | lrevRef, p, a0ir, a1ir, a2ir, a3ir,
+		// 	a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir, locallev,
+		// 	room, damp |
+		// };
 
 		makeSpatialisers.value(rev_type:"");
 

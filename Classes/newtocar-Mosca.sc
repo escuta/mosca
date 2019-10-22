@@ -735,7 +735,7 @@ may be downloaded here: http://escuta.org/mosca
 					};
 
 					espacializador[i] = Synth(libName[i]++"BFormat"++witch++
-						4++dstrvtypes[i],
+						(ncan[i].asInteger)++dstrvtypes[i],
 						[\busini, busini[i],
 							\rotAngle, rlev[i],
 							\directang, dlev[i],
@@ -757,9 +757,9 @@ may be downloaded here: http://escuta.org/mosca
 							\winrand, winrand[i]] ++
 						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
-						espacializador[i].free;
-						if (convertor.notNil) {
-							if (convert[i]) {
+						espacializador[i] = nil;
+						if (convert[i]) {
+							if (convertor.notNil) {
 								if (this.converterNeeded(0).not) {
 									convertor.set(\gate, 0);
 								};
