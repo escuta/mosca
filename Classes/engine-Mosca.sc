@@ -326,7 +326,7 @@ GUI Parameters usable in SynthDefs
 
 		nfontes.do { | i |
 			var line = filenames.getLine(1024);
-			if(line!="NULL") {
+			if(line != "NULL") {
 				tfieldProxy[i].valueAction = line;
 			} {
 				tfieldProxy[i].valueAction = "";

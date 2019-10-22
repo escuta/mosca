@@ -18,7 +18,7 @@ may be downloaded here: http://escuta.org/mosca
 
 + Mosca {
 
-		newtocar {
+	newtocar {
 		| i, tpos, force = false |
 		var path = tfieldProxy[i].value;
 
@@ -32,7 +32,6 @@ may be downloaded here: http://escuta.org/mosca
 			("Creating buffer for source: " ++ i).postln;
 		};
 
-
 		// Note: ncanais refers to number of channels in the context of
 		// files on disk
 		// ncan is number of channels for hardware or supercollider input
@@ -40,9 +39,7 @@ may be downloaded here: http://escuta.org/mosca
 		// If we have ncan = 4 and busini = 7, the stream will enter
 		// in buses 7, 8, 9 and 10.
 
-
 		/// STREAM FROM DISK
-
 
 		if ((path != "") && hwncheckProxy[i].value.not
 			&& scncheckProxy[i].value.not
@@ -232,7 +229,7 @@ may be downloaded here: http://escuta.org/mosca
 					} {
 						libboxProxy[i].valueAction = 0;
 						lib[i] = 0;
-						convert[i] = true;
+						convert[i] = convert_n3d;
 						dstrv[i] = dstrvboxProxy[i].value;
 					};
 
@@ -250,7 +247,8 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
-					espacializador[i] = Synth(libName[i]++"BFormatStream"++ncanais[i],
+					espacializador[i] = Synth(libName[i]++"BFormatStream"++
+						(ncanais[i].asInteger)++dstrvtypes[i],
 						[\bufnum, streambuf[i].bufnum,
 							\rotAngle, rlev[i],
 							\directang, dlev[i],
@@ -325,7 +323,7 @@ may be downloaded here: http://escuta.org/mosca
 					} {
 						convertor = Synth(\ambiConverter, [\gate, 1],
 							target:glbRevDecGrp).onFree({
-								convertor = nil;
+							convertor = nil;
 						});
 					};
 				};
@@ -369,7 +367,7 @@ may be downloaded here: http://escuta.org/mosca
 							nonAmbi2FuMa.free;
 						};
 					};
-						if (convertor.notNil) {
+					if (convertor.notNil) {
 						if (convert[i]) {
 							if (this.converterNeeded(0).not) {
 								convertor.set(\gate, 0);
@@ -474,7 +472,7 @@ may be downloaded here: http://escuta.org/mosca
 				} {
 					libboxProxy[i].valueAction = 0;
 					lib[i] = 0;
-					convert[i] = true;
+					convert[i] = convert_n3d;
 					dstrv[i] = dstrvboxProxy[i].value;
 				};
 
@@ -492,7 +490,8 @@ may be downloaded here: http://escuta.org/mosca
 					};
 				};
 
-				espacializador[i] = Synth(libName[i]++"BFormatFile"++ncanais[i]++dstrvtypes[i],
+				espacializador[i] = Synth(libName[i]++"BFormatFile"++
+					(ncanais[i].asInteger)++dstrvtypes[i],
 					[\bufnum, sombuf[i].bufnum,
 						\rotAngle, rlev[i],
 						\directang, dlev[i],
@@ -719,7 +718,7 @@ may be downloaded here: http://escuta.org/mosca
 					} {
 						libboxProxy[i].valueAction = 0;
 						lib[i] = 0;
-						convert[i] = true;
+						convert[i] = convert_n3d;
 						dstrv[i] = dstrvboxProxy[i].value;
 					};
 

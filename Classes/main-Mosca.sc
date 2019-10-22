@@ -1306,24 +1306,35 @@ Mosca {
 			};
 
 			tfieldProxy[i].action = { | path |
-				var sf = SoundFile.new;
-				sf.openRead(path);
-				ncanais[i] = sf.numChannels;
-				sf.close;
 
-				if (sombuf[i].notNil) {
-					sombuf[i].free;
-				};
+				if (path != "") {
+					var sf = SoundFile.new;
+					sf.openRead(path);
+					ncanais[i] = sf.numChannels;
+					sf.close;
 
-				if (path.notNil || (path.value != "")) {
 					if (streamdisk[i].not) {
-						sombuf[i].free;
+						if (sombuf[i].notNil) {
+							sombuf[i].freeMsg({
+								"Buffer freed".postln;
+							});
+						};
+
 						sombuf[i] = Buffer.read(server, path.value, action: { | buf |
 							"Loaded file".postln;
 						});
 					} {
 						"To stream file".postln;
 					};
+				} {
+					if (sombuf[i].notNil) {
+						sombuf[i].freeMsg({
+							sombuf[i] = nil;
+							"Buffer freed".postln;
+						});
+					};
+
+					ncanais[i] = 0;
 				};
 
 				if (guiflag) {
@@ -1331,8 +1342,7 @@ Mosca {
 					{ updateGuiCtl.value(\chan); }.defer;
 				};
 
-				ossiaaud[i].description =
-				PathName(path.value).fileNameWithoutExtension;
+				ossiaaud[i].description = PathName(path.value).fileNameWithoutExtension;
 			};
 
 			control.dock(xboxProxy[i], "x_axisProxy_" ++ i);
@@ -2479,7 +2489,6 @@ Mosca {
 							// local reverberation
 
 							p = FoaEncode.ar(lrevRef.value + p, n2m);
-							// directivity
 							p = HOATransRotateAz.ar(1, p, rotAngle);
 							p = HOABeamDirac2Hoa.ar(1, p, az, elev, focus:pushang);
 
@@ -2488,6 +2497,46 @@ Mosca {
 							outPutFuncs[0].value(p, p,
 								globallev.clip(0, 1) * glev);
 						}).add;
+
+						[9, 16, 25, 36].do { |item, count|
+							var ord = (item.sqrt) - 1;
+
+							SynthDef(\AmbitoolsBFormat++play_type++item, {
+								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+								azim = 0, elev = 0, radius = 200, level = 1,
+								dopamnt = 0, glev = 0, llev = 0,
+								insertFlag = 0, insertOut, insertBack,
+								room = 0.5, damp = 05, wir, df, sp,
+								contr = 0, rotAngle = 0|
+
+								var rad = Lag.kr(radius),
+								dis = rad * 0.01,
+								pushang = dis * halfPi, // degree of sound field displacement
+								globallev = (1 / dis.sqrt) - 1, //global reverberation
+								locallev, lrevRef = Ref(0),
+								az = azim - halfPi,
+								p = Ref(0),
+								rd = dis * 340, // Doppler
+								cut = ((1 - dis) * 2).clip(0, 1);
+								//make shure level is 0 when radius reaches 100
+								rad = rad.clip(1, 50);
+
+								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
+								p = p * level;
+								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+								localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
+								// local reverberation
+
+								p = HOATransRotateAz.ar(ord, lrevRef.value + p, rotAngle);
+								p = HOABeamDirac2Hoa.ar(ord, p, az, elev, focus:pushang);
+
+								p = p * cut;
+
+								outPutFuncs[0].value(p, p,
+									globallev.clip(0, 1) * glev);
+							}).add;
+						};
 					};
 
 				};
@@ -2582,31 +2631,31 @@ Mosca {
 				// 		Out.ar(gbixfbus, gsig);
 				// 	}).add;
 
-/*				SynthDef("ATK2Chowning"++rev_type, {
-					| inbus, radius = 200,
-					dopamnt = 0, glev = 0, llev = 0,
-					insertFlag = 0, insertOut, insertBack,
-					room = 0.5, damp = 05, wir|
+				/*				SynthDef("ATK2Chowning"++rev_type, {
+				| inbus, radius = 200,
+				dopamnt = 0, glev = 0, llev = 0,
+				insertFlag = 0, insertOut, insertBack,
+				room = 0.5, damp = 05, wir|
 
-					var rad = Lag.kr(radius),
-					dis = rad * 0.01,
-					globallev = (1 / dis.sqrt) - 1, //global reverberation
-					lrevRef = Ref(0),
-					p = In.ar(inbus, 1),
-					rd = radius * 340, // Doppler
-					cut = ((1 - dis) * 2).clip(0, 1);
-					//make shure level is 0 when radius reaches plim
-					rad = rad.clip(1, 50);
+				var rad = Lag.kr(radius),
+				dis = rad * 0.01,
+				globallev = (1 / dis.sqrt) - 1, //global reverberation
+				lrevRef = Ref(0),
+				p = In.ar(inbus, 1),
+				rd = radius * 340, // Doppler
+				cut = ((1 - dis) * 2).clip(0, 1);
+				//make shure level is 0 when radius reaches plim
+				rad = rad.clip(1, 50);
 
-					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+				p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-					localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
-					p = HPF.ar(p, 20); // stops bass frequency blow outs by proximity
-					p = FoaTransform.ar(p + lrevRef.value, 'proximity',
-						rad * 50);
+				localReverbFunc.value(lrevRef, p, wir, dis * llev, room, damp);
+				p = HPF.ar(p, 20); // stops bass frequency blow outs by proximity
+				p = FoaTransform.ar(p + lrevRef.value, 'proximity',
+				rad * 50);
 
-					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
-						globallev.clip(0, 1) * glev);
+				outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
+				globallev.clip(0, 1) * glev);
 				}).add;*/
 
 			}
@@ -3131,9 +3180,9 @@ Mosca {
 
 					{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ[count],
 						loop: 0, doneAction: 2), b2a),
-						bufAformat[count], Phasor.ar(0,
+					bufAformat[count], Phasor.ar(0,
 						BufRateScale.kr(bufAformat[count]),
-							0, BufFrames.kr(bufAformat[count])));
+						0, BufFrames.kr(bufAformat[count])));
 					Out.ar(0, Silent.ar);
 					}.play;
 
@@ -3153,7 +3202,7 @@ Mosca {
 
 					{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ[count],
 						loop: 0, doneAction: 2),
-						foa_a12_decoder_matrix),
+					foa_a12_decoder_matrix),
 					bufAformat_soa_a12[count],
 					Phasor.ar(0, BufRateScale.kr(bufAformat[count]), 0,
 						BufFrames.kr(bufAformat[count])));
