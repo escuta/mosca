@@ -70,7 +70,7 @@ may be downloaded here: http://escuta.org/mosca
 		});
 
 		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", Integer,
-			[0, spatList.size], 0, 'clip', critical:true);
+			[0, spatList.size - 1], 0, 'clip', critical:true);
 
 		ossiaMasterLib.description_(spatList.asString);
 
@@ -266,7 +266,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 			ossialib[i] = OSSIA_Parameter(ossiasrc[i], "Library", Integer,
-				[0, spatList.size], 0, 'clip', critical:true, repetition_filter:true);
+				[0, spatList.size - 1], 0, 'clip', critical:true, repetition_filter:true);
 
 			ossialib[i].description_(spatList.asString);
 

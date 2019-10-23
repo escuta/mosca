@@ -785,7 +785,7 @@ Mosca {
 			};
 
 			vboxProxy[i].action = { | num |
-				synt[i].set(\level, num.value);
+				espacializador[i].set(\level, num.value);
 				this.setSynths(i, \level, num.value);
 				level[i] = num.value;
 
@@ -2077,7 +2077,7 @@ Mosca {
 				} { // assume ADT Decoder
 					convert_fuma = true;
 					convert_n3d = false;
-					convert_direct = true;
+					convert_direct = false;
 
 					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
@@ -2105,7 +2105,7 @@ Mosca {
 			{ maxorder == 3 } // assume ADT Decoder
 			{ convert_fuma = true;
 				convert_n3d = false;
-				convert_direct = true;
+				convert_direct = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -2133,7 +2133,7 @@ Mosca {
 			{ maxorder == 4 } // assume ADT Decoder
 			{ convert_fuma = true;
 				convert_n3d = false;
-				convert_direct = true;
+				convert_direct = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -2163,7 +2163,7 @@ Mosca {
 			{ maxorder == 5 } // assume ADT Decoder
 			{ convert_fuma = true;
 				convert_n3d = false;
-				convert_direct = true;
+				convert_direct = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -3595,7 +3595,6 @@ Mosca {
 									//synthRegistry[i].free;
 									runStop.value(i); // to kill SC input synths
 									espacializador[i].free; // just in case...
-									espacializador[i] = nil;
 								};
 							} {
 								if(espacializador[i].isPlaying.not && (isPlay || audit[i])

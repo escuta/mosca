@@ -55,7 +55,10 @@ GUI Parameters usable in SynthDefs
 	auditionFunc { |source, bool|
 		if(isPlay.not) {
 			if(bool) {
-				this.newtocar(source, 0, force: true);
+				// if(espacializador[source].isNil) {
+				// 	this.newtocar(source, 0, force: true);
+				// };
+				//
 				firstTime[source] = true;
 				//runTrigger.value(currentsource); - watcher does this now
 				//tocar.value(currentsource, 0); // needed only by SC input
@@ -64,8 +67,8 @@ GUI Parameters usable in SynthDefs
 				audit[source] = true;
 			} {
 				runStop.value(source);
-				espacializador[source].free;
 				audit[source] = false;
+				espacializador[source].free;
 				"stopping!".postln;
 			};
 		};

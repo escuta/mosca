@@ -833,6 +833,8 @@ may be downloaded here: http://escuta.org/mosca
 		hwCtl[0][0].value = 0;
 		hwCtl[0][0].clipHi = 36;
 		hwCtl[0][0].clipLo = 0;
+		hwCtl[0][0].step = 1;
+		hwCtl[0][0].scroll_step = 1;
 		hwCtl[0][0].align = \center;
 		hwCtl[0][0].action = { | num |
 			{ncanbox[currentsource].valueAction = num.value;}.defer;
@@ -846,6 +848,8 @@ may be downloaded here: http://escuta.org/mosca
 		hwCtl[0][1] = NumberBox(win, Rect(10, 70, 40, 20));
 		hwCtl[0][1].value = 0;
 		hwCtl[0][1].clipLo = 0;
+		hwCtl[0][1].step = 1;
+		hwCtl[0][1].scroll_step = 1;
 		hwCtl[0][1].align = \center;
 		hwCtl[0][1].action = { | num |
 			{businibox[currentsource].valueAction = num.value;}.defer;
@@ -1862,6 +1866,11 @@ may be downloaded here: http://escuta.org/mosca
 			winbox[i].clipLo = 0;
 			randbox[i].clipHi = 1.0;
 			randbox[i].clipLo = 0;
+			libbox[i].clipHi = spatList.size -1;
+			libbox[i].clipLo = 0;
+			ncanbox[i].clipHi = 36;
+			ncanbox[i].clipLo = 0;
+			businibox[i].clipLo = 0;
 
 			vbox[i].scroll_step = 0.01;
 			abox[i].scroll_step = 0.01;
@@ -1879,6 +1888,10 @@ may be downloaded here: http://escuta.org/mosca
 			ratebox[i].step = 0.1;
 			winbox[i].scroll_step = 0.01;
 			winbox[i].step = 0.01;
+			ncanbox[i].scroll_step = 1;
+			ncanbox[i].step = 1;
+			businibox[i].scroll_step = 1;
+			businibox[i].step = 1;
 
 
 			libbox[i].action = { | num |
