@@ -1,6 +1,4 @@
-# Mosca
-
-Homepage: http://escuta.org/mosca
+# [Mosca](http://escuta.org/mosca)
 
 ![MoscaScreenshot](MoscaScreenshot.png)
 
@@ -10,11 +8,10 @@ Installing the [HOA fork](https://github.com/scrime-u-bordeaux/sc3-pluginsHOA) o
 ## DESCRIPTION
 Mosca is a SuperCollider class for GUI-assisted production of sound fields with simulated moving or stationary sound sources. Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from hardware inputs (physical or from other applications via Jack) or from SuperCollider's own synths. In the case of synth input, each is associated by the user with a particular source in the GUI and registered in a synth registry. This way, they are spatialised by the GUI and also receive data from the GUI pertaining to the source (eg. x, y and z coordinates or auxiliary fader data). Ambisonic Sound fields may be decoded using a variety of built-in decoders (including binaural), Faust Ugens created with the AmbiDecodertoolbox (see [HOA decoding](https://github.com/florian-grond/SC-HOA/blob/master/HelpSource/Tutorials/Exercise_09_HOA_interfacing_VBAP_and_Ambisonics.schelp)) or with external decoders such as Ambdec. Mosca has its own transport provided by the [Automation quark](https://github.com/neeels/Automation) for recording and playback of source data. This can be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack. The integration of [ossia-sclang](https://github.com/OSSIA/ossia-sclang) also allows Mosca's individual parameters to be controled with the interactive sequencer [ossia-score](https://ossia.io):: as well as any other application featuring OSCQuerry or plain OSC communication.
 
-###Sources
+### Sources
 Mono and stereo sources may be spatialized with ugens from a selection of libraries (Ambitools, HoaLib, ADT, ATK, BF-FMH, Josh & VBAP) set indiviualy for each source. For B-format input signals, which are already ambisonically encoded, the available options for transformation the ATK and Abitools. The ATK is used to implement push transformations to manipulate the angular location of sources as well as to perform rotations of the source sound field and to manipulate its directivity. Ambitools is used to implement a beam formation technique. All sources are subject to high frequency attenuation with distance. For a better sensation of nearness, ATK implements a proximity effect, adding a bass boost to proximal sources among other phase effects to simulate wave curvature. To that same effect, the Ambitools encoder makes use of "Near Field Compensation". Generally, the differences between libraries can be summarised as follows:
 
 | Ambitools | most realistic but CPU demanding       |
-|-----------|----------------------------------------|
 | HoaLib    | lightweight and neutral sounding       |
 | ADT       | lightweight and broad sounding         |
 | ATK       | 1st order only but many options        |
@@ -22,109 +19,69 @@ Mono and stereo sources may be spatialized with ugens from a selection of librar
 | Josh      | 1st order granular effect              |
 | VBAP      | light and precise but less homogeneous |
 
-Reverberation is performed either using a B-format tail room impulse response (RIR) - the preferred method - or using simple built-in allpass filters, options selectable on creation of a Mosca instance. With both options, two reverberation level controls are included in the GUI to set close and distant levels. A further two reverb types are selectable in the GUI on a per-source basis for both RIR and allpass reverberation modes. The default reverb type uses John Chowning's technique of applying "local" and "global" reverberation to sources (CHOWNING). The "Close" reverberation of the GUI in this case is "global" and is audible by the listener from all directions when the source is close whereas "distant" reverb is "local" in scope and is encoded as a 2nd order ambisonic signal along with the dry signal. This predominates as the source becomes more distant. The second type of reverberation may be described as a "2nd order diffuse A-format reverberation". This technique produces reverberation weighted in the direction of sound events encoded in the dry ambisonic signal and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either a) convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum, or, as in the case of the allpass option, b) passed through a 12-channel bank of allpass filters before being converted back to a 2nd order B-format diffuse signal. Please note that the 2nd order diffuse reverberation may require the user to set a larger audio output buffer and thus increase the latency of the system. The "Chowning" type reverberation is more efficient and the "allpass" option, more still. 
+#### note
+The results of any particular spatialisation library are often dependant on the source material. ADT and ATK may be more suited to wide and deep immersive sounds where more focussed, narrow sounds may be better located by the listener with VBAP.
 
-Mosca also has other features including a scalable Doppler Effect on moving sources, looping of sources loaded from file, adjustment of virtual loudspeaker angle of stereo sources and in the case of B-format sources: a rotation control, adjustment of "directivity" (see ATK documentation) and a control of "contraction", whereby the B-format signal may be crossfaded with its W component and which is spatialised as a 2nd order ambisonic signal.
+### Reverberation
+Reverberation is performed either using a B-format tail room impulse responses (RIRs) or by using reverberators crated with SuperCollider's AllpassC and FreeVerb ugens. With both options, two reverberation level controls are included in the GUI for setting close and distant levels. "Close" reverberation in this case is "global" and is audible by the listener from all directions when the source is close. As it is global, it's type is applied to the entire scene. "Distant" reverb on the other hand is "local" in scope and selected and applied on a per-source basis. It is processed by the individually selected spatialiser along with the dry signal. This effect predominates as the source becomes more distant. For ambisonic signals, the "Close" reverberation may be described as a "2nd order diffuse A-format reverberation". This technique produces reverberation weighted in the direction of sound events and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either:
 
-Mosca supports methods for making "A-format inserts" on any source spatialised in the GUI. In this way, the user may write a filtering synth and apply it to the sound without disrupting the encoded spatial characteristics. Please see the code examples below for more information.
+* convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum
+* passed through Freeverb or allpass ugens before being converted back to a 2nd order B-format diffuse signal
 
-Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield and an appropriate Arduino board such as an Uno. See below for more information.
+For non-ambisonic signals, spatialised with VBAP, a part of the original source signal is mixed with the W component of the B-format reverb input for an omnidirectional effect. These options are drawing from John Chowning's technique of applying "local" and "global" reverberation to sources (CHOWNING)
 
-USING MOSCA
+#### note
+Please remember that this diffuse reverberation process, especially with large impulse responses, may require the user to increase the audio buffer size, thus adding more latency.
 
-Please ensure that SuperCollider is installed with plugins from: https://github.com/supercollider/sc3-plugins
-It is also necessary to install the ATK Kernels: http://www.ambisonictoolkit.net/download/kernels 
+## Additional Features
+Additional features include a scalable Doppler Effect on moving sources, the looping of sources loaded or streamed from file and the adjustment of the virtual loudspeaker angle for stereo sources. Further, a "contraction" control enables crossfades between B-format signals and their raw W component. In the case B-format input signals the contraction changes the sound from having omnidirectional characteristics to becoming a focussed point source. When using the ATK in the case as mono or stereo input sources (the latter of which are treated as two mono sources with adjustable angle from one another) with the ATK, a de-contraction of the focussed source will render it omnidirectional.
 
-The user must set up a project directory with subdirectories "rir" and "auto". RIRs should have the first 100 or 120ms silenced to act as "tail" reverberator and must be placed in the "rir" directory. For convenience, please download the "moscaproject.zip" file on the following page which contains the file structure, example RIRs and B-format recordings as well as other information and demos. Note that the example RIR is recorded at 48kHz:
+Mosca supports methods for making "A-format inserts" on any source spatialised in the
+GUI. In this way, the user may write a filtering synth and apply it to the sound without
+disrupting the encoded spatial characteristics. Please see the
+[guide](HelpSource/Guide/guide-Mosca) for examples.
 
-http://escuta.org/mosca
+Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield
+and an appropriate Arduino board such as an Uno. Mosca may also run GUI-free and has a
+mechanism for coded control of the interface (Setup example in the [guide](HelpSource/Guide/guide-Mosca).
 
-Please then see the methods and code examples below.
+## Acknowledgments
 
-Once you have successfully opened the GUI, read this:
+The class makes extensive use of the
+[Ambisonic Toolkit](http://www.ambisonictoolkit.net) (ATK)
+by Joseph Anderson as well as Florian Grond's
+[SC-HOA](https://github.com/florian-grond/SC-HOA), based on
+[Ambitools](https://github.com/sekisushai/ambitools) by
+Pierre Lecompte, the [faust](https://github.com/CICM/HoaLibrary-Faust) version of
+the [HoaLibrary](http://hoalibrary.mshparisnord.fr/en) by Pierre Guillot, the
+[AmbiDecoderToolbox](https://bitbucket.org/ambidecodertoolbox/adt/src/master) and
+sevral other supercollider pluggins for spatial renderding.
+Augmented controll has been granted by the integrating the
+[Automation quark](https://github.com/neeels/Automation) by Neels Hofmeyr
+and [ossia-sclang](https://github.com/OSSIA/ossia-sclang), made possible by [Pierre Cochard](https://github.com/pchdev),
+[Jean-Michaël Celerier](https://github.com/jcelerier) and the
+[OSSIA Team](https://github.com/OSSIA).
 
-NOTES ON GUI COMPONENTS
+Many thanks to Joseph Anderson, Neels Hofmeyr and members of the SuperCollider list for
+their assistance and valuable suggestions.
 
-- Source pull down menu. Select a source
+## References
 
-- Doppler. The user must also use the "Doppler Amount" slider to adjust the effect
+* Anderson, Joseph. Authoring complex Ambisonic soundfields:
+An artist's tips & tricks.
+DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby,
+UK: 2011.
 
-- Loop. Loop sounds loaded from file
+* Chowning, John M. The Simulation of Moving Sound Sources.
+Computer Music Journal, v. 1,
+n. 3, p. 48-52, 1977.
 
-- A-format reverb. By default the system uses the more efficient Chowning-style reverb described above. This toggle applies a second order diffuse 2nd order reverberation to mono and stereo sources as well as "contracted" B-format material (see below). Note that the reverberation applied to B-format signals is always via A-format transformation.
+* Grond, Florian & Lecompte, Pierre. Higher Order Ambisonics for
+SuperCollider.
+Linux Audio Conference, Jean MONNET University. Saint-Etienne
+France: 2017.
 
-- HW-in. Toggle this to read audio from hardware inputs. The user must specify the number of channels and the staring bus (starting with zero) in the two fields beneath the toggle. Note this will override any loaded sound file. It is up to the user to manage the start busses for the various source. If for example source 1 is a 4 channel signal and starts on bus zero, a second stereo source myst use a starting bus of 4 or higher.
-
-- SC-in. Get audio in from a SuperCollider synth. The user needs to specify the number of channels in the GUI but does not need to specify the starting bus. See code examples below for more information. Like HW-in, selecting SC-in for a particular source will disable any sound file that has been loaded.
-
-- Linear Intensity. Select this to apply linear attenuation of itensity with distance. By default, intensity is adjusted in proportion to the invesrse square root of proximity.
-
-- load audio. Load a sound file for a given a source.
-
-- show data. Open and close a data window for all sources showing all parameters.
-
-- show nodes. Show SuperCollider node tree.
-
-- show aux. Open and close an auxiliary controller window for a source. These sliders do not affect spatialisation of the source, however the data produced is sent to any "registered" SuperCollider synth is recorded and reproduced by the GUI's transport. See the code examples for more information.
-
-- audition. Use this button to audition a given source. Note that the transport also plays and cues sounds, "audition" should only be used to test sounds with the interface.
-
-- record audio. Records audio as a wav file to the project directory defined by the "projDir" class method. The number of channels recorded and the starting bus are defined by the "recchans" and "recbus" class methods respectively (see below).
-
-- blips. Check this box to include audible blips at the begining of the recording. This may be useful when post synchronising the recorded audio with footage taken on a video camera.
-
-- Level. Adjust playback level of source.
-
-- Doppler amount. See b) above.
-
-- Close Reverb. Adjust level of reverberation for proximal sources.
-
-- Distant Reverb. Adjust level of reverberation for distant sources.
-
-- Angle. Adjust angle of virtual speaker pair for stereo sources. The default is 1.05 radians or 60 degrees.
-
-- Rotate. Rotate a B-format signal on the horizontal plane.
-
-- Directivity. Adjust the directivity of B-format signal (see ATK documentation)
-
-- Contraction. In the case of B-format input, contraction is a cross-fade between B-format signal an its W component. Note that the "contracted" signal is spatialised with 2nd order ambisonics when using an external decoder. When the user is decoding with a 1st order decoder from the ATK, mono and stereo signals are encoded as omnidirectional B-format signals and angled in space using the ATK's "push" transformation. In this this case contraction varies between an omnidirectional signal and a spatially focussed signal.
-
-- Spread / Diffuse. As mentioned above, when using a 1st order decoder, mono and stereo signals are signals are encoded as omni B-format signals before being "pushed" into an angular location (if fully "contracted"). The Spread and Diffuse toggles allow the user to select two other methods to diffuse the signal omni-directionally. See "spread diffusion encoder" and "frequency spreading encoder" here: http://doc.sccode.org/Classes/FoaEncode.html
-
-- Z-axis. Manipulate the Z-axis of current source.
-
-- Automation transport. Includes a "play/stop" button, a return to start button, a record button and a "snapshot" button of current values button. The Automation transport also contains a slider to move the "play head". Loaded sounds which are not looped will start at the beginning of the file at "0" on the transport and the transport fader may be used to advance through these sounds as well as advance through the recorded fader settings.
-
-- save auto / load auto. Save/load to/from a chosen directory.
-
-- Slave to MMC. Slave the transport to incoming Midi Machine Control data. This has been tested with Ardour and Jack on Linux.
-
-- Loop. Loop the transport.
-
-- Orientation (when used with Arduino 9-axes Motion Shield headtracking device (see below). The values are for heading, roll and pitch and are in degrees radians.
-
-SERIAL DEVICES / HEAD TRACKING
-
-The Arduino and 9-Axes Motion Shield and supporting Arduino board such as the Uno (tested) should be placed on top of the headphones with the USB socket of the Arduino directed to the left of the user. In this orientation the USB cable can run down left-hand side of headphones together with audio lead. Use the Arduino project files in the directory "arduinoHeadTrack" in the git sources to configure the Arduino and shield. See https://www.arduino.cc for more information on the Arduino.
-
-When using Mosca with a head-tracker, it is useful to access the serial device with a persistant name. To do this on Debian/Ubuntu Linux, first get information about an attached device with a line such as:
-
-udevadm info -a -p  $(udevadm info -q path -n /dev/ttyACM0)
-
-Search for the block of data that contains reference to the Arduino and take note of the values for idVendor and idProduct. Then create a file /etc/udev/rules.d/10-local.rules and add contents such as the following (edit this line and above to your needs):
-
-ACTION=="add", ATTRS{idVendor}=="2341", ATTRS{idProduct}=="0043", MODE:="0666", SYMLINK+="head_tracker"
-
-To load this without rebooting, type: sudo udevadm control --reload-rules
-
-Then disconnect and reconnect your device. In the above example it can be accessed at /dev/head_tracker for example.
-
-ACKNOWLEDGEMENTS
-
-Many thanks to Joseph Anderson, Neels Hofmeyr and members of the SuperCollider list for their assistance and valuable suggestions.
-
-REFERENCES
-
-ANDERSON, Joseph. Authoring complex Ambisonic soundfields: An artist's tips & tricks. . In: DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby, UK: 2011.
-
-CHOWNING, John M. The Simulation of Moving Sound Sources. Computer Music Journal, v. 1, n. 3, p. 48-52, 1977. 
+* Celerier, Jean-Michaël. Authoring interactive media : a logical & temporal
+approach.
+Ph. D dissertations, University of BOrdeaux,
+France: 2018.
