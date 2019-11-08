@@ -2,7 +2,7 @@
 
 ![MoscaScreenshot](MoscaScreenshot.png)
 
-### WARNING
+### warning
 Installing the [HOA fork](https://github.com/scrime-u-bordeaux/sc3-pluginsHOA) of SuperCollider's sc3-plugins is required. This fork is kept up to date, only differing from the original repos with additional HOAUgens. It is also necessary to install the ATK [Kernels](http://www.ambisonictoolkit.net/download/kernels) and [Matrices](http://www.ambisonictoolkit.net/download/matrices) as described in the download page
 
 ## DESCRIPTION
@@ -11,6 +11,8 @@ Mosca is a SuperCollider class for GUI-assisted production of sound fields with 
 ### Sources
 Mono and stereo sources may be spatialized with ugens from a selection of libraries (Ambitools, HoaLib, ADT, ATK, BF-FMH, Josh & VBAP) set indiviualy for each source. For B-format input signals, which are already ambisonically encoded, the available options for transformation the ATK and Abitools. The ATK is used to implement push transformations to manipulate the angular location of sources as well as to perform rotations of the source sound field and to manipulate its directivity. Ambitools is used to implement a beam formation technique. All sources are subject to high frequency attenuation with distance. For a better sensation of nearness, ATK implements a proximity effect, adding a bass boost to proximal sources among other phase effects to simulate wave curvature. To that same effect, the Ambitools encoder makes use of "Near Field Compensation". Generally, the differences between libraries can be summarised as follows:
 
+| Libraries | specifics                              |
+|-----------|----------------------------------------|
 | Ambitools | most realistic but CPU demanding       |
 | HoaLib    | lightweight and neutral sounding       |
 | ADT       | lightweight and broad sounding         |
