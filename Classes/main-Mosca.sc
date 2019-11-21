@@ -1568,9 +1568,9 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = cartval[i];
+				var euler = spheval[i];
 
-				euler = euler.rotate(num.value.neg).tilt(pitch).tumble(roll);
+				euler = euler.rotate(heading - num.value);
 
 				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
@@ -1579,7 +1579,7 @@ Mosca {
 			};
 
 			ossiaCartBack = true;
-			heading = num.value.neg;
+			heading = num.value;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1595,9 +1595,9 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = cartval[i];
+				var euler = spheval[i];
 
-				euler = euler.rotate(heading).tilt(num.value.neg).tumble(roll);
+				euler = euler.tilt(pitch - num.value);
 
 				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
@@ -1606,7 +1606,7 @@ Mosca {
 			};
 
 			ossiaCartBack = true;
-			pitch = num.value.neg;
+			pitch = num.value;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1622,9 +1622,9 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = cartval[i];
+				var euler = spheval[i];
 
-				euler = euler.rotate(heading).tilt(pitch).tumble(num.value.neg);
+				euler = euler.tumble(roll - num.value);
 
 				ossiasphe[i].v_([euler.rho,
 					euler.theta - halfPi, euler.phi]);
@@ -1633,7 +1633,7 @@ Mosca {
 			};
 
 			ossiaCartBack = true;
-			roll = num.value.neg;
+			roll = num.value;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
