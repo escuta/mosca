@@ -100,9 +100,11 @@ GUI Parameters usable in SynthDefs
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 
-		// pitchnumboxProxy.valueAction = p;
-		// rollnumboxProxy.valueAction = r;
-		// headingnumboxProxy.valueAction = h;
+		// Arduino code needs changing?
+
+		pitchnumboxProxy.valueAction = p * -1;
+		rollnumboxProxy.valueAction = r;
+		headingnumboxProxy.valueAction = h * -1;
 	}
 
 	matchTByte { |byte|  // match incoming headtracker data
