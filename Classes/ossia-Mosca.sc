@@ -261,6 +261,10 @@ may be downloaded here: http://escuta.org/mosca
 						.asCartesian.asArray);
 				};
 
+				if(espacializador[i].notNil) {
+					espacializador[i].set(\radius, spheval[i].rho, \azim, spheval[i].theta, \elev, spheval[i].phi);
+				};
+
 				ossiaSpheBack = true;
 			});
 

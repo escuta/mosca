@@ -664,8 +664,8 @@ Mosca {
 			xboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				cartval[i].x_(num.value - origine.x);
-				sphe = cartval[i].asSpherical.rotate(heading)
-				.tilt(pitch).tumble(roll);
+				sphe = cartval[i].asSpherical.rotate(heading.neg)
+				.tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
@@ -682,24 +682,13 @@ Mosca {
 					{xbox[i].value = num.value}.defer;
 					{novoplot.value;}.defer;
 				};
-				if(espacializador[i].notNil || playingBF[i]) {
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
 			};
 
 			yboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				cartval[i].y_(num.value - origine.y);
-				sphe = cartval[i].asSpherical.rotate(heading)
-				.tilt(pitch).tumble(roll);
+				sphe = cartval[i].asSpherical.rotate(heading.neg)
+				.tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
@@ -716,24 +705,13 @@ Mosca {
 					{ybox[i].value = num.value}.defer;
 					{novoplot.value;}.defer;
 				};
-				if(espacializador[i].notNil || playingBF[i]){
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
-				};
 			};
 
 			zboxProxy[i].action = { | num |
 				var sphe, sphediff;
 				cartval[i].z_(num.value - origine.z);
-				sphe = cartval[i].asSpherical.rotate(heading)
-				.tilt(pitch).tumble(roll);
+				sphe = cartval[i].asSpherical.rotate(heading.neg)
+				.tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
@@ -749,17 +727,6 @@ Mosca {
 				if (guiflag) {
 					{zbox[i].value = num.value}.defer;
 					{novoplot.value;}.defer;
-				};
-				if(espacializador[i].notNil || playingBF[i]){
-					espacializador[i].set(\azim, spheval[i].theta);
-					this.setSynths(i, \azim, spheval[i].theta);
-					synt[i].set(\azim, spheval[i].theta);
-					espacializador[i].set(\elev, spheval[i].phi);
-					this.setSynths(i, \elev, spheval[i].phi);
-					synt[i].set(\elev, spheval[i].phi);
-					espacializador[i].set(\radius, spheval[i].rho);
-					this.setSynths(i, \radius, spheval[i].rho);
-					synt[i].set(\radius, spheval[i].rho);
 				};
 			};
 
@@ -1487,7 +1454,7 @@ Mosca {
 
 			nfontes.do {  | i |
 				var sphe = (cartval[i].x_(cartval[i].x - num.value
-					+ origine.x)).rotate(heading).tilt(pitch).tumble(roll);
+					+ origine.x)).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				ossiasphe[i].v_([sphe.rho,
 					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
@@ -1515,7 +1482,7 @@ Mosca {
 			nfontes.do { | i |
 				var sphe = (cartval[i].y_(cartval[i].y - num.value
 					+ origine.y)).
-				rotate(heading).tilt(pitch).tumble(roll);
+				rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				ossiasphe[i].v_([sphe.rho,
 					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
@@ -1542,7 +1509,7 @@ Mosca {
 			nfontes.do { | i |
 				var sphe = (cartval[i].z_(cartval[i].z - num.value
 					+ origine.z)).
-				rotate(heading).tilt(pitch).tumble(roll);
+				rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				ossiasphe[i].v_([sphe.rho,
 					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
