@@ -7,7 +7,7 @@
     	\url:     "http://github.com/escuta/mosca",
     	\helpdoc: "moscaHelp.scd",
     	\since:   "2016",
-    	\version:	"0.2", // must be a float,
+    	\version: "0.2", // must be a float,
 	\dependencies:	[
 			"Ctk",
 			"MathLib",
