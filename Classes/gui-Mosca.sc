@@ -2231,10 +2231,6 @@ may be downloaded here: http://escuta.org/mosca
 						this.setSynths(i, \azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho);
-
-						synt[i].set(\azim, spheval[i].theta,
-							\elev, spheval[i].phi,
-							\radius, spheval[i].rho);
 					};
 				};
 			};

@@ -221,13 +221,13 @@ Mosca {
 		gbixfbus = Bus.audio(server, fourOrNine); // global n3d b-format bus
 		playEspacGrp = ParGroup.tail;
 		glbRevDecGrp = Group.after(playEspacGrp);
-		server.sync;
 
 		synthRegistry = Array.newClear(nfontes);
 		insertFlag = Array.newClear(nfontes);
 		insertBus = Array2D.new(2, nfontes);
 		scInBus = Array.newClear(nfontes);
 
+		server.sync;
 
 		nfontes.do { | i |
 			synthRegistry[i] = List[];
@@ -1453,11 +1453,11 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do {  | i |
-				var sphe = (cartval[i].x_(cartval[i].x - num.value
+				var cart = (cartval[i].x_(cartval[i].x - num.value
 					+ origine.x)).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
-				ossiasphe[i].v_([sphe.rho,
-					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
+				ossiasphe[i].v_([cart.rho,
+					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
 
 				zlev[i] = spheval[i].z;
 			};
@@ -1480,12 +1480,12 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var sphe = (cartval[i].y_(cartval[i].y - num.value
+				var cart = (cartval[i].y_(cartval[i].y - num.value
 					+ origine.y)).
 				rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
-				ossiasphe[i].v_([sphe.rho,
-					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
+				ossiasphe[i].v_([cart.rho,
+					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
 
 				zlev[i] = spheval[i].z;
 			};
@@ -1507,12 +1507,12 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var sphe = (cartval[i].z_(cartval[i].z - num.value
+				var cart = (cartval[i].z_(cartval[i].z - num.value
 					+ origine.z)).
 				rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
-				ossiasphe[i].v_([sphe.rho,
-					(sphe.theta - halfPi).wrap(-pi, pi), sphe.phi]);
+				ossiasphe[i].v_([cart.rho,
+					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
 
 				zlev[i] = spheval[i].z;
 			};
@@ -1535,12 +1535,11 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = spheval[i];
-
-				euler = euler.rotate(heading - num.value);
+				var euler = (cartval[i] - origine).
+				rotate(num.value.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				ossiasphe[i].v_([euler.rho,
-					euler.theta - halfPi, euler.phi]);
+					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
 				zlev[i] = spheval[i].z;
 			};
@@ -1562,12 +1561,11 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = spheval[i];
-
-				euler = euler.tilt(pitch - num.value);
+				var euler = (cartval[i] - origine).
+				rotate(heading.neg).tilt(num.value.neg).tumble(roll.neg);
 
 				ossiasphe[i].v_([euler.rho,
-					euler.theta - halfPi, euler.phi]);
+					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
 				zlev[i] = spheval[i].z;
 			};
@@ -1589,12 +1587,11 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = spheval[i];
-
-				euler = euler.tumble(roll - num.value);
+				var euler = (cartval[i] - origine).
+				rotate(heading.neg).tilt(pitch.neg).tumble(num.value.neg);
 
 				ossiasphe[i].v_([euler.rho,
-					euler.theta - halfPi, euler.phi]);
+					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
 				zlev[i] = spheval[i].z;
 			};
@@ -3068,8 +3065,6 @@ Mosca {
 		makeSpatialisers.value(rev_type:"");
 
 		rirList = Array.newClear();
-
-		server.sync;
 
 		if (rirBank.notNil) {
 
