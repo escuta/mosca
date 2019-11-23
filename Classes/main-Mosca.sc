@@ -1453,8 +1453,10 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do {  | i |
-				var cart = (cartval[i].x_(cartval[i].x - num.value
-					+ origine.x)).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				var cart = (cartval[i] - origine)
+				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+
+				cart.x_(cart.x - num.value + origine.x);
 
 				ossiasphe[i].v_([cart.rho,
 					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
@@ -1480,9 +1482,10 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var cart = (cartval[i].y_(cartval[i].y - num.value
-					+ origine.y)).
-				rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				var cart = (cartval[i] - origine)
+				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+
+				cart.y_(cart.y - num.value + origine.y);
 
 				ossiasphe[i].v_([cart.rho,
 					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
@@ -1507,9 +1510,10 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var cart = (cartval[i].z_(cartval[i].z - num.value
-					+ origine.z)).
-				rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				var cart = (cartval[i] - origine)
+				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+
+				cart.z_(cart.z - num.value + origine.z);
 
 				ossiasphe[i].v_([cart.rho,
 					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
@@ -1535,8 +1539,8 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = (cartval[i] - origine).
-				rotate(num.value.neg).tilt(pitch.neg).tumble(roll.neg);
+				var euler = (cartval[i] - origine)
+				.rotate(num.value.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				ossiasphe[i].v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
@@ -1561,8 +1565,8 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = (cartval[i] - origine).
-				rotate(heading.neg).tilt(num.value.neg).tumble(roll.neg);
+				var euler = (cartval[i] - origine)
+				.rotate(heading.neg).tilt(num.value.neg).tumble(roll.neg);
 
 				ossiasphe[i].v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
@@ -1587,8 +1591,8 @@ Mosca {
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
-				var euler = (cartval[i] - origine).
-				rotate(heading.neg).tilt(pitch.neg).tumble(num.value.neg);
+				var euler = (cartval[i] - origine)
+				.rotate(heading.neg).tilt(pitch.neg).tumble(num.value.neg);
 
 				ossiasphe[i].v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
