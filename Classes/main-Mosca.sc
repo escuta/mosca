@@ -663,9 +663,8 @@ Mosca {
 
 			xboxProxy[i].action = { | num |
 				var sphe, sphediff;
-				cartval[i].x_(num.value - origine.x);
-				sphe = cartval[i].asSpherical.rotate(heading.neg)
-				.tilt(pitch.neg).tumble(roll.neg);
+				cartval[i].x_(num.value);
+				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
@@ -686,9 +685,8 @@ Mosca {
 
 			yboxProxy[i].action = { | num |
 				var sphe, sphediff;
-				cartval[i].y_(num.value - origine.y);
-				sphe = cartval[i].asSpherical.rotate(heading.neg)
-				.tilt(pitch.neg).tumble(roll.neg);
+				cartval[i].y_(num.value);
+				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
@@ -709,9 +707,8 @@ Mosca {
 
 			zboxProxy[i].action = { | num |
 				var sphe, sphediff;
-				cartval[i].z_(num.value - origine.z);
-				sphe = cartval[i].asSpherical.rotate(heading.neg)
-				.tilt(pitch.neg).tumble(roll.neg);
+				cartval[i].z_(num.value);
+				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
@@ -1450,13 +1447,14 @@ Mosca {
 
 			ossiaorigine.v_([num.value, oynumboxProxy.value,
 				oznumboxProxy.value]);
+
+			origine.x_(num.value);
+
 			ossiaCartBack = false;
 
 			nfontes.do {  | i |
 				var cart = (cartval[i] - origine)
 				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
-
-				cart.x_(cart.x - num.value + origine.x);
 
 				ossiasphe[i].v_([cart.rho,
 					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
@@ -1465,7 +1463,6 @@ Mosca {
 			};
 
 			ossiaCartBack = true;
-			origine.x_(num.value);
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1479,13 +1476,14 @@ Mosca {
 
 			ossiaorigine.v_([oxnumboxProxy.value, num.value,
 				oznumboxProxy.value]);
+
+			origine.y_(num.value);
+
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
 				var cart = (cartval[i] - origine)
 				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
-
-				cart.y_(cart.y - num.value + origine.y);
 
 				ossiasphe[i].v_([cart.rho,
 					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
@@ -1494,7 +1492,6 @@ Mosca {
 			};
 
 			ossiaCartBack = true;
-			origine.y_(num.value);
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1507,13 +1504,14 @@ Mosca {
 
 			ossiaorigine.v_([oxnumboxProxy.value,
 				oynumboxProxy.value, num.value]);
+
+			origine.z_(num.value);
+
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
 				var cart = (cartval[i] - origine)
 				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
-
-				cart.z_(cart.z - num.value + origine.z);
 
 				ossiasphe[i].v_([cart.rho,
 					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
@@ -1522,7 +1520,6 @@ Mosca {
 			};
 
 			ossiaCartBack = true;
-			origine.z_(num.value);
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
