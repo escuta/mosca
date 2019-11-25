@@ -887,7 +887,12 @@ may be downloaded here: http://escuta.org/mosca
 		znumbox.align = \center;
 		znumbox.action = { | num |
 			{ zslider.value = (num.value * 0.005) + 0.5;
-				zboxProxy[currentsource].valueAction = num.value;
+
+				spheval[currentsource] = spheval[currentsource].asCartesian.z_(num.value).asSpherical;
+
+				ossiasphe[currentsource].v_([spheval[currentsource].rho,
+					(spheval[currentsource].theta - halfPi).wrap(-pi, pi),
+					spheval[currentsource].phi]);
 			}.defer;
 		};
 
@@ -2256,15 +2261,10 @@ may be downloaded here: http://escuta.org/mosca
 
 		moveSource = { |x, y|
 
-			var car2sphe = Cartesian((x - halfwidth) / halfheight,
-				(halfheight - y) / halfheight,
-				(zslider.value - 0.5) * 2 * zoom_factor);
-
-			spheval[currentsource].rho_(car2sphe.rho);
-			spheval[currentsource].theta_(car2sphe.theta);
-			spheval[currentsource].phi_(car2sphe.phi);
-
-			spheval[currentsource] = (spheval[currentsource] / zoom_factor) * 100;
+			spheval[currentsource] = Cartesian(
+				(((x - halfwidth) / halfheight) / zoom_factor) * 100,
+				(((halfheight - y) / halfheight) / zoom_factor) * 100,
+				znumbox.value).asSpherical;
 
 			ossiasphe[currentsource].v_([spheval[currentsource].rho,
 				(spheval[currentsource].theta - halfPi).wrap(-pi, pi),

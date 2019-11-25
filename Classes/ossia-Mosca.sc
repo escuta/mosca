@@ -257,8 +257,8 @@ may be downloaded here: http://escuta.org/mosca
 				spheval[i].phi_(num.value[2].fold(halfPi.neg, halfPi));
 				ossiaSpheBack = false;
 				if (ossiaCartBack) {
-					ossiacart[i].v_(spheval[i].rotate(pitch).tilt(roll).tumble(heading)
-						.asCartesian.asArray);
+					ossiacart[i].v_(
+						(spheval[i].rotate(heading).tilt(pitch).tumble(roll).asCartesian + origine).asArray);
 				};
 
 				if(espacializador[i].notNil) {
