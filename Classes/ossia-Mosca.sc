@@ -258,7 +258,7 @@ may be downloaded here: http://escuta.org/mosca
 				ossiaSpheBack = false;
 				if (ossiaCartBack) {
 					ossiacart[i].v_(
-						(spheval[i].rotate(heading).tilt(pitch).tumble(roll).asCartesian + origine).asArray);
+						(spheval[i].tumble(roll).tilt(pitch).rotate(heading).asCartesian + origine).asArray);
 				};
 
 				if(espacializador[i].notNil) {
