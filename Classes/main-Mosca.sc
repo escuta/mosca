@@ -314,7 +314,7 @@ Mosca {
 				};
 			});
 
-			headingOffset = offsetheading;
+			//headingOffset = offsetheading;
 		};
 
 

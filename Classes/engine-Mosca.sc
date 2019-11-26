@@ -89,7 +89,7 @@ GUI Parameters usable in SynthDefs
 		var h, r, p;
 		//lattemp, lontemp, newOX, newOY;
 		h = (heading / 100) - pi;
-		h = h + headingOffset;
+		h = h - offsetheading;
 		if (h < -pi) {
 			h = pi + (pi + h);
 		};
@@ -163,10 +163,12 @@ GUI Parameters usable in SynthDefs
 		};
 	})}
 
+	/*
 	offsetHeading { // give offset to reset North
 		| angle |
 		headingOffset = angle;
 	}
+	*/
 
 	registerSynth { // selection of Mosca arguments for use in synths
 		| source, synth |
