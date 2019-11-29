@@ -887,7 +887,7 @@ may be downloaded here: http://escuta.org/mosca
 		znumbox.align = \center;
 		znumbox.action = { | num |
 			{ zslider.value = (num.value * 0.005) + 0.5;
-				if(ossiaorigine.v == [0, 0, 0]) {
+				if(ossiaorient.v == [0, 0, 0]) {
 					zboxProxy[currentsource].valueAction = num.value + origine.z; // exeption to record z mouvements after XY automation
 				} {
 				spheval[currentsource] = spheval[currentsource].asCartesian.z_(num.value).asSpherical;
@@ -2270,7 +2270,7 @@ may be downloaded here: http://escuta.org/mosca
 				(((halfheight - y) / halfheight) / zoom_factor) * 100,
 				znumbox.value);
 
-			if(ossiaorigine.v == [0, 0, 0]) {
+			if(ossiaorient.v == [0, 0, 0]) {
 				xboxProxy[currentsource].valueAction = point.x + origine.x; // exeption to record XY mouvements after Z automation
 				yboxProxy[currentsource].valueAction = point.y + origine.y;
 			} {
