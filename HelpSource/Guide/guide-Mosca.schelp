@@ -384,8 +384,8 @@ var body_pos_x = 1.4e6; // An X axis position of the body to be attracted
 var body_pos_y = 7.5e5; // A Y axis position of the body to be attracted
 var body_vel_x = 0.0;   // Body velocity split into two components, X and Y
 var body_vel_y = 8.5e3;
-var scale = 10000 * 250;
-~orbit = t             // set ~orbit to false to turn orbit off (see after end of block)
+var scale = 10000 * 1.4;
+~orbit = true;             // set ~orbit to false to turn orbit off (see after end of block)
 
 Routine {
 	while ( {~orbit}, {
