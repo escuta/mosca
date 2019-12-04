@@ -2239,7 +2239,7 @@ Mosca {
 			sig = Select.ar(spre, [sig, spread]);
 			sig = FoaTransform.ar(sig, 'push', halfPi * contract, azimuth, elevation);
 			sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
-			ref.value = FoaTransform.ar(sig, 'proximity', rad);
+			ref.value = FoaTransform.ar(sig, 'proximity', radius);
 		};
 
 		// BF-FMH
