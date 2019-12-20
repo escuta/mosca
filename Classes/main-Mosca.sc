@@ -2135,7 +2135,7 @@ Mosca {
 			contract, win, rate, rand|
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
-			ref.value = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
+			sig = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
 				Lag.kr(longest_radius / radius), 0.5);
 			ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(fourOrNine - 1)];
 		};
@@ -2163,7 +2163,6 @@ Mosca {
 			// get elevation overshoot
 			elev = elev.clip(lowest_elevation, highest_elevation);
 			// restrict between min & max
-
 			ref.value = VBAP.ar(numoutputs,
 				(ref.value + sig) * (longest_radius / radius),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
