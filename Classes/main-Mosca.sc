@@ -2086,9 +2086,7 @@ Mosca {
 			var sig = HOAEncoder.ar(maxorder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
 				Lag.kr(elevation), 0, 1, Lag.kr(radius), longest_radius);
-			//ref.value = (sig * contract) + (sig[0] * (1 - contract));
-			ref.value = sig;
-			//ref.value = PanX.ar(bFormNumChan, sig, width:bFormNumChan);
+			ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(bFormNumChan - 1)];
 
 		};
 
@@ -2097,9 +2095,10 @@ Mosca {
 			contract, win, rate, rand|
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
-			ref.value = HOALibEnc3D.ar(maxorder,
+			sig = HOALibEnc3D.ar(maxorder,
 				(ref.value + sig) * Lag.kr(longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
+			ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(bFormNumChan - 1)];
 		};
 
 		// ADTB
@@ -2107,9 +2106,10 @@ Mosca {
 			contract, win, rate, rand|
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 			// attenuate high freq with distance
-			ref.value = HOAmbiPanner.ar(maxorder,
+			sig = HOAmbiPanner.ar(maxorder,
 				(ref.value + sig) * Lag.kr(longest_radius / radius),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
+			ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(bFormNumChan - 1)];
 		};
 
 		// ATK
@@ -2125,9 +2125,8 @@ Mosca {
 			diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
 			sig = Select.ar(difu, [omni, diffuse]);
 			sig = Select.ar(spre, [sig, spread]);
-			sig = FoaTransform.ar(sig, 'push', halfPi * contract,
-				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
-			sig = FoaTransform.ar(sig, 'proximity', Lag.kr(radius));
+			sig = FoaTransform.ar(sig, 'push', halfPi * contract, azimuth, elevation);
+			sig = FoaTransform.ar(sig, 'proximity', radius);
 			ref.value = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
 		};
 
@@ -2138,6 +2137,7 @@ Mosca {
 			// attenuate high freq with distance
 			ref.value = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
 				Lag.kr(longest_radius / radius), 0.5);
+			ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(fourOrNine - 1)];
 		};
 
 		// joshGrain
