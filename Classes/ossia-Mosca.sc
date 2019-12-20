@@ -115,6 +115,24 @@ may be downloaded here: http://escuta.org/mosca
 
 		ossiaorigine.callback_({arg num;
 
+			origine.x_(num[0].value);
+			origine.y_(num[1].value);
+			origine.z_(num[2].value);
+
+			ossiaCartBack = false;
+
+			nfontes.do {  | i |
+				var cart = (cartval[i] - origine)
+				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+
+				ossiasphe[i].v_([cart.rho,
+					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
+
+				zlev[i] = spheval[i].z;
+			};
+
+			ossiaCartBack = true;
+
 			if (oxnumboxProxy.value != num[0].value) {
 				oxnumboxProxy.valueAction = num[0].value;
 			};
@@ -133,6 +151,21 @@ may be downloaded here: http://escuta.org/mosca
 		ossiaorient.unit_(OSSIA_orientation.euler);
 
 		ossiaorient.callback_({arg num;
+
+			nfontes.do { | i |
+				var euler = (cartval[i] - origine)
+				.rotate(num.value[0].neg).tilt(num.value[1].neg).tumble(num.value[2].neg);
+
+				ossiasphe[i].v_([euler.rho,
+					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
+
+				zlev[i] = spheval[i].z;
+			};
+
+			ossiaCartBack = true;
+			heading = num.value[0];
+			pitch = num.value[1];
+			roll = num.value[2];
 
 			if (headingnumboxProxy.value != num[0].value) {
 				headingnumboxProxy.valueAction = num[0].value;
@@ -233,6 +266,18 @@ may be downloaded here: http://escuta.org/mosca
 			ossiacart[i].unit_(OSSIA_position.cart3D);
 
 			ossiacart[i].callback_({arg num;
+				var sphe, sphediff;
+				cartval[i].set(num.value[0], num.value[1], num.value[2]);
+				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+
+				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
+
+				ossiaCartBack = false;
+
+				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
+					ossiasphe[i].v_(sphediff);
+				};
+
 				if (xboxProxy[i].value != num[0].value) {
 					xboxProxy[i].valueAction = num[0].value;
 				};
@@ -242,6 +287,8 @@ may be downloaded here: http://escuta.org/mosca
 				if (zboxProxy[i].value != num[2].value) {
 					zboxProxy[i].valueAction = num[2].value;
 				};
+
+				ossiaCartBack = true;
 			});
 
 

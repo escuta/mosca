@@ -662,17 +662,18 @@ Mosca {
 
 
 			xboxProxy[i].action = { | num |
-				var sphe, sphediff;
-				cartval[i].x_(num.value);
-				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				// var sphe, sphediff;
+				// cartval[i].x_(num.value);
+				// sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				//
+				// sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
+				// if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
+				// 	ossiaCartBack = false;
+				// 	ossiasphe[i].v_(sphediff);
+				// 	ossiaCartBack = true;
+				// };
 
-				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
-				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
-					ossiaCartBack = false;
-					ossiasphe[i].v_(sphediff);
-					ossiaCartBack = true;
-				};
-				if (ossiacart[i].v[0] != num.value) {
+				if (ossiaCartBack && (ossiacart[i].v[0] != num.value)) {
 					ossiacart[i].v_([num.value, yboxProxy[i].value,
 						zboxProxy[i].value]);
 				};
@@ -684,17 +685,18 @@ Mosca {
 			};
 
 			yboxProxy[i].action = { | num |
-				var sphe, sphediff;
-				cartval[i].y_(num.value);
-				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				// var sphe, sphediff;
+				// cartval[i].y_(num.value);
+				// sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				//
+				// sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
+				// if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
+				// 	ossiaCartBack = false;
+				// 	ossiasphe[i].v_(sphediff);
+				// 	ossiaCartBack = true;
+				// };
 
-				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
-				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
-					ossiaCartBack = false;
-					ossiasphe[i].v_(sphediff);
-					ossiaCartBack = true;
-				};
-				if (ossiacart[i].v[1] != num.value) {
+				if (ossiaCartBack && (ossiacart[i].v[1] != num.value)) {
 					ossiacart[i].v_([xboxProxy[i].value, num.value,
 						zboxProxy[i].value]);
 				};
@@ -706,20 +708,22 @@ Mosca {
 			};
 
 			zboxProxy[i].action = { | num |
-				var sphe, sphediff;
-				cartval[i].z_(num.value);
-				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				// var sphe, sphediff;
+				// cartval[i].z_(num.value);
+				// sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				//
+				// sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
+				// if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
+				// 	ossiaCartBack = false;
+				// 	ossiasphe[i].v_(sphediff);
+				// 	ossiaCartBack = true;
+				// };
 
-				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
-				if (ossiaSpheBack && (ossiasphe[i].v != sphediff)) {
-					ossiaCartBack = false;
-					ossiasphe[i].v_(sphediff);
-					ossiaCartBack = true;
-				};
-				if (ossiacart[i].v[2] != num.value) {
+				if (ossiaCartBack && (ossiacart[i].v[2] != num.value)) {
 					ossiacart[i].v_([xboxProxy[i].value, yboxProxy[i].value,
 						num.value]);
 				};
+
 				zlev[i] = spheval[i].z;
 				if (guiflag) {
 					{zbox[i].value = num.value}.defer;
@@ -1448,21 +1452,21 @@ Mosca {
 			ossiaorigine.v_([num.value, oynumboxProxy.value,
 				oznumboxProxy.value]);
 
-			origine.x_(num.value);
-
-			ossiaCartBack = false;
-
-			nfontes.do {  | i |
-				var cart = (cartval[i] - origine)
-				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
-
-				ossiasphe[i].v_([cart.rho,
-					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
-
-				zlev[i] = spheval[i].z;
-			};
-
-			ossiaCartBack = true;
+			// origine.x_(num.value);
+			//
+			// ossiaCartBack = false;
+			//
+			// nfontes.do {  | i |
+			// 	var cart = (cartval[i] - origine)
+			// 	.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+			//
+			// 	ossiasphe[i].v_([cart.rho,
+			// 	(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
+			//
+			// 	zlev[i] = spheval[i].z;
+			// };
+			//
+			// ossiaCartBack = true;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1477,21 +1481,21 @@ Mosca {
 			ossiaorigine.v_([oxnumboxProxy.value, num.value,
 				oznumboxProxy.value]);
 
-			origine.y_(num.value);
-
-			ossiaCartBack = false;
-
-			nfontes.do { | i |
-				var cart = (cartval[i] - origine)
-				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
-
-				ossiasphe[i].v_([cart.rho,
-					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
-
-				zlev[i] = spheval[i].z;
-			};
-
-			ossiaCartBack = true;
+			// origine.y_(num.value);
+			//
+			// ossiaCartBack = false;
+			//
+			// nfontes.do { | i |
+			// 	var cart = (cartval[i] - origine)
+			// 	.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+			//
+			// 	ossiasphe[i].v_([cart.rho,
+			// 	(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
+			//
+			// 	zlev[i] = spheval[i].z;
+			// };
+			//
+			// ossiaCartBack = true;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1505,21 +1509,18 @@ Mosca {
 			ossiaorigine.v_([oxnumboxProxy.value,
 				oynumboxProxy.value, num.value]);
 
-			origine.z_(num.value);
-
-			ossiaCartBack = false;
-
-			nfontes.do { | i |
-				var cart = (cartval[i] - origine)
-				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
-
-				ossiasphe[i].v_([cart.rho,
-					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
-
-				zlev[i] = spheval[i].z;
-			};
-
-			ossiaCartBack = true;
+			// ossiaCartBack = false;
+			// nfontes.do { | i |
+			// 	var cart = (cartval[i] - origine)
+			// 	.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+			//
+			// 	ossiasphe[i].v_([cart.rho,
+			// 	(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
+			//
+			// 	zlev[i] = spheval[i].z;
+			// };
+			//
+			// ossiaCartBack = true;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1533,20 +1534,20 @@ Mosca {
 
 			ossiaorient.v_([num.value, pitchnumboxProxy.value,
 				rollnumboxProxy.value]);
-			ossiaCartBack = false;
 
-			nfontes.do { | i |
-				var euler = (cartval[i] - origine)
-				.rotate(num.value.neg).tilt(pitch.neg).tumble(roll.neg);
-
-				ossiasphe[i].v_([euler.rho,
-					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
-
-				zlev[i] = spheval[i].z;
-			};
-
-			ossiaCartBack = true;
-			heading = num.value;
+			// ossiaCartBack = false;
+			// nfontes.do { | i |
+			// 	var euler = (cartval[i] - origine)
+			// 	.rotate(num.value.neg).tilt(pitch.neg).tumble(roll.neg);
+			//
+			// 	ossiasphe[i].v_([euler.rho,
+			// 	(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
+			//
+			// 	zlev[i] = spheval[i].z;
+			// };
+			//
+			// ossiaCartBack = true;
+			// heading = num.value;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1559,20 +1560,20 @@ Mosca {
 
 			ossiaorient.v_([headingnumboxProxy.value, num.value,
 				rollnumboxProxy.value]);
-			ossiaCartBack = false;
 
-			nfontes.do { | i |
-				var euler = (cartval[i] - origine)
-				.rotate(heading.neg).tilt(num.value.neg).tumble(roll.neg);
-
-				ossiasphe[i].v_([euler.rho,
-					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
-
-				zlev[i] = spheval[i].z;
-			};
-
-			ossiaCartBack = true;
-			pitch = num.value;
+			// ossiaCartBack = false;
+			// nfontes.do { | i |
+			// 	var euler = (cartval[i] - origine)
+			// 	.rotate(heading.neg).tilt(num.value.neg).tumble(roll.neg);
+			//
+			// 	ossiasphe[i].v_([euler.rho,
+			// 	(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
+			//
+			// 	zlev[i] = spheval[i].z;
+			// };
+			//
+			// ossiaCartBack = true;
+			// pitch = num.value;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -1585,20 +1586,21 @@ Mosca {
 
 			ossiaorient.v_([headingnumboxProxy.value,
 				pitchnumboxProxy.value, num.value]);
-			ossiaCartBack = false;
 
-			nfontes.do { | i |
-				var euler = (cartval[i] - origine)
-				.rotate(heading.neg).tilt(pitch.neg).tumble(num.value.neg);
-
-				ossiasphe[i].v_([euler.rho,
-					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
-
-				zlev[i] = spheval[i].z;
-			};
-
-			ossiaCartBack = true;
-			roll = num.value;
+			// ossiaCartBack = false;
+			//
+			// nfontes.do { | i |
+			// 	var euler = (cartval[i] - origine)
+			// 	.rotate(heading.neg).tilt(pitch.neg).tumble(num.value.neg);
+			//
+			// 	ossiasphe[i].v_([euler.rho,
+			// 	(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
+			//
+			// 	zlev[i] = spheval[i].z;
+			// };
+			//
+			// ossiaCartBack = true;
+			// roll = num.value;
 
 			if (guiflag) {
 				{novoplot.value;}.defer;
@@ -2199,9 +2201,13 @@ Mosca {
 		// Ambitools
 		spatFuncs[0] = { |ref, input, radius, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			ref.value = HOAEncoder.ar(maxorder,
+			var sig = HOAEncoder.ar(maxorder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
 				Lag.kr(elevation), 0, 1, Lag.kr(radius), longest_radius);
+			//ref.value = (sig * contract) + (sig[0] * (1 - contract));
+			ref.value = sig;
+			//ref.value = PanX.ar(bFormNumChan, sig, width:bFormNumChan);
+
 		};
 
 		// HoaLib
