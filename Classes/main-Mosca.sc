@@ -817,6 +817,7 @@ Mosca {
 			};
 
 			rboxProxy[i].action = { | num |
+				espacializador[i].set(\rotAngle, num.value);
 				synt[i].set(\rotAngle, num.value);
 				this.setSynths(i, \rotAngle, num.value);
 				rlev[i] = num.value;
@@ -835,6 +836,7 @@ Mosca {
 			};
 
 			dboxProxy[i].action = { | num |
+				espacializador[i].set(\directang, num.value);
 				synt[i].set(\directang, num.value);
 				this.setSynths(i, \directang, num.value);
 				dlev[i] = num.value;
