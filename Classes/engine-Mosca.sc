@@ -435,7 +435,6 @@ GUI Parameters usable in SynthDefs
 		/*nfontes.do { arg i;
 
 		var newpath = tfieldProxy[i].value;
-		//	server.sync;
 		if (streamdisk[i].not && (tfieldProxy[i].value != "")) {
 		i.postln;
 		newpath.postln;

@@ -112,19 +112,19 @@ may be downloaded here: http://escuta.org/mosca
 		};
 
 		updateGuiCtl = { |ctl, num|
+			var chans;
+
+			if (hwncheckProxy[currentsource].value.not
+				&& scncheckProxy[currentsource].value.not) {
+				chans = ncanais[currentsource];
+			} {
+				chans = ncan[currentsource];
+			};
+
 			switch (ctl,
 				\chan,
-				{ var selector;
-
-					if (hwncheckProxy[currentsource].value.not
-						&& scncheckProxy[currentsource].value.not) {
-						selector = ncanais[currentsource];
-					} {
-						selector = ncan[currentsource];
-					};
-
-					case
-					{ (selector.value < 2) || (selector.value == 3) }
+				{ case
+					{ (chans.value < 2) || (chans.value == 3) }
 					{
 						winCtl[0][8].visible = false;
 						winCtl[1][8].visible = false;
@@ -136,7 +136,7 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[1][7].visible = false;
 						winCtl[2][7].visible = false;
 					}
-					{ selector.value == 2 }
+					{ chans.value == 2 }
 					{
 						winCtl[0][8].visible = false;
 						winCtl[1][8].visible = false;
@@ -150,7 +150,7 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[0][7].value = angle[currentsource];
 						winCtl[1][7].value = angle[currentsource] / pi;
 					}
-					{ selector.value >= 4 }
+					{ chans.value >= 4 }
 					{
 						winCtl[0][7].visible = false;
 						winCtl[1][7].visible = false;
@@ -158,13 +158,19 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[0][8].visible = true;
 						winCtl[1][8].visible = true;
 						winCtl[2][8].visible = true;
-						winCtl[0][9].visible = true;
-						winCtl[1][9].visible = true;
-						winCtl[2][9].visible = true;
 						winCtl[0][8].value = rlev[currentsource];
 						winCtl[1][8].value = (rlev[currentsource] + pi) / 2pi;
-						winCtl[0][9].value = dlev[currentsource];
-						winCtl[1][9].value = dlev[currentsource] / halfPi;
+						if ( libnumbox.value == (lastN3D + 1) ) {
+							winCtl[0][9].visible = true;
+							winCtl[1][9].visible = true;
+							winCtl[2][9].visible = true;
+							winCtl[0][9].value = dlev[currentsource];
+							winCtl[1][9].value = dlev[currentsource] / halfPi;
+						} {
+							winCtl[0][9].visible = false;
+							winCtl[1][9].visible = false;
+							winCtl[2][9].visible = false;
+						};
 					};
 				},
 				\lib,
@@ -194,11 +200,25 @@ may be downloaded here: http://escuta.org/mosca
 						}{
 							diffusecheck.value = false
 						};
+						if ( chans.value >= 4 ) {
+							winCtl[0][9].visible = true;
+							winCtl[1][9].visible = true;
+							winCtl[2][9].visible = true;
+							winCtl[0][9].value = dlev[currentsource];
+							winCtl[1][9].value = dlev[currentsource] / halfPi;
+						} {
+							winCtl[0][9].visible = false;
+							winCtl[1][9].visible = false;
+							winCtl[2][9].visible = false;
+						};
 					}
 					{ libnumbox.value == lastFUMA }
 					{
 						spreadcheck.visible = false;
 						diffusecheck.visible = false;
+						winCtl[0][9].visible = false;
+						winCtl[1][9].visible = false;
+						winCtl[2][9].visible = false;
 
 						winCtl[0][10].visible = true;
 						winCtl[1][10].visible = true;
@@ -232,6 +252,9 @@ may be downloaded here: http://escuta.org/mosca
 
 						spreadcheck.visible = false;
 						diffusecheck.visible = false;
+						winCtl[0][9].visible = false;
+						winCtl[1][9].visible = false;
+						winCtl[2][9].visible = false;
 					};
 				},
 				\dstrv,

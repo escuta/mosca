@@ -141,7 +141,7 @@ Mosca {
 	lastN3D = 2, // last N3D lib index
 	lastFUMA = 5, // last FUMA lib index
 	playList = #["File","HWBus","SWBus","Stream"],
-	b2a, a2b, n2m,
+	b2a, a2b, n2f, f2n,
 	blips,
 	maxorder,
 	convert_fuma,
@@ -199,7 +199,8 @@ Mosca {
 
 		b2a = FoaDecoderMatrix.newBtoA;
 		a2b = FoaEncoderMatrix.newAtoB;
-		n2m = FoaEncoderMatrix.newHoa1();
+		n2f = FoaEncoderMatrix.newHoa1();
+		f2n = FoaDecoderMatrix.newHoa1();
 		foaEncoderOmni = FoaEncoderMatrix.newOmni;
 		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048,
 			server:server, sampleRate:server.sampleRate.asInteger);
@@ -1839,7 +1840,7 @@ Mosca {
 					var n3dsig, env;
 					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 					n3dsig = In.ar(n3dbus, 4);
-					n3dsig = FoaEncode.ar(n3dsig, n2m) * env;
+					n3dsig = FoaEncode.ar(n3dsig, n2f) * env;
 					Out.ar(fumabus, n3dsig);
 				}).add;
 
@@ -2273,6 +2274,7 @@ Mosca {
 
 					if (item == "ATK") {
 
+						// assume FuMa input
 						SynthDef(\ATKBFormat++play_type++4, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 200, level = 1,
@@ -2310,10 +2312,55 @@ Mosca {
 							outPutFuncs[1].value(p, p,
 								globallev.clip(0, 1) * glev);
 						}).add;
+
+					[9, 16, 25, 36].do { |item, count|
+							var ord = (item.sqrt) - 1;
+
+							// assume N3D input
+							SynthDef(\ATKBFormat++play_type++item, {
+								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+								azim = 0, elev = 0, radius = 200, level = 1,
+								dopamnt = 0, glev = 0, llev = 0,
+								insertFlag = 0, insertOut, insertBack,
+								room = 0.5, damp = 05, wir, df, sp,
+								contr = 0, directang = 1, rotAngle = 0 |
+
+								var rad = Lag.kr(radius),
+								dis = rad * 0.01,
+								pushang = dis * halfPi, // degree of sound field displacement
+								globallev = (1 / dis.sqrt) - 1, //global reverberation
+								locallev, lrevRef = Ref(0),
+								az = azim - halfPi,
+								p = Ref(0),
+								rd = dis * 340, // Doppler
+								cut = ((1 - dis) * 2).clip(0, 1);
+								//make shure level is 0 when radius reaches 100
+								rad = rad.clip(1, 50);
+
+								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
+								p = p * level;
+								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+								localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
+								// local reverberation
+
+								p = FoaEncode.ar(lrevRef.value + p, n2f);
+								p = FoaDirectO.ar(p, directang);
+								// directivity
+								p = FoaTransform.ar(p, 'rotate', rotAngle);
+								p = FoaTransform.ar(p, 'push', pushang, az, elev);
+
+								p = p * cut;
+
+								outPutFuncs[1].value(p, p,
+									globallev.clip(0, 1) * glev);
+							}).add;
+						};
 					};
 
 					if (item == "Ambitools") {
 
+						// assume FuMa input
 						SynthDef(\AmbitoolsBFormat++play_type++4, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 200, level = 1,
@@ -2341,7 +2388,7 @@ Mosca {
 							localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
 							// local reverberation
 
-							p = FoaEncode.ar(lrevRef.value + p, n2m);
+							p = FoaDecode.ar(lrevRef.value + p, f2n);
 							p = HOATransRotateAz.ar(1, p, rotAngle);
 							p = HOABeamDirac2Hoa.ar(1, p, az, elev, focus:pushang);
 
@@ -2354,6 +2401,7 @@ Mosca {
 						[9, 16, 25, 36].do { |item, count|
 							var ord = (item.sqrt) - 1;
 
+							// assume N3D input
 							SynthDef(\AmbitoolsBFormat++play_type++item, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 								azim = 0, elev = 0, radius = 200, level = 1,
@@ -2666,7 +2714,7 @@ Mosca {
 		// 			intens = intens * 0.25;
 		//
 		// 			playerRef.value = FoaEncode.ar(playerRef.value,
-		// 			n2m);
+		// 			n2f);
 		// 			playerRef.value = FoaDirectO.ar(playerRef.value, directang);
 		// 			// directivity
 		//
@@ -2778,7 +2826,7 @@ Mosca {
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
 				sig = In.ar(gbus, 1);
-				sigx = FoaEncode.ar(sigx, n2m);
+				sigx = FoaEncode.ar(sigx, n2f);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = sig + sigf + sigx;
 				sig = FoaDecode.ar(sig, b2a);
@@ -2857,7 +2905,7 @@ Mosca {
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
 				sig = In.ar(gbus, 1);
-				sigx = FoaEncode.ar(sigx, n2m);
+				sigx = FoaEncode.ar(sigx, n2f);
 				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 				sig = sig + sigf + sigx;
 				sigf = FoaDecode.ar(sigf, b2a);
@@ -3131,7 +3179,7 @@ Mosca {
 					var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 					sigx = In.ar(gbixfbus, 4);
 					sig = In.ar(gbus, 1);
-					sigx = FoaEncode.ar(sigx, n2m);
+					sigx = FoaEncode.ar(sigx, n2f);
 					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 					sig = sig + sigf + sigx;
 					sig = FoaDecode.ar(sig, b2a);
