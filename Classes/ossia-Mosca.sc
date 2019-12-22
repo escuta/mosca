@@ -115,9 +115,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		ossiaorigine.callback_({arg num;
 
-			origine.x_(num[0].value);
-			origine.y_(num[1].value);
-			origine.z_(num[2].value);
+			origine.set(num[0].value, num[1].value, num[2].value);
 
 			ossiaCartBack = false;
 
@@ -152,6 +150,11 @@ may be downloaded here: http://escuta.org/mosca
 
 		ossiaorient.callback_({arg num;
 
+			heading = num.value[0];
+			pitch = num.value[1];
+			roll = num.value[2];
+			ossiaCartBack = false;
+
 			nfontes.do { | i |
 				var euler = (cartval[i] - origine)
 				.rotate(num.value[0].neg).tilt(num.value[1].neg).tumble(num.value[2].neg);
@@ -160,12 +163,11 @@ may be downloaded here: http://escuta.org/mosca
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
 				zlev[i] = spheval[i].z;
+
+				espacializador[i].set(\rotAngle, rlev[i] + heading);
 			};
 
 			ossiaCartBack = true;
-			heading = num.value[0];
-			pitch = num.value[1];
-			roll = num.value[2];
 
 			if (headingnumboxProxy.value != num[0].value) {
 				headingnumboxProxy.valueAction = num[0].value;

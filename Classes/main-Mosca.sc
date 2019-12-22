@@ -817,7 +817,7 @@ Mosca {
 			};
 
 			rboxProxy[i].action = { | num |
-				espacializador[i].set(\rotAngle, num.value);
+				espacializador[i].set(\rotAngle, num.value + heading);
 				synt[i].set(\rotAngle, num.value);
 				this.setSynths(i, \rotAngle, num.value);
 				rlev[i] = num.value;
