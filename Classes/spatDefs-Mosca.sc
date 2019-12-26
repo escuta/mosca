@@ -102,9 +102,9 @@ may be downloaded here: http://escuta.org/mosca
 			});
 		};
 
-		// joshGrain
+		// JoshGrain
 		if (\MonoGrainBF.asClass.notNil) {
-			spatList = spatList.add("josh");
+			spatList = spatList.add("Josh");
 
 			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
@@ -139,6 +139,258 @@ may be downloaded here: http://escuta.org/mosca
 			});
 		};
 
+	}
+
+	makeSpatialisers { | rev_type |
+		var out_type = 0;
+
+		spatList.do { |item, i|
+
+			case
+			{ i <= lastN3D } { out_type = 0 }
+			{ (i > lastN3D) && (i <= lastFUMA) } { out_type = 1 }
+			{ i > lastFUMA } { out_type = 2 };
+
+			playList.do { |play_type, j|
+
+				SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
+					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+					azim = 0, elev = 0, radius = 200, level = 1,
+					dopamnt = 0, glev = 0, llev = 0,
+					insertFlag = 0, insertOut, insertBack,
+					room = 0.5, damp = 05, wir, df, sp,
+					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
+
+					var rad = Lag.kr(radius),
+					dis = rad * 0.01,
+					globallev = (1 / dis.sqrt) - 1, //global reverberation
+					locallev, lrevRef = Ref(0),
+					az = azim - halfPi,
+					p = Ref(0),
+					rd = dis * 340, // Doppler
+					cut = ((1 - dis) * 2).clip(0, 1);
+					//make shure level is 0 when radius reaches 100
+					rad = rad.clip(1, 50);
+
+					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
+					p = p * level;
+					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+					localReverbFunc[rev_type, 1].value(lrevRef, p, wir, dis * llev,
+						// local reverberation
+						room, damp);
+
+					spatFuncs[i].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
+						winsize, grainrate, winrand);
+
+					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
+						globallev.clip(0, 1) * glev);
+				}).send(server);
+
+
+				SynthDef(item++"Stereo"++play_type++localReverbFunc[rev_type, 0], {
+					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+					azim = 0, elev = 0, radius = 0, level = 1,
+					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
+					insertFlag = 0, insertOut, insertBack,
+					room = 0.5, damp = 05, wir, df, sp,
+					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
+
+					var rad = Lag.kr(radius),
+					dis = rad * 0.01,
+					globallev = (1 / dis.sqrt) - 1, //global reverberation
+					lrev1Ref = Ref(0), lrev2Ref = Ref(0),
+					az = Lag.kr(azim - halfPi),
+					p = Ref(0),
+					rd = dis * 340, // Doppler
+					cut = ((1 - dis) * 2).clip(0, 1);
+					//make shure level is 0 when radius reaches 100
+					rad = rad.clip(1, 50);
+
+					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 2);
+					p = p * level;
+					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+					localReverbFunc[rev_type, 2].value(lrev1Ref, lrev2Ref, p[0], p[1],
+						wir, dis * llev, room, damp);
+
+					spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - dis)),
+						elev, df, sp, contr, winsize, grainrate, winrand);
+					spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - dis)),
+						elev, df, sp, contr, winsize, grainrate, winrand);
+
+					outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
+						(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
+						globallev.clip(0, 1) * glev);
+				}).send(server);
+
+				if (item == "ATK") {
+
+					// assume FuMa input
+					SynthDef(\ATKBFormat++play_type++4, {
+						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+						azim = 0, elev = 0, radius = 200, level = 1,
+						dopamnt = 0, glev = 0, llev = 0,
+						insertFlag = 0, insertOut, insertBack,
+						room = 0.5, damp = 05, wir, df, sp,
+						contr = 0, directang = 1, rotAngle = 0 |
+
+						var rad = Lag.kr(radius),
+						dis = rad * 0.01,
+						pushang = contr * halfPi, // degree of sound field displacement
+						globallev = (1 / dis.sqrt) - 1, //global reverberation
+						locallev, lrevRef = Ref(0),
+						az = azim - halfPi,
+						p = Ref(0),
+						rd = dis * 340, // Doppler
+						cut = ((1 - dis) * 2).clip(0, 1);
+						//make shure level is 0 when radius reaches 100
+						rad = rad.clip(1, 50);
+
+						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
+						p = p * level;
+						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+						// local reverberation
+
+						p = FoaDirectO.ar(lrevRef.value + p, directang);
+						// directivity
+						p = FoaTransform.ar(p, 'rotate', rotAngle);
+						p = FoaTransform.ar(p, 'push', pushang, az, elev);
+
+						p = p * cut;
+
+						outPutFuncs[1].value(p, p,
+							globallev.clip(0, 1) * glev);
+					}).send(server);
+
+					[9, 16, 25, 36].do { |item, count|
+						var ord = (item.sqrt) - 1;
+
+						// assume N3D input
+						SynthDef(\ATKBFormat++play_type++item, {
+							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+							azim = 0, elev = 0, radius = 200, level = 1,
+							dopamnt = 0, glev = 0, llev = 0,
+							insertFlag = 0, insertOut, insertBack,
+							room = 0.5, damp = 05, wir, df, sp,
+							contr = 0, directang = 1, rotAngle = 0 |
+
+							var rad = Lag.kr(radius),
+							dis = rad * 0.01,
+							pushang = contr * halfPi, // degree of sound field displacement
+							globallev = (1 / dis.sqrt) - 1, //global reverberation
+							locallev, lrevRef = Ref(0),
+							az = azim - halfPi,
+							p = Ref(0),
+							rd = dis * 340, // Doppler
+							cut = ((1 - dis) * 2).clip(0, 1);
+							//make shure level is 0 when radius reaches 100
+							rad = rad.clip(1, 50);
+
+							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
+							p = p * level;
+							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+							// local reverberation
+
+							p = FoaEncode.ar(lrevRef.value + p, n2f);
+							p = FoaDirectO.ar(p, directang);
+							// directivity
+							p = FoaTransform.ar(p, 'rotate', rotAngle);
+							p = FoaTransform.ar(p, 'push', pushang, az, elev);
+
+							p = p * cut;
+
+							outPutFuncs[1].value(p, p,
+								globallev.clip(0, 1) * glev);
+						}).send(server);
+					};
+				};
+
+				if (item == "Ambitools") {
+
+					// assume FuMa input
+					SynthDef(\AmbitoolsBFormat++play_type++4, {
+						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+						azim = 0, elev = 0, radius = 200, level = 1,
+						dopamnt = 0, glev = 0, llev = 0,
+						insertFlag = 0, insertOut, insertBack,
+						room = 0.5, damp = 05, wir, df, sp,
+						contr = 0, rotAngle = 0|
+
+						var rad = Lag.kr(radius),
+						dis = rad * 0.01,
+						globallev = (1 / dis.sqrt) - 1, //global reverberation
+						locallev, lrevRef = Ref(0),
+						az = azim - halfPi,
+						p = Ref(0),
+						rd = dis * 340, // Doppler
+						cut = ((1 - dis) * 2).clip(0, 1);
+
+						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
+						p = p * level * (1 + (contr * 3));
+						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+						// local reverberation
+
+						p = FoaDecode.ar(lrevRef.value + p, f2n);
+						p = HOATransRotateAz.ar(1, p, rotAngle);
+						p = HOABeamDirac2Hoa.ar(1, p, az, elev, timer_manual:1, focus:contr);
+
+						p = p * cut;
+
+						outPutFuncs[0].value(p, p,
+							globallev.clip(0, 1) * glev);
+					}).send(server);
+
+					[9, 16, 25, 36].do { |item, count|
+						var ord = (item.sqrt) - 1;
+
+						// assume N3D input
+						SynthDef(\AmbitoolsBFormat++play_type++item, {
+							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
+							azim = 0, elev = 0, radius = 200, level = 1,
+							dopamnt = 0, glev = 0, llev = 0,
+							insertFlag = 0, insertOut, insertBack,
+							room = 0.5, damp = 05, wir, df, sp,
+							contr = 0, rotAngle = 0|
+
+							var rad = Lag.kr(radius),
+							dis = rad * 0.01,
+							pushang = dis * halfPi, // degree of sound field displacement
+							globallev = (1 / dis.sqrt) - 1, //global reverberation
+							locallev, lrevRef = Ref(0),
+							az = azim - halfPi,
+							p = Ref(0),
+							rd = dis * 340, // Doppler
+							cut = ((1 - dis) * 2).clip(0, 1);
+							//make shure level is 0 when radius reaches 100
+							rad = rad.clip(1, 50);
+
+							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
+							p = p * level * (1 + (contr * 3));
+							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
+
+							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+							// local reverberation
+
+							p = HOATransRotateAz.ar(ord, lrevRef.value + p, rotAngle);
+							p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:contr);
+
+							p = p * cut;
+
+							outPutFuncs[0].value(p, p,
+								globallev.clip(0, 1) * glev);
+						}).load(server);
+					};
+				};
+
+			};
+		};
 	}
 
 }

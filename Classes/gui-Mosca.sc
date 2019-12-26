@@ -371,7 +371,15 @@ may be downloaded here: http://escuta.org/mosca
 						hwCtl[1][0].visible = true;
 						hwCtl[0][1].visible = true;
 						hwCtl[1][1].visible = true;
-						hwCtl[0][0].value = ncan[currentsource];
+						hwCtl[0][0].value =
+						switch(ncan[currentsource],
+							1, { 0 },
+							2, { 1 },
+							4, { 2 },
+							9, { 3 },
+							16, { 4 },
+							25, { 5 },
+							36, { 6 });
 						hwCtl[0][1].value = busini[currentsource];
 					}
 					{scn[currentsource] == 1}
@@ -385,7 +393,15 @@ may be downloaded here: http://escuta.org/mosca
 						hwCtl[1][0].visible = true;
 						hwCtl[0][1].visible = false;
 						hwCtl[1][1].visible = false;
-						hwCtl[0][0].value = ncan[currentsource];
+						hwCtl[0][0].value =
+						switch(ncan[currentsource],
+							1, { 0 },
+							2, { 1 },
+							4, { 2 },
+							9, { 3 },
+							16, { 4 },
+							25, { 5 },
+							36, { 6 });
 					};
 				};
 			);
@@ -852,16 +868,12 @@ may be downloaded here: http://escuta.org/mosca
 		hwCtl[1][0] = StaticText(win, Rect(55, 50, 200, 20));
 		hwCtl[1][0].string = "Nb. of chans.";
 		hwCtl[1][0].visible = false;
-		hwCtl[0][0] = NumberBox(win, Rect(10, 50, 40, 20));
-		hwCtl[0][0].value = 0;
-		hwCtl[0][0].clipHi = 36;
-		hwCtl[0][0].clipLo = 0;
-		hwCtl[0][0].step = 1;
-		hwCtl[0][0].scroll_step = 1;
-		hwCtl[0][0].align = \center;
+		hwCtl[0][0] = PopUpMenu(win, Rect(10, 50, 40, 20));
+		hwCtl[0][0].items = ["1", "2", "4", "9", "16", "25", "36"];
 		hwCtl[0][0].action = { | num |
-			{ncanbox[currentsource].valueAction = num.value;}.defer;
-			ncan[currentsource] = num.value;
+			var nbChans = [1, 2, 4, 9, 16, 25, 36];
+			{ncanbox[currentsource].valueAction = nbChans[num.value];}.defer;
+			ncan[currentsource] = nbChans[num.value];
 		};
 		hwCtl[0][0].visible = false;
 

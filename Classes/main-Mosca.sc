@@ -25,7 +25,8 @@ Mosca {
 	sysex, mmcslave,
 	synthRegistry, busini, ncan,
 	aux1, aux2, aux3, aux4, aux5,  // aux slider values
-	triggerFunc, stopFunc,
+	triggerFunc, stopFunc, subOutFunc, playInFunc, outPutFuncs,
+	localReverbFunc,
 	scInBus,
 	fumabus,
 	insertFlag,
@@ -182,9 +183,8 @@ Mosca {
 		rawformat, rawoutbus, iserport, ioffsetheading, irecchans, irecbus,
 		iguiflag, iguiint, iautoloop |
 
-		var makeSynthDefPlayers, makeSpatialisers, subOutFunc, playInFunc,
-		localReverbFunc, localReverbStereoFunc, //localReverbBFormatFunc,
-		perfectSphereFunc, bfOrFmh, outPutFuncs,
+		var subOutFunc,
+		perfectSphereFunc, bfOrFmh,
 		bFormNumChan = (imaxorder + 1).squared,
 		// add the number of channels of the b format
 		fourOrNine; // switch between 4 fuma and 9 ch Matrix
@@ -224,8 +224,6 @@ Mosca {
 		insertFlag = Array.newClear(nfontes);
 		insertBus = Array2D.new(2, nfontes);
 		scInBus = Array.newClear(nfontes);
-
-		server.sync;
 
 		nfontes.do { | i |
 			synthRegistry[i] = List[];
@@ -512,6 +510,8 @@ Mosca {
 			minTimeStep: 0.001);
 
 
+		server.sync;
+
 		this.spatDef(maxorder, bFormNumChan, bfOrFmh, fourOrNine);
 
 
@@ -554,8 +554,8 @@ Mosca {
 			aux4[i] = 0;
 			aux5[i] = 0;
 			streamdisk[i] = false;
-			ncan[i] = 0;
-			ncanais[i] = 0;
+			ncan[i] = 1;
+			ncanais[i] = 1;
 			busini[i] = 0;
 			audit[i] = false;
 			playingBF[i] = false;
@@ -594,7 +594,7 @@ Mosca {
 			scncheckProxy[i] = AutomationGuiProxy(false);
 			dfcheckProxy[i] = AutomationGuiProxy(false);
 			spcheckProxy[i] = AutomationGuiProxy(false);
-			ncanboxProxy[i] = AutomationGuiProxy(0);
+			ncanboxProxy[i] = AutomationGuiProxy(1);
 			businiboxProxy[i] = AutomationGuiProxy(0);
 			stcheckProxy[i] = AutomationGuiProxy(false);
 			rateboxProxy[i] = AutomationGuiProxy(10.0);
@@ -1265,8 +1265,6 @@ Mosca {
 							"Buffer freed".postln;
 						});
 					};
-
-					ncanais[i] = 0;
 				};
 
 				if (guiflag) {
@@ -1639,7 +1637,7 @@ Mosca {
 			var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
 			var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
 			Out.ar(0, [blip, blip]);
-		}).add;
+		}).send(server);
 
 
 		/// non ambisonc spatiaizers setup
@@ -1749,12 +1747,11 @@ Mosca {
 				sig = FoaEncode.ar(sig,
 					FoaEncoderMatrix.newDirections(emulate_array.degrad));
 				Out.ar(fumabus, sig);
-			}).add;
+			}).send(server);
 		};
 
 
 		// define ambisonic decoder
-
 
 		if (suboutbus.notNil) {
 			subOutFunc = { |signal, sublevel = 1|
@@ -1781,7 +1778,7 @@ Mosca {
 					n3dsig = In.ar(n3dbus, bFormNumChan);
 					n3dsig = HOAConvert.ar(maxorder, n3dsig, \ACN_N3D, \FuMa) * env;
 					Out.ar(fumabus, n3dsig);
-				}).add;
+				}).send(server);
 
 				SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 					var sig, nonambi;
@@ -1791,7 +1788,7 @@ Mosca {
 					subOutFunc.value(sig + nonambi, sub);
 					Out.ar(rawoutbus, sig);
 					Out.ar(outbus, nonambi);
-				}).add;
+				}).send(server);
 
 			}
 			{rawformat == \N3D}
@@ -1806,7 +1803,7 @@ Mosca {
 					sig = In.ar(fumabus, fourOrNine);
 					sig = HOAConvert.ar(maxorder, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(n3dbus, sig);
-				}).add;
+				}).send(server);
 
 				SynthDef("globDecodeSynth", {
 					| lf_hf=0, xover=400, sub = 1, level = 1 |
@@ -1817,7 +1814,7 @@ Mosca {
 					subOutFunc.value(sig + nonambi, sub);
 					Out.ar(rawoutbus, sig);
 					Out.ar(outbus, nonambi);
-				}).add;
+				}).send(server);
 
 			};
 
@@ -1835,7 +1832,7 @@ Mosca {
 					n3dsig = In.ar(n3dbus, 4);
 					n3dsig = FoaEncode.ar(n3dsig, n2f) * env;
 					Out.ar(fumabus, n3dsig);
-				}).add;
+				}).send(server);
 
 				if (decoder == "internal") {
 
@@ -1854,7 +1851,7 @@ Mosca {
 						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
-					}).add;
+					}).send(server);
 
 				} {
 
@@ -1868,7 +1865,7 @@ Mosca {
 							sig = (sig + nonambi) * level;
 							subOutFunc.value(sig, sub);
 							Out.ar(outbus, sig);
-						}).add;
+						}).send(server);
 
 					} {
 						SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
@@ -1878,7 +1875,7 @@ Mosca {
 							sig = sig * level;
 							subOutFunc.value(sig, sub);
 							Out.ar(outbus, sig);
-						}).add;
+						}).send(server);
 					}
 				}
 			}
@@ -1901,7 +1898,7 @@ Mosca {
 						n3dsig = In.ar(n3dbus, 9);
 						n3dsig = HOAConvert.ar(2, n3dsig, \ACN_N3D, \FuMa) * env;
 						Out.ar(fumabus, n3dsig);
-					}).add;
+					}).send(server);
 
 					SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 						var sig, nonambi;
@@ -1915,7 +1912,7 @@ Mosca {
 						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
-					}).add;
+					}).send(server);
 
 				} { // assume ADT Decoder
 					convert_fuma = true;
@@ -1928,7 +1925,7 @@ Mosca {
 						sig = In.ar(fumabus, fourOrNine);
 						sig = HOAConvert.ar(maxorder, sig, \FuMa, \ACN_N3D) * env;
 						Out.ar(n3dbus, sig);
-					}).add;
+					}).send(server);
 
 					SynthDef("globDecodeSynth", {
 						| lf_hf=0, xover=400, sub = 1, level = 1 |
@@ -1941,7 +1938,7 @@ Mosca {
 						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
-					}).add;
+					}).send(server);
 				};
 			}
 
@@ -1956,7 +1953,7 @@ Mosca {
 					sig = In.ar(fumabus, 9);
 					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(n3dbus, sig);
-				}).add;
+				}).send(server);
 
 				SynthDef("globDecodeSynth", {
 					| lf_hf=0, xover=400, sub = 1, level = 1 |
@@ -1970,7 +1967,7 @@ Mosca {
 					sig = (sig + nonambi) * level;
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
-				}).add;
+				}).send(server);
 			}
 
 			{ maxorder == 4 } // assume ADT Decoder
@@ -1984,7 +1981,7 @@ Mosca {
 					sig = In.ar(fumabus, 9);
 					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(n3dbus, sig);
-				}).add;
+				}).send(server);
 
 				SynthDef("globDecodeSynth", {
 					| lf_hf=0, xover=400, sub = 1, level = 1 |
@@ -2000,7 +1997,7 @@ Mosca {
 					sig = (sig + nonambi) * level;
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
-				}).add;
+				}).send(server);
 			}
 
 			{ maxorder == 5 } // assume ADT Decoder
@@ -2014,7 +2011,7 @@ Mosca {
 					sig = In.ar(fumabus, 9);
 					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
 					Out.ar(n3dbus, sig);
-				}).add;
+				}).send(server);
 
 				SynthDef("globDecodeSynth", {
 					| lf_hf=0, xover=400, sub = 1, level = 1 |
@@ -2034,9 +2031,15 @@ Mosca {
 					sig = (sig + nonambi) * level;
 					subOutFunc.value(sig, sub);
 					Out.ar(outbus, sig);
-				}).add;
+				}).send(server);
 			};
 		};
+
+
+		//// LAUNCH INITIAL SYNTH
+
+		{ globDec = Synth(\globDecodeSynth,
+				target:glbRevDecGrp,addAction: \addToTail); }.fork;
 
 		// Make File-in SynthDefs
 
@@ -2090,262 +2093,6 @@ Mosca {
 		};
 
 
-		makeSpatialisers = { | rev_type |
-			var out_type = 0;
-
-			spatList.do { |item, i|
-
-				case
-				{ i <= lastN3D } { out_type = 0 }
-				{ (i > lastN3D) && (i <= lastFUMA) } { out_type = 1 }
-				{ i > lastFUMA } { out_type = 2 };
-
-				playList.do { |play_type, j|
-
-					SynthDef(item++play_type++rev_type, {
-						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 200, level = 1,
-						dopamnt = 0, glev = 0, llev = 0,
-						insertFlag = 0, insertOut, insertBack,
-						room = 0.5, damp = 05, wir, df, sp,
-						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
-
-						var rad = Lag.kr(radius),
-						dis = rad * 0.01,
-						globallev = (1 / dis.sqrt) - 1, //global reverberation
-						locallev, lrevRef = Ref(0),
-						az = azim - halfPi,
-						p = Ref(0),
-						rd = dis * 340, // Doppler
-						cut = ((1 - dis) * 2).clip(0, 1);
-						//make shure level is 0 when radius reaches 100
-						rad = rad.clip(1, 50);
-
-						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
-						p = p * level;
-						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-						localReverbFunc.value(lrevRef, p, wir, dis * llev,
-							// local reverberation
-							room, damp);
-
-						spatFuncs[i].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
-							winsize, grainrate, winrand);
-
-						outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
-							globallev.clip(0, 1) * glev);
-					}).add;
-
-
-					SynthDef(item++"Stereo"++play_type++rev_type, {
-						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 0, level = 1,
-						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
-						insertFlag = 0, insertOut, insertBack,
-						room = 0.5, damp = 05, wir, df, sp,
-						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
-
-						var rad = Lag.kr(radius),
-						dis = rad * 0.01,
-						globallev = (1 / dis.sqrt) - 1, //global reverberation
-						lrev1Ref = Ref(0), lrev2Ref = Ref(0),
-						az = Lag.kr(azim - halfPi),
-						p = Ref(0),
-						rd = dis * 340, // Doppler
-						cut = ((1 - dis) * 2).clip(0, 1);
-						//make shure level is 0 when radius reaches 100
-						rad = rad.clip(1, 50);
-
-						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 2);
-						p = p * level;
-						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-						localReverbStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
-							wir, dis * llev, room, damp);
-
-						spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - dis)),
-							elev, df, sp, contr, winsize, grainrate, winrand);
-						spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - dis)),
-							elev, df, sp, contr, winsize, grainrate, winrand);
-
-						outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
-							(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
-							globallev.clip(0, 1) * glev);
-					}).add;
-
-					if (item == "ATK") {
-
-						// assume FuMa input
-						SynthDef(\ATKBFormat++play_type++4, {
-							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 200, level = 1,
-							dopamnt = 0, glev = 0, llev = 0,
-							insertFlag = 0, insertOut, insertBack,
-							room = 0.5, damp = 05, wir, df, sp,
-							contr = 0, directang = 1, rotAngle = 0 |
-
-							var rad = Lag.kr(radius),
-							dis = rad * 0.01,
-							pushang = dis * halfPi, // degree of sound field displacement
-							globallev = (1 / dis.sqrt) - 1, //global reverberation
-							locallev, lrevRef = Ref(0),
-							az = azim - halfPi,
-							p = Ref(0),
-							rd = dis * 340, // Doppler
-							cut = ((1 - dis) * 2).clip(0, 1);
-							//make shure level is 0 when radius reaches 100
-							rad = rad.clip(1, 50);
-
-							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
-							p = p * level;
-							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-							localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
-							// local reverberation
-
-							p = FoaDirectO.ar(lrevRef.value + p, directang);
-							// directivity
-							p = FoaTransform.ar(p, 'rotate', rotAngle);
-							p = FoaTransform.ar(p, 'push', pushang, az, elev);
-
-							p = p * cut;
-
-							outPutFuncs[1].value(p, p,
-								globallev.clip(0, 1) * glev);
-						}).add;
-
-					[9, 16, 25, 36].do { |item, count|
-							var ord = (item.sqrt) - 1;
-
-							// assume N3D input
-							SynthDef(\ATKBFormat++play_type++item, {
-								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-								azim = 0, elev = 0, radius = 200, level = 1,
-								dopamnt = 0, glev = 0, llev = 0,
-								insertFlag = 0, insertOut, insertBack,
-								room = 0.5, damp = 05, wir, df, sp,
-								contr = 0, directang = 1, rotAngle = 0 |
-
-								var rad = Lag.kr(radius),
-								dis = rad * 0.01,
-								pushang = dis * halfPi, // degree of sound field displacement
-								globallev = (1 / dis.sqrt) - 1, //global reverberation
-								locallev, lrevRef = Ref(0),
-								az = azim - halfPi,
-								p = Ref(0),
-								rd = dis * 340, // Doppler
-								cut = ((1 - dis) * 2).clip(0, 1);
-								//make shure level is 0 when radius reaches 100
-								rad = rad.clip(1, 50);
-
-								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
-								p = p * level;
-								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-								localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
-								// local reverberation
-
-								p = FoaEncode.ar(lrevRef.value + p, n2f);
-								p = FoaDirectO.ar(p, directang);
-								// directivity
-								p = FoaTransform.ar(p, 'rotate', rotAngle);
-								p = FoaTransform.ar(p, 'push', pushang, az, elev);
-
-								p = p * cut;
-
-								outPutFuncs[1].value(p, p,
-									globallev.clip(0, 1) * glev);
-							}).add;
-						};
-					};
-
-					if (item == "Ambitools") {
-
-						// assume FuMa input
-						SynthDef(\AmbitoolsBFormat++play_type++4, {
-							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 200, level = 1,
-							dopamnt = 0, glev = 0, llev = 0,
-							insertFlag = 0, insertOut, insertBack,
-							room = 0.5, damp = 05, wir, df, sp,
-							contr = 0, rotAngle = 0|
-
-							var rad = Lag.kr(radius),
-							dis = rad * 0.01,
-							pushang = dis * halfPi, // degree of sound field displacement
-							globallev = (1 / dis.sqrt) - 1, //global reverberation
-							locallev, lrevRef = Ref(0),
-							az = azim - halfPi,
-							p = Ref(0),
-							rd = dis * 340, // Doppler
-							cut = ((1 - dis) * 2).clip(0, 1);
-							//make shure level is 0 when radius reaches 100
-							rad = rad.clip(1, 50);
-
-							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
-							p = p * level;
-							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-							localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
-							// local reverberation
-
-							p = FoaDecode.ar(lrevRef.value + p, f2n);
-							p = HOATransRotateAz.ar(1, p, rotAngle);
-							p = HOABeamDirac2Hoa.ar(1, p, az, elev, focus:pushang);
-
-							p = p * cut;
-
-							outPutFuncs[0].value(p, p,
-								globallev.clip(0, 1) * glev);
-						}).add;
-
-						[9, 16, 25, 36].do { |item, count|
-							var ord = (item.sqrt) - 1;
-
-							// assume N3D input
-							SynthDef(\AmbitoolsBFormat++play_type++item, {
-								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-								azim = 0, elev = 0, radius = 200, level = 1,
-								dopamnt = 0, glev = 0, llev = 0,
-								insertFlag = 0, insertOut, insertBack,
-								room = 0.5, damp = 05, wir, df, sp,
-								contr = 0, rotAngle = 0|
-
-								var rad = Lag.kr(radius),
-								dis = rad * 0.01,
-								pushang = dis * halfPi, // degree of sound field displacement
-								globallev = (1 / dis.sqrt) - 1, //global reverberation
-								locallev, lrevRef = Ref(0),
-								az = azim - halfPi,
-								p = Ref(0),
-								rd = dis * 340, // Doppler
-								cut = ((1 - dis) * 2).clip(0, 1);
-								//make shure level is 0 when radius reaches 100
-								rad = rad.clip(1, 50);
-
-								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
-								p = p * level;
-								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
-
-								localReverbFunc.value(lrevRef, p[0], wir, dis * llev, room, damp);
-								// local reverberation
-
-								p = HOATransRotateAz.ar(ord, lrevRef.value + p, rotAngle);
-								p = HOABeamDirac2Hoa.ar(ord, p, az, elev, focus:pushang);
-
-								p = p * cut;
-
-								outPutFuncs[0].value(p, p,
-									globallev.clip(0, 1) * glev);
-							}).add;
-						};
-					};
-
-				};
-			};
-		}; //end makeSpatialisers
-
-
 		// allpass reverbs
 		if (maxorder == 1) {
 
@@ -2363,7 +2110,7 @@ Mosca {
 				sig = FoaEncode.ar(sig, a2b);
 				sig = sig * env;
 				Out.ar(fumabus, sig);
-			}).add;
+			}).send(server);
 
 		} {
 
@@ -2383,12 +2130,16 @@ Mosca {
 				* env;
 				soaSig = [w, x, y, z, r, s, t, u, v];
 				Out.ar(fumabus, soaSig);
-			}).load(server);
+			}).send(server);
 		};
 
-		//run the makeSpatialisers function for each types of local reverbs
+		//run the makeSpatialisers methode for each types of local reverbs
 
-		localReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
+		localReverbFunc = Array2D(4, 3);
+
+		localReverbFunc[0, 0] = "_pass";
+
+		localReverbFunc[0, 1] = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			var temp = p;
 			16.do({ temp = AllpassC.ar(temp, 0.08, room * { Rand(0, 0.08) } +
 				{ Rand(0, 0.001) },
@@ -2396,7 +2147,7 @@ Mosca {
 			lrevRef.value = temp * locallev;
 		};
 
-		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
+		localReverbFunc[0, 2] = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
 			locallev, room, damp |
 			var temp1 = p1, temp2 = p2;
 			8.do({ temp1 = AllpassC.ar(temp1, 0.08, room * { Rand(0, 0.08) } +
@@ -2409,7 +2160,7 @@ Mosca {
 			lrev2Ref.value = temp2 * locallev;
 		};
 		//
-		// localReverbBFormatFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
+		// localReverbFunc[0, 3] = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
 		// 	locallev, room, damp |
 		// 	var temp1 = p1, temp2 = p2;
 		// 	8.do({ temp1 = AllpassC.ar(temp1, 0.08, room * { Rand(0, 0.08) } +
@@ -2422,7 +2173,6 @@ Mosca {
 		// 	lrev2Ref.value = temp2 * locallev;
 		// };
 
-		makeSpatialisers.value(rev_type:"_pass");
 
 		// freeverb defs
 
@@ -2442,7 +2192,7 @@ Mosca {
 				convsig = FoaEncode.ar(convsig.flat, a2b);
 				convsig = convsig * env;
 				Out.ar(fumabus, convsig);
-			}).add;
+			}).send(server);
 
 		} {
 
@@ -2467,17 +2217,19 @@ Mosca {
 					soa_a12_encoder_matrix);
 				soaSig = [w, x, y, z, r, s, t, u, v];
 				Out.ar(fumabus, soaSig);
-			}).add;
+			}).send(server);
 
 		};
 
-		//run the makeSpatialisers function for each types of local reverbs
+		//run the makeSpatialisers methode for each types of local reverbs
 
-		localReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room = 0.5, damp = 0.5 |
+		localReverbFunc[1, 0] = "_free";
+
+		localReverbFunc[1, 1] = { | lrevRef, p, rirWspectrum, locallev, room = 0.5, damp = 0.5 |
 			lrevRef.value = FreeVerb.ar(p, mix: 1, room: room, damp: damp, mul: locallev);
 		};
 
-		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev,
+		localReverbFunc[1, 2] = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev,
 			room = 0.5, damp = 0.5|
 			var temp;
 			temp = FreeVerb2.ar(p1, p2, mix: 1, room: room, damp: damp, mul: locallev);
@@ -2485,7 +2237,7 @@ Mosca {
 			lrev2Ref.value = temp[1];
 		};
 
-		// localReverbBFormatFunc = { | lrevRef, p, a0ir, a1ir, a2ir, a3ir,
+		// localReverbFunc[1, 3] = { | lrevRef, p, a0ir, a1ir, a2ir, a3ir,
 		// 	a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir, locallev,
 		// 	room = 0.5, damp = 0.5|
 		// 	var temp, sig;
@@ -2510,23 +2262,22 @@ Mosca {
 		// 	}
 		// };
 
-		makeSpatialisers.value(rev_type:"_free");
 
 		// function for no-reverb option
 
-		localReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp|
+		localReverbFunc[2, 0] = "";
+
+		localReverbFunc[2, 1] = { | lrevRef, p, rirWspectrum, locallev, room, damp|
 		};
 
-		localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
+		localReverbFunc[2, 2] = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
 			locallev, room, damp |
 		};
 
-		// localReverbBFormatFunc = { | lrevRef, p, a0ir, a1ir, a2ir, a3ir,
+		// localReverbFunc[2, 3] = { | lrevRef, p, a0ir, a1ir, a2ir, a3ir,
 		// 	a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir, locallev,
 		// 	room, damp |
 		// };
-
-		makeSpatialisers.value(rev_type:"");
 
 		rirList = Array.newClear();
 
@@ -2718,7 +2469,7 @@ Mosca {
 					convsig = FoaEncode.ar(convsig, a2b);
 					convsig = convsig * env;
 					Out.ar(fumabus, convsig);
-				}).add;
+				}).send(server);
 
 			} {
 
@@ -2770,17 +2521,19 @@ Mosca {
 						soa_a12_encoder_matrix);
 					soaSig = [w, x, y, z, r, s, t, u, v];
 					Out.ar(fumabus, soaSig);
-				}).add;
+				}).send(server);
 
 			};
 
-			//run the makeSpatialisers function for each types of local reverbs
+			//run the makeSpatialisers methode for each types of local reverbs
 
-			localReverbFunc = { | lrevRef, p, wir, locallev, room, damp |
+			localReverbFunc[3, 0] = "_conv";
+
+			localReverbFunc[3, 1] = { | lrevRef, p, wir, locallev, room, damp |
 				lrevRef.value = PartConv.ar(p, fftsize, wir, locallev);
 			};
 
-			localReverbStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, zir, locallev,
+			localReverbFunc[3, 2] = { | lrev1Ref, lrev2Ref, p1, p2, zir, locallev,
 				room, damp |
 				var temp1 = p1, temp2 = p2;
 				temp1 = PartConv.ar(p1, fftsize, zir, locallev);
@@ -2788,9 +2541,6 @@ Mosca {
 				lrev1Ref.value = temp1 * locallev;
 				lrev2Ref.value = temp2 * locallev;
 			};
-
-
-			makeSpatialisers.value(rev_type:"_conv");
 
 			// create fonctions to pass rri busses as Synth arguments
 
@@ -2836,12 +2586,14 @@ Mosca {
 
 		};
 
+
+		localReverbFunc.rowsDo({ |item, count| this.makeSpatialisers(count); });
+
+
 		// Lauch GUI
 		if(guiflag) {
 			this.gui;
 		};
-
-		//////// END SYNTHDEFS ///////////////
 
 
 		// this regulates file playing synths
@@ -2853,9 +2605,7 @@ Mosca {
 				nfontes.do({
 					| i |
 					{
-						if ((tfieldProxy[i].value != "") ||
-							((scn[i] > 0) && (ncan[i] > 0))
-							|| (hwncheckProxy[i].value && (ncan[i] > 0)) ) {
+						if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
 							if (spheval[i].rho > plim) {
 								firstTime[i] = true;
 								if(espacializador[i].isPlaying) {
@@ -2922,11 +2672,6 @@ Mosca {
 		/// OSSIA bindings
 
 		this.ossia(allCrtitical);
-
-		//// LAUNCH INITIAL SYNTH
-
-		globDec = Synth(\globDecodeSynth,
-			target:glbRevDecGrp,addAction: \addToTail);
 
 	} // end initMosca
 
