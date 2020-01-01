@@ -23,6 +23,8 @@ may be downloaded here: http://escuta.org/mosca
 
 		// Ambitools
 		if (\HOAAzimuthRotator1.asClass.notNil) {
+			lastN3D = lastN3D + 1; // increment last N3D lib index
+			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("Ambitools");
 
 			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
@@ -37,6 +39,8 @@ may be downloaded here: http://escuta.org/mosca
 
 		// HoaLib
 		if (\HOALibEnc3D1.asClass.notNil) {
+			lastN3D = lastN3D + 1; // increment last N3D lib index
+			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("HoaLib");
 
 			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
@@ -52,6 +56,8 @@ may be downloaded here: http://escuta.org/mosca
 
 		// ADT
 		if (\HOAmbiPanner1.asClass.notNil) {
+			lastN3D = lastN3D + 1; // increment last N3D lib index
+			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("ADT");
 
 			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
@@ -68,6 +74,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		// ATK
 		if (\FoaEncode.asClass.notNil) {
+			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("ATK");
 
 			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
@@ -90,6 +97,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		// BF-FMH
 		if (\FMHEncode1.asClass.notNil) {
+			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("BF-FMH");
 
 			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
@@ -104,6 +112,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		// JoshGrain
 		if (\MonoGrainBF.asClass.notNil) {
+			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("Josh");
 
 			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,

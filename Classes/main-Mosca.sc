@@ -65,7 +65,7 @@ Mosca {
 	level, lp, lib, libName, convert, dstrv, dstrvtypes, clsrv,
 	clsRvtypes,
 	winCtl, originCtl, hwCtl,
-	xbox, ybox, sombuf, sbus, mbus,
+	xbox, ybox, sombuf,
 	rbox, abox, vbox, gbox, lbox, dbox, dpbox, zbox,
 	a1check, a2check, a3check, a4check, a5check, a1box, a2box, a3box,
 	a4box, a5box,
@@ -137,8 +137,8 @@ Mosca {
 	rirList, irSpecPar, wxyzSpecPar, zSpecPar, wSpecPar,
 	spatList, spatFuncs,
 	// list of spat libs
-	lastN3D = 2, // last N3D lib index
-	lastFUMA = 5, // last FUMA lib index
+	lastN3D = -1, // last N3D lib index
+	lastFUMA = -1, // last FUMA lib index
 	playList = #["File","HWBus","SWBus","Stream"],
 	b2a, a2b, n2f, f2n,
 	blips,
@@ -253,8 +253,6 @@ Mosca {
 		dstrvtypes = Array.newClear(nfontes);
 		hwn = Array.newClear(nfontes);
 		scn = Array.newClear(nfontes);
-		mbus = Array.newClear(nfontes);
-		sbus = Array.newClear(nfontes);
 		ncanais = Array.newClear(nfontes);
 		// 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		ncan = Array.newClear(nfontes);
@@ -2602,8 +2600,6 @@ Mosca {
 		n3dbus.free;
 		nfontes.do { | x |
 			espacializador[x].free;
-			mbus[x].free;
-			sbus[x].free;
 			//      bfbus.[x].free;
 			sombuf[x].free;
 			streambuf[x].free;
