@@ -34,7 +34,6 @@ Mosca {
 	<dur,
 	<>looping,
 	serport,
-	offsetheading,
 	libbox, lpcheck, dstrvbox, hwncheck, scncheck,
 	spcheck, dfcheck,
 	ncanbox, businibox,
@@ -50,6 +49,7 @@ Mosca {
 	roll, rollnumboxProxy,
 	heading, headingnumboxProxy,
 	// head tracking
+	troutine, kroutine, ioffsetheading,
 	trackarr, trackarr2, tracki, trackPort,
 	// track2arr, track2arr2, track2i,
 	headingOffset,
@@ -74,7 +74,7 @@ Mosca {
 	//oxbox, oybox, ozbox,
 	//funcs, // apparently unused
 	//lastx, lasty, // apparently unused
-	zlev, znumbox, zslider,
+	zlev, znumbox, zslider, guiflag = false,
 	glev,
 	lslider,
 	llev, rlev, dlev,
@@ -152,36 +152,31 @@ Mosca {
 	vbap_buffer,
 	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
 	cart, spher, foa_a12_decoder_matrix,
-	width, halfwidth, height, halfheight, novoplot, updateGuiCtl,
-	lastGui, guiInt,
+	novoplot, updateGuiCtl,
 	lastAutomation = nil,
 	firstTime,
 	isPlay = false,
 	playingBF,
-	currentsource,
-	guiflag, baudi,
-	watcher, troutine, kroutine, prjDr,
+	currentsource, baudi,
+	watcher, prjDr,
 	plim = 120, // distance limit from origin where processes continue to run
 	fftsize = 2048, halfPi = 1.5707963267949, rad2deg = 57.295779513082 ,
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
-	*new { arg projDir, nsources = 10, width = 800, dur = 180, rirBank,
+	*new { arg projDir, nsources = 10, dur = 180, rirBank,
 		server = Server.local, parentOssiaNode, allCrtitical = false, decoder,
 		maxorder = 1, speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus,
-		serport, offsetheading = 0, recchans = 2, recbus = 0, guiflag = true,
-		guiint = 0.07, autoloop = false;
+		recchans = 2, recbus = 0, autoloop = false;
 
-		^super.new.initMosca(projDir, nsources, width, dur, rirBank,
-			server, parentOssiaNode, allCrtitical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, serport, offsetheading, recchans,
-			recbus, guiflag, guiint, autoloop);
+		^super.new.initMosca(projDir, nsources, dur, rirBank, server, parentOssiaNode,
+			allCrtitical, decoder, maxorder, speaker_array, outbus, suboutbus, rawformat,
+			rawoutbus, recchans, recbus, autoloop);
 	}
 
 
-	initMosca { | projDir, nsources, iwidth, idur, rirBank, iserver, iparentOssiaNode,
-		allCrtitical, decoder, imaxorder, speaker_array, outbus, suboutbus,
-		rawformat, rawoutbus, iserport, ioffsetheading, irecchans, irecbus,
-		iguiflag, iguiint, iautoloop |
+	initMosca { | projDir, nsources, idur, rirBank, iserver, iparentOssiaNode, allCrtitical,
+		decoder, imaxorder, speaker_array, outbus, suboutbus, rawformat, rawoutbus,
+		irecchans, irecbus, iautoloop |
 
 		var subOutFunc,
 		perfectSphereFunc, bfOrFmh,
@@ -236,83 +231,13 @@ Mosca {
 			insertFlag[i] = 0;
 		};
 
-		if (iwidth < 600) {
-			width = 600;
-		} {
-			width = iwidth;
-		};
-
-		halfwidth = width * 0.5;
-		height = width; // on init
-		halfheight = halfwidth;
 		dur = idur;
-		serport = iserport;
-		offsetheading = ioffsetheading;
 		recchans = irecchans;
 		recbus = irecbus;
-		guiflag = iguiflag;
 
-		currentsource = 0;
-		lastGui = Main.elapsedTime;
-		guiInt = iguiint;
 		autoloopval = iautoloop;
 
 		looping = false;
-
-		if (serport.notNil) {
-			hdtrk = true;
-			SerialPort.devicePattern = serport;
-			// needed in serKeepItUp routine - see below
-			trackPort = SerialPort(serport, 115200, crtscts: true);
-			//trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
-			//	nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol
-			trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
-			//protocol
-			trackarr2= trackarr.copy;
-			tracki= 0;
-			//track2arr=
-			//[247, 248, 249, 250, nil, nil, nil, nil, nil, nil, nil, nil, 255];
-			//protocol
-			//track2arr2= trackarr.copy;
-			//track2i= 0;
-
-
-			trackPort.doneAction = {
-				"Serial port down".postln;
-				troutine.stop;
-				troutine.reset;
-			};
-
-
-			troutine = Routine.new({
-				inf.do{
-					this.matchTByte(trackPort.read);
-				};
-			});
-
-			kroutine = Routine.new({
-				inf.do{
-					if (trackPort.isOpen.not) // if serial port is closed
-					{
-						"Trying to reopen serial port!".postln;
-						if (SerialPort.devices.includesEqual(serport))
-						// and if device is actually connected
-						{
-							"Device connected! Opening port!".postln;
-							troutine.stop;
-							troutine.reset;
-							trackPort = SerialPort(serport, 115200,
-								crtscts: true);
-							troutine.play; // start tracker routine again
-						}
-					};
-					1.wait;
-				};
-			});
-
-			//headingOffset = offsetheading;
-		};
-
 
 		///////////////////// DECLARATIONS FROM gui /////////////////////
 
@@ -2590,11 +2515,6 @@ Mosca {
 		localReverbFunc.rowsDo({ |item, count| this.makeSpatialisers(count); });
 
 
-		// Lauch GUI
-		if(guiflag) {
-			this.gui;
-		};
-
 
 		// this regulates file playing synths
 		watcher = Routine.new({
@@ -2660,15 +2580,6 @@ Mosca {
 
 		watcher.play;
 
-		///////////////
-
-		if (serport.notNil) {
-			//troutine = this.trackerRoutine; // start parsing of serial head tracker data
-			//	kroutine = this.serialKeepItUp;
-			troutine.play;
-			kroutine.play;
-		};
-
 		/// OSSIA bindings
 
 		this.ossia(allCrtitical);
@@ -2679,15 +2590,13 @@ Mosca {
 	free {
 
 		control.quit;
-		if (serport.notNil) {
-			trackPort.close;
-			//				this.trackerRoutine.stop;
-			//				this.serialKeepItUp.stop;
-		};
 
-		troutine.stop;
-		kroutine.stop;
-		watcher.stop;
+		if (hdtrk) {
+			trackPort.close;
+			troutine.stop;
+			kroutine.stop;
+			watcher.stop;
+		};
 
 		fumabus.free;
 		n3dbus.free;

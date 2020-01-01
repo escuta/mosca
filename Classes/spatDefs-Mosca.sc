@@ -265,7 +265,7 @@ may be downloaded here: http://escuta.org/mosca
 							globallev.clip(0, 1) * glev);
 					}).send(server);
 
-					[9, 16, 25, 36].do { |item, count|
+					[9, 16, 25].do { |item, count|
 						var ord = (item.sqrt) - 1;
 
 						// assume N3D input
@@ -347,7 +347,7 @@ may be downloaded here: http://escuta.org/mosca
 							globallev.clip(0, 1) * glev);
 					}).send(server);
 
-					[9, 16, 25, 36].do { |item, count|
+					[9, 16, 25].do { |item, count|
 						var ord = (item.sqrt) - 1;
 
 						// assume N3D input
@@ -385,7 +385,7 @@ may be downloaded here: http://escuta.org/mosca
 
 							outPutFuncs[0].value(p, p,
 								globallev.clip(0, 1) * glev);
-						}).load(server);
+						}).send(server);
 					};
 				};
 

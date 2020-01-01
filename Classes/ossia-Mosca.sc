@@ -336,7 +336,7 @@ may be downloaded here: http://escuta.org/mosca
 			ossiaaud[i].callback_({ arg num;
 				this.auditionFunc(i, num.value);
 				if (guiflag) {
-					{ novoplot.value; }.defer(guiInt);
+					{ novoplot.value; }.defer;
 					if (i == currentsource) {
 						{ baudi.value = num.value.asInteger; }.defer;
 					};

@@ -18,7 +18,7 @@ may be downloaded here: http://escuta.org/mosca
 
 + Mosca {
 
-	gui {
+	gui { | width = 800, guiint = 0.07 |
 
 		var furthest,
 		itensdemenu,
@@ -50,9 +50,24 @@ may be downloaded here: http://escuta.org/mosca
 		//m,
 		moveSource,
 		zoom_factor = 1,
-		zSliderHeight = height * 2 / 3,
-		hdtrkcheck;
+		zSliderHeight,
+		lastGui = Main.elapsedTime,
+		halfwidth, height, halfheight,
+		hdtrkcheck, iguiint;
 
+		guiflag = true;
+
+		if (width < 600) {
+			width = 600;
+		};
+
+		halfwidth = width * 0.5;
+		height = width; // on init
+		halfheight = halfwidth;
+		zSliderHeight = height * 2 / 3;
+
+		currentsource = 0;
+		iguiint = guiint;
 
 		// Note there is an extreme amount repetition occurring here.
 		// See the calling function. fix
@@ -99,7 +114,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		novoplot = { |dirrect = false|
 			period = Main.elapsedTime - lastGui;
-			if (period > guiInt) {
+			if (period > iguiint) {
 				lastGui =  Main.elapsedTime;
 				{
 					{ zlev[currentsource] = spheval[currentsource].z; }.defer;
@@ -107,7 +122,7 @@ may be downloaded here: http://escuta.org/mosca
 						* 0.5; }.defer;
 					{ znumbox.value = zlev[currentsource]; }.defer;
 					{ win.refresh; }.defer;
-				}.defer(guiInt);
+				}.defer(iguiint);
 			};
 		};
 
@@ -869,9 +884,9 @@ may be downloaded here: http://escuta.org/mosca
 		hwCtl[1][0].string = "Nb. of chans.";
 		hwCtl[1][0].visible = false;
 		hwCtl[0][0] = PopUpMenu(win, Rect(10, 50, 40, 20));
-		hwCtl[0][0].items = ["1", "2", "4", "9", "16", "25", "36"];
+		hwCtl[0][0].items = ["1", "2", "4", "9", "16", "25"];
 		hwCtl[0][0].action = { | num |
-			var nbChans = [1, 2, 4, 9, 16, 25, 36];
+			var nbChans = [1, 2, 4, 9, 16, 25];
 			{ncanbox[currentsource].valueAction = nbChans[num.value];}.defer;
 			ncan[currentsource] = nbChans[num.value];
 		};
@@ -2346,7 +2361,7 @@ may be downloaded here: http://escuta.org/mosca
 
 			wdados.close;
 			waux.close;
-			this.free;
+			guiflag = false;
 
 		});
 
