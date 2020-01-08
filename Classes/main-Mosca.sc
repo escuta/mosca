@@ -778,8 +778,9 @@ Mosca {
 					{cbox[i].value = num.value}.defer;
 					if (i == currentsource)
 					{
-						{winCtl[0][2].value = num.value}.defer;
-						{winCtl[1][2].value = num.value}.defer;
+						{winCtl[0][2].value = num.value;
+						winCtl[1][2].value = num.value;
+						novoplot.value;}.defer;
 					};
 				};
 
@@ -1235,7 +1236,7 @@ Mosca {
 			globDec.set(\level, num.value);
 
 			if (guiflag) {
-				masterslider.value = num.value * 0.5;
+				{masterslider.value = num.value * 0.5;}.defer;
 			};
 
 			if (ossiamaster.v != num.value) {
@@ -2053,7 +2054,7 @@ Mosca {
 				* env;
 				soaSig = [w, x, y, z, r, s, t, u, v];
 				Out.ar(fumabus, soaSig);
-			}).send(server);
+			}).load(server);
 		};
 
 		//run the makeSpatialisers methode for each types of local reverbs

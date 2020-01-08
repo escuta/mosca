@@ -90,12 +90,11 @@ may be downloaded here: http://escuta.org/mosca
 				var x, y;
 				var topView = spheval[i] * zoom_factor * 0.01;
 				var lev = topView.z;
-				var color = lev * 0.4;
 				{x = halfwidth + (topView.x * halfheight)}.defer;
 				{y = halfheight - (topView.y * halfheight)}.defer;
 				Pen.addArc(x@y, 14 + (lev * 0.01 * halfheight * 2), 0, 2pi);
 				if ((audit[i] || isPlay) && (lev.abs <= plim)) {
-					Pen.fillColor = Color.new255(179, 90,209);
+					Pen.fillColor = Color.new255(179, 90, 209, 55 + (clev[i] * 200));
 					Pen.fill;
 				} {
 					Pen.strokeColor = Color.white;
@@ -108,7 +107,6 @@ may be downloaded here: http://escuta.org/mosca
 			Pen.fillColor = Color.new255(37, 41, 48, 40);
 			Pen.addArc(halfwidth@halfheight, 14, 0, 2pi);
 			Pen.fill;
-
 		};
 
 

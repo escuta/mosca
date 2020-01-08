@@ -48,7 +48,7 @@ may be downloaded here: http://escuta.org/mosca
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = HOALibEnc3D.ar(maxorder,
-					(ref.value + sig) * Lag.kr(longest_radius / radius),
+					ref.value + (sig * Lag.kr(longest_radius / radius)),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(sig[0] * (1 - contract));
 			});
@@ -65,7 +65,7 @@ may be downloaded here: http://escuta.org/mosca
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = HOAmbiPanner.ar(maxorder,
-					(ref.value + sig) * Lag.kr(longest_radius / radius),
+					ref.value + (sig * Lag.kr(longest_radius / radius)),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(sig[0] * (1 - contract));
 			});
@@ -83,7 +83,7 @@ may be downloaded here: http://escuta.org/mosca
 				sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
 				// attenuate high freq with distance
 				rad = Lag.kr(longest_radius / radius);
-				sig = (sig + ref.value) * rad;
+				sig = ref.value + (sig * rad);
 				omni = FoaEncode.ar(sig, foaEncoderOmni);
 				spread = FoaEncode.ar(sig, foaEncoderSpread);
 				diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
@@ -142,7 +142,7 @@ may be downloaded here: http://escuta.org/mosca
 			elev = elev.clip(lowest_elevation, highest_elevation);
 			// restrict between min & max
 			ref.value = VBAP.ar(numoutputs,
-				(ref.value + sig) * (longest_radius / radius),
+					ref.value + (sig * (longest_radius / radius)),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100) * 0.5;
 			});
