@@ -32,7 +32,7 @@ may be downloaded here: http://escuta.org/mosca
 				var sig = HOAEncoder.ar(maxorder,
 					(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
 					Lag.kr(elevation), 0, 1, Lag.kr(radius), longest_radius);
-				ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(bFormNumChan - 1)];
+				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(sig[0] * (1 - contract));
 			});
 		};
 
@@ -50,7 +50,7 @@ may be downloaded here: http://escuta.org/mosca
 				sig = HOALibEnc3D.ar(maxorder,
 					(ref.value + sig) * Lag.kr(longest_radius / radius),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
-				ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(bFormNumChan - 1)];
+				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(sig[0] * (1 - contract));
 			});
 		};
 
@@ -67,7 +67,7 @@ may be downloaded here: http://escuta.org/mosca
 				sig = HOAmbiPanner.ar(maxorder,
 					(ref.value + sig) * Lag.kr(longest_radius / radius),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 0);
-				ref.value = (sig * contract) + [sig[0] * (1 - contract), Silent.ar(bFormNumChan - 1)];
+				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(sig[0] * (1 - contract));
 			});
 		};
 
