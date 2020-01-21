@@ -69,14 +69,17 @@ may be downloaded here: http://escuta.org/mosca
 			});
 		});
 
-		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", Integer,
-			[0, spatList.size - 1], 0, 'clip', critical:true);
+		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", String, [spatList.first, spatList.last, spatList],
+			spatList.first, critical:true, repetition_filter:true);
 
 		ossiaMasterLib.description_(spatList.asString);
 
-		ossiaMasterLib.callback_({ arg num;
+		ossiaMasterLib.callback_({ arg string;
+
 			nfontes.do({ |i|
-				ossialib[i].v_(num.value);
+				if (ossialib[i].v != string.value) {
+					ossialib[i].v_(string.value);
+				};
 			});
 		});
 
