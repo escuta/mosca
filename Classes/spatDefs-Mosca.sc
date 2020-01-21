@@ -71,6 +71,23 @@ may be downloaded here: http://escuta.org/mosca
 			});
 		};
 
+		// SC-HOA
+		if (\HOASphericalHarmonics.asClass.notNil) {
+			lastN3D = lastN3D + 1; // increment last N3D lib index
+			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
+			spatList = spatList.add("SC-HOA");
+
+			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+				contract, win, rate, rand|
+				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
+				// attenuate high freq with distance
+				sig = HOASphericalHarmonics.coefN3D(maxorder,
+					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation))
+				* (ref.value + (sig * Lag.kr(longest_radius / radius)));
+				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(sig[0] * (1 - contract));
+			});
+		};
+
 
 		// ATK
 		if (\FoaEncode.asClass.notNil) {

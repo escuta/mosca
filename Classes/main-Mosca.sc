@@ -536,8 +536,8 @@ Mosca {
 					};
 				};
 
-				if (ossialib[i].v != num.value) {
-					ossialib[i].v_(num.value);
+				if (ossialib[i].v != spatList[num.value]) {
+					ossialib[i].v_(spatList[num.value]);
 				};
 			});
 

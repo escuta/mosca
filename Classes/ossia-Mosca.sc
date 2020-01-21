@@ -318,14 +318,16 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-			ossialib[i] = OSSIA_Parameter(ossiasrc[i], "Library", Integer,
-				[0, spatList.size - 1], 0, 'clip', critical:true, repetition_filter:true);
+			ossialib[i] = OSSIA_Parameter(ossiasrc[i], "Library", String, [spatList.first, spatList.last, spatList],
+				spatList.first, critical:true, repetition_filter:true);
 
 			ossialib[i].description_(spatList.asString);
 
-			ossialib[i].callback_({arg num;
-				if (libboxProxy[i].value != num.value) {
-					libboxProxy[i].valueAction = num.value;
+			ossialib[i].callback_({arg string;
+				var index = spatList.detectIndex({ arg item; item == string });
+
+				if (libboxProxy[i].value != index) {
+					libboxProxy[i].valueAction = index;
 				};
 			});
 
