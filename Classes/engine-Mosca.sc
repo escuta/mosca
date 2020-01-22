@@ -246,12 +246,13 @@ GUI Parameters usable in SynthDefs
 
 
 		nfontes.do { | i |
-			var flag, line = stcheckf.getLine(1024);
-			if (line == "true") {flag = true;} {flag = false;};
-			stcheckProxy[i].valueAction = flag;
+			var flag = { |string| if (string == "true") { true } { false } },
+			line = stcheckf.getLine(1024);
+
+			stcheckProxy[i].valueAction = flag.value(line);
 
 			line = filenames.getLine(1024);
-			if(line != "NULL") {
+			if (line != "NULL") {
 				tfieldProxy[i].valueAction = line;
 			} {
 				tfieldProxy[i].valueAction = "";
@@ -261,19 +262,16 @@ GUI Parameters usable in SynthDefs
 			libboxProxy[i].valueAction = line.asInteger;
 
 			line = loopedf.getLine(1024);
-			if (line == "true") {flag = true;} {flag = false;};
-			lpcheckProxy[i].valueAction = flag;
+			lpcheckProxy[i].valueAction = flag.value(line);
 
 			line = aformatrevf.getLine(1024);
 			dstrvboxProxy[i].valueAction = line.asInteger;
 
 			line = spreadf.getLine(1024);
-			if (line == "true") {flag = true;} {flag = false;};
-			spcheckProxy[i].valueAction = flag;
+			spcheckProxy[i].valueAction = flag.value(line);
 
 			line = diffusef.getLine(1024);
-			if (line == "true") {flag = true;} {flag = false;};
-			dfcheckProxy[i].valueAction = flag;
+			dfcheckProxy[i].valueAction = flag.value(line);
 
 			line = ncanf.getLine(1024);
 			ncanboxProxy[i].valueAction = line.asInteger;
@@ -282,12 +280,10 @@ GUI Parameters usable in SynthDefs
 			businiboxProxy[i].valueAction = line.asInteger;
 
 			line = hwinf.getLine(1024);
-			if (line == "true") {flag = true;} {flag = false;};
-			hwncheckProxy[i].valueAction = flag;
+			hwncheckProxy[i].valueAction = flag.value(line);
 
 			line = scinf.getLine(1024);
-			if (line == "true") {flag = true;} {flag = false;};
-			scncheckProxy[i].value = flag;
+			scncheckProxy[i].value = flag.value(line);
 		};
 
 		filenames.close;
