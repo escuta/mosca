@@ -246,82 +246,46 @@ GUI Parameters usable in SynthDefs
 
 
 		nfontes.do { | i |
-			var line = filenames.getLine(1024);
+			var flag, line = stcheckf.getLine(1024);
+			if (line == "true") {flag = true;} {flag = false;};
+			stcheckProxy[i].valueAction = flag;
+
+			line = filenames.getLine(1024);
 			if(line != "NULL") {
 				tfieldProxy[i].valueAction = line;
 			} {
 				tfieldProxy[i].valueAction = "";
 			};
-		};
 
-		nfontes.do { | i |
-			var line = libf.getLine(1024);
+			line = libf.getLine(1024);
 			libboxProxy[i].valueAction = line.asInteger;
-		};
 
-		nfontes.do { | i |
-			var line = loopedf.getLine(1024);
-			var flag;
+			line = loopedf.getLine(1024);
 			if (line == "true") {flag = true;} {flag = false;};
 			lpcheckProxy[i].valueAction = flag;
-			//lp[i] 0 or 1
-		};
 
-		nfontes.do { | i |
-			var line = aformatrevf.getLine(1024);
+			line = aformatrevf.getLine(1024);
 			dstrvboxProxy[i].valueAction = line.asInteger;
-			//dstrv[i] 0 or 1
-		};
 
-		nfontes.do { | i |
-			var line = spreadf.getLine(1024);
-			var flag;
+			line = spreadf.getLine(1024);
 			if (line == "true") {flag = true;} {flag = false;};
 			spcheckProxy[i].valueAction = flag;
-		};
 
-		nfontes.do { | i |
-			var line = diffusef.getLine(1024);
-			var flag;
+			line = diffusef.getLine(1024);
 			if (line == "true") {flag = true;} {flag = false;};
 			dfcheckProxy[i].valueAction = flag;
-		};
-		nfontes.do { | i |
-			var line = ncanf.getLine(1024);
+
+			line = ncanf.getLine(1024);
 			ncanboxProxy[i].valueAction = line.asInteger;
-		};
 
-		nfontes.do { | i |
-			var line = businif.getLine(1024);
+			line = businif.getLine(1024);
 			businiboxProxy[i].valueAction = line.asInteger;
-		};
 
-		nfontes.do { | i |
-			var line = stcheckf.getLine(1024);
-			var flag;
+			line = hwinf.getLine(1024);
 			if (line == "true") {flag = true;} {flag = false;};
-			stcheckProxy[i].valueAction = flag;
-		};
-
-		//		nfontes.do { arg i;
-		//	var line = hwinf.getLine(1024);
-		//	hwncheckProxy[i].valueAction = line;
-		// };
-		nfontes.do { | i |
-			var line = hwinf.getLine(1024);
-			var flag;
-			if (line == "true") {flag = true;} {flag = false;};
-
-			//("line = " ++ line.asString).postln;
-
-			//hwncheckProxy[i].valueAction = line.booleanValue;
-			// why, why, why is this asBoolean necessary!
 			hwncheckProxy[i].valueAction = flag;
-		};
 
-		nfontes.do { | i |
-			var line = scinf.getLine(1024);
-			var flag;
+			line = scinf.getLine(1024);
 			if (line == "true") {flag = true;} {flag = false;};
 			scncheckProxy[i].value = flag;
 		};
