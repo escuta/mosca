@@ -69,7 +69,7 @@ may be downloaded here: http://escuta.org/mosca
 			});
 		});
 
-		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", String, [spatList.first, spatList.last, spatList],
+		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", String, [nil, nil, spatList],
 			spatList.first, critical:true, repetition_filter:true);
 
 		ossiaMasterLib.description_(spatList.asString);
@@ -321,7 +321,7 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-			ossialib[i] = OSSIA_Parameter(ossiasrc[i], "Library", String, [spatList.first, spatList.last, spatList],
+			ossialib[i] = OSSIA_Parameter(ossiasrc[i], "Library", String, [nil, nil, spatList],
 				spatList.first, critical:true, repetition_filter:true);
 
 			ossialib[i].description_(spatList.asString);
