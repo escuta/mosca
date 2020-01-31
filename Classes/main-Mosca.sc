@@ -59,7 +59,7 @@ Mosca {
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	cbox, clev, angle, ncanais, audit, gbus, gbfbus, n3dbus,
+	cbox, clev, angle, audit, gbus, gbfbus, n3dbus,
 	gbixfbus, nonambibus,
 	playEspacGrp, glbRevDecGrp,
 	level, lp, lib, libName, convert, dstrv, dstrvtypes, clsrv,
@@ -253,12 +253,8 @@ Mosca {
 		dstrvtypes = Array.newClear(nfontes);
 		hwn = Array.newClear(nfontes);
 		scn = Array.newClear(nfontes);
-		ncanais = Array.newClear(nfontes);
-		// 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
 		ncan = Array.newClear(nfontes);
 		// 0 = não, nem estéreo. 1 = mono. 2 = estéreo.
-		// note that ncan refers to # of channels in streamed sources.
-		// ncanais is related to sources read from file
 		busini = Array.newClear(nfontes);
 		// initial bus # in streamed audio grouping
 		// (ie. mono, stereo or b-format)
@@ -478,7 +474,6 @@ Mosca {
 			aux5[i] = 0;
 			streamdisk[i] = false;
 			ncan[i] = 1;
-			ncanais[i] = 1;
 			busini[i] = 0;
 			audit[i] = false;
 			playingBF[i] = false;
@@ -1086,7 +1081,7 @@ Mosca {
 			});
 
 			ncanboxProxy[i].action = { | num |
-				ncan[i] = num.value;
+				ncan[i] = num.value.asInteger;
 
 				if (num.value < 4) {
 					cboxProxy[i].valueAction_(1);
@@ -1173,7 +1168,7 @@ Mosca {
 				if (path != "") {
 					var sf = SoundFile.new;
 					sf.openRead(path);
-					ncanais[i] = sf.numChannels;
+					ncanboxProxy[i].valueAction_(sf.numChannels);
 					sf.close;
 
 					if (streamdisk[i].not) {

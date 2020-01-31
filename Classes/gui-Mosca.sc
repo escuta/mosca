@@ -125,19 +125,12 @@ may be downloaded here: http://escuta.org/mosca
 		};
 
 		updateGuiCtl = { |ctl, num|
-			var chans;
-
-			if (hwncheckProxy[currentsource].value.not
-				&& scncheckProxy[currentsource].value.not) {
-				chans = ncanais[currentsource];
-			} {
-				chans = ncan[currentsource];
-			};
+			var chans = ncan[currentsource];
 
 			switch (ctl,
 				\chan,
 				{ case
-					{ (chans.value < 2) || (chans.value == 3) }
+					{ chans.value == 1 }
 					{
 						winCtl[0][8].visible = false;
 						winCtl[1][8].visible = false;
@@ -886,7 +879,6 @@ may be downloaded here: http://escuta.org/mosca
 		hwCtl[0][0].action = { | num |
 			var nbChans = [1, 2, 4, 9, 16, 25];
 			{ncanbox[currentsource].valueAction = nbChans[num.value];}.defer;
-			ncan[currentsource] = nbChans[num.value];
 		};
 		hwCtl[0][0].visible = false;
 
@@ -936,7 +928,8 @@ may be downloaded here: http://escuta.org/mosca
 		znumbox.action = { | num |
 			{ zslider.value = (num.value * 0.005) + 0.5;
 				if(ossiaorient.v == [0, 0, 0]) {
-					zboxProxy[currentsource].valueAction = num.value + origine.z; // exeption to record z mouvements after XY automation
+					zboxProxy[currentsource].valueAction = num.value + origine.z;
+					// exeption to record z mouvements after XY automation
 				} {
 				spheval[currentsource] = spheval[currentsource].asCartesian.z_(num.value).asSpherical;
 
@@ -1318,7 +1311,7 @@ may be downloaded here: http://escuta.org/mosca
 		winCtl[0][7].align = \center;
 		winCtl[0][7].action = { | num |
 			{abox[currentsource].valueAction = num.value;}.defer;
-			if((ncanais[currentsource] == 2) || (ncan[currentsource] == 2)) {
+			if(ncan[currentsource] == 2) {
 				espacializador[currentsource].set(\angle, num.value);
 				this.setSynths(currentsource, \angle, num.value);
 				angle[currentsource] = num.value;
@@ -1331,7 +1324,7 @@ may be downloaded here: http://escuta.org/mosca
 		winCtl[1][7].value = 1.0471975511966 / pi;
 		winCtl[1][7].action = { | num |
 			{abox[currentsource].valueAction = num.value * pi;}.defer;
-			if((ncanais[currentsource] == 2) || (ncan[currentsource] == 2)) {
+			if(ncan[currentsource] == 2) {
 				//			espacializador[currentsource].set(\angle,
 				//b.map(num.value));
 				espacializador[currentsource].set(\angle, num.value * pi);
@@ -1925,8 +1918,6 @@ may be downloaded here: http://escuta.org/mosca
 			randbox[i].clipLo = 0;
 			libbox[i].clipHi = spatList.size -1;
 			libbox[i].clipLo = 0;
-			ncanbox[i].clipHi = 36;
-			ncanbox[i].clipLo = 0;
 			businibox[i].clipLo = 0;
 
 			vbox[i].scroll_step = 0.01;
@@ -1945,8 +1936,6 @@ may be downloaded here: http://escuta.org/mosca
 			ratebox[i].step = 0.1;
 			winbox[i].scroll_step = 0.01;
 			winbox[i].step = 0.01;
-			ncanbox[i].scroll_step = 1;
-			ncanbox[i].step = 1;
 			businibox[i].scroll_step = 1;
 			businibox[i].step = 1;
 
