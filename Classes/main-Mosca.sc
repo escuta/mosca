@@ -1087,6 +1087,13 @@ Mosca {
 
 			ncanboxProxy[i].action = { | num |
 				ncan[i] = num.value;
+
+				if (num.value < 4) {
+					cboxProxy[i].valueAction_(1);
+				} {
+					cboxProxy[i].valueAction_(0);
+				};
+
 				if (guiflag ) {
 					{ ncanbox[i].value = num.value }.defer;
 
