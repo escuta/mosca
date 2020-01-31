@@ -180,7 +180,9 @@ may be downloaded here: http://escuta.org/mosca
 			{ i > lastFUMA } { out_type = 2 };
 
 			playList.do { |play_type, j|
-				var stereo, mono = SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
+				var mono, stereo;
+
+				mono = SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 					azim = 0, elev = 0, radius = 200, level = 1,
 					dopamnt = 0, glev = 0, llev = 0,
@@ -212,7 +214,7 @@ may be downloaded here: http://escuta.org/mosca
 
 					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
 						globallev.clip(0, 1) * glev);
-				}).send(server);
+				});
 
 
 				stereo = SynthDef(item++"Stereo"++play_type++localReverbFunc[rev_type, 0], {
@@ -249,7 +251,20 @@ may be downloaded here: http://escuta.org/mosca
 					outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
 						(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
 						globallev.clip(0, 1) * glev);
-				}).send(server);
+				});
+
+				if (maxorder < 3) {
+					mono.send(server);
+					stereo.send(server);
+				} {
+					if (maxorder == 3) {
+						mono.send(server);
+						stereo.load(server);
+					} {
+						mono.load(server);
+						stereo.load(server);
+					};
+				};
 
 				if (item == "ATK") {
 
