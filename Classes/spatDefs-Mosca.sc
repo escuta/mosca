@@ -180,8 +180,7 @@ may be downloaded here: http://escuta.org/mosca
 			{ i > lastFUMA } { out_type = 2 };
 
 			playList.do { |play_type, j|
-
-				SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
+				var stereo, mono = SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 					azim = 0, elev = 0, radius = 200, level = 1,
 					dopamnt = 0, glev = 0, llev = 0,
@@ -216,7 +215,7 @@ may be downloaded here: http://escuta.org/mosca
 				}).send(server);
 
 
-				SynthDef(item++"Stereo"++play_type++localReverbFunc[rev_type, 0], {
+				stereo = SynthDef(item++"Stereo"++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 					azim = 0, elev = 0, radius = 0, level = 1,
 					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
