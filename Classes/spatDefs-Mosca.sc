@@ -295,7 +295,6 @@ may be downloaded here: http://escuta.org/mosca
 
 					[9, 16, 25].do { |item, count|
 						var ord = (item.sqrt) - 1;
-
 						// assume N3D input
 						SynthDef(\ATKBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
@@ -334,7 +333,7 @@ may be downloaded here: http://escuta.org/mosca
 
 							outPutFuncs[1].value(p, p,
 								globallev.clip(0, 1) * glev);
-						}).send(server);
+						});
 					};
 				};
 
@@ -376,10 +375,10 @@ may be downloaded here: http://escuta.org/mosca
 					}).send(server);
 
 					[9, 16, 25].do { |item, count|
-						var ord = (item.sqrt) - 1;
+						var ord = (item.sqrt) - 1,
 
 						// assume N3D input
-						SynthDef(\AmbitoolsBFormat++play_type++item, {
+						hoaSynth = SynthDef(\AmbitoolsBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 200, level = 1,
 							dopamnt = 0, glev = 0, llev = 0,
@@ -413,7 +412,13 @@ may be downloaded here: http://escuta.org/mosca
 
 							outPutFuncs[0].value(p, p,
 								globallev.clip(0, 1) * glev);
-						}).send(server);
+						});
+
+						if (item > 16) {
+							hoaSynth.load(server);
+						} { hoaSynth.send(server);
+						};
+
 					};
 				};
 
