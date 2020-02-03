@@ -359,7 +359,6 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-
 			ossialev[i] = OSSIA_Parameter(ossiasrc[i], "Level", Float, [0, 2],
 				1, 'clip', critical:allCrtitical, repetition_filter:true);
 
@@ -370,7 +369,6 @@ may be downloaded here: http://escuta.org/mosca
 					vboxProxy[i].valueAction = num.value;
 				};
 			});
-
 
 
 			ossiadp[i] = OSSIA_Parameter(ossiasrc[i], "Doppler_amount", Float,
@@ -400,9 +398,11 @@ may be downloaded here: http://escuta.org/mosca
 				[0, (3 + rirList.size)], 0, 'clip',
 				critical:true, repetition_filter:true);
 
-			ossiadst[i].description_((["no-reverb",
+			ossiadst[i].description_(([
+				"no-reverb",
 				"freeverb",
-				"allpass", "A-format"] ++ rirList).asString);
+				"allpass", "A-format"]
+			++ rirList).asString);
 
 			ossiadst[i].callback_({arg num;
 				if (dstrvboxProxy[i].value != num.value) {
@@ -453,7 +453,9 @@ may be downloaded here: http://escuta.org/mosca
 				[0, pi], 1.05, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
-			ossiaangle[i].description_("Stereo");
+			ossiaangle[i].unit_(OSSIA_angle.radian);
+
+			ossiaangle[i].description_("Stereo only");
 
 			ossiaangle[i].callback_({arg num;
 				if (aboxProxy[i].value != num.value) {
@@ -467,7 +469,9 @@ may be downloaded here: http://escuta.org/mosca
 				[-pi, pi], 0, 'wrap',
 				critical:allCrtitical, repetition_filter:true);
 
-			ossiarot[i].description_("B-Format");
+			ossiarot[i].unit_(OSSIA_angle.radian);
+
+			ossiarot[i].description_("B-Format only");
 
 			ossiarot[i].callback_({arg num;
 				if (rboxProxy[i].value != num.value) {
@@ -495,7 +499,7 @@ may be downloaded here: http://escuta.org/mosca
 			ossiaspread[i] = OSSIA_Parameter(ossiaAtk[i], "Spread", Boolean,
 				critical:true, repetition_filter:true);
 
-			ossiaspread[i].description_("ATK");
+			ossiaspread[i].description_("ATK only");
 
 			ossiaspread[i].callback_({ arg but;
 				if (spcheckProxy[i].value != but.value) {
@@ -507,7 +511,7 @@ may be downloaded here: http://escuta.org/mosca
 			ossiadiff[i] = OSSIA_Parameter(ossiaAtk[i], "Diffuse", Boolean,
 				critical:true, repetition_filter:true);
 
-			ossiadiff[i].description_("ATK");
+			ossiadiff[i].description_("ATK only");
 
 			ossiadiff[i].callback_({ arg but;
 				if (dfcheckProxy[i].value != but.value) {
@@ -519,8 +523,6 @@ may be downloaded here: http://escuta.org/mosca
 			ossiactr[i] = OSSIA_Parameter(ossiasrc[i], "Contraction", Float,
 				[0, 1], 1.0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
-
-			ossiactr[i].description_("B-Format, JoshGrain & VBAP");
 
 			ossiactr[i].callback_({arg but;
 				if (cboxProxy[i].value != but.value) {
@@ -535,7 +537,8 @@ may be downloaded here: http://escuta.org/mosca
 				critical:allCrtitical, repetition_filter:true);
 
 			ossiarate[i].unit_(OSSIA_time.frequency);
-			ossiarate[i].description_("JoshGrain");
+
+			ossiarate[i].description_("JoshGrain only");
 
 			ossiarate[i].callback_({arg but;
 				if (rateboxProxy[i].value != but.value) {
@@ -549,7 +552,8 @@ may be downloaded here: http://escuta.org/mosca
 				critical:allCrtitical, repetition_filter:true);
 
 			ossiawin[i].unit_(OSSIA_time.second);
-			ossiawin[i].description_("JoshGrain");
+
+			ossiawin[i].description_("JoshGrain only");
 
 			ossiawin[i].callback_({arg but;
 				if (winboxProxy[i].value != but.value) {
@@ -562,7 +566,7 @@ may be downloaded here: http://escuta.org/mosca
 				[0, 1], 0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
-			ossiarand[i].description_("JoshGrain");
+			ossiarand[i].description_("JoshGrain only");
 
 			ossiarand[i].callback_({arg but;
 				if (randboxProxy[i].value != but.value) {
