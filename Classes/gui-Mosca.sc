@@ -1126,7 +1126,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 		textbuf = StaticText(originView, Rect(0, 0, 150, 20));
-		textbuf.string = "Cls. Reverb";
+		textbuf.string = "Close Reverb";
 		clsReverbox = PopUpMenu(originView, Rect(0, 20, 130, 20));
 		clsReverbox.items = ["no-reverb",
 			"freeverb",
@@ -1196,7 +1196,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 		winCtl[2][4] = StaticText(win, Rect(163, 210, 150, 20));
-		winCtl[2][4].string = "Dst. amount";
+		winCtl[2][4].string = "Distant amount";
 		winCtl[2][4].visible = false;
 		winCtl[0][4] = NumberBox(win, Rect(10, 210, 40, 20));
 		winCtl[0][4].value = 0;
@@ -1222,7 +1222,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 		winCtl[2][5] = StaticText(win, Rect(163, 230, 150, 20));
-		winCtl[2][5].string = "Dst. room/delay";
+		winCtl[2][5].string = "Distant room/delay";
 		winCtl[2][5].visible = false;
 		winCtl[0][5] = NumberBox(win, Rect(10, 230, 40, 20));
 		winCtl[0][5].value = 0.5;
@@ -1248,7 +1248,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 		winCtl[2][6] = StaticText(win, Rect(163, 250, 150, 20));
-		winCtl[2][6].string = "Dst. damp/decay";
+		winCtl[2][6].string = "Distant damp/decay";
 		winCtl[2][6].visible = false;
 		winCtl[0][6] = NumberBox(win, Rect(10, 250, 40, 20));
 		winCtl[0][6].value = 0.5;
@@ -1274,7 +1274,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 		winCtl[2][3] = StaticText(win, Rect(163, 270, 150, 20));
-		winCtl[2][3].string = "Cls. amount";
+		winCtl[2][3].string = "Close amount";
 		winCtl[2][3].visible = false;
 		winCtl[0][3] = NumberBox(win, Rect(10, 270, 40, 20));
 		winCtl[0][3].value = 0;

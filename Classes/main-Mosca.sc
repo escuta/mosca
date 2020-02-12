@@ -213,7 +213,7 @@ Mosca {
 		gbfbus = Bus.audio(server, fourOrNine); // global b-format bus
 		gbixfbus = Bus.audio(server, fourOrNine); // global n3d b-format bus
 		playEspacGrp = ParGroup.tail;
-		glbRevDecGrp = Group.after(playEspacGrp);
+		glbRevDecGrp = ParGroup.after(playEspacGrp);
 
 		synthRegistry = Array.newClear(nfontes);
 		insertFlag = Array.newClear(nfontes);
@@ -538,6 +538,8 @@ Mosca {
 
 
 			dstrvboxProxy[i].action_({ | num |
+				var revArray = ["no-reverb","freeverb","allpass"] ++ rirList;
+
 				case
 				{ num.value == 0 }
 				{ dstrvtypes[i] = "";
@@ -565,8 +567,8 @@ Mosca {
 					};
 				};
 
-				if (ossiadst[i].v != num.value) {
-					ossiadst[i].v_(num.value);
+				if (ossiadst[i].v != revArray[num.value]) {
+					ossiadst[i].v_(revArray[num.value]);
 				};
 			});
 
@@ -1248,6 +1250,7 @@ Mosca {
 
 
 		clsrvboxProxy.action_({ | num |
+			var revArray = ["no-reverb","freeverb","allpass"] ++ rirList;
 
 			clsrv = num.value;
 
@@ -1300,8 +1303,8 @@ Mosca {
 				{ updateGuiCtl.value(\clsrv, num.value) }.defer;
 			};
 
-			if (ossiacls.v != num.value) {
-				ossiacls.v_(num.value);
+			if (ossiacls.v != revArray[num.value]) {
+				ossiacls.v_(revArray[num.value]);
 			};
 		});
 
@@ -1660,7 +1663,7 @@ Mosca {
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			longest_radius = 18;
+			longest_radius = 1;
 			lowest_elevation = -90;
 			highest_elevation = 90;
 
@@ -1676,7 +1679,6 @@ Mosca {
 			}).send(server);
 		};
 
-
 		// define ambisonic decoder
 
 		if (suboutbus.notNil) {
@@ -1687,7 +1689,6 @@ Mosca {
 		} {
 			subOutFunc = { |signal, sublevel| };
 		};
-
 
 		if (decoder.isNil) {
 
@@ -2022,6 +2023,10 @@ Mosca {
 		// allpass reverbs
 		if (maxorder == 1) {
 
+			//if (server == Server.supernova) {
+
+			//} {
+
 			SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
 				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
 				sigx = In.ar(gbixfbus, 4);
@@ -2037,6 +2042,8 @@ Mosca {
 				sig = sig * env;
 				Out.ar(fumabus, sig);
 			}).send(server);
+
+			//};
 
 		} {
 

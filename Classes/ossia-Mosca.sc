@@ -96,17 +96,17 @@ may be downloaded here: http://escuta.org/mosca
 		});
 
 
-		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Dst._Reverb_all", Integer,
-			[0, (rirList.size + 2)], 0, 'clip', critical:true);
+		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Distant_Reverb_all", String,
+			[nil, nil, ["no-reverb","freeverb","allpass", "A-format"]
+			++ rirList], "no-reverb",critical:true, repetition_filter:true);
 
 		ossiaMasterRev.description_((["no-reverb",
-			"freeverb",
-			"allpass",
-			"A-format"] ++ rirList).asString);
+			"freeverb","allpass","A-format"] ++ rirList).asString);
 
-		ossiaMasterRev.callback_({ arg num;
+		ossiaMasterRev.callback_({ arg string;
+
 			nfontes.do({ |i|
-				ossiadst[i].v_(num.value);
+				ossiadst[i].v_(string);
 			});
 		});
 
@@ -183,20 +183,21 @@ may be downloaded here: http://escuta.org/mosca
 			};
 		});
 
-		ossiacls = OSSIA_Parameter(ossiaParent, "Cls._Reverb", Integer,
-			[0, (2 + rirList.size)], 0, 'clip', critical:true, repetition_filter:true);
+		ossiacls = OSSIA_Parameter(ossiaParent, "Close_Reverb", String,
+			[nil, nil, ["no-reverb","freeverb","allpass"] ++ rirList], "no-reverb",
+			critical:true, repetition_filter:true);
 
-		ossiacls.description_((["no-reverb",
-			"freeverb",
-			"allpass"] ++ rirList).asString);
+		ossiacls.description_((["no-reverb","freeverb","allpass"] ++ rirList).asString);
 
-		ossiacls.callback_({arg num;
-			if (clsrvboxProxy.value != num.value) {
-				clsrvboxProxy.valueAction = num.value;
+		ossiacls.callback_({arg string;
+			var index = (["no-reverb","freeverb","allpass"] ++ rirList).detectIndex({ arg item; item == string });
+
+			if (clsrvboxProxy.value != index) {
+				clsrvboxProxy.valueAction = index;
 			};
 		});
 
-		ossiaclsdel = OSSIA_Parameter(ossiacls, "Cls._room_delay", Float,
+		ossiaclsdel = OSSIA_Parameter(ossiacls, "Close_room_delay", Float,
 			[0, 1], 0.5, 'clip', critical:allCrtitical, repetition_filter:true);
 
 		ossiaclsdel.callback_({arg num;
@@ -205,7 +206,7 @@ may be downloaded here: http://escuta.org/mosca
 			};
 		});
 
-		ossiaclsdec = OSSIA_Parameter(ossiacls, "Cls._damp_decay", Float,
+		ossiaclsdec = OSSIA_Parameter(ossiacls, "Close_damp_decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCrtitical, repetition_filter:true);
 
 		ossiaclsdec.callback_({arg num;
@@ -381,7 +382,7 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-			ossiaclsam[i] = OSSIA_Parameter(ossiasrc[i], "Cls._amount", Float,
+			ossiaclsam[i] = OSSIA_Parameter(ossiasrc[i], "Close_amount", Float,
 				[0, 1], 0, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
@@ -394,26 +395,24 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-			ossiadst[i] = OSSIA_Parameter(ossiasrc[i], "Distant_Reverb", Integer,
-				[0, (3 + rirList.size)], 0, 'clip',
-				critical:true, repetition_filter:true);
+			ossiadst[i] = OSSIA_Parameter(ossiasrc[i], "Distant_Reverb", String,
+				[nil, nil, ["no-reverb","freeverb","allpass", "A-format"]
+					++ rirList], "no-reverb", critical:true, repetition_filter:true);
 
-			ossiadst[i].description_(([
-				"no-reverb",
-				"freeverb",
-				"allpass", "A-format"]
-			++ rirList).asString);
+			ossiadst[i].description_((["no-reverb","freeverb","allpass", "A-format"]
+				++ rirList).asString);
 
-			ossiadst[i].callback_({arg num;
-				if (dstrvboxProxy[i].value != num.value) {
-					dstrvboxProxy[i].valueAction = num.value;
+			ossiadst[i].callback_({arg string;
+				var index = (["no-reverb","freeverb","allpass"] ++ rirList).detectIndex({ arg item; item == string });
+
+				if (dstrvboxProxy[i].value != index) {
+					dstrvboxProxy[i].valueAction = index;
 				};
 			});
 
 
-			ossiadstam[i] = OSSIA_Parameter(ossiadst[i], "Dst._amount", Float,
-				[0, 1], 0, 'clip',
-				critical:allCrtitical, repetition_filter:true);
+			ossiadstam[i] = OSSIA_Parameter(ossiadst[i], "Distant_amount", Float,
+				[0, 1], 0, 'clip', critical:allCrtitical, repetition_filter:true);
 
 			ossiadstam[i].unit_(OSSIA_gain.linear);
 
@@ -425,7 +424,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 
-			ossiadstdel[i] = OSSIA_Parameter(ossiadst[i], "Dst._room_delay", Float,
+			ossiadstdel[i] = OSSIA_Parameter(ossiadst[i], "Distant_room_delay", Float,
 				[0, 1], 0.5, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
@@ -437,7 +436,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 
-			ossiadstdec[i] = OSSIA_Parameter(ossiadst[i], "Dst._damp_decay", Float,
+			ossiadstdec[i] = OSSIA_Parameter(ossiadst[i], "Distant_damp_decay", Float,
 				[0, 1], 0.5, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 
