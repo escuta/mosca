@@ -1709,10 +1709,11 @@ Mosca {
 
 				SynthDef("globDecodeSynth",  { | sub = 1, level = 1 |
 					var sig, nonambi;
-					sig = In.ar(fumabus, bFormNumChan) * level;
-					nonambi = In.ar(nonambibus, numoutputs) * level;
+					sig = In.ar(fumabus, bFormNumChan);
+					nonambi = In.ar(nonambibus, numoutputs);
 					perfectSphereFunc.value(nonambi);
-					subOutFunc.value(sig + nonambi, sub);
+					sig = (sig + nonambi) * level;
+					subOutFunc.value(sig, sub);
 					Out.ar(rawoutbus, sig);
 					Out.ar(outbus, nonambi);
 				}).send(server);
@@ -1966,7 +1967,7 @@ Mosca {
 		//// LAUNCH INITIAL SYNTH
 
 		{ globDec = Synth(\globDecodeSynth,
-				target:glbRevDecGrp,addAction: \addToTail); }.fork;
+				target:glbRevDecGrp,addAction: \addAfter); }.fork;
 
 		// Make File-in SynthDefs
 
@@ -2018,53 +2019,163 @@ Mosca {
 			Out.ar(gbus, dry * globrev);
 			Out.ar(nonambibus, wet);
 		};
+		//
+		// if (Server.program.asString.endsWith("supernova")) {
+		//
+		// 	if (maxorder == 1) {
+		//
+		// 		SynthDef("revGlobalAmb_in", { | gate = 1, room = 0.5, damp = 0.5 |
+		// 			var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
+		// 			sigx = In.ar(gbixfbus, 4);
+		// 			sig = In.ar(gbus, 1);
+		// 			sigx = FoaEncode.ar(sigx, n2f);
+		// 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+		// 			sig = sig + sigf + sigx;
+		// 			sig = FoaDecode.ar(sig, b2a);
+		// 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
+		// 				{ Rand(0, 0.001) },
+		// 			damp * 2)});
+		// 			sig = FoaEncode.ar(sig, a2b);
+		// 			sig = sig * env;
+		// 			Out.ar(fumabus, sig);
+		// 		}).send(server);
+		//
+		//
+		// 		SynthDef("parallelVerb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
+		// 			var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
+		// 			sigx = In.ar(gbixfbus, 4);
+		// 			sig = In.ar(gbus, 1);
+		// 			sigx = FoaEncode.ar(sigx, n2f);
+		// 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+		// 			sig = sig + sigf + sigx;
+		// 			sig = FoaDecode.ar(sig, b2a);
+		// 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
+		// 				{ Rand(0, 0.001) },
+		// 			damp * 2)});
+		// 			sig = FoaEncode.ar(sig, a2b);
+		// 			sig = sig * env;
+		// 			Out.ar(fumabus, sig);
+		// 		}).send(server);
+		//
+		// 		SynthDef("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
+		// 			var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
+		// 			sigx = In.ar(gbixfbus, 4);
+		// 			sig = In.ar(gbus, 1);
+		// 			sigx = FoaEncode.ar(sigx, n2f);
+		// 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+		// 			sig = sig + sigf + sigx;
+		// 			sigf = FoaDecode.ar(sigf, b2a);
+		// 			convsig = [
+		// 				FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
+		// 			FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp)];
+		// 			convsig = FoaEncode.ar(convsig.flat, a2b);
+		// 			convsig = convsig * env;
+		// 			Out.ar(fumabus, convsig);
+		// 		}).send(server);
+		//
+		// 	} {
+		//
+		// 		SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
+		// 			var env, w, x, y, z, r, s, t, u, v,
+		// 			soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
+		// 			sigx = In.ar(gbixfbus, 9);
+		// 			sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
+		// 			sig = In.ar(gbus, 1);
+		// 			env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+		// 			sig = sig + sigf + sigx;
+		// 			sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+		// 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(12) +
+		// 				{ Rand(0, 0.001) },
+		// 			damp * 2)});
+		// 			#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix)
+		// 			* env;
+		// 			soaSig = [w, x, y, z, r, s, t, u, v];
+		// 			Out.ar(fumabus, soaSig);
+		// 		}).load(server);
+		//
+		// 	};
+		//
+		// } {
 
+			if (maxorder == 1) {
 
-		// allpass reverbs
-		if (maxorder == 1) {
+				SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
+					var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
+					sigx = In.ar(gbixfbus, 4);
+					sig = In.ar(gbus, 1);
+					sigx = FoaEncode.ar(sigx, n2f);
+					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+					sig = sig + sigf + sigx;
+					sig = FoaDecode.ar(sig, b2a);
+					16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
+						{ Rand(0, 0.001) },
+						damp * 2)});
+					sig = FoaEncode.ar(sig, a2b);
+					sig = sig * env;
+					Out.ar(fumabus, sig);
+				}).send(server);
 
-			//if (server == Server.supernova) {
+				SynthDef("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
+					var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
+					sigx = In.ar(gbixfbus, 4);
+					sig = In.ar(gbus, 1);
+					sigx = FoaEncode.ar(sigx, n2f);
+					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+					sig = sig + sigf + sigx;
+					sigf = FoaDecode.ar(sigf, b2a);
+					convsig = [
+						FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
+						FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp)];
+					convsig = FoaEncode.ar(convsig.flat, a2b);
+					convsig = convsig * env;
+					Out.ar(fumabus, convsig);
+				}).send(server);
 
-			//} {
+			} {
 
-			SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
-				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
-				sigx = In.ar(gbixfbus, 4);
-				sig = In.ar(gbus, 1);
-				sigx = FoaEncode.ar(sigx, n2f);
-				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-				sig = sig + sigf + sigx;
-				sig = FoaDecode.ar(sig, b2a);
-				16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
-					{ Rand(0, 0.001) },
-					damp * 2)});
-				sig = FoaEncode.ar(sig, a2b);
-				sig = sig * env;
-				Out.ar(fumabus, sig);
-			}).send(server);
+				SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
+					var env, w, x, y, z, r, s, t, u, v,
+					soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
+					sigx = In.ar(gbixfbus, 9);
+					sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
+					sig = In.ar(gbus, 1);
+					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+					sig = sig + sigf + sigx;
+					sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+					16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(12) +
+						{ Rand(0, 0.001) },
+						damp * 2)});
+					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix)
+					* env;
+					soaSig = [w, x, y, z, r, s, t, u, v];
+					Out.ar(fumabus, soaSig);
+				}).load(server);
 
-			//};
+				SynthDef("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
+					var env, w, x, y, z, r, s, t, u, v,
+					soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
+					sigx = In.ar(gbixfbus, 9);
+					sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
+					sig = In.ar(gbus, 1);
+					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
+					sig = sig + sigf + sigx;
+					sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
+					tmpsig = [
+						FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
+						FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp),
+						FreeVerb2.ar(sig[4], sig[5], mix: 1, room: room, damp: damp),
+						FreeVerb2.ar(sig[6], sig[7], mix: 1, room: room, damp: damp),
+						FreeVerb2.ar(sig[8], sig[9], mix: 1, room: room, damp: damp),
+						FreeVerb2.ar(sig[10], sig[11], mix: 1, room: room, damp: damp)];
+					tmpsig = tmpsig.flat * env;
+					#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig,
+						soa_a12_encoder_matrix);
+					soaSig = [w, x, y, z, r, s, t, u, v];
+					Out.ar(fumabus, soaSig);
+				}).send(server);
 
-		} {
-
-			SynthDef("revGlobalAmb_pass", { | gate = 1, room = 0.5, damp = 0.5 |
-				var env, w, x, y, z, r, s, t, u, v,
-				soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
-				sigx = In.ar(gbixfbus, 9);
-				sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
-				sig = In.ar(gbus, 1);
-				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-				sig = sig + sigf + sigx;
-				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-				16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(12) +
-					{ Rand(0, 0.001) },
-					damp * 2)});
-				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(sig, soa_a12_encoder_matrix)
-				* env;
-				soaSig = [w, x, y, z, r, s, t, u, v];
-				Out.ar(fumabus, soaSig);
-			}).load(server);
-		};
+			};
+//		};
 
 		//run the makeSpatialisers methode for each types of local reverbs
 
@@ -2108,51 +2219,6 @@ Mosca {
 
 
 		// freeverb defs
-
-		if (maxorder == 1) {
-
-			SynthDef("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
-				var env, temp, convsig, sig, sigx, sigf = In.ar(gbfbus, 4);
-				sigx = In.ar(gbixfbus, 4);
-				sig = In.ar(gbus, 1);
-				sigx = FoaEncode.ar(sigx, n2f);
-				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-				sig = sig + sigf + sigx;
-				sigf = FoaDecode.ar(sigf, b2a);
-				convsig = [
-					FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
-					FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp)];
-				convsig = FoaEncode.ar(convsig.flat, a2b);
-				convsig = convsig * env;
-				Out.ar(fumabus, convsig);
-			}).send(server);
-
-		} {
-
-			SynthDef("revGlobalAmb_free",  { | gate = 1, room = 0.5, damp = 0.5 |
-				var env, w, x, y, z, r, s, t, u, v,
-				soaSig, tmpsig, sig, sigx, sigf = In.ar(gbfbus, 9);
-				sigx = In.ar(gbixfbus, 9);
-				sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
-				sig = In.ar(gbus, 1);
-				env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
-				sig = sig + sigf + sigx;
-				sig = AtkMatrixMix.ar(sig, soa_a12_decoder_matrix);
-				tmpsig = [
-					FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
-					FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp),
-					FreeVerb2.ar(sig[4], sig[5], mix: 1, room: room, damp: damp),
-					FreeVerb2.ar(sig[6], sig[7], mix: 1, room: room, damp: damp),
-					FreeVerb2.ar(sig[8], sig[9], mix: 1, room: room, damp: damp),
-					FreeVerb2.ar(sig[10], sig[11], mix: 1, room: room, damp: damp)];
-				tmpsig = tmpsig.flat * env;
-				#w, x, y, z, r, s, t, u, v = AtkMatrixMix.ar(tmpsig,
-					soa_a12_encoder_matrix);
-				soaSig = [w, x, y, z, r, s, t, u, v];
-				Out.ar(fumabus, soaSig);
-			}).send(server);
-
-		};
 
 		//run the makeSpatialisers methode for each types of local reverbs
 
