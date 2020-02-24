@@ -20,8 +20,6 @@ may be downloaded here: http://escuta.org/mosca
 + Mosca {
 
 	spatDef { |maxorder, bFormNumChan, bfOrFmh, fourOrNine|
-		var quarterRadius = longest_radius / 4;
-		var twoAndaHalfRadius = longest_radius * 2.5;
 
 		// all gains are suposed to match VBAP output levels
 
@@ -69,7 +67,7 @@ may be downloaded here: http://escuta.org/mosca
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = HOAmbiPanner.ar(maxorder,
-					ref.value + (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
+					ref.value + (sig * longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});

@@ -148,7 +148,7 @@ Mosca {
 	convert_direct,
 	azimuths, radiusses, elevations,
 	numoutputs,
-	longest_radius, highest_elevation, lowest_elevation,
+	longest_radius, quarterRadius, twoAndaHalfRadius, highest_elevation, lowest_elevation,
 	vbap_buffer,
 	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
 	cart, spher, foa_a12_decoder_matrix,
@@ -1678,6 +1678,9 @@ Mosca {
 				Out.ar(fumabus, sig);
 			}).send(server);
 		};
+
+		quarterRadius = longest_radius / 4;
+		twoAndaHalfRadius = longest_radius * 2.5;
 
 		// define ambisonic decoder
 
