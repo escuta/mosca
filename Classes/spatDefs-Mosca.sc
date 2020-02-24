@@ -20,8 +20,8 @@ may be downloaded here: http://escuta.org/mosca
 + Mosca {
 
 	spatDef { |maxorder, bFormNumChan, bfOrFmh, fourOrNine|
-		var quarterRadius = longest_radius / 4,
-		twoAndaHalfRadius = longest_radius * 2.5;
+		var quarterRadius = longest_radius / 4;
+		var twoAndaHalfRadius = longest_radius * 2.5;
 
 		// all gains are suposed to match VBAP output levels
 
@@ -103,7 +103,7 @@ may be downloaded here: http://escuta.org/mosca
 				var diffuse, spread, omni,
 				sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
 				// attenuate high freq with distance
-				rad = (longest_radius / distance).clip(0, 4);
+				rad = longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius);
 				sig = ref.value + (sig * rad);
 				omni = FoaEncode.ar(sig, foaEncoderOmni);
 				spread = FoaEncode.ar(sig, foaEncoderSpread);
