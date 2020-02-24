@@ -111,7 +111,7 @@ may be downloaded here: http://escuta.org/mosca
 		});
 
 		ossiaorigine = OSSIA_Parameter(ossiaParent, "Origine", OSSIA_vec3f,
-			domain:[[-200, -200, -200], [200, 200, 200]], default_value:[0, 0, 0],
+			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 0, 0],
 			critical:allCrtitical, repetition_filter:true);
 
 		ossiaorigine.unit_(OSSIA_position.cart3D);
@@ -266,7 +266,7 @@ may be downloaded here: http://escuta.org/mosca
 			ossiasrc[i] = OSSIA_Node(ossiaParent, "Source_" ++ (i + 1));
 
 			ossiacart[i] = OSSIA_Parameter(ossiasrc[i], "Cartesian", OSSIA_vec3f,
-				domain:[[-200, -200, -200], [200, 200, 200]], default_value:[0, 200, 0],
+				domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 20, 0],
 				critical:allCrtitical, repetition_filter:true);
 
 			ossiacart[i].unit_(OSSIA_position.cart3D);
@@ -299,8 +299,8 @@ may be downloaded here: http://escuta.org/mosca
 
 
 			ossiasphe[i] = OSSIA_Parameter(ossiasrc[i], "Spherical", OSSIA_vec3f,
-				domain:[[0, -pi, halfPi.neg], [200, pi, halfPi]],
-				default_value:[200, 0, 0], critical:allCrtitical, repetition_filter:true);
+				domain:[[0, -pi, halfPi.neg], [20, pi, halfPi]],
+				default_value:[20, 0, 0], critical:allCrtitical, repetition_filter:true);
 
 			ossiasphe[i].unit_(OSSIA_position.spherical);
 
@@ -448,7 +448,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 
-			ossiaangle[i] = OSSIA_Parameter(ossiasrc[i], "Angle", Float,
+			ossiaangle[i] = OSSIA_Parameter(ossiasrc[i], "Stereo_angle", Float,
 				[0, pi], 1.05, 'clip',
 				critical:allCrtitical, repetition_filter:true);
 

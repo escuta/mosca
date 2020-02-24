@@ -20,6 +20,8 @@ may be downloaded here: http://escuta.org/mosca
 + Mosca {
 
 	spatDef { |maxorder, bFormNumChan, bfOrFmh, fourOrNine|
+		var quarterRadius = longest_radius / 4,
+		twoAndaHalfRadius = longest_radius * 2.5;
 
 		// all gains are suposed to match VBAP output levels
 
@@ -29,11 +31,11 @@ may be downloaded here: http://escuta.org/mosca
 			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("Ambitools");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
 				var sig = HOAEncoder.ar(maxorder,
 					(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-					Lag.kr(elevation), 6, 1, Lag.kr(radius), longest_radius);
+					Lag.kr(elevation), 6, 1, distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius), longest_radius);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
 		};
@@ -45,12 +47,12 @@ may be downloaded here: http://escuta.org/mosca
 			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("HoaLib");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = HOALibEnc3D.ar(maxorder,
-					ref.value + (sig * Lag.kr(longest_radius / radius)),
+					ref.value + (sig * (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius))),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
@@ -62,12 +64,12 @@ may be downloaded here: http://escuta.org/mosca
 			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("ADT");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = HOAmbiPanner.ar(maxorder,
-					ref.value + (sig * Lag.kr(longest_radius / radius)),
+					ref.value + (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
@@ -79,13 +81,13 @@ may be downloaded here: http://escuta.org/mosca
 			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("SC-HOA");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = HOASphericalHarmonics.coefN3D(maxorder,
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation))
-				* (ref.value + (sig * Lag.kr(longest_radius / radius)));
+				* (ref.value + (sig * (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius))));
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
 		};
@@ -96,12 +98,12 @@ may be downloaded here: http://escuta.org/mosca
 			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("ATK");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
 				var diffuse, spread, omni,
 				sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
 				// attenuate high freq with distance
-				rad = Lag.kr(longest_radius / radius);
+				rad = (longest_radius / distance).clip(0, 4);
 				sig = ref.value + (sig * rad);
 				omni = FoaEncode.ar(sig, foaEncoderOmni);
 				spread = FoaEncode.ar(sig, foaEncoderSpread);
@@ -110,7 +112,7 @@ may be downloaded here: http://escuta.org/mosca
 				sig = Select.ar(spre, [sig, spread]);
 				sig = FoaTransform.ar(sig, 'push', halfPi * contract, azimuth, elevation);
 				sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
-				ref.value = FoaTransform.ar(sig, 'proximity', radius);
+				ref.value = FoaTransform.ar(sig, 'proximity', distance);
 			});
 		};
 
@@ -119,12 +121,12 @@ may be downloaded here: http://escuta.org/mosca
 			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("BF-FMH");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = bfOrFmh.ar(ref.value + sig, azimuth, elevation,
-					Lag.kr(longest_radius / radius), 0.5);
+					(longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)), 0.5);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
 		};
@@ -134,13 +136,13 @@ may be downloaded here: http://escuta.org/mosca
 			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
 			spatList = spatList.add("Josh");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 					azimuth, 1 - contract, elevation, 1 - contract,
-					rho: Lag.kr(longest_radius / radius),
+					rho: (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)) - 1,
 					mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
 			});
 		};
@@ -149,7 +151,7 @@ may be downloaded here: http://escuta.org/mosca
 		if (\VBAP.asClass.notNil) {
 			spatList = spatList.add("VBAP");
 
-			spatFuncs = spatFuncs.add({ |ref, input, radius, distance, azimuth, elevation, difu, spre,
+			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
 			// attenuate high freq with distance
@@ -161,7 +163,7 @@ may be downloaded here: http://escuta.org/mosca
 			elev = elev.clip(lowest_elevation, highest_elevation);
 			// restrict between min & max
 			ref.value = VBAP.ar(numoutputs,
-					ref.value + (sig * (longest_radius / radius)),
+					ref.value + (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100);
 			});
@@ -184,32 +186,31 @@ may be downloaded here: http://escuta.org/mosca
 
 				mono = SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-					azim = 0, elev = 0, radius = 200, level = 1,
+					azim = 0, elev = 0, radius = 20, level = 1,
 					dopamnt = 0, glev = 0, llev = 0,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
 					var rad = Lag.kr(radius),
-					dis = rad * 0.01,
-					globallev = (1 / dis.sqrt) - 1, //global reverberation
+					globallev = (1 / rad.sqrt) - 1, //global reverberation
 					locallev, lrevRef = Ref(0),
 					az = azim - halfPi,
 					p = Ref(0),
-					rd = dis * 340, // Doppler
-					cut = ((1 - dis) * 2).clip(0, 1);
+					rd = rad * 340, // Doppler
+					cut = rad.linlin(0.75, 1, 1, 0);
 					//make shure level is 0 when radius reaches 100
-					rad = rad.clip(1, 50);
+					rad = rad.clip(0.1, 0.7);
 
 					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
 					p = p * level;
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-					localReverbFunc[rev_type, 1].value(lrevRef, p, wir, dis * llev,
+					localReverbFunc[rev_type, 1].value(lrevRef, p, wir, rad * llev,
 						// local reverberation
 						room, damp);
 
-					spatFuncs[i].value(lrevRef, p, rad, dis, az, elev, df, sp, contr,
+					spatFuncs[i].value(lrevRef, p, rad, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
@@ -219,20 +220,19 @@ may be downloaded here: http://escuta.org/mosca
 
 				stereo = SynthDef(item++"Stereo"++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-					azim = 0, elev = 0, radius = 0, level = 1,
+					azim = 0, elev = 0, radius = 20, level = 1,
 					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
 					var rad = Lag.kr(radius),
-					dis = rad * 0.01,
-					globallev = (1 / dis.sqrt) - 1, //global reverberation
+					globallev = (1 / rad.sqrt) - 1, //global reverberation
 					lrev1Ref = Ref(0), lrev2Ref = Ref(0),
 					az = Lag.kr(azim - halfPi),
 					p = Ref(0),
-					rd = dis * 340, // Doppler
-					cut = ((1 - dis) * 2).clip(0, 1);
+					rd = rad * 340, // Doppler
+					cut = ((1 - rad) * 2).clip(0, 1);
 					//make shure level is 0 when radius reaches 100
 					rad = rad.clip(1, 50);
 
@@ -241,11 +241,11 @@ may be downloaded here: http://escuta.org/mosca
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 					localReverbFunc[rev_type, 2].value(lrev1Ref, lrev2Ref, p[0], p[1],
-						wir, dis * llev, room, damp);
+						wir, rad * llev, room, damp);
 
-					spatFuncs[i].value(lrev1Ref, p[0], rad, dis, az - (angle * (1 - dis)),
+					spatFuncs[i].value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
-					spatFuncs[i].value(lrev2Ref, p[1], rad, dis, az + (angle * (1 - dis)),
+					spatFuncs[i].value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
@@ -278,14 +278,13 @@ may be downloaded here: http://escuta.org/mosca
 						contr = 0, directang = 1, rotAngle = 0 |
 
 						var rad = Lag.kr(radius),
-						dis = rad * 0.01,
 						pushang = contr * halfPi, // degree of sound field displacement
-						globallev = (1 / dis.sqrt) - 1, //global reverberation
+						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						locallev, lrevRef = Ref(0),
 						az = azim - halfPi,
 						p = Ref(0),
-						rd = dis * 340, // Doppler
-						cut = ((1 - dis) * 2).clip(0, 1);
+						rd = rad * 340, // Doppler
+						cut = ((1 - rad) * 2).clip(0, 1);
 						//make shure level is 0 when radius reaches 100
 						rad = rad.clip(1, 50);
 
@@ -293,7 +292,7 @@ may be downloaded here: http://escuta.org/mosca
 						p = p * level;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 						// local reverberation
 
 						p = FoaDirectO.ar(lrevRef.value + p, directang);
@@ -319,14 +318,13 @@ may be downloaded here: http://escuta.org/mosca
 							contr = 0, directang = 1, rotAngle = 0 |
 
 							var rad = Lag.kr(radius),
-							dis = rad * 0.01,
 							pushang = contr * halfPi, // degree of sound field displacement
-							globallev = (1 / dis.sqrt) - 1, //global reverberation
+							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
 							az = azim - halfPi,
 							p = Ref(0),
-							rd = dis * 340, // Doppler
-							cut = ((1 - dis) * 2).clip(0, 1);
+							rd = rad * 340, // Doppler
+							cut = ((1 - rad) * 2).clip(0, 1);
 							//make shure level is 0 when radius reaches 100
 							rad = rad.clip(1, 50);
 
@@ -334,7 +332,7 @@ may be downloaded here: http://escuta.org/mosca
 							p = p * level;
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
 							p = FoaEncode.ar(lrevRef.value + p, n2f);
@@ -363,19 +361,18 @@ may be downloaded here: http://escuta.org/mosca
 						contr = 0, rotAngle = 0|
 
 						var rad = Lag.kr(radius),
-						dis = rad * 0.01,
-						globallev = (1 / dis.sqrt) - 1, //global reverberation
+						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						locallev, lrevRef = Ref(0),
 						az = azim - halfPi,
 						p = Ref(0),
-						rd = dis * 340, // Doppler
-						cut = ((1 - dis) * 2).clip(0, 1);
+						rd = rad * 340, // Doppler
+						cut = ((1 - rad) * 2).clip(0, 1);
 
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 						p = p * level * (1 + (contr * 3));
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 						// local reverberation
 
 						p = FoaDecode.ar(lrevRef.value + p, f2n);
@@ -401,14 +398,13 @@ may be downloaded here: http://escuta.org/mosca
 							contr = 0, rotAngle = 0|
 
 							var rad = Lag.kr(radius),
-							dis = rad * 0.01,
-							pushang = dis * halfPi, // degree of sound field displacement
-							globallev = (1 / dis.sqrt) - 1, //global reverberation
+							pushang = rad * halfPi, // degree of sound field displacement
+							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
 							az = azim - halfPi,
 							p = Ref(0),
-							rd = dis * 340, // Doppler
-							cut = ((1 - dis) * 2).clip(0, 1);
+							rd = rad * 340, // Doppler
+							cut = ((1 - rad) * 2).clip(0, 1);
 							//make shure level is 0 when radius reaches 100
 							rad = rad.clip(1, 50);
 
@@ -416,7 +412,7 @@ may be downloaded here: http://escuta.org/mosca
 							p = p * level * (1 + (contr * 3));
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, dis * llev, room, damp);
+							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
 							p = HOATransRotateAz.ar(ord, lrevRef.value + p, rotAngle);

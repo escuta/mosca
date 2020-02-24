@@ -368,7 +368,7 @@ Mosca {
 		// these proxies behave like GUI elements. They eneable
 		// the use of Automation without a GUI
 
-		cartval = Array.fill(nfontes, {Cartesian(0, 200, 0)});
+		cartval = Array.fill(nfontes, {Cartesian(0, 20, 0)});
 		spheval = Array.fill(nfontes, {|i| cartval[i].asSpherical});
 
 		rboxProxy = Array.newClear(nfontes);
@@ -490,7 +490,7 @@ Mosca {
 			dboxProxy[i] = AutomationGuiProxy(0.0);
 			dpboxProxy[i] = AutomationGuiProxy(0.0);
 			zboxProxy[i] = AutomationGuiProxy(0.0);
-			yboxProxy[i] = AutomationGuiProxy(200.0);
+			yboxProxy[i] = AutomationGuiProxy(20.0);
 			xboxProxy[i] = AutomationGuiProxy(0.0);
 			a1checkProxy[i] = AutomationGuiProxy(false);
 			a2checkProxy[i] = AutomationGuiProxy(false);

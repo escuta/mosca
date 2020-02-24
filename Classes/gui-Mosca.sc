@@ -82,17 +82,16 @@ may be downloaded here: http://escuta.org/mosca
 			Pen.fill;
 
 			Pen.strokeColor = Color.new255(37, 41, 48, 40);
-			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor *
-				0.01 * longest_radius, 0, 2pi);
+			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor * 0.25, 0, 2pi);
 			Pen.stroke;
 
 			nfontes.do { |i|
 				var x, y;
-				var topView = spheval[i] * zoom_factor * 0.01;
+				var topView = spheval[i] * zoom_factor;
 				var lev = topView.z;
 				{x = halfwidth + (topView.x * halfheight)}.defer;
 				{y = halfheight - (topView.y * halfheight)}.defer;
-				Pen.addArc(x@y, 14 + (lev * 0.01 * halfheight * 2), 0, 2pi);
+				Pen.addArc(x@y, max(14 + (lev * halfheight * 0.02), 0), 0, 2pi);
 				if ((audit[i] || isPlay) && (lev.abs <= plim)) {
 					Pen.fillColor = Color.new255(179, 90, 209, 55 + (clev[i] * 200));
 					Pen.fill;
@@ -116,7 +115,7 @@ may be downloaded here: http://escuta.org/mosca
 				lastGui =  Main.elapsedTime;
 				{
 					{ zlev[currentsource] = spheval[currentsource].z; }.defer;
-					{ zslider.value = (zlev[currentsource] * 0.01 + 1)
+					{ zslider.value = (zlev[currentsource] + 1)
 						* 0.5; }.defer;
 					{ znumbox.value = zlev[currentsource]; }.defer;
 					{ win.refresh; }.defer;
@@ -919,14 +918,14 @@ may be downloaded here: http://escuta.org/mosca
 		znumbox = NumberBox(win, Rect(width - 45, ((width - zSliderHeight) * 0.5)
 			+ zSliderHeight, 40, 20));
 		znumbox.value = 0;
-		znumbox.decimals = 1;
-		znumbox.clipHi = 100;
-		znumbox.clipLo = -100;
-		znumbox.step_(0.1);
-		znumbox.scroll_step_(0.1);
+		znumbox.decimals = 2;
+		//znumbox.clipHi = 100;
+		//znumbox.clipLo = -100;
+		znumbox.step_(0.01);
+		znumbox.scroll_step_(0.01);
 		znumbox.align = \center;
 		znumbox.action = { | num |
-			{ zslider.value = (num.value * 0.005) + 0.5;
+			{ zslider.value = (num.value * 0.5) + 0.5;
 				if(ossiaorient.v == [0, 0, 0]) {
 					zboxProxy[currentsource].valueAction = num.value + origine.z;
 					// exeption to record z mouvements after XY automation
@@ -945,7 +944,7 @@ may be downloaded here: http://escuta.org/mosca
 			20, zSliderHeight));
 		zslider.value = 0.5;
 		zslider.action = { | num |
-			{ znumbox.valueAction = num.value - 0.5 * 200; }.defer;
+			{ znumbox.valueAction = num.value - 0.5 * 2; }.defer;
 		};
 
 
@@ -1004,18 +1003,18 @@ may be downloaded here: http://escuta.org/mosca
 
 		originCtl[0][5] = NumberBox(originView, Rect(170, 20, 40, 20));
 		originCtl[0][5].align = \center;
-		originCtl[0][5].step_(0.1);
-		originCtl[0][5].scroll_step_(0.1);
+		originCtl[0][5].step_(0.01);
+		originCtl[0][5].scroll_step_(0.01);
 
 		originCtl[0][6] = NumberBox(originView, Rect(170, 40, 40, 20));
 		originCtl[0][6].align = \center;
-		originCtl[0][6].step_(0.1);
-		originCtl[0][6].scroll_step_(0.1);
+		originCtl[0][6].step_(0.01);
+		originCtl[0][6].scroll_step_(0.01);
 
 		originCtl[0][7] = NumberBox(originView, Rect(170, 60, 40, 20));
 		originCtl[0][7].align = \center;
-		originCtl[0][7].step_(0.1);
-		originCtl[0][7].scroll_step_(0.1);
+		originCtl[0][7].step_(0.01);
+		originCtl[0][7].scroll_step_(0.01);
 
 		originCtl[0][5].action = { | num |
 			oxnumboxProxy.valueAction = num.value;
@@ -1300,7 +1299,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 		winCtl[2][7] = StaticText(win, Rect(163, 290, 100, 20));
-		winCtl[2][7].string = "Stereo Angle";
+		winCtl[2][7].string = "Stereo angle";
 		winCtl[2][7].visible = false;
 		winCtl[0][7] = NumberBox(win, Rect(10, 290, 40, 20));
 		winCtl[0][7].value = 1.0471975511966;
@@ -2232,8 +2231,8 @@ may be downloaded here: http://escuta.org/mosca
 			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
 			case
 			{mouseButton == 0} {
-				var x = ((mx - halfwidth) / halfheight) * 100 / zoom_factor,
-				y = ((halfheight - my) / halfheight) * 100 / zoom_factor,
+				var x = ((mx - halfwidth) / halfheight) / zoom_factor,
+				y = ((halfheight - my) / halfheight) / zoom_factor,
 				closest = [0, furthest]; // save sources index and distance from click
 				// initialize at the furthest point
 
@@ -2303,8 +2302,8 @@ may be downloaded here: http://escuta.org/mosca
 		moveSource = { |x, y|
 
 			var point = Cartesian(
-				(((x - halfwidth) / halfheight) / zoom_factor) * 100,
-				(((halfheight - y) / halfheight) / zoom_factor) * 100,
+				(((x - halfwidth) / halfheight) / zoom_factor),
+				(((halfheight - y) / halfheight) / zoom_factor),
 				znumbox.value);
 
 			if(ossiaorient.v == [0, 0, 0]) {
