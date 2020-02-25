@@ -340,12 +340,8 @@ may be downloaded here: http://escuta.org/mosca
 				critical:true, repetition_filter:true);
 
 			ossiaaud[i].callback_({ arg num;
-				this.auditionFunc(i, num.value);
-				if (guiflag) {
-					{ novoplot.value; }.defer;
-					if (i == currentsource) {
-						{ baudi.value = num.value.asInteger; }.defer;
-					};
+				if (audit[i] != num.value) {
+					this.auditionFunc(i, num.value);
 				};
 			});
 

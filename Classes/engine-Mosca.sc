@@ -32,7 +32,7 @@ GUI Parameters usable in SynthDefs
 \\llev | Local/Distant reverb level [0, 1]
 \\azim | azimuth coord [-pi, pi]
 \\elev | elevation coord [-pi, pi]
-\\radius | spherical radius [0, 200]
+\\radius | spherical radius [0, 20]
 \\rotAngle | B-format rotation angle [-pi, pi]
 \\directang | B-format directivity [0, pi/2]
 \\contr | Contraction: fade between WXYZ & W [0, 1]
@@ -65,11 +65,23 @@ GUI Parameters usable in SynthDefs
 				//- and probably by HW - causes duplicates with file
 				// as file playback is handled by the "watcher" routine
 				audit[source] = true;
+				this.newtocar(source, 0, force: true);
 			} {
 				runStop.value(source);
 				audit[source] = false;
 				espacializador[source].free;
 				"stopping!".postln;
+			};
+
+			if (ossiaaud[source].value != bool) {
+				ossiaaud[source].value = bool;
+			};
+
+			if (guiflag) {
+				{ novoplot.value; }.defer;
+				if (source == currentsource) {
+					{ baudi.value = bool.asInteger; }.defer;
+				};
 			};
 		};
 	}

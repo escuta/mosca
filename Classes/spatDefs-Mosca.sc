@@ -161,7 +161,7 @@ may be downloaded here: http://escuta.org/mosca
 			elev = elev.clip(lowest_elevation, highest_elevation);
 			// restrict between min & max
 			ref.value = VBAP.ar(numoutputs,
-					ref.value + (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
+					ref.value + (sig * longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100);
 			});
