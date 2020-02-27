@@ -2123,7 +2123,7 @@ Mosca {
 					sigx = FoaEncode.ar(sigx, n2f);
 					env = EnvGen.kr(Env.asr(1), gate, doneAction:2);
 					sig = sig + sigf + sigx;
-					sigf = FoaDecode.ar(sigf, b2a);
+					sig = FoaDecode.ar(sig, b2a);
 					convsig = [
 						FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
 						FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp)];

@@ -122,6 +122,7 @@ GUI Parameters usable in SynthDefs
 		| source, synth |
 		synthRegistry[source-1].add(synth);
 	}
+
 	deregisterSynth { // selection of Mosca arguments for use in synths
 		| source, synth |
 		if(synthRegistry[source-1].notNil){
