@@ -183,6 +183,12 @@ may be downloaded here: http://escuta.org/mosca
 			};
 		});
 
+		ossiaremotectl = OSSIA_Parameter(ossiaParent, "Remote_Control", Boolean, default_value:true);
+
+		ossiaremotectl.callback_({ |v|
+			this.remoteCtl(v);
+		});
+
 		ossiacls = OSSIA_Parameter(ossiaParent, "Close_Reverb", String,
 			[nil, nil, ["no-reverb","freeverb","allpass"] ++ rirList], "no-reverb",
 			critical:true, repetition_filter:true);

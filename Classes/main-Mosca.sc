@@ -89,7 +89,7 @@ Mosca {
 	spreadcheck,
 	diffusecheck, sp, df,
 
-	hdtrk,
+	hdtrk, hdtrkcheck,
 
 	<>runTriggers, <>runStops, <>runTrigger, <>runStop,
 	// isRec, // apparently unused
@@ -120,7 +120,7 @@ Mosca {
 	<>masterlevProxy, masterslider,
 
 	<parentOssiaNode,
-	ossiaorient, ossiaorigine, ossiaplay, ossiatrasportLoop,
+	ossiaorient, ossiaorigine, ossiaremotectl, ossiaplay, ossiatrasportLoop,
 	ossiatransport, ossiaseekback, ossiarec, ossiacart, ossiasphe, ossiaaud,
 	ossialoop, ossialib, ossialev, ossiadp, ossiacls, ossiaclsam,
 	ossiaclsdel, ossiaclsdec, ossiadst, ossiadstam, ossiadstdel, ossiadstdec,
@@ -223,10 +223,8 @@ Mosca {
 		nfontes.do { | i |
 			synthRegistry[i] = List[];
 
-			scInBus[i] = Bus.audio(server, 1);
-
-			insertBus[0, i] = Bus.audio(server, fourOrNine);
-			insertBus[1, i] = Bus.audio(server, fourOrNine);
+			// insertBus[0, i] = Bus.audio(server, fourOrNine);
+			// insertBus[1, i] = Bus.audio(server, fourOrNine);
 
 			insertFlag[i] = 0;
 		};

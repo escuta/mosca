@@ -47,13 +47,12 @@ may be downloaded here: http://escuta.org/mosca
 		bsalvar,
 		bcarregar,
 		sourceSelect,
-		//m,
 		moveSource,
 		zoom_factor = 1,
 		zSliderHeight,
 		lastGui = Main.elapsedTime,
 		halfwidth, height, halfheight,
-		hdtrkcheck, iguiint;
+		iguiint;
 
 		guiflag = true;
 
@@ -614,20 +613,6 @@ may be downloaded here: http://escuta.org/mosca
 
 		});
 
-		if (serport.notNil) {
-			hdtrkcheck = CheckBox(dialView, Rect(35, 95, 60, 15), "hdtrk").action_({ | butt |
-				if(butt.value) {
-					hdtrk = true;
-				} {
-					hdtrk = false;
-					headingnumboxProxy.valueAction = 0;
-					pitchnumboxProxy.valueAction = 0;
-					rollnumboxProxy.valueAction = 0;
-				};
-			});
-			hdtrkcheck.value = true;
-		};
-
 		autoView = UserView(win, Rect(10, width - 45, 325, 40));
 
 		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
@@ -1038,6 +1023,10 @@ may be downloaded here: http://escuta.org/mosca
 		textbuf = StaticText(originView, Rect(170, 0, 47, 20));
 		textbuf.string = "Origin";
 
+		hdtrkcheck = CheckBox(win, Rect(width - 105, height - 105, 265, 20), "Remote ctl.").action_({ | butt |
+			this.remoteCtl(butt.value);
+		});
+		hdtrkcheck.value = true;
 
 		////////////////////////////////////////////////////////////
 
@@ -2335,6 +2324,7 @@ may be downloaded here: http://escuta.org/mosca
 			zAxis.bounds_(Rect(width - 80, halfheight - 10, 90, 20));
 
 			originView.bounds_(Rect(width - 275, height - 85, 270, 100));
+			hdtrkcheck.bounds_(Rect(width - 105, height - 105, 265, 20));
 
 			autoView.bounds_(Rect(10, height - 45, 325, 40));
 

@@ -55,15 +55,7 @@ GUI Parameters usable in SynthDefs
 	auditionFunc { |source, bool|
 		if(isPlay.not) {
 			if(bool) {
-				// if(espacializador[source].isNil) {
-				// 	this.newtocar(source, 0, force: true);
-				// };
-				//
 				firstTime[source] = true;
-				//runTrigger.value(currentsource); - watcher does this now
-				//tocar.value(currentsource, 0); // needed only by SC input
-				//- and probably by HW - causes duplicates with file
-				// as file playback is handled by the "watcher" routine
 				audit[source] = true;
 				this.newtocar(source, 0, force: true);
 			} {
@@ -82,6 +74,36 @@ GUI Parameters usable in SynthDefs
 				if (source == currentsource) {
 					{ baudi.value = bool.asInteger; }.defer;
 				};
+			};
+		};
+	}
+
+	remoteCtl { |bool|
+		if (bool) {
+			hdtrk = true;
+
+			ossiaorient.access_mode_(\bi);
+			ossiaorigine.access_mode_(\bi);
+		} {
+			hdtrk = false;
+			headingnumboxProxy.valueAction = 0;
+			pitchnumboxProxy.valueAction = 0;
+			rollnumboxProxy.valueAction = 0;
+			oxnumboxProxy.valueAction = 0;
+			oynumboxProxy.valueAction = 0;
+			oznumboxProxy.valueAction = 0;
+
+			ossiaorient.access_mode_(\set);
+			ossiaorigine.access_mode_(\set);
+		};
+
+		if (ossiaremotectl.value != bool) {
+			ossiaremotectl.value = bool;
+		};
+
+		if (guiflag) {
+			if (hdtrkcheck.value != bool.asInteger) {
+				{ hdtrkcheck.value = bool.asInteger; }.defer;
 			};
 		};
 	}
@@ -114,11 +136,9 @@ GUI Parameters usable in SynthDefs
 	}
 
 	getSCBus {
-		|source |
-		if (source > 0) {
-			var bus = scInBus[source - 1].index;
-			^bus
-		}
+		|source = 1, numChans = 1 |
+			scInBus[source - 1] = Bus.audio(server, numChans);
+			^scInBus[source - 1].index;
 	}
 
 	setSynths {
