@@ -316,7 +316,7 @@ may be downloaded here: http://escuta.org/mosca
 							contr = 0, directang = 1, rotAngle = 0 |
 
 							var rad = Lag.kr(radius),
-							pushang = radius.linlin(contr, 2 - contr * 2, 0, halfPi), // degree of sound field displacement
+							pushang = radius.linlin(contr, 1, halfPi, 0), // degree of sound field displacement
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
 							az = azim - halfPi,
