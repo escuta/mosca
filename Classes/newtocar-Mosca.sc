@@ -584,7 +584,7 @@ may be downloaded here: http://escuta.org/mosca
 
 					espacializador[i] = Synth(libName[i]++witch
 						++dstrvtypes[i],
-						[\busini, busini[i],
+						[\busini, bus,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,

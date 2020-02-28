@@ -2597,38 +2597,36 @@ Mosca {
 			inf.do({
 				0.1.wait;
 
-				nfontes.do({
-					| i |
-					{
-						if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
-							if (spheval[i].rho > plim) {
-								firstTime[i] = true;
-								if(espacializador[i].isPlaying) {
-									//synthRegistry[i].free;
-									runStop.value(i); // to kill SC input synths
-									espacializador[i].free; // just in case...
-								};
-							} {
-								if(espacializador[i].isPlaying.not && (isPlay || audit[i])
-									&& (firstTime[i]
-										|| (tfieldProxy[i].value == ""))) {
-									//this.triggerFunc[i].value; // play SC input synth
-									firstTime[i] = false;
-									runTrigger.value(i);
+				nfontes.do({ | i |
 
-									if(lp[i] == 0) {
+					if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
+						if (spheval[i].rho > plim) {
+							firstTime[i] = true;
+							if(espacializador[i].isPlaying) {
+								//synthRegistry[i].free;
+								runStop.value(i); // to kill SC input synths
+								espacializador[i].free; // just in case...
+							};
+						} {
+							if(espacializador[i].isPlaying.not && (isPlay || audit[i])
+								&& (firstTime[i]
+									|| (tfieldProxy[i].value == ""))) {
+								//this.triggerFunc[i].value; // play SC input synth
+								firstTime[i] = false;
+								runTrigger.value(i);
 
-										//tocar.value(i, 1, force: true);
-										this.newtocar(i, 0, force: true);
-									} {
-										// could remake this a random start point
-										//tocar.value(i, 1, force: true);
-										this.newtocar(i, 0, force: true);
-									};
+								if(lp[i] == 0) {
+
+									//tocar.value(i, 1, force: true);
+									this.newtocar(i, 0, force: true);
+								} {
+									// could remake this a random start point
+									//tocar.value(i, 1, force: true);
+									this.newtocar(i, 0, force: true);
 								};
 							};
 						};
-					}.defer;   // CHECK THIS DEFER
+					};
 				});
 
 				if(guiflag.not) {
