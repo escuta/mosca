@@ -269,7 +269,7 @@ may be downloaded here: http://escuta.org/mosca
 					// assume FuMa input
 					SynthDef(\ATKBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 200, level = 1,
+						azim = 0, elev = 0, radius = 20, level = 1,
 						dopamnt = 0, glev = 0, llev = 0,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
@@ -309,14 +309,14 @@ may be downloaded here: http://escuta.org/mosca
 						// assume N3D input
 						SynthDef(\ATKBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 200, level = 1,
+							azim = 0, elev = 0, radius = 20, level = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, directang = 1, rotAngle = 0 |
 
 							var rad = Lag.kr(radius),
-							pushang = contr * halfPi, // degree of sound field displacement
+							pushang = radius.linlin(contr, 2 - contr * 2, 0, halfPi), // degree of sound field displacement
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
 							az = azim - halfPi,
@@ -352,7 +352,7 @@ may be downloaded here: http://escuta.org/mosca
 					// assume FuMa input
 					SynthDef(\AmbitoolsBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 200, level = 1,
+						azim = 0, elev = 0, radius = 20, level = 1,
 						dopamnt = 0, glev = 0, llev = 0,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
