@@ -197,7 +197,6 @@ may be downloaded here: http://escuta.org/mosca
 					p = Ref(0),
 					rd = rad * 340, // Doppler
 					cut = rad.linlin(0.75, 1, 1, 0);
-					//make shure level is 0 when radius reaches 100
 					rad = rad.clip(0.1, 0.7);
 
 					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
@@ -231,8 +230,7 @@ may be downloaded here: http://escuta.org/mosca
 					p = Ref(0),
 					rd = rad * 340, // Doppler
 					cut = ((1 - rad) * 2).clip(0, 1);
-					//make shure level is 0 when radius reaches 100
-					rad = rad.clip(1, 50);
+					rad = rad.clip(0.1, 0.7);
 
 					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 2);
 					p = p * level;
@@ -284,7 +282,7 @@ may be downloaded here: http://escuta.org/mosca
 						rd = rad * 340, // Doppler
 						cut = ((1 - rad) * 2).clip(0, 1);
 						//make shure level is 0 when radius reaches 100
-						rad = rad.clip(1, 50);
+						rad = rad.clip(0.1, 0.7);
 						pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
 
 
@@ -326,7 +324,7 @@ may be downloaded here: http://escuta.org/mosca
 							rd = rad * 340, // Doppler
 							cut = ((1 - rad) * 2).clip(0, 1);
 							//make shure level is 0 when radius reaches 100
-							rad = rad.clip(1, 50);
+							rad = rad.clip(0.1, 0.7);
 							pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
 
 
@@ -370,6 +368,7 @@ may be downloaded here: http://escuta.org/mosca
 						p = Ref(0),
 						rd = rad * 340, // Doppler
 						cut = ((1 - rad) * 2).clip(0, 1);
+						rad = rad.clip(0.1, 0.7);
 						pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 
@@ -410,6 +409,7 @@ may be downloaded here: http://escuta.org/mosca
 							p = Ref(0),
 							rd = rad * 340, // Doppler
 							cut = ((1 - rad) * 2).clip(0, 1);
+							rad = rad.clip(0.1, 0.7);
 							pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
