@@ -276,7 +276,7 @@ may be downloaded here: http://escuta.org/mosca
 						contr = 0, directang = 1, rotAngle = 0 |
 
 						var rad = Lag.kr(radius),
-						pushang = radius.linlin(contr - 1, contr, halfPi, 0), // degree of sound field displacement
+						pushang = 2 - (contr * 2),
 						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						locallev, lrevRef = Ref(0),
 						az = azim - halfPi,
@@ -285,6 +285,8 @@ may be downloaded here: http://escuta.org/mosca
 						cut = ((1 - rad) * 2).clip(0, 1);
 						//make shure level is 0 when radius reaches 100
 						rad = rad.clip(1, 50);
+						pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
+
 
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 						p = p * level;

@@ -1086,7 +1086,7 @@ Mosca {
 				if (num.value < 4) {
 					cboxProxy[i].valueAction_(1);
 				} {
-					cboxProxy[i].valueAction_(0);
+					cboxProxy[i].valueAction_(0.5);
 				};
 
 				if (guiflag ) {
