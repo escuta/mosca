@@ -159,7 +159,7 @@ Mosca {
 	playingBF,
 	currentsource, baudi,
 	watcher, prjDr,
-	plim = 120, // distance limit from origin where processes continue to run
+	plim = 1.2, // distance limit from origin where processes continue to run
 	fftsize = 2048, halfPi = 1.5707963267949, rad2deg = 57.295779513082 ,
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
@@ -2601,18 +2601,22 @@ Mosca {
 
 					if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
 						if (spheval[i].rho > plim) {
-							firstTime[i] = true;
-							if(espacializador[i].isPlaying) {
+							//firstTime[i] = true;
+							if(espacializador[i].notNil) {
 								//synthRegistry[i].free;
 								runStop.value(i); // to kill SC input synths
 								espacializador[i].free; // just in case...
+								"false".postln;
 							};
 						} {
-							if(espacializador[i].isPlaying.not && (isPlay || audit[i])
-								&& (firstTime[i]
-									|| (tfieldProxy[i].value == ""))) {
+							if(espacializador[i].isNil && (isPlay || audit[i])
+								//&& //(firstTime[i] ||
+									//(tfieldProxy[i].value == ""))
+							)
+							{
 								//this.triggerFunc[i].value; // play SC input synth
-								firstTime[i] = false;
+								//firstTime[i] = false;
+								"true".postln;
 								runTrigger.value(i);
 
 								if(lp[i] == 0) {

@@ -55,7 +55,7 @@ GUI Parameters usable in SynthDefs
 	auditionFunc { |source, bool|
 		if(isPlay.not) {
 			if(bool) {
-				firstTime[source] = true;
+				//firstTime[source] = true;
 				audit[source] = true;
 				this.newtocar(source, 0, force: true);
 			} {
