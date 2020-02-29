@@ -318,7 +318,7 @@ may be downloaded here: http://escuta.org/mosca
 							contr = 0, directang = 1, rotAngle = 0 |
 
 							var rad = Lag.kr(radius),
-							pushang = radius.linlin(contr, 1, halfPi, 0), // degree of sound field displacement
+							pushang = 2 - (contr * 2),
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
 							az = azim - halfPi,
@@ -327,6 +327,8 @@ may be downloaded here: http://escuta.org/mosca
 							cut = ((1 - rad) * 2).clip(0, 1);
 							//make shure level is 0 when radius reaches 100
 							rad = rad.clip(1, 50);
+							pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
+
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 							p = p * level;
@@ -361,12 +363,15 @@ may be downloaded here: http://escuta.org/mosca
 						contr = 0, rotAngle = 0|
 
 						var rad = Lag.kr(radius),
+						pushang = 2 - (contr * 2),
 						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						locallev, lrevRef = Ref(0),
 						az = azim - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
 						cut = ((1 - rad) * 2).clip(0, 1);
+						pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
+
 
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 						p = p * level * (1 + (contr * 3));
@@ -377,7 +382,7 @@ may be downloaded here: http://escuta.org/mosca
 
 						p = FoaDecode.ar(lrevRef.value + p, f2n);
 						p = HOATransRotateAz.ar(1, p, rotAngle);
-						p = HOABeamDirac2Hoa.ar(1, p, az, elev, timer_manual:1, focus:contr);
+						p = HOABeamDirac2Hoa.ar(1, p, az, elev, timer_manual:1, focus:pushang);
 
 						p = p * cut;
 
@@ -391,22 +396,21 @@ may be downloaded here: http://escuta.org/mosca
 						// assume N3D input
 						hoaSynth = SynthDef(\AmbitoolsBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 200, level = 1,
+							azim = 0, elev = 0, radius = 20, level = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, rotAngle = 0|
 
 							var rad = Lag.kr(radius),
-							pushang = rad * halfPi, // degree of sound field displacement
+							pushang = 2 - (contr * 2),
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
 							az = azim - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
 							cut = ((1 - rad) * 2).clip(0, 1);
-							//make shure level is 0 when radius reaches 100
-							rad = rad.clip(1, 50);
+							pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
 							p = p * level * (1 + (contr * 3));
@@ -416,7 +420,7 @@ may be downloaded here: http://escuta.org/mosca
 							// local reverberation
 
 							p = HOATransRotateAz.ar(ord, lrevRef.value + p, rotAngle);
-							p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:contr);
+							p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:pushang);
 
 							p = p * cut;
 

@@ -75,7 +75,7 @@ GUI Parameters usable in SynthDefs
 					{ baudi.value = bool.asInteger; }.defer;
 				};
 			};
-		};
+		}.clock(watcher.clock);
 	}
 
 	remoteCtl { |bool|
