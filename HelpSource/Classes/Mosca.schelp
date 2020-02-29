@@ -190,8 +190,15 @@ If set true, transport will always loop.
 
 returns:: New instance.
 
+METHOD:: printSynthParams
+Print GUI Parameters usable in SynthDefs.
 
-METHOD:: openGui
+returns:: A string.
+
+
+INSTANCEMETHODS::
+
+METHOD:: gui
 Create the graphical interface.
 
 ARGUMENT:: width
@@ -219,13 +226,6 @@ monitor and the offsetheading is set to the default 0, you see a heading value (
 right of window) of 2.6, set the value to -2.6. The heading value will now be set to
 zero when you face the monitor.
 
-
-METHOD:: printSynthParams
-Print GUI Parameters usable in SynthDefs.
-
-returns:: A string.
-
-INSTANCEMETHODS::
 
 private:: clearStopFunc
 private:: clearTriggerFunc
@@ -879,7 +879,7 @@ s.waitForBoot {
 		nsources: 11, // Set the number of sources
 		decoder: ~decoder,
 		parentOssiaNode:~supercoll;
-	).openGui();
+	).gui();
 };
 )
 ::
