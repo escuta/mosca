@@ -1603,9 +1603,11 @@ Mosca {
 				lowest_elevation = 0;
 				highest_elevation = 0;
 
-				azimuths = speaker_array.collect({ |val| val.pop });
+				speaker_array.collect({ |val| val.pop });
 
-				vbap_setup = VBAPSpeakerArray(dimention, azimuths.flat);
+				azimuths = speaker_array.flat;
+
+				vbap_setup = VBAPSpeakerArray(dimention, azimuths);
 			}
 			{ speaker_array[0].size == 3 }
 			{ dimention = 3;
@@ -1633,7 +1635,10 @@ Mosca {
 
 				vbap_setup = VBAPSpeakerArray(dimention, speaker_array);
 
-				azimuths = speaker_array.collect({ |val| val.pop });
+				speaker_array.collect({ |val| val.pop });
+
+				azimuths = speaker_array.flat;
+
 			};
 
 			vbap_buffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
@@ -1773,7 +1778,7 @@ Mosca {
 						var sig, nonambi;
 						sig = In.ar(fumabus, 4);
 						sig = BFDecode1.ar1(sig[0], sig[1], sig[2], sig[3],
-							speaker_array.collect(_.degrad), elevations.collect(_.degrad),
+							azimuths.collect(_.degrad), elevations.collect(_.degrad),
 							longest_radius, radiusses);
 						nonambi = In.ar(nonambibus, numoutputs);
 						perfectSphereFunc.value(nonambi);
@@ -1781,6 +1786,8 @@ Mosca {
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).send(server);
+
+					azimuths.postln;
 
 				} {
 
@@ -1842,6 +1849,8 @@ Mosca {
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).send(server);
+
+					azimuths.postln;
 
 				} { // assume ADT Decoder
 					convert_fuma = true;
