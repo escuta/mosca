@@ -2134,8 +2134,10 @@ Mosca {
 					sig = sig + sigf + sigx;
 					sig = FoaDecode.ar(sig, b2a);
 					convsig = [
-						FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
-						FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp)];
+					FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[2], mix: 1, room: room, damp: damp),
+					FreeVerb.ar(sig[3], mix: 1, room: room, damp: damp)];
 					convsig = FoaEncode.ar(convsig.flat, a2b);
 					convsig = convsig * env;
 					Out.ar(fumabus, convsig);
