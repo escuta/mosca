@@ -18,7 +18,7 @@ may be downloaded here: http://escuta.org/mosca
 
 + Mosca {
 
-	gui { | width = 800, guiint = 0.07 |
+	openGui { | width = 800, guiint = 0.07 |
 
 		var furthest,
 		itensdemenu,

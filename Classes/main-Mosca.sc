@@ -1787,8 +1787,6 @@ Mosca {
 						Out.ar(outbus, sig);
 					}).send(server);
 
-					azimuths.postln;
-
 				} {
 
 					if (speaker_array.notNil) {
@@ -1849,8 +1847,6 @@ Mosca {
 						subOutFunc.value(sig, sub);
 						Out.ar(outbus, sig);
 					}).send(server);
-
-					azimuths.postln;
 
 				} { // assume ADT Decoder
 					convert_fuma = true;
@@ -2611,33 +2607,35 @@ Mosca {
 				nfontes.do({ | i |
 
 					if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
-						if (spheval[i].rho > plim) {
+						if (spheval[i].rho > 1) {
 							//firstTime[i] = true;
 							if(espacializador[i].notNil) {
 								//synthRegistry[i].free;
 								runStop.value(i); // to kill SC input synths
-								espacializador[i].free; // just in case...
-								"false".postln;
+								espacializador[i].set(\gate, 0);
 							};
 						} {
-							if(espacializador[i].isNil && (isPlay || audit[i])
-								//&& //(firstTime[i] ||
+							if(isPlay || audit[i]) {
+								if(espacializador[i].isNil
+									//&& //(firstTime[i] ||
 									//(tfieldProxy[i].value == ""))
-							)
-							{
-								//this.triggerFunc[i].value; // play SC input synth
-								//firstTime[i] = false;
-								"true".postln;
-								runTrigger.value(i);
+								)
+								{
+									//this.triggerFunc[i].value; // play SC input synth
+									//firstTime[i] = false;
+									runTrigger.value(i);
 
-								if(lp[i] == 0) {
+									if(lp[i] == 0) {
 
-									//tocar.value(i, 1, force: true);
-									this.newtocar(i, 0, force: true);
+										//tocar.value(i, 1, force: true);
+										this.newtocar(i, 0, force: true);
+									} {
+										// could remake this a random start point
+										//tocar.value(i, 1, force: true);
+										this.newtocar(i, 0, force: true);
+									};
 								} {
-									// could remake this a random start point
-									//tocar.value(i, 1, force: true);
-									this.newtocar(i, 0, force: true);
+									espacializador[i].set(\gate, 1);
 								};
 							};
 						};

@@ -185,7 +185,7 @@ may be downloaded here: http://escuta.org/mosca
 				mono = SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 					azim = 0, elev = 0, radius = 20, level = 1,
-					dopamnt = 0, glev = 0, llev = 0,
+					dopamnt = 0, glev = 0, llev = 0, gate = 1,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
@@ -196,8 +196,9 @@ may be downloaded here: http://escuta.org/mosca
 					az = azim - halfPi,
 					p = Ref(0),
 					rd = rad * 340, // Doppler
+					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
 					cut = rad.linlin(0.75, 1, 1, 0);
-					rad = rad.clip(0.1, 0.7);
+					rad = rad.max(0.01);
 
 					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
 					p = p * level;
@@ -210,7 +211,7 @@ may be downloaded here: http://escuta.org/mosca
 					spatFuncs[i].value(lrevRef, p, rad, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(p * cut, lrevRef.value * cut,
+					outPutFuncs[out_type].value(p * cut, lrevRef.value * env,
 						globallev.clip(0, 1) * glev);
 				});
 
@@ -219,7 +220,7 @@ may be downloaded here: http://escuta.org/mosca
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 					azim = 0, elev = 0, radius = 20, level = 1,
 					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
-					insertFlag = 0, insertOut, insertBack,
+					insertFlag = 0, insertOut, insertBack, gate = 1,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
@@ -229,8 +230,9 @@ may be downloaded here: http://escuta.org/mosca
 					az = Lag.kr(azim - halfPi),
 					p = Ref(0),
 					rd = rad * 340, // Doppler
-					cut = ((1 - rad) * 2).clip(0, 1);
-					rad = rad.clip(0.1, 0.7);
+					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+					cut = rad.linlin(0.75, 1, 1, 0);
+					rad = rad.max(0.01);
 
 					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 2);
 					p = p * level;
@@ -245,7 +247,7 @@ may be downloaded here: http://escuta.org/mosca
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
 					outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
-						(lrev1Ref.value + lrev2Ref.value) * 0.5 * cut,
+						(lrev1Ref.value + lrev2Ref.value) * 0.5 * env,
 						globallev.clip(0, 1) * glev);
 				});
 
@@ -268,7 +270,7 @@ may be downloaded here: http://escuta.org/mosca
 					SynthDef(\ATKBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, level = 1,
-						dopamnt = 0, glev = 0, llev = 0,
+						dopamnt = 0, glev = 0, llev = 0, gate = 1,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
 						contr = 0, directang = 1, rotAngle = 0 |
@@ -280,9 +282,9 @@ may be downloaded here: http://escuta.org/mosca
 						az = azim - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						cut = ((1 - rad) * 2).clip(0, 1);
-						//make shure level is 0 when radius reaches 100
-						rad = rad.clip(0.1, 0.7);
+						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+						cut = rad.linlin(0.75, 1, 1, 0);
+						rad = rad.max(0.01);
 						pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
 
 
@@ -298,9 +300,7 @@ may be downloaded here: http://escuta.org/mosca
 						p = FoaTransform.ar(p, 'rotate', rotAngle);
 						p = FoaTransform.ar(p, 'push', pushang, az, elev);
 
-						p = p * cut;
-
-						outPutFuncs[1].value(p, p,
+						outPutFuncs[1].value(p * cut, p * env,
 							globallev.clip(0, 1) * glev);
 					}).send(server);
 
@@ -310,7 +310,7 @@ may be downloaded here: http://escuta.org/mosca
 						SynthDef(\ATKBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, level = 1,
-							dopamnt = 0, glev = 0, llev = 0,
+							dopamnt = 0, glev = 0, llev = 0, gate = 1,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, directang = 1, rotAngle = 0 |
@@ -322,9 +322,9 @@ may be downloaded here: http://escuta.org/mosca
 							az = azim - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							cut = ((1 - rad) * 2).clip(0, 1);
-							//make shure level is 0 when radius reaches 100
-							rad = rad.clip(0.1, 0.7);
+							env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+							cut = rad.linlin(0.75, 1, 1, 0);
+							rad = rad.max(0.01);
 							pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
 
 
@@ -341,9 +341,7 @@ may be downloaded here: http://escuta.org/mosca
 							p = FoaTransform.ar(p, 'rotate', rotAngle);
 							p = FoaTransform.ar(p, 'push', pushang, az, elev);
 
-							p = p * cut;
-
-							outPutFuncs[1].value(p, p,
+							outPutFuncs[1].value(p * cut, p * env,
 								globallev.clip(0, 1) * glev);
 						});
 					};
@@ -355,7 +353,7 @@ may be downloaded here: http://escuta.org/mosca
 					SynthDef(\AmbitoolsBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, level = 1,
-						dopamnt = 0, glev = 0, llev = 0,
+						dopamnt = 0, glev = 0, llev = 0, gate = 1,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
 						contr = 0, rotAngle = 0|
@@ -367,8 +365,9 @@ may be downloaded here: http://escuta.org/mosca
 						az = azim - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						cut = ((1 - rad) * 2).clip(0, 1);
-						rad = rad.clip(0.1, 0.7);
+						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+						cut = rad.linlin(0.75, 1, 1, 0);
+						rad = rad.max(0.01);
 						pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 
@@ -383,9 +382,7 @@ may be downloaded here: http://escuta.org/mosca
 						p = HOATransRotateAz.ar(1, p, rotAngle);
 						p = HOABeamDirac2Hoa.ar(1, p, az, elev, timer_manual:1, focus:pushang);
 
-						p = p * cut;
-
-						outPutFuncs[0].value(p, p,
+						outPutFuncs[0].value(p * cut, p * env,
 							globallev.clip(0, 1) * glev);
 					}).send(server);
 
@@ -396,7 +393,7 @@ may be downloaded here: http://escuta.org/mosca
 						hoaSynth = SynthDef(\AmbitoolsBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, level = 1,
-							dopamnt = 0, glev = 0, llev = 0,
+							dopamnt = 0, glev = 0, llev = 0, gate = 1,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, rotAngle = 0|
@@ -408,8 +405,9 @@ may be downloaded here: http://escuta.org/mosca
 							az = azim - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							cut = ((1 - rad) * 2).clip(0, 1);
-							rad = rad.clip(0.1, 0.7);
+							env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+							cut = rad.linlin(0.75, 1, 1, 0);
+							rad = rad.max(0.01);
 							pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
@@ -422,9 +420,7 @@ may be downloaded here: http://escuta.org/mosca
 							p = HOATransRotateAz.ar(ord, lrevRef.value + p, rotAngle);
 							p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:pushang);
 
-							p = p * cut;
-
-							outPutFuncs[0].value(p, p,
+							outPutFuncs[0].value(p * cut, p * env,
 								globallev.clip(0, 1) * glev);
 						});
 
