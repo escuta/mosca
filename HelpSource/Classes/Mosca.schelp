@@ -23,6 +23,7 @@ table::
     ## Ambitools || most realistic but CPU demanding
     ## HoaLib    || lightweight and neutral sounding
     ## ADT       || lightweight and broad sounding
+    ## SC-HOA    || even lighter
     ## ATK       || 1st order only but many options
     ## BF-FMH    || 2nd order max
     ## Josh      || 1st order granular effect
@@ -116,9 +117,6 @@ saving and loading automations.
 ARGUMENT:: nsources
 The number of sources to be spatialised.
 
-ARGUMENT:: width
-Pixel width and height of GUI window. Minimum of 550 pixels.
-
 ARGUMENT:: dur
 Duration in seconds of automation transport.
 
@@ -179,6 +177,32 @@ Starting bus for raw first ambisonic output.
 ARGUMENT:: rawoutbus
 Starting bus for raw first order ambisonic output.
 
+ARGUMENT:: recchans
+Number of channels for recording audio output to disk. Default is 2.
+
+ARGUMENT:: recbus
+Starting bus for recording audio output to disk. Default is 0. Note: this argument may
+only be set in SC 3.9.
+
+ARGUMENT:: autoloop
+If set true, transport will always loop.
+
+returns:: New instance.
+
+
+METHOD:: gui
+Create the graphical interface.
+
+ARGUMENT:: width
+Pixel width and height of GUI window. Minimum of 550 pixels.
+
+ARGUMENT:: guiint
+Maximum interval in seconds to refresh GUI. Default is 0.07.
+
+
+METHOD:: headTracker
+Connect to the head traker module (Arduino) through the serial port.
+
 ARGUMENT:: serport
 Name of serial port to receive headtracking data. Eg. "/dev/ttyACM0". For use with a
 binaural decoder. Default is nil.
@@ -193,24 +217,6 @@ rotate North to the direction of your computer monitor. Eg. If when you are faci
 monitor and the offsetheading is set to the default 0, you see a heading value (bottom-
 right of window) of 2.6, set the value to -2.6. The heading value will now be set to
 zero when you face the monitor.
-
-ARGUMENT:: recchans
-Number of channels for recording audio output to disk. Default is 2.
-
-ARGUMENT:: recbus
-Starting bus for recording audio output to disk. Default is 0. Note: this argument may
-only be set in SC 3.9.
-
-ARGUMENT:: guiflag
-If set to false, Mosca will run with no GUI. Default is true.
-
-ARGUMENT:: guiint
-Maximum interval in seconds to refresh GUI. Default is 0.07.
-
-ARGUMENT:: autoloop
-If set true, transport will always loop.
-
-returns:: New instance.
 
 
 METHOD:: printSynthParams
@@ -780,10 +786,13 @@ ARGUMENT:: synth
 Synth instance.
 
 METHOD:: getSCBus
-Return the bus number associated with synth registrant.
+Create the bus associated with synth registrant.
 
 ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
+The number of the source (starting with 1).
+
+ARGUMENT:: numChans
+The number of channels (starting with 1).
 
 METHOD:: setTriggerFunc
 Designate a function to be triggered when selecting play in the transport or auditioning
@@ -869,7 +878,7 @@ s.waitForBoot {
 		nsources: 11, // Set the number of sources
 		decoder: ~decoder,
 		parentOssiaNode:~supercoll;
-	);
+	).gui();
 
 };
 )
