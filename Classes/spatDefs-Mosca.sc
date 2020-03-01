@@ -208,10 +208,12 @@ may be downloaded here: http://escuta.org/mosca
 						// local reverberation
 						room, damp);
 
-					spatFuncs[i].value(lrevRef, p, rad, az, elev, df, sp, contr,
+					lrevRef.value = lrevRef.value * env;
+
+					spatFuncs[i].value(lrevRef, p * cut, rad, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(p * cut, lrevRef.value * env,
+					outPutFuncs[out_type].value(p, lrevRef.value,
 						globallev.clip(0, 1) * glev);
 				});
 
@@ -241,13 +243,18 @@ may be downloaded here: http://escuta.org/mosca
 					localReverbFunc[rev_type, 2].value(lrev1Ref, lrev2Ref, p[0], p[1],
 						wir, rad * llev, room, damp);
 
+					lrev1Ref.value = lrev1Ref.value * env;
+					lrev2Ref.value = lrev2Ref.value * env;
+
+					p = p * cut;
+
 					spatFuncs[i].value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 					spatFuncs[i].value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
 						elev, df, sp, contr, winsize, grainrate, winrand);
 
-					outPutFuncs[out_type].value(Mix.ar(p) * 0.5 * cut,
-						(lrev1Ref.value + lrev2Ref.value) * 0.5 * env,
+					outPutFuncs[out_type].value(Mix.ar(p) * 0.5,
+						(lrev1Ref.value + lrev2Ref.value) * 0.5,
 						globallev.clip(0, 1) * glev);
 				});
 
@@ -295,12 +302,12 @@ may be downloaded here: http://escuta.org/mosca
 						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 						// local reverberation
 
-						p = FoaDirectO.ar(lrevRef.value + p, directang);
+						p = FoaDirectO.ar((lrevRef.value * env) + (p * cut), directang);
 						// directivity
 						p = FoaTransform.ar(p, 'rotate', rotAngle);
 						p = FoaTransform.ar(p, 'push', pushang, az, elev);
 
-						outPutFuncs[1].value(p * cut, p * env,
+						outPutFuncs[1].value(p, p,
 							globallev.clip(0, 1) * glev);
 					}).send(server);
 
@@ -327,7 +334,6 @@ may be downloaded here: http://escuta.org/mosca
 							rad = rad.max(0.01);
 							pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
 
-
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 							p = p * level;
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
@@ -335,13 +341,13 @@ may be downloaded here: http://escuta.org/mosca
 							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
-							p = FoaEncode.ar(lrevRef.value + p, n2f);
+							p = FoaEncode.ar((lrevRef.value * env) + (p * cut), n2f);
 							p = FoaDirectO.ar(p, directang);
 							// directivity
 							p = FoaTransform.ar(p, 'rotate', rotAngle);
 							p = FoaTransform.ar(p, 'push', pushang, az, elev);
 
-							outPutFuncs[1].value(p * cut, p * env,
+							outPutFuncs[1].value(p, p,
 								globallev.clip(0, 1) * glev);
 						});
 					};
@@ -378,11 +384,11 @@ may be downloaded here: http://escuta.org/mosca
 						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 						// local reverberation
 
-						p = FoaDecode.ar(lrevRef.value + p, f2n);
+						p = FoaDecode.ar((lrevRef.value * env) + (p * cut), f2n);
 						p = HOATransRotateAz.ar(1, p, rotAngle);
 						p = HOABeamDirac2Hoa.ar(1, p, az, elev, timer_manual:1, focus:pushang);
 
-						outPutFuncs[0].value(p * cut, p * env,
+						outPutFuncs[0].value(p, p,
 							globallev.clip(0, 1) * glev);
 					}).send(server);
 
@@ -417,10 +423,10 @@ may be downloaded here: http://escuta.org/mosca
 							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
-							p = HOATransRotateAz.ar(ord, lrevRef.value + p, rotAngle);
+							p = HOATransRotateAz.ar(ord, lrevRef.value * env + (p * cut), rotAngle);
 							p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:pushang);
 
-							outPutFuncs[0].value(p * cut, p * env,
+							outPutFuncs[0].value(p, p,
 								globallev.clip(0, 1) * glev);
 						});
 
