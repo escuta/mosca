@@ -206,7 +206,7 @@ The exemple below offers different rendering and output options. The raw output 
 
 code::
 (
-~supercoll = OSSIA_Device('SC');  // Create and name OSSIA_Device to contain all parameters
+~supercoll = OSSIA_Device("SC");  // Create and name OSSIA_Device to contain all parameters
 ~supercoll.exposeOSC;             // Evaluate this line while OSSIA/score is learning incoming OSC
 Server.killAll;                   // Make sure no servers are booted yet
 s = Server.local;                 // Use deffault server
