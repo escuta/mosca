@@ -53,12 +53,7 @@ may be downloaded here: http://escuta.org/mosca
 		ossiaCartBack = true;
 		ossiaSpheBack = true;
 
-		if (parentOssiaNode.isNil) {
-			ossiaParent = OSSIA_Device("SC");
-			ossiaParent.exposeOSC();
-		} {
-			ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");
-		};
+		ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");
 
 		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
 			critical:true);
@@ -85,9 +80,9 @@ may be downloaded here: http://escuta.org/mosca
 
 
 		ossiamaster = OSSIA_Parameter(ossiaParent, "Master_level", Float,
-			[0, 2],	1, 'clip', critical:allCrtitical);
+			[-96, 12],	0, 'clip', critical:allCrtitical);
 
-		ossiamaster.unit_(OSSIA_gain.linear);
+		ossiamaster.unit_(OSSIA_gain.decibel);
 
 		ossiamaster.callback_({ arg num;
 			if (masterlevProxy.value != num.value) {
@@ -362,10 +357,10 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-			ossialev[i] = OSSIA_Parameter(ossiasrc[i], "Level", Float, [0, 2],
-				1, 'clip', critical:allCrtitical, repetition_filter:true);
+			ossialev[i] = OSSIA_Parameter(ossiasrc[i], "Level", Float, [-96, 12],
+				0, 'clip', critical:allCrtitical, repetition_filter:true);
 
-			ossialev[i].unit_(OSSIA_gain.linear);
+			ossialev[i].unit_(OSSIA_gain.decibel);
 
 			ossialev[i].callback_({arg num;
 				if (vboxProxy[i].value != num.value) {

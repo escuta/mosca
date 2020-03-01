@@ -104,7 +104,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -189,7 +189,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -262,7 +262,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -352,7 +352,7 @@ may be downloaded here: http://escuta.org/mosca
 						\contr, clev[i],
 						\room, rm[i],
 						\damp, dm[i],
-						\level, level[i],
+						\amp, level[i].dbamp,
 						\grainrate, grainrate[i],
 						\winsize, winsize[i],
 						\winrand, winrand[i]] ++
@@ -433,7 +433,7 @@ may be downloaded here: http://escuta.org/mosca
 						\contr, clev[i],
 						\room, rm[i],
 						\damp, dm[i],
-						\level, level[i],
+						\amp, level[i].dbamp,
 						\grainrate, grainrate[i],
 						\winsize, winsize[i],
 						\winrand, winrand[i]] ++
@@ -505,7 +505,7 @@ may be downloaded here: http://escuta.org/mosca
 						\contr, clev[i],
 						\room, rm[i],
 						\damp, dm[i],
-						\level, level[i],
+						\amp, level[i].dbamp,
 						\grainrate, grainrate[i],
 						\winsize, winsize[i],
 						\winrand, winrand[i]] ++
@@ -597,7 +597,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -680,7 +680,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -748,7 +748,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++

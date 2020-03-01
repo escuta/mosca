@@ -797,7 +797,7 @@ may be downloaded here: http://escuta.org/mosca
 			updateGuiCtl.value(\src);
 
 			winCtl[0][0].value = level[currentsource];
-			winCtl[1][0].value = level[currentsource] * 0.5;
+			winCtl[1][0].value = level[currentsource].curvelin(inMin:-96, inMax:12, curve:-3);
 			winCtl[0][1].value = dplev[currentsource];
 			winCtl[1][1].value = dplev[currentsource];
 			winCtl[1][2].value = clev[currentsource];
@@ -1034,20 +1034,20 @@ may be downloaded here: http://escuta.org/mosca
 		winCtl[2][0] = StaticText(win, Rect(163, 130, 50, 20));
 		winCtl[2][0].string = "Level";
 		winCtl[0][0] = NumberBox(win, Rect(10, 130, 40, 20));
-		winCtl[0][0].value = 1;
-		winCtl[0][0].clipHi = 2;
-		winCtl[0][0].clipLo = 0;
-		winCtl[0][0].step_(0.01);
-		winCtl[0][0].scroll_step_(0.01);
+		winCtl[0][0].value = 0;
+		winCtl[0][0].clipHi = 12;
+		winCtl[0][0].clipLo = -96;
+		winCtl[0][0].step_(0.1);
+		winCtl[0][0].scroll_step_(0.1);
 		winCtl[0][0].align = \center;
 		winCtl[0][0].action = { | num |
 			{vbox[currentsource].valueAction = num.value;}.defer;
 		};
 
 		winCtl[1][0] = Slider(win, Rect(50, 130, 110, 20));
-		winCtl[1][0].value = 0.5;
+		winCtl[1][0].value = 0.62065661124753;
 		winCtl[1][0].action = { | num |
-			{vbox[currentsource].valueAction = num.value * 2;}.defer;
+			{vbox[currentsource].valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);}.defer;
 		};
 
 
@@ -1105,9 +1105,9 @@ may be downloaded here: http://escuta.org/mosca
 
 		masterslider = Slider(originView, Rect(132, 20, 20, 60));
 		masterslider.orientation(\vertical);
-		masterslider.value = 0.5;
+		masterslider.value = 0.62065661124753;
 		masterslider.action = { | num |
-			masterlevProxy.valueAction = num.value * 2;
+			masterlevProxy.valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);
 		};
 
 		/////////////////////////////////////////////////////////////////////////
@@ -1888,8 +1888,8 @@ may be downloaded here: http://escuta.org/mosca
 
 			abox[i].clipHi = pi;
 			abox[i].clipLo = 0;
-			vbox[i].clipHi = 2.0;
-			vbox[i].clipLo = 0;
+			vbox[i].clipHi = 12;
+			vbox[i].clipLo = -96;
 			gbox[i].clipHi = 1.0;
 			gbox[i].clipLo = 0;
 			lbox[i].clipHi = 1.0;
@@ -1908,9 +1908,9 @@ may be downloaded here: http://escuta.org/mosca
 			libbox[i].clipLo = 0;
 			businibox[i].clipLo = 0;
 
-			vbox[i].scroll_step = 0.01;
+			vbox[i].scroll_step = 0.1;
 			abox[i].scroll_step = 0.01;
-			vbox[i].step = 0.01;
+			vbox[i].step = 0.1;
 			abox[i].step = 0.01;
 			gbox[i].scroll_step = 0.01;
 			lbox[i].scroll_step = 0.01;

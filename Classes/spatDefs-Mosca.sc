@@ -184,7 +184,7 @@ may be downloaded here: http://escuta.org/mosca
 
 				mono = SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-					azim = 0, elev = 0, radius = 20, level = 1,
+					azim = 0, elev = 0, radius = 20, amp = 1,
 					dopamnt = 0, glev = 0, llev = 0, gate = 1,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
@@ -201,7 +201,7 @@ may be downloaded here: http://escuta.org/mosca
 					rad = rad.max(0.01);
 
 					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
-					p = p * level;
+					p = p * amp;
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 					localReverbFunc[rev_type, 1].value(lrevRef, p, wir, rad * llev,
@@ -220,7 +220,7 @@ may be downloaded here: http://escuta.org/mosca
 
 				stereo = SynthDef(item++"Stereo"++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-					azim = 0, elev = 0, radius = 20, level = 1,
+					azim = 0, elev = 0, radius = 20, amp = 1,
 					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 					insertFlag = 0, insertOut, insertBack, gate = 1,
 					room = 0.5, damp = 05, wir, df, sp,
@@ -237,7 +237,7 @@ may be downloaded here: http://escuta.org/mosca
 					rad = rad.max(0.01);
 
 					playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 2);
-					p = p * level;
+					p = p * amp;
 					p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 					localReverbFunc[rev_type, 2].value(lrev1Ref, lrev2Ref, p[0], p[1],
@@ -276,7 +276,7 @@ may be downloaded here: http://escuta.org/mosca
 					// assume FuMa input
 					SynthDef(\ATKBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 20, level = 1,
+						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, gate = 1,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
@@ -296,7 +296,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
-						p = p * level;
+						p = p * amp;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
@@ -316,7 +316,7 @@ may be downloaded here: http://escuta.org/mosca
 						// assume N3D input
 						SynthDef(\ATKBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 20, level = 1,
+							azim = 0, elev = 0, radius = 20, amp = 1,
 							dopamnt = 0, glev = 0, llev = 0, gate = 1,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
@@ -335,7 +335,7 @@ may be downloaded here: http://escuta.org/mosca
 							pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
-							p = p * level;
+							p = p * amp;
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
@@ -358,7 +358,7 @@ may be downloaded here: http://escuta.org/mosca
 					// assume FuMa input
 					SynthDef(\AmbitoolsBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 20, level = 1,
+						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, gate = 1,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
@@ -378,7 +378,7 @@ may be downloaded here: http://escuta.org/mosca
 
 
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
-						p = p * level * (1 + (contr * 3));
+						p = p * amp * (1 + (contr * 3));
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
@@ -398,7 +398,7 @@ may be downloaded here: http://escuta.org/mosca
 						// assume N3D input
 						hoaSynth = SynthDef(\AmbitoolsBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 20, level = 1,
+							azim = 0, elev = 0, radius = 20, amp = 1,
 							dopamnt = 0, glev = 0, llev = 0, gate = 1,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
@@ -417,7 +417,7 @@ may be downloaded here: http://escuta.org/mosca
 							pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
-							p = p * level * (1 + (contr * 3));
+							p = p * amp * (1 + (contr * 3));
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);

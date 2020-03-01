@@ -25,13 +25,13 @@ may be downloaded here: http://escuta.org/mosca
 
 GUI Parameters usable in SynthDefs
 
-\\level | level [0, 2]
+\\amp | amplitude [0, 4]
 \\dopamnt | Doppler ammount [0, 1]
 \\angle | Stereo angle | default 1.05 (60 degrees) [0, pi]
 \\glev | Global/Close reverb level [0, 1]
 \\llev | Local/Distant reverb level [0, 1]
-\\azim | azimuth coord [-pi, pi]
-\\elev | elevation coord [-pi, pi]
+\\azim | azimuth in radiants [-pi, pi]
+\\elev | elevation in radiants [-pi/2, pi/2]
 \\radius | spherical radius [0, 20]
 \\rotAngle | B-format rotation angle [-pi, pi]
 \\directang | B-format directivity [0, pi/2]

@@ -164,7 +164,7 @@ Mosca {
 	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, dur = 180, rirBank,
-		server = Server.local, parentOssiaNode, allCrtitical = false, decoder,
+		server = Server.local, parentOssiaNode = OSSIA_Device("SC"), allCrtitical = false, decoder,
 		maxorder = 1, speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus,
 		recchans = 2, recbus = 0, autoloop = false;
 
@@ -445,7 +445,7 @@ Mosca {
 			dstrv[i] = 0;
 			convert[i] = false;
 			angle[i] = 1.05;
-			level[i] = 1;
+			level[i] = 0;
 			glev[i] = 0;
 			llev[i] = 0;
 			rm[i] = 0.5;
@@ -480,7 +480,7 @@ Mosca {
 			rboxProxy[i] = AutomationGuiProxy(0.0);
 			cboxProxy[i] = AutomationGuiProxy(0.0);
 			aboxProxy[i] = AutomationGuiProxy(1.0471975511966);
-			vboxProxy[i] = AutomationGuiProxy(1.0);
+			vboxProxy[i] = AutomationGuiProxy(0.0);
 			gboxProxy[i] = AutomationGuiProxy(0.0);
 			lboxProxy[i] = AutomationGuiProxy(0.0);
 			rmboxProxy[i]= AutomationGuiProxy(0.5);
@@ -633,15 +633,15 @@ Mosca {
 			};
 
 			vboxProxy[i].action = { | num |
-				espacializador[i].set(\level, num.value);
-				this.setSynths(i, \level, num.value);
+				espacializador[i].set(\amp, num.value.dbamp);
+				this.setSynths(i, \amp, num.value.dbamp);
 				level[i] = num.value;
 
 				if (guiflag) {
 					{ vbox[i].value = num.value }.defer;
 					if(i == currentsource)
 					{
-						{ winCtl[1][0].value = num.value * 0.5 }.defer;
+						{ winCtl[1][0].value = num.value.curvelin(inMin:-96, inMax:12, curve:-3)}.defer;
 						{ winCtl[0][0].value = num.value }.defer;
 					};
 				};
@@ -1235,10 +1235,10 @@ Mosca {
 
 		masterlevProxy.action_({ | num |
 
-			globDec.set(\level, num.value);
+			globDec.set(\level, num.value.dbamp);
 
 			if (guiflag) {
-				{masterslider.value = num.value * 0.5;}.defer;
+				{masterslider.value = num.value.curvelin(inMin:-96, inMax:12, curve:-3);}.defer;
 			};
 
 			if (ossiamaster.v != num.value) {
