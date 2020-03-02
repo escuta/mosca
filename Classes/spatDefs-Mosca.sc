@@ -196,7 +196,7 @@ may be downloaded here: http://escuta.org/mosca
 					az = azim - halfPi,
 					p = Ref(0),
 					rd = rad * 340, // Doppler
-					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+					env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
 					cut = rad.linlin(0.75, 1, 1, 0);
 					rad = rad.max(0.01);
 
@@ -232,7 +232,7 @@ may be downloaded here: http://escuta.org/mosca
 					az = Lag.kr(azim - halfPi),
 					p = Ref(0),
 					rd = rad * 340, // Doppler
-					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+					env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
 					cut = rad.linlin(0.75, 1, 1, 0);
 					rad = rad.max(0.01);
 
@@ -289,7 +289,7 @@ may be downloaded here: http://escuta.org/mosca
 						az = azim - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+						env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
 						cut = rad.linlin(0.75, 1, 1, 0);
 						rad = rad.max(0.01);
 						pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
@@ -329,7 +329,7 @@ may be downloaded here: http://escuta.org/mosca
 							az = azim - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+							env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
 							pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
@@ -371,7 +371,7 @@ may be downloaded here: http://escuta.org/mosca
 						az = azim - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+						env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
 						cut = rad.linlin(0.75, 1, 1, 0);
 						rad = rad.max(0.01);
 						pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
@@ -411,7 +411,7 @@ may be downloaded here: http://escuta.org/mosca
 							az = azim - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2),
+							env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
 							pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement

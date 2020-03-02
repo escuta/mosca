@@ -122,11 +122,11 @@ Mosca {
 	<parentOssiaNode,
 	ossiaorient, ossiaorigine, ossiaremotectl, ossiaplay, ossiatrasportLoop,
 	ossiatransport, ossiaseekback, ossiarec, ossiacart, ossiasphe, ossiaaud,
-	ossialoop, ossialib, ossialev, ossiadp, ossiacls, ossiaclsam,
-	ossiaclsdel, ossiaclsdec, ossiadst, ossiadstam, ossiadstdel, ossiadstdec,
-	ossiaangle, ossiarot, ossiadir, ossiactr, ossiaspread, ossiadiff,
-	ossiaCartBack, ossiaSpheBack, ossiarate, ossiawin, ossiarand, ossiamaster,
-	ossiaMasterPlay, ossiaMasterLib, ossiaMasterRev;
+	ossialoop, ossialib, ossialev, ossiadp, ossiacls, ossiaclsam, ossiaclsdel,
+	ossiaclsdec, ossiadst, ossiadstam, ossiadstdel, ossiadstdec, ossiaangle,
+	ossiarot, ossiadir, ossiactr, ossiaspread, ossiadiff, ossiaCartBack,
+	ossiaSpheBack, ossiarate, ossiawin, ossiarand, ossiaAval, ossiaAchek,
+	ossiamaster, ossiaMasterPlay, ossiaMasterLib, ossiaMasterRev;
 
 	/////////////////////////////////////////
 
