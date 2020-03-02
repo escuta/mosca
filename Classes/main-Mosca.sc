@@ -2607,35 +2607,31 @@ Mosca {
 				nfontes.do({ | i |
 
 					if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
-						if (spheval[i].rho > 1) {
+						if (spheval[i].rho > plim) {
 							//firstTime[i] = true;
 							if(espacializador[i].notNil) {
 								//synthRegistry[i].free;
 								runStop.value(i); // to kill SC input synths
-								espacializador[i].set(\gate, 0);
+								espacializador[i].free;
 							};
 						} {
-							if(isPlay || audit[i]) {
-								if(espacializador[i].isNil
-									//&& //(firstTime[i] ||
-									//(tfieldProxy[i].value == ""))
-								)
-								{
-									//this.triggerFunc[i].value; // play SC input synth
-									//firstTime[i] = false;
-									runTrigger.value(i);
+							if((isPlay || audit[i]) && espacializador[i].isNil
+								//&& //(firstTime[i] ||
+								//(tfieldProxy[i].value == ""))
+							)
+							{
+								//this.triggerFunc[i].value; // play SC input synth
+								//firstTime[i] = false;
+								runTrigger.value(i);
 
-									if(lp[i] == 0) {
+								if(lp[i] == 0) {
 
-										//tocar.value(i, 1, force: true);
-										this.newtocar(i, 0, force: true);
-									} {
-										// could remake this a random start point
-										//tocar.value(i, 1, force: true);
-										this.newtocar(i, 0, force: true);
-									};
+									//tocar.value(i, 1, force: true);
+									this.newtocar(i, 0, force: true);
 								} {
-									espacializador[i].set(\gate, 1);
+									// could remake this a random start point
+									//tocar.value(i, 1, force: true);
+									this.newtocar(i, 0, force: true);
 								};
 							};
 						};

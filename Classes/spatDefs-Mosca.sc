@@ -185,7 +185,7 @@ may be downloaded here: http://escuta.org/mosca
 				mono = SynthDef(item++play_type++localReverbFunc[rev_type, 0], {
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 					azim = 0, elev = 0, radius = 20, amp = 1,
-					dopamnt = 0, glev = 0, llev = 0, gate = 1,
+					dopamnt = 0, glev = 0, llev = 0,
 					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
@@ -196,7 +196,7 @@ may be downloaded here: http://escuta.org/mosca
 					az = azim - halfPi,
 					p = Ref(0),
 					rd = rad * 340, // Doppler
-					env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
+					revCut = rad.lincurve(1, plim, 1, 0),
 					cut = rad.linlin(0.75, 1, 1, 0);
 					rad = rad.max(0.01);
 
@@ -208,7 +208,7 @@ may be downloaded here: http://escuta.org/mosca
 						// local reverberation
 						room, damp);
 
-					lrevRef.value = lrevRef.value * env;
+					lrevRef.value = lrevRef.value * revCut;
 
 					spatFuncs[i].value(lrevRef, p * cut, rad, az, elev, df, sp, contr,
 						winsize, grainrate, winrand);
@@ -222,7 +222,7 @@ may be downloaded here: http://escuta.org/mosca
 					| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 					azim = 0, elev = 0, radius = 20, amp = 1,
 					dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
-					insertFlag = 0, insertOut, insertBack, gate = 1,
+					insertFlag = 0, insertOut, insertBack,
 					room = 0.5, damp = 05, wir, df, sp,
 					contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
@@ -232,7 +232,7 @@ may be downloaded here: http://escuta.org/mosca
 					az = Lag.kr(azim - halfPi),
 					p = Ref(0),
 					rd = rad * 340, // Doppler
-					env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
+					revCut = rad.lincurve(1, plim, 1, 0),
 					cut = rad.linlin(0.75, 1, 1, 0);
 					rad = rad.max(0.01);
 
@@ -243,8 +243,8 @@ may be downloaded here: http://escuta.org/mosca
 					localReverbFunc[rev_type, 2].value(lrev1Ref, lrev2Ref, p[0], p[1],
 						wir, rad * llev, room, damp);
 
-					lrev1Ref.value = lrev1Ref.value * env;
-					lrev2Ref.value = lrev2Ref.value * env;
+					lrev1Ref.value = lrev1Ref.value * revCut;
+					lrev2Ref.value = lrev2Ref.value * revCut;
 
 					p = p * cut;
 
@@ -277,7 +277,7 @@ may be downloaded here: http://escuta.org/mosca
 					SynthDef(\ATKBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
-						dopamnt = 0, glev = 0, llev = 0, gate = 1,
+						dopamnt = 0, glev = 0, llev = 0,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
 						contr = 0, directang = 1, rotAngle = 0 |
@@ -289,7 +289,7 @@ may be downloaded here: http://escuta.org/mosca
 						az = azim - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
+						revCut = rad.lincurve(1, plim, 1, 0),
 						cut = rad.linlin(0.75, 1, 1, 0);
 						rad = rad.max(0.01);
 						pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
@@ -302,7 +302,7 @@ may be downloaded here: http://escuta.org/mosca
 						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 						// local reverberation
 
-						p = FoaDirectO.ar((lrevRef.value * env) + (p * cut), directang);
+						p = FoaDirectO.ar((lrevRef.value * revCut) + (p * cut), directang);
 						// directivity
 						p = FoaTransform.ar(p, 'rotate', rotAngle);
 						p = FoaTransform.ar(p, 'push', pushang, az, elev);
@@ -317,7 +317,7 @@ may be downloaded here: http://escuta.org/mosca
 						SynthDef(\ATKBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, amp = 1,
-							dopamnt = 0, glev = 0, llev = 0, gate = 1,
+							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, directang = 1, rotAngle = 0 |
@@ -329,7 +329,7 @@ may be downloaded here: http://escuta.org/mosca
 							az = azim - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
+							revCut = rad.lincurve(1, plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
 							pushang = radius.linlin(pushang - 1, pushang, 0, halfPi); // degree of sound field displacement
@@ -341,7 +341,7 @@ may be downloaded here: http://escuta.org/mosca
 							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
-							p = FoaEncode.ar((lrevRef.value * env) + (p * cut), n2f);
+							p = FoaEncode.ar((lrevRef.value * revCut) + (p * cut), n2f);
 							p = FoaDirectO.ar(p, directang);
 							// directivity
 							p = FoaTransform.ar(p, 'rotate', rotAngle);
@@ -359,7 +359,7 @@ may be downloaded here: http://escuta.org/mosca
 					SynthDef(\AmbitoolsBFormat++play_type++4, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
-						dopamnt = 0, glev = 0, llev = 0, gate = 1,
+						dopamnt = 0, glev = 0, llev = 0,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
 						contr = 0, rotAngle = 0|
@@ -371,7 +371,7 @@ may be downloaded here: http://escuta.org/mosca
 						az = azim - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
+						revCut = rad.lincurve(1, plim, 1, 0),
 						cut = rad.linlin(0.75, 1, 1, 0);
 						rad = rad.max(0.01);
 						pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
@@ -384,7 +384,7 @@ may be downloaded here: http://escuta.org/mosca
 						localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 						// local reverberation
 
-						p = FoaDecode.ar((lrevRef.value * env) + (p * cut), f2n);
+						p = FoaDecode.ar((lrevRef.value * revCut) + (p * cut), f2n);
 						p = HOATransRotateAz.ar(1, p, rotAngle);
 						p = HOABeamDirac2Hoa.ar(1, p, az, elev, timer_manual:1, focus:pushang);
 
@@ -399,7 +399,7 @@ may be downloaded here: http://escuta.org/mosca
 						hoaSynth = SynthDef(\AmbitoolsBFormat++play_type++item, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, amp = 1,
-							dopamnt = 0, glev = 0, llev = 0, gate = 1,
+							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, rotAngle = 0|
@@ -411,7 +411,7 @@ may be downloaded here: http://escuta.org/mosca
 							az = azim - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							env = EnvGen.kr(Env.cutoff(1, curve:\sine), gate, doneAction:2),
+							revCut = rad.lincurve(1, plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
 							pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
@@ -423,7 +423,7 @@ may be downloaded here: http://escuta.org/mosca
 							localReverbFunc[rev_type, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
-							p = HOATransRotateAz.ar(ord, lrevRef.value * env + (p * cut), rotAngle);
+							p = HOATransRotateAz.ar(ord, lrevRef.value * revCut + (p * cut), rotAngle);
 							p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:pushang);
 
 							outPutFuncs[0].value(p, p,
