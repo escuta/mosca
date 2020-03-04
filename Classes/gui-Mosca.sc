@@ -1946,7 +1946,6 @@ may be downloaded here: http://escuta.org/mosca
 				vboxProxy[i].valueAction = num.value;
 			};
 
-
 			abox[i].value = 1.0471975511966;
 
 			gbox[i].value = 0;
@@ -2015,57 +2014,7 @@ may be downloaded here: http://escuta.org/mosca
 				randboxProxy[i].valueAction = num.value;
 			};
 
-
-
 		};
-
-
-		runTriggers = {
-			nfontes.do({ | i |
-				if(audit[i].not) {
-					if(triggerFunc[i].notNil) {
-						triggerFunc[i].value;
-						//updateSynthInArgs.value(i);
-					}
-				}
-			})
-		};
-
-		runTrigger = { | source, dirrect = false |
-			//	if(scncheck[i]) {
-			if(triggerFunc[source].notNil) {
-				triggerFunc[source].value;
-				if (dirrect && synt[source].isNil
-					&& (spheval[source].rho < 1)) {
-					this.newtocar(source, 0, force: true);
-				} {
-					//updateSynthInArgs.value(source);
-				};
-				"RUNNING TRIGGER".postln;
-			};
-		};
-
-		runStops = {
-			nfontes.do({ | i |
-				if(audit[i].not) {
-					if(stopFunc[i].notNil) {
-						stopFunc[i].value;
-					}
-				}
-			})
-		};
-
-		runStop = { | source, dirrect = false |
-			if(stopFunc[source].notNil) {
-				stopFunc[source].value;
-				if (dirrect) {
-					firstTime[source] = false;
-					synt[source].free;
-					synt[source] = nil;
-				};
-			}
-		};
-
 
 		//control = Automation(dur).front(win, Rect(halfwidth, 10, 400, 25));
 		/*~autotest = control = Automation(dur, showLoadSave: false,

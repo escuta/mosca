@@ -52,6 +52,10 @@ GUI Parameters usable in SynthDefs
 
 	}
 
+	audition { |source = 1, bool = true|
+		this.auditionFunc(source-1, bool);
+	}
+
 	auditionFunc { |source, bool|
 		if(isPlay.not) {
 			if(bool) {
@@ -118,102 +122,153 @@ GUI Parameters usable in SynthDefs
 		}).play;
 	}
 
-	registerSynth { // selection of Mosca arguments for use in synths
-		| source, synth |
-		synthRegistry[source-1].add(synth);
+	registerSynth { | source, synth |
+		synthRegistry[source - 1].add(synth);
 	}
 
-	deregisterSynth { // selection of Mosca arguments for use in synths
-		| source, synth |
-		if(synthRegistry[source-1].notNil){
-			synthRegistry[source-1].remove(synth);
+	deregisterSynth { | source, synth |
+		if(synthRegistry[source - 1].notNil){
+			synthRegistry[source - 1].remove(synth);
 
 		};
 	}
 
-	getSynthRegistry { // selection of Mosca arguments for use in synths
-		| source |
+	getSynthRegistry { | source |
 		^synthRegistry[source-1];
 	}
 
-	getSCBus {
-		|source = 1, numChans = 1 |
+	getSCBus { |source = 1, numChans = 1 |
+
+		if(scInBus[source - 1].notNil) {
+			if(scInBus[source - 1].numChannels != numChans) {
+				scInBus[source - 1].free;
+				scInBus[source - 1] = Bus.audio(server, numChans);
+				ncanboxProxy[source].valueAction(numChans);
+			};
+		} {
 			scInBus[source - 1] = Bus.audio(server, numChans);
-			^scInBus[source - 1].index;
+			scncheckProxy[source].valueAction(true);
+			ncanboxProxy[source].valueAction(numChans);
+		};
+
+		^scInBus[source - 1].index;
 	}
 
-	setSynths {
-		|source, param, value|
+	setSynths { |source, param, value|
+		if (espacializador[source].notNil) { espacializador[source].set(param, value); };
 
-		synthRegistry[source].do({
-			| item, i |
-
-			if(item.notNil) {
-				item.set(param, value);
-			}
-		});
-	}
-
-	getInsertIn {
-		|source |
-		if (source > 0) {
-			var bus = insertBus[0,source-1];
-			insertFlag[source-1]=1;
-			espacializador[source-1].set(\insertFlag, 1);
-			synt[source-1].set(\insertFlag, 1);
-			^bus
-		}
-	}
-
-	getInsertOut {
-		|source |
-		if (source > 0) {
-			var bus = insertBus[1,source-1];
-			insertFlag[source-1]=1;
-			espacializador[source-1].set(\insertFlag, 1);
-			synt[source-1].set(\insertFlag, 1);
-			^bus
-		}
-	}
-
-	releaseInsert {
-		|source |
-		if (source > 0) {
-			insertFlag[source-1]=0;
-			espacializador[source-1].set(\insertFlag, 0);
-		}
+		if (synt[source].notNil) {
+			synt[source].do({ | item, i | item.set(param, value); });
+		};
 	}
 
 	// These methods relate to control of synths when SW Input delected
 	// for source in GUI
 
 	// Set by user. Registerred functions called by Automation's play
-	setTriggerFunc {
-		|source, function|
+	setTriggerFunc { |source, function|
 		if (source > 0) {
 			triggerFunc[source-1] = function;
 		}
 	}
 
 	// Companion stop method
-	setStopFunc {
-		|source, function|
+	setStopFunc { |source, function|
 		if (source > 0) {
-			stopFunc[source-1] = function;
+			stopFunc[source - 1] = function;
 		}
 	}
 
-	clearTriggerFunc {
-		|source|
+	clearTriggerFunc { |source|
 		if (source > 0) {
-			triggerFunc[source-1] = nil;
+			triggerFunc[source - 1] = nil;
 		}
 	}
 
-	clearStopFunc {
-		|source|
+	clearStopFunc { |source|
 		if (source > 0) {
-			stopFunc[source-1] = nil;
+			stopFunc[source - 1] = nil;
+		}
+	}
+
+	embedSynth { |source = 1, triggerFunc, stopFunc, register, numChans = 1|
+		this.setTriggerFunc(source, triggerFunc);
+		this.setStopFunc(source, triggerFunc);
+		this.registerSynth(source, register);
+		scncheckProxy[source].valueAction(true);
+		ncanboxProxy[source].valueAction(numChans);
+	}
+
+	runTriggers {
+		nfontes.do({ | i |
+			if(audit[i].not) {
+				if(triggerFunc[i].notNil) {
+					triggerFunc[i].value;
+					//updateSynthInArgs.value(i);
+				}
+			}
+		})
+	}
+
+	runTrigger { | source, dirrect = false |
+		//	if(scncheck[i]) {
+		if(triggerFunc[source].notNil) {
+			triggerFunc[source].value;
+			// if (dirrect && synt[source].isNil
+			// && (spheval[source].rho < 1)) {
+			// 	this.newtocar(source, 0, force: true);
+			// } {
+			// 	//updateSynthInArgs.value(source);
+			// };
+			"RUNNING TRIGGER".postln;
+		};
+	}
+
+	runStops {
+		nfontes.do({ | i |
+			if(audit[i].not) {
+				if(stopFunc[i].notNil) {
+					stopFunc[i].value;
+				}
+			}
+		})
+	}
+
+	runStop { | source, dirrect = false |
+		if(stopFunc[source].notNil) {
+			stopFunc[source].value;
+			// if (dirrect) {
+			// 	firstTime[source] = false;
+			// 	synt[source].free;
+			// 	synt[source] = nil;
+			// };
+		}
+	}
+
+	getInsertIn { |source |
+		if (source > 0) {
+			var bus = insertBus[0, source - 1];
+			insertFlag[source - 1] = 1;
+			espacializador[source - 1].set(\insertFlag, 1);
+			synt[source - 1].set(\insertFlag, 1);
+			^bus
+		}
+	}
+
+	getInsertOut { |source |
+		if (source > 0) {
+			var bus = insertBus[1, source - 1];
+			insertFlag[source - 1] = 1;
+			espacializador[source - 1].set(\insertFlag, 1);
+			synt[source - 1].set(\insertFlag, 1);
+			^bus
+		}
+	}
+
+	releaseInsert { |source |
+		if (source > 0) {
+			insertFlag[source-1]=0;
+			espacializador[source-1].set(\insertFlag, 0);
 		}
 	}
 

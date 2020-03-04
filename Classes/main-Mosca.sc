@@ -2612,6 +2612,7 @@ Mosca {
 							if(espacializador[i].notNil) {
 								//synthRegistry[i].free;
 								runStop.value(i); // to kill SC input synths
+								synt[i] = nil;
 								espacializador[i].free;
 							};
 						} {
