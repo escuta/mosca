@@ -450,12 +450,12 @@ Mosca {
 			llev[i] = 0;
 			rm[i] = 0.5;
 			dm[i] = 0.5;
-			lp[i] = 0;
-			sp[i] = 0;
-			df[i] = 0;
+			lp[i] = false;
+			sp[i] = false;
+			df[i] = false;
 			dstrvtypes[i] = ""; // initialise distants reverbs types
-			hwn[i] = 0;
-			scn[i] = 0;
+			hwn[i] = false;
+			scn[i] = false;
 			rlev[i] = 0;
 			dlev[i] = 0;
 			clev[i] = 1;
@@ -985,11 +985,11 @@ Mosca {
 						{scncheck[i].value = false}.defer;
 					};
 					if((i==currentsource) && guiflag){{scInCheck.value = false}.defer;};
-					hwn[i] = 1;
-					scn[i] = 0;
+					hwn[i] = true;
+					scn[i] = false;
 					synt[i].set(\hwn, 1);
 				}{
-					hwn[i] = 0;
+					hwn[i] = false;
 					synt[i].set(\hwn, 0);
 				};
 				if (guiflag) {
@@ -999,17 +999,20 @@ Mosca {
 			};
 
 			scncheckProxy[i].action_({ | but |
-				if((i==currentsource) && guiflag) {{scInCheck.value = but.value}.defer;};
+				//if((i==currentsource) && guiflag) {{scInCheck.value = but.value}.defer;};
+
+				this.setSCBus(i + 1, ncan[i]);
+
 				if (but.value == true) {
 					if (guiflag) {
 						{hwncheck[i].value = false}.defer;
 					};
 					if((i==currentsource) && guiflag){{hwInCheck.value = false}.defer;};
-					scn[i] = 1;
-					hwn[i] = 0;
+					scn[i] = true;
+					hwn[i] = false;
 					synt[i].set(\scn, 1);
 				}{
-					scn[i] = 0;
+					scn[i] = false;
 					synt[i].set(\scn, 0);
 				};
 				if (guiflag) {
@@ -1026,15 +1029,15 @@ Mosca {
 					};
 					if((i==currentsource) && guiflag){
 						{diffusecheck.value = false}.defer;};
-					sp[i] = 1;
-					df[i] = 0;
+					sp[i] = true;
+					df[i] = false;
 					espacializador[i].set(\sp, 1);
 					espacializador[i].set(\df, 0);
 					synt[i].set(\sp, 1);
 					this.setSynths(i, \ls, 1);
 					ossiadiff[i].v_(false);
 				} {
-					sp[i] = 0;
+					sp[i] = false;
 					espacializador[i].set(\sp, 0);
 					synt[i].set(\sp, 0);
 					this.setSynths(i, \sp, 0);
@@ -1058,15 +1061,15 @@ Mosca {
 					if((i==currentsource) && guiflag) {
 						{spreadcheck.value = false}.defer;
 					};
-					df[i] = 1;
-					sp[i] = 0;
+					df[i] = true;
+					sp[i] = false;
 					espacializador[i].set(\df, 1);
 					espacializador[i].set(\sp, 0);
 					synt[i].set(\df, 1);
 					this.setSynths(i, \df, 1);
 					ossiaspread[i].v_(false);
 				} {
-					df[i] = 0;
+					df[i] = false;
 					espacializador[i].set(\df, 0);
 					synt[i].set(\df, 0);
 					this.setSynths(i, \df, 0);
@@ -1082,6 +1085,8 @@ Mosca {
 
 			ncanboxProxy[i].action = { | num |
 				ncan[i] = num.value.asInteger;
+
+				this.setSCBus(i + 1, num.value);
 
 				if (num.value < 4) {
 					cboxProxy[i].valueAction_(1);

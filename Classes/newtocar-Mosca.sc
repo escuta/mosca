@@ -88,52 +88,44 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
-					{
-						this.runTrigger(i);
-						synt[i] = synthRegistry[i];
-
-						server.sync;
-
-						espacializador[i] = Synth(libName[i]++"Stream"
-							++dstrvtypes[i],
-							[\bufnum, streambuf[i].bufnum,
-								\lp, lp[i],
-								\azim, spheval[i].theta,
-								\elev, spheval[i].phi,
-								\radius, spheval[i].rho,
-								\dopamnt, dplev[i],
-								\glev, glev[i],
-								\llev, llev[i],
-								\insertFlag, insertFlag[i],
-								\insertOut, insertBus[0,i],
-								\insertBack, insertBus[1,i],
-								\contr, clev[i],
-								\room, rm[i],
-								\damp, dm[i],
-								\amp, level[i].dbamp,
-								\grainrate, grainrate[i],
-								\winsize, winsize[i],
-								\winrand, winrand[i]] ++
-							wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
-							playEspacGrp).onFree({
-							espacializador[i] = nil;
-							streambuf[i].free;
-							if (azimuths.isNil) {
-								if (this.nonAmbi2FuMaNeeded(0).not
+					espacializador[i] = Synth(libName[i]++"Stream"
+						++dstrvtypes[i],
+						[\bufnum, streambuf[i].bufnum,
+							\lp, lp[i],
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\insertFlag, insertFlag[i],
+							\insertOut, insertBus[0,i],
+							\insertBack, insertBus[1,i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\amp, level[i].dbamp,
+							\grainrate, grainrate[i],
+							\winsize, winsize[i],
+							\winrand, winrand[i]] ++
+						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
+						playEspacGrp).onFree({
+						espacializador[i] = nil;
+						streambuf[i].free;
+						if (azimuths.isNil) {
+							if (this.nonAmbi2FuMaNeeded(0).not
 									&& nonAmbi2FuMa.notNil) {
-									nonAmbi2FuMa.free;
+								nonAmbi2FuMa.free;
+							};
+						};
+						if (convertor.notNil) {
+							if (convert[i]) {
+								if (this.converterNeeded(0).not) {
+									convertor.set(\gate, 0);
 								};
 							};
-							if (convertor.notNil) {
-								if (convert[i]) {
-									if (this.converterNeeded(0).not) {
-										convertor.set(\gate, 0);
-									};
-								};
-							};
-						});
-
-					}.fork;
+						};
+					});
 
 					//atualizarvariaveis.value;
 					//updatesourcevariables.value(i);

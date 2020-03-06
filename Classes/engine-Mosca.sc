@@ -138,20 +138,24 @@ GUI Parameters usable in SynthDefs
 	}
 
 	getSCBus { |source = 1, numChans = 1 |
+		var userIndex = source - 1;
+		ncanboxProxy[userIndex].valueAction_(numChans);
+		scncheckProxy[userIndex].valueAction_(true);
+		^scInBus[userIndex];
+	}
 
-		if(scInBus[source - 1].notNil) {
-			if(scInBus[source - 1].numChannels != numChans) {
-				scInBus[source - 1].free;
-				scInBus[source - 1] = Bus.audio(server, numChans);
-				ncanboxProxy[source].valueAction(numChans);
+	setSCBus { |source, numChans|
+		var userIndex = source - 1;
+		if (scn[userIndex]) {
+			if (scInBus[userIndex].notNil) {
+				if(scInBus[userIndex].numChannels != numChans) {
+					scInBus[userIndex].free;
+					scInBus[userIndex] = Bus.audio(server, numChans);
+				};
+			} {
+				scInBus[userIndex] = Bus.audio(server, numChans);
 			};
-		} {
-			scInBus[source - 1] = Bus.audio(server, numChans);
-			scncheckProxy[source].valueAction(true);
-			ncanboxProxy[source].valueAction(numChans);
 		};
-
-		^scInBus[source - 1].index;
 	}
 
 	setSynths { |source, param, value|
@@ -191,12 +195,11 @@ GUI Parameters usable in SynthDefs
 		}
 	}
 
-	embedSynth { |source = 1, triggerFunc, stopFunc, register, numChans = 1|
+	embedSynth { |source = 1, numChans = 1, triggerFunc, stopFunc, register|
+		this.getSCBus(source, numChans);
 		this.setTriggerFunc(source, triggerFunc);
 		this.setStopFunc(source, triggerFunc);
 		this.registerSynth(source, register);
-		scncheckProxy[source].valueAction(true);
-		ncanboxProxy[source].valueAction(numChans);
 	}
 
 	runTriggers {
