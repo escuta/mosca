@@ -364,7 +364,7 @@ may be downloaded here: http://escuta.org/mosca
 						{ bstream.value = streamdisk[currentsource].value; }.defer;
 						{ loopcheck.value = lp[currentsource].value; }.defer;
 					}
-					{hwn[currentsource] == 1}
+					{hwn[currentsource]}
 					{
 						hwInCheck.value = true;
 						scInCheck.value = false;
@@ -386,7 +386,7 @@ may be downloaded here: http://escuta.org/mosca
 							36, { 6 });
 						hwCtl[0][1].value = busini[currentsource];
 					}
-					{scn[currentsource] == 1}
+					{scn[currentsource]}
 					{
 						scInCheck.value = true;
 						hwInCheck.value = false;

@@ -1016,6 +1016,9 @@ Mosca {
 						scInBus[i].free;
 						scInBus[i] = nil;
 					};
+					triggerFunc[i] = nil;
+					stopFunc[i] = nil;
+					synthRegistry[i].clear;
 					synt[i].set(\scn, 0);
 				};
 				if (guiflag) {
@@ -2619,7 +2622,7 @@ Mosca {
 							//firstTime[i] = true;
 							if(espacializador[i].notNil) {
 								//synthRegistry[i].free;
-								runStop.value(i); // to kill SC input synths
+								this.runStop(i); // to kill SC input synths
 								espacializador[i].free;
 							};
 						} {

@@ -583,7 +583,23 @@ may be downloaded here: http://escuta.org/mosca
 					};
 
 					this.runTrigger(i);
-					synt[i] = synthRegistry[i];
+					if (synthRegistry[i].isEmpty.not) {
+						synt[i] = synthRegistry[i];
+						synt[i].do({ _.set(
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\amp, level[i].dbamp,
+							\grainrate, grainrate[i],
+							\winsize, winsize[i]);
+						});
+					};
 
 					espacializador[i] = Synth(libName[i]++witch
 						++dstrvtypes[i],
@@ -667,6 +683,25 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
+					this.runTrigger(i);
+					if (synthRegistry[i].isEmpty.not) {
+						synt[i] = synthRegistry[i];
+						synt[i].do({ _.set(
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\amp, level[i].dbamp,
+							\grainrate, grainrate[i],
+							\winsize, winsize[i]);
+						});
+					};
+
 					espacializador[i] = Synth(libName[i]++"Stereo"++witch
 						++dstrvtypes[i],
 						[\busini, busini[i],
@@ -732,6 +767,25 @@ may be downloaded here: http://escuta.org/mosca
 								convertor = nil;
 							});
 						};
+					};
+
+					this.runTrigger(i);
+					if (synthRegistry[i].isEmpty.not) {
+						synt[i] = synthRegistry[i];
+						synt[i].do({ _.set(
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\amp, level[i].dbamp,
+							\grainrate, grainrate[i],
+							\winsize, winsize[i]);
+						});
 					};
 
 					espacializador[i] = Synth(libName[i]++"BFormat"++witch++

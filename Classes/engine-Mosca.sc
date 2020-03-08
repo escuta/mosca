@@ -63,9 +63,9 @@ GUI Parameters usable in SynthDefs
 				audit[source] = true;
 				this.newtocar(source, 0, force: true);
 			} {
-				runStop.value(source);
 				audit[source] = false;
 				espacializador[source].free;
+				this.runStop(source);
 				"stopping!".postln;
 			};
 
@@ -151,13 +151,9 @@ GUI Parameters usable in SynthDefs
 				if(scInBus[userIndex].numChannels != numChans) {
 					scInBus[userIndex].free;
 					scInBus[userIndex] = Bus.audio(server, numChans);
-					//server.sync;
-					^scInBus[userIndex].index;
 				};
 			} {
 				scInBus[userIndex] = Bus.audio(server, numChans);
-				//server.sync;
-				^scInBus[userIndex].index;
 			};
 		};
 	}
@@ -202,7 +198,7 @@ GUI Parameters usable in SynthDefs
 	embedSynth { |source = 1, numChans = 1, triggerFunc, stopFunc, register|
 		this.getSCBus(source, numChans);
 		this.setTriggerFunc(source, triggerFunc);
-		this.setStopFunc(source, triggerFunc);
+		this.setStopFunc(source, stopFunc);
 		this.registerSynth(source, register);
 	}
 
@@ -239,7 +235,8 @@ GUI Parameters usable in SynthDefs
 		if(stopFunc[source].notNil) {
 			stopFunc[source].value;
 			synt[source] = nil;
-		}
+			"RUNNING STOP".postln;
+		};
 	}
 
 	getInsertIn { |source |
