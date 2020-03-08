@@ -614,7 +614,6 @@ Mosca {
 			aboxProxy[i].action = { | num |
 				if(espacializador[i].notNil) {
 					angle[i] = num.value;
-					espacializador[i].set(\angle, num.value);
 					this.setSynths(i, \angle, num.value);
 					angle[i] = num.value;
 				};
@@ -633,7 +632,6 @@ Mosca {
 			};
 
 			vboxProxy[i].action = { | num |
-				espacializador[i].set(\amp, num.value.dbamp);
 				this.setSynths(i, \amp, num.value.dbamp);
 				level[i] = num.value;
 
@@ -652,9 +650,7 @@ Mosca {
 			};
 
 			gboxProxy[i].action = { | num |
-				espacializador[i].set(\glev, num.value);
 				this.setSynths(i, \glev, num.value);
-				synt[i].set(\glev, num.value);
 				glev[i] = num.value;
 				if (guiflag) {
 					{ gbox[i].value = num.value }.defer;
@@ -671,9 +667,7 @@ Mosca {
 			};
 
 			lboxProxy[i].action = { | num |
-				espacializador[i].set(\llev, num.value);
 				this.setSynths(i, \llev, num.value);
-				synt[i].set(\llev, num.value);
 				llev[i] = num.value;
 				if (guiflag) {
 					{ lbox[i].value = num.value; }.defer;
@@ -690,9 +684,7 @@ Mosca {
 			};
 
 			rmboxProxy[i].action = { | num |
-				espacializador[i].set(\room, num.value);
 				this.setSynths(i, \room, num.value);
-				synt[i].set(\room, num.value);
 				rm[i] = num.value;
 				if (guiflag) {
 					{ rmbox[i].value = num.value; }.defer;
@@ -708,9 +700,7 @@ Mosca {
 			};
 
 			dmboxProxy[i].action = { | num |
-				espacializador[i].set(\damp, num.value);
 				this.setSynths(i, \damp, num.value);
-				synt[i].set(\damp, num.value);
 				dm[i] = num.value;
 				if (guiflag) {
 					{ dmbox[i].value = num.value; };
@@ -726,9 +716,7 @@ Mosca {
 			};
 
 			rboxProxy[i].action = { | num |
-				espacializador[i].set(\rotAngle, num.value + heading);
-				synt[i].set(\rotAngle, num.value);
-				this.setSynths(i, \rotAngle, num.value);
+				this.setSynths(i, \rotAngle, num.value  + heading);
 				rlev[i] = num.value;
 				if (guiflag) {
 					{rbox[i].value = num.value}.defer;
@@ -745,8 +733,6 @@ Mosca {
 			};
 
 			dboxProxy[i].action = { | num |
-				espacializador[i].set(\directang, num.value);
-				synt[i].set(\directang, num.value);
 				this.setSynths(i, \directang, num.value);
 				dlev[i] = num.value;
 				if (guiflag) {
@@ -764,9 +750,6 @@ Mosca {
 			};
 
 			cboxProxy[i].action = { | num |
-				synt[i].set(\contr, num.value);
-				// TESTING
-				espacializador[i].set(\contr, num.value);
 				this.setSynths(i, \contr, num.value);
 				clev[i] = num.value;
 				if (guiflag) {
@@ -785,11 +768,7 @@ Mosca {
 			};
 
 			dpboxProxy[i].action = { | num |
-				// used for b-format amb/bin only
-				synt[i].set(\dopamnt, num.value);
 				this.setSynths(i, \dopamnt, num.value);
-				// used for the others
-				espacializador[i].set(\dopamnt, num.value);
 				dplev[i] = num.value;
 				if (guiflag) {
 					{dpbox[i].value = num.value}.defer;
@@ -958,11 +937,9 @@ Mosca {
 			lpcheckProxy[i].action_({ | but |
 				if (but.value) {
 					lp[i] = 1;
-					synt[i].set(\lp, 1);
 					this.setSynths(i, \lp, 1);
 				} {
 					lp[i] = 0;
-					synt[i].set(\lp, 0);
 					this.setSynths(i, \lp, 0);
 				};
 				if (guiflag) {
@@ -987,10 +964,8 @@ Mosca {
 					if((i==currentsource) && guiflag){{scInCheck.value = false}.defer;};
 					hwn[i] = true;
 					scn[i] = false;
-					synt[i].set(\hwn, 1);
 				}{
 					hwn[i] = false;
-					synt[i].set(\hwn, 0);
 				};
 				if (guiflag) {
 					{hwncheck[i].value = but.value}.defer;
@@ -1009,7 +984,6 @@ Mosca {
 					scn[i] = true;
 					hwn[i] = false;
 					ncanboxProxy[i].valueAction_(ncanboxProxy[i].value);
-					synt[i].set(\scn, 1);
 				}{
 					scn[i] = false;
 					if (scInBus[i].notNil) {
@@ -1019,7 +993,6 @@ Mosca {
 					triggerFunc[i] = nil;
 					stopFunc[i] = nil;
 					synthRegistry[i].clear;
-					synt[i].set(\scn, 0);
 				};
 				if (guiflag) {
 					{scncheck[i].value = but.value}.defer;
@@ -1057,15 +1030,11 @@ Mosca {
 						{diffusecheck.value = false}.defer;};
 					sp[i] = true;
 					df[i] = false;
-					espacializador[i].set(\sp, 1);
-					espacializador[i].set(\df, 0);
-					synt[i].set(\sp, 1);
-					this.setSynths(i, \ls, 1);
+					this.setSynths(i, \sp, 1);
+					this.setSynths(i, \df, 0);
 					ossiadiff[i].v_(false);
 				} {
 					sp[i] = false;
-					espacializador[i].set(\sp, 0);
-					synt[i].set(\sp, 0);
 					this.setSynths(i, \sp, 0);
 				};
 				if (guiflag) {
@@ -1089,15 +1058,11 @@ Mosca {
 					};
 					df[i] = true;
 					sp[i] = false;
-					espacializador[i].set(\df, 1);
-					espacializador[i].set(\sp, 0);
-					synt[i].set(\df, 1);
-					this.setSynths(i, \df, 1);
+					this.setSynths(i, \df, 0);
+					this.setSynths(i, \sp, 1);
 					ossiaspread[i].v_(false);
 				} {
 					df[i] = false;
-					espacializador[i].set(\df, 0);
-					synt[i].set(\df, 0);
 					this.setSynths(i, \df, 0);
 				};
 				if (guiflag) {
@@ -1121,9 +1086,7 @@ Mosca {
 			};
 
 			rateboxProxy[i].action = { | num |
-				espacializador[i].set(\grainrate, num.value);
 				this.setSynths(i, \grainrate, num.value);
-				synt[i].set(\grainrate, num.value);
 				grainrate[i] = num.value;
 				if (guiflag) {
 					{ ratebox[i].value = num.value }.defer;
@@ -1139,9 +1102,7 @@ Mosca {
 			};
 
 			winboxProxy[i].action = { | num |
-				espacializador[i].set(\winsize, num.value);
 				this.setSynths(i, \winsize, num.value);
-				synt[i].set(\winsize, num.value);
 				winsize[i] = num.value;
 				if (guiflag) {
 					{ winbox[i].value = num.value; }.defer;
@@ -1157,9 +1118,7 @@ Mosca {
 			};
 
 			randboxProxy[i].action = { | num |
-				espacializador[i].set(\winrand, num.value);
 				this.setSynths(i, \winrand, num.value);
-				synt[i].set(\winrand, num.value);
 				winrand[i] = num.value;
 				if (guiflag) {
 					{ randbox[i].value = num.value; }.defer;

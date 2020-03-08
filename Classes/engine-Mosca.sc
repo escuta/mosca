@@ -240,29 +240,30 @@ GUI Parameters usable in SynthDefs
 	}
 
 	getInsertIn { |source |
+		var userIndex = source - 1;
 		if (source > 0) {
-			var bus = insertBus[0, source - 1];
-			insertFlag[source - 1] = 1;
-			espacializador[source - 1].set(\insertFlag, 1);
-			synt[source - 1].set(\insertFlag, 1);
+			var bus = insertBus[0, userIndex];
+			insertFlag[userIndex] = 1;
+			this.setSynths(userIndex, \insertFlag, 1);
 			^bus
 		}
 	}
 
 	getInsertOut { |source |
+		var userIndex = source - 1;
 		if (source > 0) {
-			var bus = insertBus[1, source - 1];
-			insertFlag[source - 1] = 1;
-			espacializador[source - 1].set(\insertFlag, 1);
-			synt[source - 1].set(\insertFlag, 1);
+			var bus = insertBus[1, userIndex];
+			insertFlag[userIndex] = 1;
+			this.setSynths(userIndex, \insertFlag, 1);
 			^bus
 		}
 	}
 
 	releaseInsert { |source |
+		var userIndex = source - 1;
 		if (source > 0) {
-			insertFlag[source-1]=0;
-			espacializador[source-1].set(\insertFlag, 0);
+			insertFlag[userIndex]=0;
+			this.setSynths(userIndex, \insertFlag, 0);
 		}
 	}
 

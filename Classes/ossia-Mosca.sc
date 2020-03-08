@@ -162,7 +162,7 @@ may be downloaded here: http://escuta.org/mosca
 
 				zlev[i] = spheval[i].z;
 
-				espacializador[i].set(\rotAngle, rlev[i] + heading);
+				this.setSynths(i, \rotAngle, rlev[i] + heading);
 			};
 
 			ossiaCartBack = true;
@@ -317,6 +317,10 @@ may be downloaded here: http://escuta.org/mosca
 
 				if(espacializador[i].notNil) {
 					espacializador[i].set(\radius, spheval[i].rho, \azim, spheval[i].theta, \elev, spheval[i].phi);
+				};
+
+				if (synt[i].notNil) {
+					synt[i].do({ _.set(\radius, spheval[i].rho, \azim, spheval[i].theta, \elev, spheval[i].phi); });
 				};
 
 				ossiaSpheBack = true;
