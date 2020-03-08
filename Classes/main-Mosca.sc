@@ -1281,7 +1281,7 @@ Mosca {
 						convertor.set(\gate, 1);
 					} {
 						convertor = Synth(\ambiConverter, [\gate, 1],
-							target:glbRevDecGrp).onFree({
+							target:glbRevDecGrp, addAction:\addAfter).onFree({
 							convertor = nil;
 						});
 					};
