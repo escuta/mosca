@@ -151,9 +151,13 @@ GUI Parameters usable in SynthDefs
 				if(scInBus[userIndex].numChannels != numChans) {
 					scInBus[userIndex].free;
 					scInBus[userIndex] = Bus.audio(server, numChans);
+					//server.sync;
+					^scInBus[userIndex].index;
 				};
 			} {
 				scInBus[userIndex] = Bus.audio(server, numChans);
+				//server.sync;
+				^scInBus[userIndex].index;
 			};
 		};
 	}
@@ -162,7 +166,7 @@ GUI Parameters usable in SynthDefs
 		if (espacializador[source].notNil) { espacializador[source].set(param, value); };
 
 		if (synt[source].notNil) {
-			synt[source].do({ | item, i | item.set(param, value); });
+			synt[source].do({ _.set(param, value); });
 		};
 	}
 
@@ -213,16 +217,10 @@ GUI Parameters usable in SynthDefs
 		})
 	}
 
-	runTrigger { | source, dirrect = false |
+	runTrigger { | source |
 		//	if(scncheck[i]) {
 		if(triggerFunc[source].notNil) {
 			triggerFunc[source].value;
-			// if (dirrect && synt[source].isNil
-			// && (spheval[source].rho < 1)) {
-			// 	this.newtocar(source, 0, force: true);
-			// } {
-			// 	//updateSynthInArgs.value(source);
-			// };
 			"RUNNING TRIGGER".postln;
 		};
 	}
@@ -237,14 +235,10 @@ GUI Parameters usable in SynthDefs
 		})
 	}
 
-	runStop { | source, dirrect = false |
+	runStop { | source |
 		if(stopFunc[source].notNil) {
 			stopFunc[source].value;
-			// if (dirrect) {
-			// 	firstTime[source] = false;
-			// 	synt[source].free;
-			// 	synt[source] = nil;
-			// };
+			synt[source] = nil;
 		}
 	}
 

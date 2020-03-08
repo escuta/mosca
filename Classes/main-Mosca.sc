@@ -999,9 +999,7 @@ Mosca {
 			};
 
 			scncheckProxy[i].action_({ | but |
-				//if((i==currentsource) && guiflag) {{scInCheck.value = but.value}.defer;};
-
-				this.setSCBus(i + 1, ncan[i]);
+				if((i==currentsource) && guiflag) {{scInCheck.value = but.value}.defer;};
 
 				if (but.value == true) {
 					if (guiflag) {
@@ -1010,9 +1008,14 @@ Mosca {
 					if((i==currentsource) && guiflag){{hwInCheck.value = false}.defer;};
 					scn[i] = true;
 					hwn[i] = false;
+					ncanboxProxy[i].valueAction_(ncanboxProxy[i].value);
 					synt[i].set(\scn, 1);
 				}{
 					scn[i] = false;
+					if (scInBus[i].notNil) {
+						scInBus[i].free;
+						scInBus[i] = nil;
+					};
 					synt[i].set(\scn, 0);
 				};
 				if (guiflag) {
@@ -1020,6 +1023,26 @@ Mosca {
 					updateGuiCtl.value(\src);
 				};
 			});
+
+			ncanboxProxy[i].action = { | num |
+				ncan[i] = num.value.asInteger;
+
+				this.setSCBus(i + 1, num.value);
+
+				if (num.value < 4) {
+					cboxProxy[i].valueAction_(1);
+				} {
+					cboxProxy[i].valueAction_(0.5);
+				};
+
+				if (guiflag ) {
+					{ ncanbox[i].value = num.value }.defer;
+
+					if (i == currentsource) {
+						{ updateGuiCtl.value(\chan); }.defer;
+					};
+				};
+			};
 
 			spcheckProxy[i].action_({ | but |
 				if((i==currentsource) && guiflag){{spreadcheck.value = but.value}.defer;};
@@ -1082,26 +1105,6 @@ Mosca {
 					ossiadiff[i].v_(but.value.asBoolean);
 				};
 			});
-
-			ncanboxProxy[i].action = { | num |
-				ncan[i] = num.value.asInteger;
-
-				this.setSCBus(i + 1, num.value);
-
-				if (num.value < 4) {
-					cboxProxy[i].valueAction_(1);
-				} {
-					cboxProxy[i].valueAction_(0.5);
-				};
-
-				if (guiflag ) {
-					{ ncanbox[i].value = num.value }.defer;
-
-					if (i == currentsource) {
-						{ updateGuiCtl.value(\chan); }.defer;
-					};
-				};
-			};
 
 			businiboxProxy[i].action = { | num |
 				busini[i] = num.value;
@@ -2617,7 +2620,6 @@ Mosca {
 							if(espacializador[i].notNil) {
 								//synthRegistry[i].free;
 								runStop.value(i); // to kill SC input synths
-								synt[i] = nil;
 								espacializador[i].free;
 							};
 						} {
@@ -2628,7 +2630,6 @@ Mosca {
 							{
 								//this.triggerFunc[i].value; // play SC input synth
 								//firstTime[i] = false;
-								runTrigger.value(i);
 
 								if(lp[i] == 0) {
 

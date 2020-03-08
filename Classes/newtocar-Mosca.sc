@@ -582,6 +582,9 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
+					this.runTrigger(i);
+					synt[i] = synthRegistry[i];
+
 					espacializador[i] = Synth(libName[i]++witch
 						++dstrvtypes[i],
 						[\busini, bus,
