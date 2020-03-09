@@ -478,7 +478,7 @@ Mosca {
 			firstTime[i] = true;
 
 			rboxProxy[i] = AutomationGuiProxy(0.0);
-			cboxProxy[i] = AutomationGuiProxy(0.0);
+			cboxProxy[i] = AutomationGuiProxy(1.0);
 			aboxProxy[i] = AutomationGuiProxy(1.0471975511966);
 			vboxProxy[i] = AutomationGuiProxy(0.0);
 			gboxProxy[i] = AutomationGuiProxy(0.0);
@@ -2576,22 +2576,17 @@ Mosca {
 
 				nfontes.do({ | i |
 
-					if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
-						if (spheval[i].rho >= plim) {
-							//firstTime[i] = true;
-							if(espacializador[i].notNil) {
-								this.runStop(i); // to kill SC input synths
-								espacializador[i].free;
-							};
-						} {
-							if((isPlay || audit[i]) && espacializador[i].isNil
-								//&& //(firstTime[i] ||
-								//(tfieldProxy[i].value == ""))
-							)
-							{
-								// could remake this a random start point
-								this.newtocar(i, 0, force: true);
-							};
+					if (spheval[i].rho >= plim) {
+						if(espacializador[i].notNil) {
+							this.runStop(i); // to kill SC input synths
+							espacializador[i].free;
+						};
+						firstTime[i] = true;
+					} {
+						if((isPlay || audit[i]) && espacializador[i].isNil && (firstTime[i])) {
+							// could remake this a random start point
+							this.newtocar(i, 0, force: true);
+							firstTime[i] = false;
 						};
 					};
 				});
@@ -2647,7 +2642,7 @@ Mosca {
 			("NOW PLAYING = " ++ firstTime[i]).postln;*/
 			if (looping) {
 				nfontes.do { | i |
-					firstTime[i]=true;
+					firstTime[i] = true;
 					//("HERE = " ++ firstTime[i]).postln;
 
 				};
@@ -2741,7 +2736,7 @@ Mosca {
 				isPlay = false;
 				looping = false;
 				nfontes.do { | i |
-					firstTime[i]=true;
+					firstTime[i] = true;
 					//("HERE = " ++ firstTime[i]).postln;
 				};
 

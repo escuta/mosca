@@ -33,7 +33,7 @@ may be downloaded here: http://escuta.org/mosca
 				contract, win, rate, rand|
 				var sig = HOAEncoder.ar(maxorder,
 					(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-					Lag.kr(elevation), 6, 1, distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius), longest_radius);
+					Lag.kr(elevation), 0, 1, distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius), longest_radius);
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
 		};
@@ -51,7 +51,7 @@ may be downloaded here: http://escuta.org/mosca
 				// attenuate high freq with distance
 				sig = HOALibEnc3D.ar(maxorder,
 					ref.value + (sig * (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius))),
-					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
+					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
 		};
@@ -68,7 +68,7 @@ may be downloaded here: http://escuta.org/mosca
 				// attenuate high freq with distance
 				sig = HOAmbiPanner.ar(maxorder,
 					ref.value + (sig * longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
-					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation), 6);
+					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
 		};

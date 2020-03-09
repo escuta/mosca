@@ -60,15 +60,16 @@ GUI Parameters usable in SynthDefs
 		if(bool) {
 			audit[source] = true;
 			if(isPlay.not && espacializador[source].isNil && (spheval[source].rho < plim)) {
-				"newtocar".postln;
 				this.newtocar(source, 0, force: true);
+				firstTime[source] = false;
 			};
 		} {
 			audit[source] = false;
 			if(isPlay.not) {
 				espacializador[source].free;
 				this.runStop(source);
-				"stopping!".postln;
+				firstTime[source] = true;
+				("stopping!" ++ (source + 1)).postln;
 			};
 		};
 
