@@ -14,7 +14,6 @@ subsection::Binaural
 code::
 (
 Server.killAll;                   // Make sure no servers are booted yet
-s = Server.local;                 // Use deffault server
 o = s.options;
 o.numInputBusChannels = 32;       // Allow for many possible inputs
 o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
@@ -27,13 +26,11 @@ s.waitForBoot {
 	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
 	s.sync;
-	MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
-	s.sync;
 
 	~moscaInstance = Mosca(
 		//projDir: "/path/to/project/folder",
 		decoder: ~decoder
-	);
+	).gui();
 };
 )
 ::
@@ -45,7 +42,6 @@ The initialisation example below is intended for rendering on the 19.2 Dome at l
 code::
 (
 Server.killAll;              // Make sure no servers are running yet
-s = Server.local;            // Use deffault server
 o = s.options;
 o.numInputBusChannels = 32;  // Allow for many possible inputs
 o.numOutputBusChannels = 24;
@@ -56,7 +52,7 @@ s.waitForBoot {
 
 	// Create global variables passed as Mosca's arguments
 	// ~decoder = ChateauBonnefont3; // ADT Dome
-	~decoder = "internal";
+	~decoder = "internal"; // use the internal decoder available up to order 2 (FMHDecode1)
 	~order = 2;
 	~out = 4;       // The speacker array starts at the 5th output of the soundcard
 	~sub = [0, 1];  // 2 subwoofers are plugged into outputs 0 and 1
@@ -67,7 +63,6 @@ s.waitForBoot {
 		[ 157.5, -3, 2.829 ], [ 112.5, -3, 2.829 ], [ 67.5, -3, 2.829 ],
 		[ 22.5, -3, 2.829 ] ];
 
-	s.sync;
 	MIDIIn.connect();  // must connect to MIDI for MMC synch
 	s.sync;
 
@@ -78,7 +73,7 @@ s.waitForBoot {
 		outbus:~out,
 		suboutbus:~sub,
 		decoder: ~decoder
-	);
+	).gui();
 };
 )
 ::
@@ -209,7 +204,6 @@ code::
 ~supercoll = OSSIA_Device("SC");  // Create and name OSSIA_Device to contain all parameters
 ~supercoll.exposeOSC;             // Evaluate this line while OSSIA/score is learning incoming OSC
 Server.killAll;                   // Make sure no servers are booted yet
-s = Server.local;                 // Use deffault server
 o = s.options;
 o.numInputBusChannels = 32;       // Allow for many possible inputs
 o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
@@ -232,7 +226,6 @@ s.waitForBoot {
 	[ -120, 51, 10 ], [ 120, 51, 10 ] ]; // 13.1 speaker setup for "Planetario De Pamplona"
 	*/
 
-	s.sync;
 	MIDIIn.connect();  // must connect to MIDI for MMC synch
 	s.sync;
 
@@ -253,7 +246,7 @@ s.waitForBoot {
 		// Set Ambisonic Format for raw B-format output, use FuMa for using Ambdec external decoder
 		rawoutbus:14
 		// Set raw B-format output bus, spearate from the non-ambisonic signal from "outbus"
-	);
+	).gui();
 }
 )
 ::
@@ -424,7 +417,6 @@ list::
 
 code::
 Server.killAll;
-s = Server.local;
 o = s.options;
 o.numInputBusChannels = 32;
 o.numOutputBusChannels = 2;
@@ -436,14 +428,12 @@ s.waitForBoot {
 	// Create global variables passed as Mosca's arguments
 	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
-	s.sync;
 	MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
 	s.sync;
 
 	~moscaInstance = Mosca(
 		//projDir: "/path/to/project/folder",
-		decoder: ~decoder,
-		guiflag:false
+		decoder: ~decoder
 	);
 
 	~moscaInstance.control.load("/path/to/your/automation/file");
@@ -499,7 +489,6 @@ Then disconnect and reconnect your device. In the above example it can be access
 code::
 (
 Server.killAll;
-s = Server.local;
 o = s.options;
 o.numInputBusChannels = 32;
 o.numOutputBusChannels = 2;
@@ -511,19 +500,18 @@ s.waitForBoot {
 	// Create global variables passed as Mosca's arguments
 	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
+	s.sync;
 
-~moscaInstance = Mosca(projDir: "/path/to/your/moscaproject",
-	nsources: 12,
-	width: 865,
-	dur: 60,
-	decoder: ~decoder,
-	serport: "/dev/head_tracker",
-	offsetheading: -2.6,
-	recchans: 2,
-	recbus: 0);
+	~moscaInstance = Mosca(projDir: "/path/to/your/moscaproject",
+		nsources: 12,
+		width: 865,
+		dur: 60,
+		decoder: ~decoder,
+		offsetheading: -2.6,
+		recchans: 2,
+		recbus: 0).gui().headTracker("/dev/head_tracker");
 
-s.sync;
-
+	s.sync;
 
 // use the following to experiment with heading adjustments
 ~moscaInstance.offsetHeading(0.38);
@@ -549,21 +537,26 @@ code::
 Mosca.printSynthParams;
 
 (
-SynthDef("test-out", { | outbus=0, freq=440, radius |
+SynthDef("test-out", { | outbus=0, freq=440, radius = 0.5 |
 	var source, source2, point, freqAdjust, delEnv,
-	dis = Lag.kr(dis / 200, 0.1);
+	dis = Lag.kr(radius, 0.1);
 	freqAdjust = dis;
 	delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
-	sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
+		sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
 	source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-				doneAction: 2));
+		doneAction: 2));
 	Out.ar(outbus, source);
-// or try stereo with 2 channels set in gui
-//	source2 = Pulse.ar(freq + 3 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-//			doneAction: 2));
-//	Out.ar(outbus, [source, source2]);
-
+	// or try stereo with 2 channels set in gui
+	//    source2 = Pulse.ar(freq + 3 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
+	//            doneAction: 2));
+	//    Out.ar(outbus, [source, source2]);
 }).send(s);
+
+~moscaInstance.embedSynth(1, 1, // first source, mono synth
+	triggerFunc:{~mySynth = Synth.new("test-out", [\freq, 220, \outbus,
+		~moscaInstance.getSCBus(1, 1)]).onFree({"done".postln;})},
+	stopFunc:{~mySynth.free;},
+	register:~mySynth);
 )
 
 /*

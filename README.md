@@ -1,9 +1,9 @@
 # [Mosca](http://escuta.org/mosca)
 
-![MoscaScreenshot](MoscaScreenshot.png)
+![MoscaScreenshot](HelpSource/MoscaScreenshot.png)
 
-### warning
-Installing the [HOA fork](https://github.com/scrime-u-bordeaux/sc3-pluginsHOA) of SuperCollider's sc3-plugins is required. This fork is kept up to date, only differing from the original repos with additional HOAUgens. It is also necessary to install the ATK [Kernels](http://www.ambisonictoolkit.net/download/kernels) and [Matrices](http://www.ambisonictoolkit.net/download/matrices) as described in the download page
+### note
+Installing the [Kernels](http://www.ambisonictoolkit.net/download/kernels) and [Matrices](http://www.ambisonictoolkit.net/download/matrices) is required, as well as the sc3-plugins version 3.10 or higher. For more Library options, you can install this [HOA fork](https://github.com/scrime-u-bordeaux/sc3-pluginsHOA)
 
 ## DESCRIPTION
 Mosca is a SuperCollider class for GUI-assisted production of sound fields with simulated moving or stationary sound sources. Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from hardware inputs (physical or from other applications via Jack) or from SuperCollider's own synths. In the case of synth input, each is associated by the user with a particular source in the GUI and registered in a synth registry. This way, they are spatialised by the GUI and also receive data from the GUI pertaining to the source (eg. x, y and z coordinates or auxiliary fader data). Ambisonic Sound fields may be decoded using a variety of built-in decoders (including binaural), Faust Ugens created with the AmbiDecodertoolbox (see [HOA decoding](https://github.com/florian-grond/SC-HOA/blob/master/HelpSource/Tutorials/Exercise_09_HOA_interfacing_VBAP_and_Ambisonics.schelp)) or with external decoders such as Ambdec. Mosca has its own transport provided by the [Automation quark](https://github.com/neeels/Automation) for recording and playback of source data. This can be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack. The integration of [ossia-sclang](https://github.com/OSSIA/ossia-sclang) also allows Mosca's individual parameters to be controled with the interactive sequencer [ossia-score](https://ossia.io):: as well as any other application featuring OSCQuerry or plain OSC communication.
@@ -16,6 +16,7 @@ Mono and stereo sources may be spatialized with ugens from a selection of librar
 | Ambitools | most realistic but CPU demanding       |
 | HoaLib    | lightweight and neutral sounding       |
 | ADT       | lightweight and broad sounding         |
+| SC-HOA    | even lighter                           |
 | ATK       | 1st order only but many options        |
 | BF-FMH    | 2nd order max                          |
 | Josh      | 1st order granular effect              |

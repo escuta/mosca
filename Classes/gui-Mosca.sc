@@ -805,7 +805,7 @@ may be downloaded here: http://escuta.org/mosca
 			winCtl[0][3].value = glev[currentsource];
 			winCtl[1][3].value = glev[currentsource];
 
-			zslider.value = (zlev[currentsource] * 0.01 + 1) * 0.5;
+			zslider.value = (zlev[currentsource] + 1) * 0.5;
 			znumbox.value = zlev[currentsource];
 
 			auxslider1.value = aux1[currentsource];

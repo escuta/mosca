@@ -296,7 +296,7 @@ may be downloaded here: http://escuta.org/mosca
 
 			//{
 			case
-			{ ncan[i] == 1} { // arquivo mono
+			{ ncan[i] == 1 } { // arquivo mono
 
 				// set lib, convert and dstrv variables when stynths are lauched
 				// for the tracking functions to stay relevant

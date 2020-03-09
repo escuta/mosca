@@ -65,7 +65,7 @@ GUI Parameters usable in SynthDefs
 			};
 		} {
 			audit[source] = false;
-			if(isPlay.not) {
+			if(isPlay.not && espacializador[source].notNil) {
 				espacializador[source].free;
 				this.runStop(source);
 				firstTime[source] = true;
@@ -415,7 +415,7 @@ GUI Parameters usable in SynthDefs
 	blindControlPlay {
 		var startTime;
 		nfontes.do { | i |
-			firstTime[i]=true;
+			firstTime[i] = true;
 		};
 
 		if(control.now < 0)
@@ -426,7 +426,6 @@ GUI Parameters usable in SynthDefs
 		};
 		isPlay = true;
 		control.play;
-		//runTriggers.value;
 	}
 
 	blindControlStop {
@@ -436,9 +435,10 @@ GUI Parameters usable in SynthDefs
 			// if sound is currently being "tested", don't switch off on stop
 			// leave that for user
 			if (audit[i] == false) {
-				synt[i].free; // error check
+				espacializador[i].free;
+				this.runStop(i);
+				firstTime[i] = true;
 			};
-			//	espacializador[i].free;
 		};
 		isPlay = false;
 	}
