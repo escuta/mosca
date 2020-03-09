@@ -69,7 +69,7 @@ GUI Parameters usable in SynthDefs
 				espacializador[source].free;
 				this.runStop(source);
 				firstTime[source] = true;
-				("stopping!" ++ (source + 1)).postln;
+				((source + 1) + "stopping!").postln;
 			};
 		};
 

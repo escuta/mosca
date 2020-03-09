@@ -1749,7 +1749,7 @@ Mosca {
 						sig = In.ar(fumabus, 4);
 						sig = BFDecode1.ar1(sig[0], sig[1], sig[2], sig[3],
 							azimuths.collect(_.degrad), elevations.collect(_.degrad),
-							longest_radius, radiusses);
+							longest_radius, radiusses, mul: 0.5);
 						nonambi = In.ar(nonambibus, numoutputs);
 						perfectSphereFunc.value(nonambi);
 						sig = (sig + nonambi) * level;
@@ -1810,7 +1810,7 @@ Mosca {
 						sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4],
 							sig[5], sig[6], sig[7], sig[8],
 							azimuths.collect(_.degrad), elevations.collect(_.degrad),
-							longest_radius, radiusses);
+							longest_radius, radiusses, 0.5);
 						nonambi = In.ar(nonambibus, numoutputs);
 						perfectSphereFunc.value(nonambi);
 						sig = (sig + nonambi) * level;
