@@ -2577,10 +2577,9 @@ Mosca {
 				nfontes.do({ | i |
 
 					if ((tfieldProxy[i].value != "") || scncheckProxy[i].value || (hwncheckProxy[i].value)) {
-						if (spheval[i].rho > plim) {
+						if (spheval[i].rho >= plim) {
 							//firstTime[i] = true;
 							if(espacializador[i].notNil) {
-								//synthRegistry[i].free;
 								this.runStop(i); // to kill SC input synths
 								espacializador[i].free;
 							};
@@ -2590,18 +2589,8 @@ Mosca {
 								//(tfieldProxy[i].value == ""))
 							)
 							{
-								//this.triggerFunc[i].value; // play SC input synth
-								//firstTime[i] = false;
-
-								if(lp[i] == 0) {
-
-									//tocar.value(i, 1, force: true);
-									this.newtocar(i, 0, force: true);
-								} {
-									// could remake this a random start point
-									//tocar.value(i, 1, force: true);
-									this.newtocar(i, 0, force: true);
-								};
+								// could remake this a random start point
+								this.newtocar(i, 0, force: true);
 							};
 						};
 					};
@@ -2630,6 +2619,145 @@ Mosca {
 
 
 		watcher.play;
+
+		control.presetDir = prjDr ++ "/auto";
+		//control.setMinTimeStep(2.0);
+		control.onEnd = {
+			//	control.stop;
+			control.seek;
+			if(autoloopval) {
+				//control.play;
+			};
+			/*
+			nfontes.do { arg i;
+			if(synt[i].notNil) {
+			synt[i].free;
+			};
+			};
+			*/
+		};
+
+		control.onPlay = {
+			var startTime;
+			"ON PLAY".postln;
+
+
+			/*nfontes.do { arg i;
+			firstTime[i]=true;
+			("NOW PLAYING = " ++ firstTime[i]).postln;*/
+			if (looping) {
+				nfontes.do { | i |
+					firstTime[i]=true;
+					//("HERE = " ++ firstTime[i]).postln;
+
+				};
+				looping = false;
+				"Was looping".postln;
+
+
+
+			};
+			if(control.now < 0)
+			{
+				startTime = 0
+			}
+			{
+				startTime = control.now
+			};
+			isPlay = true;
+			//runTriggers.value;
+
+			ossiaplay.v_(true);
+
+			if (guiflag) {
+				{novoplot.value;}.defer;
+			};
+		};
+
+
+		control.onSeek = { |time|
+			/*
+			var wasplaying = isPlay;
+
+			//("isPlay = " ++ isPlay).postln;
+			//runStops.value; // necessary? doesn't seem to help prob of SC input
+
+			//runStops.value;
+			if(isPlay == true) {
+			nfontes.do { arg i;
+			if(audit[i].not) {
+			synt[i].free;
+			};
+			};
+			control.stop;
+			};
+
+			if(wasplaying) {
+			{control.play}.defer(0.5); //delay necessary. may need more?
+			};
+			*/
+
+			if (time == 0) {
+				ossiaseekback = false;
+				ossiatransport.v_(0);
+				ossiaseekback = true;
+			};
+
+		};
+
+		/*control.onStop = {
+		runStops.value;
+		"ON STOP".postln;
+		nfontes.do { | i |
+		// if sound is currently being "tested", don't switch off on stop
+		// leave that for user
+		if (audit[i] == false) {
+		synt[i].free; // error check
+		};
+		//	espacializador[i].free;
+		};
+		isPlay = false;
+
+		};
+		*/
+
+		control.onStop = {
+
+			if(autoloopval.not) {
+				//("Control now = " ++ control.now ++ " dur = " ++ dur).postln;
+			};
+			if(autoloopval.not || (control.now.round != dur)) {
+				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++
+					control.now).postln;
+				runStops.value;
+				nfontes.do { | i |
+					// if sound is currently being "tested", don't switch off on stop
+					// leave that for user
+					if (audit[i] == false) {
+						this.runStop(i); // to kill SC input synths
+						espacializador[i].free;
+					};
+				};
+				isPlay = false;
+				looping = false;
+				nfontes.do { | i |
+					firstTime[i]=true;
+					//("HERE = " ++ firstTime[i]).postln;
+				};
+
+			} {
+				( "Did not stop. dur = " ++ dur ++ " now = " ++
+					control.now).postln;
+				looping = true;
+				control.play;
+			};
+
+			ossiaplay.v_(false);
+
+			if (guiflag) {
+				{novoplot.value;}.defer;
+			};
+		};
 
 		/// OSSIA bindings
 

@@ -57,27 +57,29 @@ GUI Parameters usable in SynthDefs
 	}
 
 	auditionFunc { |source, bool|
-		if(isPlay.not) {
-			if(bool) {
-				//firstTime[source] = true;
-				audit[source] = true;
+		if(bool) {
+			audit[source] = true;
+			if(isPlay.not && espacializador[source].isNil && (spheval[source].rho < plim)) {
+				"newtocar".postln;
 				this.newtocar(source, 0, force: true);
-			} {
-				audit[source] = false;
+			};
+		} {
+			audit[source] = false;
+			if(isPlay.not) {
 				espacializador[source].free;
 				this.runStop(source);
 				"stopping!".postln;
 			};
+		};
 
-			if (ossiaaud[source].value != bool) {
-				ossiaaud[source].value = bool;
-			};
+		if (ossiaaud[source].value != bool) {
+			ossiaaud[source].value = bool;
+		};
 
-			if (guiflag) {
-				{ novoplot.value; }.defer;
-				if (source == currentsource) {
-					{ baudi.value = bool.asInteger; }.defer;
-				};
+		if (guiflag) {
+			{ novoplot.value; }.defer;
+			if (source == currentsource) {
+				{ baudi.value = bool.asInteger; }.defer;
 			};
 		};
 	}
