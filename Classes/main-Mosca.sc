@@ -117,7 +117,7 @@ Mosca {
 	clsrm, clsrmbox, <>clsrmboxProxy, // setable global room size
 	clsdm, clsdmbox, <>clsdmboxProxy, // setable global dampening
 
-	<>masterlevProxy, masterslider,
+	<>masterlevProxy, masterBox,
 
 	<parentOssiaNode,
 	ossiaorient, ossiaorigine, ossiaremotectl, ossiaplay, ossiatrasportLoop,
@@ -410,7 +410,7 @@ Mosca {
 
 		//set up automationProxy for single parameters outside of the previous loop,
 		// not to be docked
-		masterlevProxy = AutomationGuiProxy(1);
+		masterlevProxy = AutomationGuiProxy(0);
 		clsrvboxProxy = AutomationGuiProxy(0);
 		clsrmboxProxy = AutomationGuiProxy(0.5); // cls roomsize proxy
 		clsdmboxProxy = AutomationGuiProxy(0.5); // cls dampening proxy
@@ -1205,10 +1205,10 @@ Mosca {
 
 		masterlevProxy.action_({ | num |
 
-			globDec.set(\level, num.value.dbamp);
+			globDec.set(\level, num.value);
 
 			if (guiflag) {
-				{masterslider.value = num.value.curvelin(inMin:-96, inMax:12, curve:-3);}.defer;
+				{masterBox.value = num.value; }.defer;
 			};
 
 			if (ossiamaster.v != num.value) {

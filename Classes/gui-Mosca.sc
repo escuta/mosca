@@ -22,8 +22,8 @@ may be downloaded here: http://escuta.org/mosca
 
 		var furthest,
 		itensdemenu,
-		event, brec, bplay, bload, bstream, loadOrStream, bnodes,
-		dopcheque2,
+		event, brec, bplay, bload, bstream, loadOrStream, bnodes, meters,
+		masterslider,
 		mouseButton,
 		period,
 		conslider,
@@ -416,7 +416,7 @@ may be downloaded here: http://escuta.org/mosca
 		wdados.userCanClose = false;
 		wdados.alwaysOnTop = true;
 
-		dialView = UserView(win, Rect(width - 100, 10, 180, 100));
+		dialView = UserView(win, Rect(width - 100, 10, 180, 120));
 
 		bdados = Button(dialView, Rect(0, 20, 90, 20))
 		.states_([
@@ -559,25 +559,23 @@ may be downloaded here: http://escuta.org/mosca
 			aux5numbox.value = num.value;
 		};
 
-		winCtl = Array.newClear(3); // [0]numboxes, [1]sliders, [2]texts
-		winCtl[0] = Array.newClear(13);
-		winCtl[1] = Array.newClear(13);
-		winCtl[2] = Array.newClear(13);
-
-		baudi = Button(win,Rect(10, 90, 150, 20))
+		bnodes = Button(dialView, Rect(0, 40, 90, 20))
 		.states_([
-			["audition", Color.black, Color.green],
-			["stop", Color.white, Color.red]
+			["show nodes", Color.black, Color.white],
 		])
-		.action_({ | but |
-			var bool = but.value.asBoolean;
-
-			ossiaaud[currentsource].v_(bool);
-			{ win.refresh; }.defer;
+		.action_({
+			server.plotTree;
 		});
 
+		meters = Button(dialView, Rect(0, 60, 90, 20))
+		.states_([
+			["show meters", Color.black, Color.white],
+		])
+		.action_({
+			server.meter;
+		});
 
-		brecaudio = Button(dialView, Rect(0, 60, 90, 20))
+		brecaudio = Button(dialView, Rect(0, 80, 90, 20))
 		.states_([
 			["record audio", Color.red, Color.white],
 			["stop", Color.white, Color.red]
@@ -603,7 +601,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		});
 
-		blipcheck = CheckBox(dialView, Rect(35, 80, 50, 15), "blips").action_({ | butt |
+		blipcheck = CheckBox(dialView, Rect(35, 100, 50, 15), "blips").action_({ | butt |
 			if(butt.value) {
 				//"Looping transport".postln;
 				//autoloopval = true;
@@ -613,7 +611,46 @@ may be downloaded here: http://escuta.org/mosca
 
 		});
 
-		autoView = UserView(win, Rect(10, width - 45, 325, 40));
+		winCtl = Array.newClear(3); // [0]numboxes, [1]sliders, [2]texts
+		winCtl[0] = Array.newClear(13);
+		winCtl[1] = Array.newClear(13);
+		winCtl[2] = Array.newClear(13);
+
+		baudi = Button(win,Rect(10, 90, 150, 20))
+		.states_([
+			["audition", Color.black, Color.green],
+			["stop", Color.white, Color.red]
+		])
+		.action_({ | but |
+			var bool = but.value.asBoolean;
+
+			ossiaaud[currentsource].v_(bool);
+			{ win.refresh; }.defer;
+		});
+
+		autoView = UserView(win, Rect(10, height - 65, 325, 60));
+
+		textbuf = StaticText(autoView, Rect(0, 40, 325, 20));
+		textbuf.string = "Master Level";
+
+		masterBox = NumberBox(autoView, Rect(285, 40, 40, 20));
+		masterBox.value = 0;
+		masterBox.clipHi = 12;
+		masterBox.clipLo = -96;
+		masterBox.step_(0.01);
+		masterBox.scroll_step_(0.01);
+		masterBox.action = { | num |
+			masterlevProxy.valueAction = num.value;
+			{masterslider.value = num.value.curvelin(inMin:-96, inMax:12, curve:-3);}.defer;
+		};
+
+		masterslider = Slider(autoView, Rect(80, 40, 205, 20));
+		masterslider.value = 0.62065661124753;
+		masterslider.action = { | num |
+			{masterBox.valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);}.defer;
+		};
+
+
 
 		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
 
@@ -936,27 +973,27 @@ may be downloaded here: http://escuta.org/mosca
 		////////////////////////////// Orientation //////////////
 
 
-		originView = UserView(win, Rect(width - 285, height - 85, 265, 100));
+		originView = UserView(win, Rect(width - 255, height - 85, 250, 100));
 
 		originCtl = Array.newClear(2); // [0]numboxes, [1]texts
 		originCtl[0] = Array.newClear(8);
 		originCtl[1] = Array.newClear(8);
 
-		originCtl[0][2] = NumberBox(originView, Rect(230, 20, 40, 20));
+		originCtl[0][2] = NumberBox(originView, Rect(210, 20, 40, 20));
 		originCtl[0][2].align = \center;
 		originCtl[0][2].clipHi = pi;
 		originCtl[0][2].clipLo = -pi;
 		originCtl[0][2].step_(0.01);
 		originCtl[0][2].scroll_step_(0.01);
 
-		originCtl[0][3] = NumberBox(originView, Rect(230, 40, 40, 20));
+		originCtl[0][3] = NumberBox(originView, Rect(210, 40, 40, 20));
 		originCtl[0][3].align = \center;
 		originCtl[0][3].clipHi = pi;
 		originCtl[0][3].clipLo = -pi;
 		originCtl[0][3].step_(0.01);
 		originCtl[0][3].scroll_step_(0.01);
 
-		originCtl[0][4] = NumberBox(originView, Rect(230, 60, 40, 20));
+		originCtl[0][4] = NumberBox(originView, Rect(210, 60, 40, 20));
 		originCtl[0][4].align = \center;
 		originCtl[0][4].clipHi = pi;
 		originCtl[0][4].clipLo = -pi;
@@ -976,27 +1013,27 @@ may be downloaded here: http://escuta.org/mosca
 			rollnumboxProxy.valueAction = num.value;
 		};
 
-		originCtl[1][2] = StaticText(originView, Rect(215, 20, 12, 22));
+		originCtl[1][2] = StaticText(originView, Rect(195, 20, 12, 22));
 		originCtl[1][2].string = "H:";
-		originCtl[1][3] = StaticText(originView, Rect(215, 40, 12, 22));
+		originCtl[1][3] = StaticText(originView, Rect(195, 40, 12, 22));
 		originCtl[1][3].string = "P:";
-		originCtl[1][4] = StaticText(originView, Rect(215, 60, 12, 22));
+		originCtl[1][4] = StaticText(originView, Rect(195, 60, 12, 22));
 		originCtl[1][4].string = "R:";
 
-		textbuf = StaticText(originView, Rect(227, 0, 45, 20));
+		textbuf = StaticText(originView, Rect(207, 0, 45, 20));
 		textbuf.string = "Orient.";
 
-		originCtl[0][5] = NumberBox(originView, Rect(170, 20, 40, 20));
+		originCtl[0][5] = NumberBox(originView, Rect(150, 20, 40, 20));
 		originCtl[0][5].align = \center;
 		originCtl[0][5].step_(0.01);
 		originCtl[0][5].scroll_step_(0.01);
 
-		originCtl[0][6] = NumberBox(originView, Rect(170, 40, 40, 20));
+		originCtl[0][6] = NumberBox(originView, Rect(150, 40, 40, 20));
 		originCtl[0][6].align = \center;
 		originCtl[0][6].step_(0.01);
 		originCtl[0][6].scroll_step_(0.01);
 
-		originCtl[0][7] = NumberBox(originView, Rect(170, 60, 40, 20));
+		originCtl[0][7] = NumberBox(originView, Rect(150, 60, 40, 20));
 		originCtl[0][7].align = \center;
 		originCtl[0][7].step_(0.01);
 		originCtl[0][7].scroll_step_(0.01);
@@ -1013,17 +1050,17 @@ may be downloaded here: http://escuta.org/mosca
 			oznumboxProxy.valueAction = num.value;
 		};
 
-		originCtl[1][5] = StaticText(originView, Rect(155, 20, 12, 22));
+		originCtl[1][5] = StaticText(originView, Rect(135, 20, 12, 22));
 		originCtl[1][5].string = "X:";
-		originCtl[1][6] = StaticText(originView, Rect(155, 40, 12, 22));
+		originCtl[1][6] = StaticText(originView, Rect(135, 40, 12, 22));
 		originCtl[1][6].string = "Y:";
-		originCtl[1][7] = StaticText(originView, Rect(155, 60, 12, 22));
+		originCtl[1][7] = StaticText(originView, Rect(135, 60, 12, 22));
 		originCtl[1][7].string = "Z:";
 
-		textbuf = StaticText(originView, Rect(170, 0, 47, 20));
+		textbuf = StaticText(originView, Rect(150, 0, 47, 20));
 		textbuf.string = "Origin";
 
-		hdtrkcheck = CheckBox(win, Rect(width - 105, height - 105, 265, 20), "Remote ctl.").action_({ | butt |
+		hdtrkcheck = CheckBox(win, Rect(width - 125, height - 105, 265, 20), "Remote ctl.").action_({ | butt |
 			this.remoteCtl(butt.value);
 		});
 		hdtrkcheck.value = true;
@@ -1096,19 +1133,6 @@ may be downloaded here: http://escuta.org/mosca
 			{cbox[currentsource].valueAction = num.value;}.defer;
 		};
 
-
-		/////////////////////////////////////////////////////////////////////////
-
-
-		textbuf = StaticText(originView, Rect(136, 0, 20, 20));
-		textbuf.string = "M";
-
-		masterslider = Slider(originView, Rect(132, 20, 20, 60));
-		masterslider.orientation(\vertical);
-		masterslider.value = 0.62065661124753;
-		masterslider.action = { | num |
-			masterlevProxy.valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);
-		};
 
 		/////////////////////////////////////////////////////////////////////////
 
@@ -1513,14 +1537,6 @@ may be downloaded here: http://escuta.org/mosca
 				};
 			);
 		};
-
-		bnodes = Button(dialView, Rect(0, 40, 90, 20))
-		.states_([
-			["show nodes", Color.black, Color.white],
-		])
-		.action_({
-			server.plotTree;
-		});
 
 		textbuf = StaticText(wdados, Rect(20, 20, 50, 20));
 		textbuf.font = Font(Font.defaultSansFace, 9);
@@ -2136,10 +2152,10 @@ may be downloaded here: http://escuta.org/mosca
 				+ zSliderHeight, 40, 20));
 			zAxis.bounds_(Rect(width - 80, halfheight - 10, 90, 20));
 
-			originView.bounds_(Rect(width - 275, height - 85, 270, 100));
+			originView.bounds_(Rect(width - 255, height - 85, 250, 100));
 			hdtrkcheck.bounds_(Rect(width - 105, height - 105, 265, 20));
 
-			autoView.bounds_(Rect(10, height - 45, 325, 40));
+			autoView.bounds_(Rect(10, height - 65, 325, 60));
 
 			novoplot.value;
 
