@@ -60,7 +60,7 @@ Mosca {
 	// MOVED FROM the the gui method/////////////////////////
 
 	cbox, clev, angle, audit, gbus, gbfbus, n3dbus,
-	gbixfbus, nonambibus,
+	outbus, suboutbus, gbixfbus, nonambibus,
 	playEspacGrp, glbRevDecGrp,
 	level, lp, lib, libName, convert, dstrv, dstrvtypes, clsrv,
 	clsRvtypes,
@@ -165,18 +165,16 @@ Mosca {
 	foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, dur = 180, rirBank,
 		server = Server.local, parentOssiaNode = OSSIA_Device("SC"), allCrtitical = false, decoder,
-		maxorder = 1, speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus,
-		recchans = 2, recbus = 0, autoloop = false;
+		maxorder = 1, speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus, autoloop = false;
 
 		^super.new.initMosca(projDir, nsources, dur, rirBank, server, parentOssiaNode,
 			allCrtitical, decoder, maxorder, speaker_array, outbus, suboutbus, rawformat,
-			rawoutbus, recchans, recbus, autoloop);
+			rawoutbus, autoloop);
 	}
 
 
 	initMosca { | projDir, nsources, idur, rirBank, iserver, iparentOssiaNode, allCrtitical,
-		decoder, imaxorder, speaker_array, outbus, suboutbus, rawformat, rawoutbus,
-		irecchans, irecbus, iautoloop |
+		decoder, imaxorder, speaker_array, ioutbus, isuboutbus, rawformat, rawoutbus, iautoloop |
 
 		var subOutFunc,
 		perfectSphereFunc, bfOrFmh,
@@ -230,8 +228,8 @@ Mosca {
 		};
 
 		dur = idur;
-		recchans = irecchans;
-		recbus = irecbus;
+		outbus = ioutbus;
+		suboutbus = isuboutbus;
 
 		autoloopval = iautoloop;
 
@@ -1544,9 +1542,9 @@ Mosca {
 
 			var max_func, min_func, dimention, vbap_setup, adjust;
 
-			nonambibus = outbus;
-
 			numoutputs = speaker_array.size;
+
+			nonambibus = Bus.audio(server, numoutputs);
 
 			max_func = { |x| // extract the highest value from an array
 				var rep = 0;

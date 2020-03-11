@@ -589,9 +589,9 @@ may be downloaded here: http://escuta.org/mosca
 				{
 					this.blips;
 				};
-				server.recChannels = recchans;
+				server.recChannels = numoutputs;
 				// note the 2nd bus argument only works in SC 3.9
-				server.record((prjDr ++ "/out.wav").standardizePath, recbus);
+				server.record((prjDr ++ "/out.wav").standardizePath, outbus);
 
 			}
 			{
@@ -2069,7 +2069,7 @@ may be downloaded here: http://escuta.org/mosca
 			{mouseButton == 1} {
 				if (sourceList.isNil) {
 					sourceList = ListView(win, Rect(mx,my,
-						90,70)).items_(itensdemenu).value_(currentsource)
+						90,70)).items_(itensdemenu).value_(-1) // to avoid the deffault to 1
 					.action_({ |sel|
 						sourceSelect.value(sel.value);
 						moveSource.value(mx + 45, my + 35);
