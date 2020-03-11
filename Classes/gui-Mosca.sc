@@ -71,7 +71,7 @@ may be downloaded here: http://escuta.org/mosca
 		// Note there is an extreme amount repetition occurring here.
 		// See the calling function. fix
 
-		win = Window("Mosca", Rect(0, width, width, height)).front;
+		win = Window("Mosca", Rect(0, 0, width, height)).front;
 		win.background = Color.new255( 200, 200, 200 ); // OSSIA/score "HalfLight"
 
 		win.drawFunc = {

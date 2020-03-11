@@ -1205,7 +1205,7 @@ Mosca {
 
 		masterlevProxy.action_({ | num |
 
-			globDec.set(\level, num.value);
+			globDec.set(\level, num.value.dbamp);
 
 			if (guiflag) {
 				{masterBox.value = num.value; }.defer;
