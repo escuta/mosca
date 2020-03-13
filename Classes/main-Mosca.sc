@@ -994,7 +994,9 @@ Mosca {
 				};
 				if (guiflag) {
 					{scncheck[i].value = but.value}.defer;
-					updateGuiCtl.value(\src);
+					if (i == currentsource) {
+						{ updateGuiCtl.value(\src); }.defer;
+					};
 				};
 			});
 

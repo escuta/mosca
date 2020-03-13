@@ -67,7 +67,7 @@ may be downloaded here: http://escuta.org/mosca
 				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
 				// attenuate high freq with distance
 				sig = HOAmbiPanner.ar(maxorder,
-					ref.value + (sig * longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
+					ref.value + (sig * (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius))),
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
 				ref.value = (sig * contract) + Silent.ar(bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			});
@@ -161,7 +161,7 @@ may be downloaded here: http://escuta.org/mosca
 			elev = elev.clip(lowest_elevation, highest_elevation);
 			// restrict between min & max
 			ref.value = VBAP.ar(numoutputs,
-					ref.value + (sig * longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius)),
+					ref.value + (sig * (longest_radius / distance.linlin(0, 0.75, quarterRadius, twoAndaHalfRadius))),
 				vbap_buffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100);
 			});

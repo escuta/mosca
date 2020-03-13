@@ -704,7 +704,7 @@ may be downloaded here: http://escuta.org/mosca
 
 					espacializador[i] = Synth(libName[i]++"Stereo"++witch
 						++dstrvtypes[i],
-						[\busini, busini[i],
+						[\busini, bus,
 							\angle, angle[i],
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
@@ -790,7 +790,7 @@ may be downloaded here: http://escuta.org/mosca
 
 					espacializador[i] = Synth(libName[i]++"BFormat"++witch++
 						(ncan[i])++dstrvtypes[i],
-						[\busini, busini[i],
+						[\busini, bus,
 							\rotAngle, rlev[i],
 							\directang, dlev[i],
 							\azim, spheval[i].theta,

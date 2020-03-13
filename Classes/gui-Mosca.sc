@@ -589,9 +589,9 @@ may be downloaded here: http://escuta.org/mosca
 				{
 					this.blips;
 				};
-				server.recChannels = numoutputs;
+				//server.recChannels = numoutputs;
 				// note the 2nd bus argument only works in SC 3.9
-				server.record((prjDr ++ "/out.wav").standardizePath, outbus);
+				server.record((prjDr ++ "/out.wav").standardizePath, node:globDec);
 
 			}
 			{

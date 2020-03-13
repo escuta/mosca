@@ -144,7 +144,7 @@ GUI Parameters usable in SynthDefs
 		var userIndex = source - 1;
 		ncanboxProxy[userIndex].valueAction_(numChans);
 		scncheckProxy[userIndex].valueAction_(true);
-		^scInBus[userIndex];
+		^scInBus[userIndex].index;
 	}
 
 	setSCBus { |source, numChans|
