@@ -1,6 +1,6 @@
 # [Mosca](http://escuta.org/mosca)
 
-![MoscaScreenshot](HelpSource/MoscaScreenshot.png)
+[![MoscaScreenshot](HelpSource/MoscaScreenshot.png)](http://escuta.org/mosca)
 
 [![Join the chat at https://gitter.im/scrime-u-bordeaux/mosca](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/scrime-u-bordeaux/mosca)
 
