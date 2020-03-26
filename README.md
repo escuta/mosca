@@ -89,5 +89,5 @@ France: 2017.
 
 * Celerier, Jean-Michaël. Authoring interactive media : a logical & temporal
 approach.
-Ph. D dissertations, University of BOrdeaux,
+Ph. D dissertations, University of Bordeaux,
 France: 2018.
