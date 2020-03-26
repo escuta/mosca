@@ -2,6 +2,8 @@
 
 ![MoscaScreenshot](HelpSource/MoscaScreenshot.png)
 
+join the [chat](https://gitter.im/scrime-u-bordeaux/mosca)
+
 ### note
 Installing the [Kernels](http://www.ambisonictoolkit.net/download/kernels) and [Matrices](http://www.ambisonictoolkit.net/download/matrices) is required, as well as the sc3-plugins version 3.10 or higher. For more Library options, you can install this [HOA fork](https://github.com/scrime-u-bordeaux/sc3-pluginsHOA)
 
