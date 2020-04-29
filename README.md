@@ -2,7 +2,7 @@
 
 Homepage: http://escuta.org/mosca
 
-Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. The class makes extensive use of the Ambisonic Toolkit ( ATK, see: http://www.ambisonictoolkit.net/ ) by Joseph Anderson and the Automation quark ( https://github.com/neeels/Automation ) by Neels Hofmeyr.
+Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources by Iain Mott. The class makes extensive use of the Ambisonic Toolkit ( ATK, see: http://www.ambisonictoolkit.net/ ) by Joseph Anderson and the Automation quark ( https://github.com/neeels/Automation ) by Neels Hofmeyr.
 
 Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from hardware inputs (physical or from other applications such a DAW via Jack) or from SuperCollider's own synths. In the case of synth input, synths are associated by the user with a particular source in the GUI and registered in a synth registry. In this way, they are spatialised by the GUI and also receive data from the GUI pertaining to the source (eg. x, y and z coordinates or auxiliary fader data). Sound fields may be decoded using a variety of built in 1st order ambisonic SuperCollider decoders (including binaural) or with external 2nd order decoders such as Ambdec in Linux. Mosca has its own transport provided by the Automation quark for recording and playback of source data. This may be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack.
 
