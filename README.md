@@ -2,7 +2,7 @@
 
 Homepage: http://escuta.org/mosca
 
-News: A new version of Mosca will shortly be released, implementing work by Thibaud Keller. The release will bring support for new ambisonic libraries as well as VBAP, OSC support and integration with OSSIA-score, improved GUI, support for higher order ambisonic signals, banks of RIRs selectable on a per-source basis and many other improvements. For details on the upcoming release, see the conference paper by Iain Mott and Thibaud Keller: Three-dimensional sound design with Mosca.
+News: A new version of Mosca will shortly be released, implementing work by Thibaud Keller. The release will bring support for new ambisonic libraries as well as VBAP, OSC support and integration with OSSIA-score, improved GUI, support for higher order ambisonic signals, banks of RIRs selectable on a per-source basis and many other improvements. For details on the upcoming release, see the conference paper by Iain Mott and Thibaud Keller: Three-dimensional sound design with Mosca (https://www.researchgate.net/publication/336983923_Three-dimensional_sound_design_with_Mosca).
 
 Mosca is a SuperCollider class for GUI-assisted production of ambisonic sound fields with simulated moving or stationary sound sources. The class makes extensive use of the Ambisonic Toolkit ( ATK, see: http://www.ambisonictoolkit.net/ ) by Joseph Anderson and the Automation quark ( https://github.com/neeels/Automation ) by Neels Hofmeyr.
 
