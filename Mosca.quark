@@ -1,18 +1,20 @@
 (
 	\name:    "Mosca",
 	\summary: "GUI-assisted authoring of dynamic ambisonic sound fields",
-    	\author:  "mott@escuta.org",
-        \copyright: "Iain Mott 2016-18",	
+    	\author:  "mott@escuta.org tibthejazzdude@gmail.com",
+        \copyright: "Iain Mott and Thibaud Keller 2016-19",	
     	\path:    "Mosca",
     	\url:     "http://github.com/escuta/mosca",
     	\helpdoc: "moscaHelp.scd",
     	\since:   "2016",
-    	\version:	"0.2", // must be a float,
+    	\version: "0.2", // must be a float,
 	\dependencies:	[
 			"Ctk",
 			"MathLib",
 			"Automation",
 			"XML",
-			"atk-sc3"
+			"atk-sc3",
+			"SC-HOA",
+			"OSSIA"
 			]
 )
