@@ -3,14 +3,15 @@ summary::GUI-assisted authoring of sound fields
 categories::Libraries>Ambisonic Toolkit, Libraries>HOA
 related::Guide/guide-Mosca, Guides/Intro-to-the-ATK, Guides/HOAguide, Tutorials/AutomationIntro, Guides/OssiaReference
 
-WARNING::
-Installing the link::https://github.com/scrime-u-bordeaux/sc3-pluginsHOA##HOA fork:: of
-SuperCollider's sc3-plugins is required. This fork is kept up to date, only differing from the
-original repos with additional HOAUgens.
-It is also necessary to install the ATK
+note::
+Installing the ATK
 link:: http://www.ambisonictoolkit.net/download/kernels##Kernels:: and
-link:: http://www.ambisonictoolkit.net/download/matrices##Matrices:: as
-described in the download page
+link:: http://www.ambisonictoolkit.net/download/matrices##Matrices:: is
+required, as well as the
+link:: https://github.com/supercollider/sc3-plugins##sc3-plugins:: version
+3.10 or higher. For more Library options, you can install this
+link:: https://github.com/scrime-u-bordeaux/sc3-pluginsHOA##HOA fork::
+
 ::
 
 DESCRIPTION::
@@ -23,6 +24,7 @@ table::
     ## Ambitools || most realistic but CPU demanding
     ## HoaLib    || lightweight and neutral sounding
     ## ADT       || lightweight and broad sounding
+    ## SC-HOA    || even lighter
     ## ATK       || 1st order only but many options
     ## BF-FMH    || 2nd order max
     ## Josh      || 1st order granular effect
@@ -116,9 +118,6 @@ saving and loading automations.
 ARGUMENT:: nsources
 The number of sources to be spatialised.
 
-ARGUMENT:: width
-Pixel width and height of GUI window. Minimum of 550 pixels.
-
 ARGUMENT:: dur
 Duration in seconds of automation transport.
 
@@ -179,6 +178,39 @@ Starting bus for raw first ambisonic output.
 ARGUMENT:: rawoutbus
 Starting bus for raw first order ambisonic output.
 
+ARGUMENT:: recchans
+Number of channels for recording audio output to disk. Default is 2.
+
+ARGUMENT:: recbus
+Starting bus for recording audio output to disk. Default is 0. Note: this argument may
+only be set in SC 3.9.
+
+ARGUMENT:: autoloop
+If set true, transport will always loop.
+
+returns:: New instance.
+
+METHOD:: printSynthParams
+Print GUI Parameters usable in SynthDefs.
+
+returns:: A string.
+
+
+INSTANCEMETHODS::
+
+METHOD:: gui
+Create the graphical interface.
+
+ARGUMENT:: width
+Pixel width and height of GUI window. Minimum of 550 pixels.
+
+ARGUMENT:: guiint
+Maximum interval in seconds to refresh GUI. Default is 0.07.
+
+
+METHOD:: headTracker
+Connect to the head traker module (Arduino) through the serial port.
+
 ARGUMENT:: serport
 Name of serial port to receive headtracking data. Eg. "/dev/ttyACM0". For use with a
 binaural decoder. Default is nil.
@@ -194,31 +226,6 @@ monitor and the offsetheading is set to the default 0, you see a heading value (
 right of window) of 2.6, set the value to -2.6. The heading value will now be set to
 zero when you face the monitor.
 
-ARGUMENT:: recchans
-Number of channels for recording audio output to disk. Default is 2.
-
-ARGUMENT:: recbus
-Starting bus for recording audio output to disk. Default is 0. Note: this argument may
-only be set in SC 3.9.
-
-ARGUMENT:: guiflag
-If set to false, Mosca will run with no GUI. Default is true.
-
-ARGUMENT:: guiint
-Maximum interval in seconds to refresh GUI. Default is 0.07.
-
-ARGUMENT:: autoloop
-If set true, transport will always loop.
-
-returns:: New instance.
-
-
-METHOD:: printSynthParams
-Print GUI Parameters usable in SynthDefs.
-
-returns:: A string.
-
-INSTANCEMETHODS::
 
 private:: clearStopFunc
 private:: clearTriggerFunc
@@ -780,10 +787,13 @@ ARGUMENT:: synth
 Synth instance.
 
 METHOD:: getSCBus
-Return the bus number associated with synth registrant.
+Create the bus associated with synth registrant.
 
 ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
+The number of the source (starting with 1).
+
+ARGUMENT:: numChans
+The number of channels (starting with 1).
 
 METHOD:: setTriggerFunc
 Designate a function to be triggered when selecting play in the transport or auditioning
@@ -844,7 +854,6 @@ The following is a basic Binaural Setup, see link::Guide/guide-Mosca:: for more 
 code::
 (
 Server.killAll;                   // Make sure no servers are running yet
-s = Server.local;                 // Use deffault server
 // Create and name an OSSIA_Device to contain all of Mosca's parameters
 ~supercoll = OSSIA_Device('SC');
 ~supercoll.exposeOSC;             // Enable OSC communication with the OSSIA_Device
@@ -859,7 +868,6 @@ s.waitForBoot {
 	// Set global variable passed as Mosca's arguments
 	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
-	s.sync;
 	MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
 	s.sync;
 
@@ -869,8 +877,7 @@ s.waitForBoot {
 		nsources: 11, // Set the number of sources
 		decoder: ~decoder,
 		parentOssiaNode:~supercoll;
-	);
-
+	).gui();
 };
 )
 ::

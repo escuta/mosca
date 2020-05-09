@@ -27,14 +27,12 @@ may be downloaded here: http://escuta.org/mosca
 			// sframe = tpos * srate;
 			// stdur = sf.numFrames / srate; // needed?
 			streambuf[i] = Buffer.cueSoundFile(server, path, 0,
-				ncanais[i], 131072);
+				ncan[i], 131072);
 			//		streambuf[i] = srate; //??
 			("Creating buffer for source: " ++ i).postln;
 		};
 
-		// Note: ncanais refers to number of channels in the context of
-		// files on disk
-		// ncan is number of channels for hardware or supercollider input
+		// ncan is number of channels of the source
 		// busini is the initial bus used for a particular stream
 		// If we have ncan = 4 and busini = 7, the stream will enter
 		// in buses 7, 8, 9 and 10.
@@ -48,7 +46,7 @@ may be downloaded here: http://escuta.org/mosca
 			if (audit[i].not || force) { // if source is testing don't relaunch synths
 
 				case
-				{ ncanais[i] == 1} {
+				{ ncan[i] == 1} {
 					"1 channel".postln;
 
 					// set lib, convert and dstrv variables when stynths are lauched
@@ -73,7 +71,7 @@ may be downloaded here: http://escuta.org/mosca
 							convertor.set(\gate, 1);
 						} {
 							convertor = Synth(\ambiConverter, [\gate, 1],
-								target:glbRevDecGrp).onFree({
+								target:glbRevDecGrp, addAction:\addAfter).onFree({
 								convertor = nil;
 							});
 						};
@@ -106,7 +104,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -116,7 +114,7 @@ may be downloaded here: http://escuta.org/mosca
 						streambuf[i].free;
 						if (azimuths.isNil) {
 							if (this.nonAmbi2FuMaNeeded(0).not
-								&& nonAmbi2FuMa.notNil) {
+									&& nonAmbi2FuMa.notNil) {
 								nonAmbi2FuMa.free;
 							};
 						};
@@ -133,7 +131,7 @@ may be downloaded here: http://escuta.org/mosca
 					//updatesourcevariables.value(i);
 
 				}
-				{ ncanais[i] == 2} {
+				{ ncan[i] == 2} {
 					"2 channel".postln;
 
 					// set lib, convert and dstrv variables when stynths are lauched
@@ -158,7 +156,7 @@ may be downloaded here: http://escuta.org/mosca
 							convertor.set(\gate, 1);
 						} {
 							convertor = Synth(\ambiConverter, [\gate, 1],
-								target:glbRevDecGrp).onFree({
+								target:glbRevDecGrp, addAction:\addAfter).onFree({
 								convertor = nil;
 							});
 						};
@@ -191,7 +189,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -217,9 +215,9 @@ may be downloaded here: http://escuta.org/mosca
 					//updatesourcevariables.value(i);
 
 				}
-				{ ncanais[i] >= 4} {
+				{ ncan[i] >= 4} {
 					playingBF[i] = true;
-					("contains "++ncanais[i]++" channels").postln;
+					("contains "++ncan[i]++" channels").postln;
 
 					if ((libboxProxy[i].value >= (lastN3D + 1)) ||
 						(dstrvboxProxy[i].value == 3)) {
@@ -241,14 +239,14 @@ may be downloaded here: http://escuta.org/mosca
 							convertor.set(\gate, 1);
 						} {
 							convertor = Synth(\ambiConverter, [\gate, 1],
-								target:glbRevDecGrp).onFree({
+								target:glbRevDecGrp, addAction:\addAfter).onFree({
 								convertor = nil;
 							});
 						};
 					};
 
 					espacializador[i] = Synth(libName[i]++"BFormatStream"++
-						(ncanais[i].asInteger)++dstrvtypes[i],
+						(ncan[i])++dstrvtypes[i],
 						[\bufnum, streambuf[i].bufnum,
 							\rotAngle, rlev[i],
 							\directang, dlev[i],
@@ -264,7 +262,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -298,7 +296,7 @@ may be downloaded here: http://escuta.org/mosca
 
 			//{
 			case
-			{ ncanais[i] == 1} { // arquivo mono
+			{ ncan[i] == 1 } { // arquivo mono
 
 				// set lib, convert and dstrv variables when stynths are lauched
 				// for the tracking functions to stay relevant
@@ -322,7 +320,7 @@ may be downloaded here: http://escuta.org/mosca
 						convertor.set(\gate, 1);
 					} {
 						convertor = Synth(\ambiConverter, [\gate, 1],
-							target:glbRevDecGrp).onFree({
+							target:glbRevDecGrp, addAction:\addAfter).onFree({
 							convertor = nil;
 						});
 					};
@@ -354,7 +352,7 @@ may be downloaded here: http://escuta.org/mosca
 						\contr, clev[i],
 						\room, rm[i],
 						\damp, dm[i],
-						\level, level[i],
+						\amp, level[i].dbamp,
 						\grainrate, grainrate[i],
 						\winsize, winsize[i],
 						\winrand, winrand[i]] ++
@@ -379,7 +377,7 @@ may be downloaded here: http://escuta.org/mosca
 				//updatesourcevariables.value(i);
 
 			}
-			{ ncanais[i] == 2 } {
+			{ ncan[i] == 2 } {
 
 				// set lib, convert and dstrv variables when stynths are lauched
 				// for the tracking functions to stay relevant
@@ -403,7 +401,7 @@ may be downloaded here: http://escuta.org/mosca
 						convertor.set(\gate, 1);
 					} {
 						convertor = Synth(\ambiConverter, [\gate, 1],
-							target:glbRevDecGrp).onFree({
+							target:glbRevDecGrp, addAction:\addAfter).onFree({
 							convertor = nil;
 						});
 					};
@@ -435,7 +433,7 @@ may be downloaded here: http://escuta.org/mosca
 						\contr, clev[i],
 						\room, rm[i],
 						\damp, dm[i],
-						\level, level[i],
+						\amp, level[i].dbamp,
 						\grainrate, grainrate[i],
 						\winsize, winsize[i],
 						\winrand, winrand[i]] ++
@@ -461,7 +459,7 @@ may be downloaded here: http://escuta.org/mosca
 				//updatesourcevariables.value(i);
 
 			}
-			{ ncanais[i] >= 4 } {
+			{ ncan[i] >= 4 } {
 				playingBF[i] = true;
 
 				if ((libboxProxy[i].value >= (lastN3D + 1)) ||
@@ -484,14 +482,14 @@ may be downloaded here: http://escuta.org/mosca
 						convertor.set(\gate, 1);
 					} {
 						convertor = Synth(\ambiConverter, [\gate, 1],
-							target:glbRevDecGrp).onFree({
+							target:glbRevDecGrp, addAction:\addAfter).onFree({
 							convertor = nil;
 						});
 					};
 				};
 
 				espacializador[i] = Synth(libName[i]++"BFormatFile"++
-					(ncanais[i].asInteger)++dstrvtypes[i],
+					(ncan[i])++dstrvtypes[i],
 					[\bufnum, sombuf[i].bufnum,
 						\rotAngle, rlev[i],
 						\directang, dlev[i],
@@ -507,7 +505,7 @@ may be downloaded here: http://escuta.org/mosca
 						\contr, clev[i],
 						\room, rm[i],
 						\damp, dm[i],
-						\level, level[i],
+						\amp, level[i].dbamp,
 						\grainrate, grainrate[i],
 						\winsize, winsize[i],
 						\winrand, winrand[i]] ++
@@ -567,7 +565,7 @@ may be downloaded here: http://escuta.org/mosca
 							convertor.set(\gate, 1);
 						} {
 							convertor = Synth(\ambiConverter, [\gate, 1],
-								target:glbRevDecGrp).onFree({
+								target:glbRevDecGrp, addAction:\addAfter).onFree({
 								convertor = nil;
 							});
 						};
@@ -584,9 +582,28 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
+					this.runTrigger(i);
+					if (synthRegistry[i].isEmpty.not) {
+						synt[i] = synthRegistry[i];
+						synt[i].do({ _.set(
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\amp, level[i].dbamp,
+							\grainrate, grainrate[i],
+							\winsize, winsize[i]);
+						});
+					};
+
 					espacializador[i] = Synth(libName[i]++witch
 						++dstrvtypes[i],
-						[\busini, busini[i],
+						[\busini, bus,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
@@ -599,7 +616,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -649,7 +666,7 @@ may be downloaded here: http://escuta.org/mosca
 							convertor.set(\gate, 1);
 						} {
 							convertor = Synth(\ambiConverter, [\gate, 1],
-								target:glbRevDecGrp).onFree({
+								target:glbRevDecGrp, addAction:\addAfter).onFree({
 								convertor = nil;
 							});
 						};
@@ -666,9 +683,28 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
+					this.runTrigger(i);
+					if (synthRegistry[i].isEmpty.not) {
+						synt[i] = synthRegistry[i];
+						synt[i].do({ _.set(
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\amp, level[i].dbamp,
+							\grainrate, grainrate[i],
+							\winsize, winsize[i]);
+						});
+					};
+
 					espacializador[i] = Synth(libName[i]++"Stereo"++witch
 						++dstrvtypes[i],
-						[\busini, busini[i],
+						[\busini, bus,
 							\angle, angle[i],
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
@@ -682,7 +718,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
@@ -727,15 +763,34 @@ may be downloaded here: http://escuta.org/mosca
 							convertor.set(\gate, 1);
 						} {
 							convertor = Synth(\ambiConverter, [\gate, 1],
-								target:glbRevDecGrp).onFree({
+								target:glbRevDecGrp, addAction:\addAfter).onFree({
 								convertor = nil;
 							});
 						};
 					};
 
+					this.runTrigger(i);
+					if (synthRegistry[i].isEmpty.not) {
+						synt[i] = synthRegistry[i];
+						synt[i].do({ _.set(
+							\azim, spheval[i].theta,
+							\elev, spheval[i].phi,
+							\radius, spheval[i].rho,
+							\dopamnt, dplev[i],
+							\glev, glev[i],
+							\llev, llev[i],
+							\contr, clev[i],
+							\room, rm[i],
+							\damp, dm[i],
+							\amp, level[i].dbamp,
+							\grainrate, grainrate[i],
+							\winsize, winsize[i]);
+						});
+					};
+
 					espacializador[i] = Synth(libName[i]++"BFormat"++witch++
-						(ncan[i].asInteger)++dstrvtypes[i],
-						[\busini, busini[i],
+						(ncan[i])++dstrvtypes[i],
+						[\busini, bus,
 							\rotAngle, rlev[i],
 							\directang, dlev[i],
 							\azim, spheval[i].theta,
@@ -750,7 +805,7 @@ may be downloaded here: http://escuta.org/mosca
 							\contr, clev[i],
 							\room, rm[i],
 							\damp, dm[i],
-							\level, level[i],
+							\amp, level[i].dbamp,
 							\grainrate, grainrate[i],
 							\winsize, winsize[i],
 							\winrand, winrand[i]] ++
