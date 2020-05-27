@@ -72,9 +72,9 @@ their assistance and valuable suggestions.
 
 ## References
 
-* Mott, Iain & Keller, Thibaud. Three-dimensional sound design with Mosca.
-18º Encontro Internacional de Arte e Tecnologia / #18.Art Da admirável ordem das coisas: arte emoção e tecnologiaAt, 
-Portugal: October 2019
+* [Mott, Iain & Keller, Thibaud. Three-dimensional sound design with Mosca.
+18º Encontro Internacional de Arte e Tecnologia / #18.Art Da admirável ordem das coisas: arte emoção e tecnologia, 
+Portugal: October 2019](https://www.researchgate.net/publication/336983923_Three-dimensional_sound_design_with_Mosca)
 
 * Celerier, Jean-Michaël. Authoring interactive media : a logical & temporal
 approach.
