@@ -72,7 +72,7 @@ their assistance and valuable suggestions.
 
 ## References
 
-* Mott, Iain & Keller, Thibaud. Three-dimensional sound design with Mosca
+* Mott, Iain & Keller, Thibaud. Three-dimensional sound design with Mosca.
 18º Encontro Internacional de Arte e Tecnologia / #18.Art Da admirável ordem das coisas: arte emoção e tecnologiaAt, 
 Portugal: October 2019
 
