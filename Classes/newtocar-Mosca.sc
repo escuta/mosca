@@ -88,26 +88,26 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
-					espacializador[i] = Synth(libName[i]++"Stream"
+					espacializador[i] = Synth(ossialib[i].v++"Stream"
 						++dstrvtypes[i],
 						[\bufnum, streambuf[i].bufnum,
-							\lp, lp[i],
+							\lp, lpcheckProxy[i].value,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
 							\insertFlag, insertFlag[i],
 							\insertOut, insertBus[0,i],
 							\insertBack, insertBus[1,i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i],
-							\winrand, winrand[i]] ++
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value,
+							\winrand, randboxProxy[i].value] ++
 						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
 						espacializador[i] = nil;
@@ -173,26 +173,26 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
-					espacializador[i] = Synth(libName[i]++"StereoStream"++dstrvtypes[i],
+					espacializador[i] = Synth(ossialib[i].v++"StereoStream"++dstrvtypes[i],
 						[\bufnum, streambuf[i].bufnum,
-							\angle, angle[i],
-							\lp, lp[i],
+							\angle, aboxProxy[i].value,
+							\lp, lpcheckProxy[i].value,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
 							\insertFlag, insertFlag[i],
 							\insertOut, insertBus[0,i],
 							\insertBack, insertBus[1,i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i],
-							\winrand, winrand[i]] ++
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value,
+							\winrand, randboxProxy[i].value] ++
 						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
 						espacializador[i] = nil;
@@ -245,27 +245,27 @@ may be downloaded here: http://escuta.org/mosca
 						};
 					};
 
-					espacializador[i] = Synth(libName[i]++"BFormatStream"++
+					espacializador[i] = Synth(ossialib[i].v++"BFormatStream"++
 						(ncan[i])++dstrvtypes[i],
 						[\bufnum, streambuf[i].bufnum,
-							\rotAngle, rlev[i],
-							\directang, dlev[i],
+							\rotAngle, rboxProxy[i].value,
+							\directang, dboxProxy[i].value,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
 							\insertFlag, insertFlag[i],
 							\insertOut, insertBus[0,i],
 							\insertBack, insertBus[1,i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i],
-							\winrand, winrand[i]] ++
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value,
+							\winrand, randboxProxy[i].value] ++
 						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
 						espacializador[i] = nil;
@@ -337,25 +337,25 @@ may be downloaded here: http://escuta.org/mosca
 					};
 				};
 
-				espacializador[i] = Synth(libName[i]++"File"++dstrvtypes[i],
+				espacializador[i] = Synth(ossialib[i].v++"File"++dstrvtypes[i],
 					[\bufnum, sombuf[i].bufnum,
-						\lp, lp[i],
+						\lp, lpcheckProxy[i].value,
 						\azim, spheval[i].theta,
 						\elev, spheval[i].phi,
 						\radius, spheval[i].rho,
-						\dopamnt, dplev[i],
-						\glev, glev[i],
-						\llev, llev[i],
+						\dopamnt, dpboxProxy[i].value,
+						\glev, gboxProxy[i].value,
+						\llev, gboxProxy[i].value,
 						\insertFlag, insertFlag[i],
 						\insertOut, insertBus[0,i],
 						\insertBack, insertBus[1,i],
-						\contr, clev[i],
-						\room, rm[i],
-						\damp, dm[i],
-						\amp, level[i].dbamp,
-						\grainrate, grainrate[i],
-						\winsize, winsize[i],
-						\winrand, winrand[i]] ++
+						\contr, cboxProxy[i].value,
+						\room, rmboxProxy[i].value,
+						\damp, dmboxProxy[i].value,
+						\amp, vboxProxy[i].value.dbamp,
+						\grainrate, rateboxProxy[i].value,
+						\winsize, winboxProxy[i].value,
+						\winrand, randboxProxy[i].value] ++
 					wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					playEspacGrp).onFree({
 					espacializador[i] = nil;
@@ -417,26 +417,26 @@ may be downloaded here: http://escuta.org/mosca
 					};
 				};
 
-				espacializador[i] = Synth(libName[i]++"StereoFile"++dstrvtypes[i],
+				espacializador[i] = Synth(ossialib[i].v++"StereoFile"++dstrvtypes[i],
 					[\bufnum, sombuf[i].bufnum,
-						\angle, angle[i],
-						\lp, lp[i],
+						\angle, aboxProxy[i].value,
+						\lp, lpcheckProxy[i].value,
 						\azim, spheval[i].theta,
 						\elev, spheval[i].phi,
 						\radius, spheval[i].rho,
-						\dopamnt, dplev[i],
-						\glev, glev[i],
-						\llev, llev[i],
+						\dopamnt, dpboxProxy[i].value,
+						\glev, gboxProxy[i].value,
+						\llev, gboxProxy[i].value,
 						\insertFlag, insertFlag[i],
 						\insertOut, insertBus[0,i],
 						\insertBack, insertBus[1,i],
-						\contr, clev[i],
-						\room, rm[i],
-						\damp, dm[i],
-						\amp, level[i].dbamp,
-						\grainrate, grainrate[i],
-						\winsize, winsize[i],
-						\winrand, winrand[i]] ++
+						\contr, cboxProxy[i].value,
+						\room, rmboxProxy[i].value,
+						\damp, dmboxProxy[i].value,
+						\amp, vboxProxy[i].value.dbamp,
+						\grainrate, rateboxProxy[i].value,
+						\winsize, winboxProxy[i].value,
+						\winrand, randboxProxy[i].value] ++
 					zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					playEspacGrp).onFree({
 					espacializador[i] = nil;
@@ -488,27 +488,27 @@ may be downloaded here: http://escuta.org/mosca
 					};
 				};
 
-				espacializador[i] = Synth(libName[i]++"BFormatFile"++
+				espacializador[i] = Synth(ossialib[i].v++"BFormatFile"++
 					(ncan[i])++dstrvtypes[i],
 					[\bufnum, sombuf[i].bufnum,
-						\rotAngle, rlev[i],
-						\directang, dlev[i],
+						\rotAngle, rboxProxy[i].value,
+						\directang, dboxProxy[i].value,
 						\azim, spheval[i].theta,
 						\elev, spheval[i].phi,
 						\radius, spheval[i].rho,
-						\dopamnt, dplev[i],
-						\glev, glev[i],
-						\llev, llev[i],
+						\dopamnt, dpboxProxy[i].value,
+						\glev, gboxProxy[i].value,
+						\llev, gboxProxy[i].value,
 						\insertFlag, insertFlag[i],
 						\insertOut, insertBus[0,i],
 						\insertBack, insertBus[1,i],
-						\contr, clev[i],
-						\room, rm[i],
-						\damp, dm[i],
-						\amp, level[i].dbamp,
-						\grainrate, grainrate[i],
-						\winsize, winsize[i],
-						\winrand, winrand[i]] ++
+						\contr, cboxProxy[i].value,
+						\room, rmboxProxy[i].value,
+						\damp, dmboxProxy[i].value,
+						\amp, vboxProxy[i].value.dbamp,
+						\grainrate, rateboxProxy[i].value,
+						\winsize, winboxProxy[i].value,
+						\winrand, randboxProxy[i].value] ++
 					wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 					playEspacGrp).onFree({espacializador[i].free;
 					espacializador[i] = nil;
@@ -589,37 +589,37 @@ may be downloaded here: http://escuta.org/mosca
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i]);
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value);
 						});
 					};
 
-					espacializador[i] = Synth(libName[i]++witch
+					espacializador[i] = Synth(ossialib[i].v++witch
 						++dstrvtypes[i],
 						[\busini, bus,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
 							\insertFlag, insertFlag[i],
 							\insertOut, insertBus[0,i],
 							\insertBack, insertBus[1,i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i],
-							\winrand, winrand[i]] ++
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value,
+							\winrand, randboxProxy[i].value] ++
 						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
 						espacializador[i] = nil;
@@ -690,38 +690,38 @@ may be downloaded here: http://escuta.org/mosca
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i]);
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value);
 						});
 					};
 
-					espacializador[i] = Synth(libName[i]++"Stereo"++witch
+					espacializador[i] = Synth(ossialib[i].v++"Stereo"++witch
 						++dstrvtypes[i],
 						[\busini, bus,
-							\angle, angle[i],
+							\angle, aboxProxy[i].value,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
 							\insertFlag, insertFlag[i],
 							\insertOut, insertBus[0,i],
 							\insertBack, insertBus[1,i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i],
-							\winrand, winrand[i]] ++
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value,
+							\winrand, randboxProxy[i].value] ++
 						zSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
 						espacializador[i] = nil;
@@ -776,39 +776,39 @@ may be downloaded here: http://escuta.org/mosca
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i]);
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value);
 						});
 					};
 
-					espacializador[i] = Synth(libName[i]++"BFormat"++witch++
+					espacializador[i] = Synth(ossialib[i].v++"BFormat"++witch++
 						(ncan[i])++dstrvtypes[i],
 						[\busini, bus,
-							\rotAngle, rlev[i],
-							\directang, dlev[i],
+							\rotAngle, rboxProxy[i].value,
+							\directang, dboxProxy[i].value,
 							\azim, spheval[i].theta,
 							\elev, spheval[i].phi,
 							\radius, spheval[i].rho,
-							\dopamnt, dplev[i],
-							\glev, glev[i],
-							\llev, llev[i],
+							\dopamnt, dpboxProxy[i].value,
+							\glev, gboxProxy[i].value,
+							\llev, gboxProxy[i].value,
 							\insertFlag, insertFlag[i],
 							\insertOut, insertBus[0,i],
 							\insertBack, insertBus[1,i],
-							\contr, clev[i],
-							\room, rm[i],
-							\damp, dm[i],
-							\amp, level[i].dbamp,
-							\grainrate, grainrate[i],
-							\winsize, winsize[i],
-							\winrand, winrand[i]] ++
+							\contr, cboxProxy[i].value,
+							\room, rmboxProxy[i].value,
+							\damp, dmboxProxy[i].value,
+							\amp, vboxProxy[i].value.dbamp,
+							\grainrate, rateboxProxy[i].value,
+							\winsize, winboxProxy[i].value,
+							\winrand, randboxProxy[i].value] ++
 						wSpecPar.value(max(dstrvboxProxy[i].value - 3, 0)),
 						playEspacGrp).onFree({
 						espacializador[i] = nil;

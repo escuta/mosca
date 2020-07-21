@@ -430,7 +430,6 @@ GUI Parameters usable in SynthDefs
 
 	blindControlStop {
 		control.stop;
-		runStops.value;
 		nfontes.do { | i |
 			// if sound is currently being "tested", don't switch off on stop
 			// leave that for user

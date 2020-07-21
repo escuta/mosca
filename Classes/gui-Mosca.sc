@@ -23,14 +23,14 @@ may be downloaded here: http://escuta.org/mosca
 		var furthest,
 		itensdemenu,
 		event, brec, bplay, bload, bstream, loadOrStream, bnodes, meters,
-		masterslider,
-		scaleslider,
 		mouseButton,
 		period,
 		conslider,
 		// check box for streamed from disk audio
 		brecaudio,
 		blipcheck,
+		masterslider,
+		scaleslider,
 		zAxis,
 		bmark1, bmark2,
 		bdados,
@@ -92,7 +92,7 @@ may be downloaded here: http://escuta.org/mosca
 				{y = halfheight - (topView.y * halfheight)}.defer;
 				Pen.addArc(x@y, max(14 + (lev * halfheight * 0.02), 0), 0, 2pi);
 				if ((audit[i] || isPlay) && (lev.abs <= plim)) {
-					Pen.fillColor = Color.new255(179, 90, 209, 55 + (clev[i] * 200));
+					Pen.fillColor = Color.new255(179, 90, 209, 55 + (cboxProxy[i].value * 200));
 					Pen.fill;
 				} {
 					Pen.strokeColor = Color.white;
@@ -151,8 +151,8 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[0][7].visible = true;
 						winCtl[1][7].visible = true;
 						winCtl[2][7].visible = true;
-						winCtl[0][7].value = angle[currentsource];
-						winCtl[1][7].value = angle[currentsource] / pi;
+						winCtl[0][7].value = ossiaangle[currentsource].v;
+						winCtl[1][7].value = ossiaangle[currentsource].v / pi;
 					}
 					{ chans.value >= 4 }
 					{
@@ -162,14 +162,14 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[0][8].visible = true;
 						winCtl[1][8].visible = true;
 						winCtl[2][8].visible = true;
-						winCtl[0][8].value = rlev[currentsource];
-						winCtl[1][8].value = (rlev[currentsource] + pi) / 2pi;
+						winCtl[0][8].value = ossiarot[currentsource].v;
+						winCtl[1][8].value = (ossiarot[currentsource].v + pi) / 2pi;
 						if ( libnumbox.value == (lastN3D + 1) ) {
 							winCtl[0][9].visible = true;
 							winCtl[1][9].visible = true;
 							winCtl[2][9].visible = true;
-							winCtl[0][9].value = dlev[currentsource];
-							winCtl[1][9].value = dlev[currentsource] / halfPi;
+							winCtl[0][9].value = ossiadir[currentsource].v;
+							winCtl[1][9].value = ossiadir[currentsource].v / halfPi;
 						} {
 							winCtl[0][9].visible = false;
 							winCtl[1][9].visible = false;
@@ -194,22 +194,17 @@ may be downloaded here: http://escuta.org/mosca
 
 						spreadcheck.visible = true;
 						diffusecheck.visible = true;
-						if(sp[currentsource] == 1) {
-							spreadcheck.value = true
-						} {
-							spreadcheck.value = false
-						};
-						if(df[currentsource] == 1) {
-							diffusecheck.value = true
-						}{
-							diffusecheck.value = false
-						};
+
+						spreadcheck.value = ossiaspread[currentsource].v;
+
+						diffusecheck.value = ossiadiff[currentsource].v;
+
 						if ( chans.value >= 4 ) {
 							winCtl[0][9].visible = true;
 							winCtl[1][9].visible = true;
 							winCtl[2][9].visible = true;
-							winCtl[0][9].value = dlev[currentsource];
-							winCtl[1][9].value = dlev[currentsource] / halfPi;
+							winCtl[0][9].value = ossiadir[currentsource].v;
+							winCtl[1][9].value = ossiadir[currentsource].v / halfPi;
 						} {
 							winCtl[0][9].visible = false;
 							winCtl[1][9].visible = false;
@@ -234,12 +229,12 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[1][12].visible = true;
 						winCtl[2][12].visible = true;
 
-						winCtl[0][10].value = grainrate[currentsource];
-						winCtl[1][10].value = (grainrate[currentsource] - 1) / 59;
-						winCtl[0][11].value = winsize[currentsource];
-						winCtl[1][11].value = winsize[currentsource] * 5;
-						winCtl[0][12].value = winrand[currentsource];
-						winCtl[1][12].value = winrand[currentsource].sqrt;
+						winCtl[0][10].value = rateboxProxy[currentsource].value;
+						winCtl[1][10].value = (rateboxProxy[currentsource].value - 1) / 59;
+						winCtl[0][11].value = winboxProxy[currentsource].value;
+						winCtl[1][11].value = winboxProxy[currentsource].value * 5;
+						winCtl[0][12].value = randboxProxy[currentsource].value;
+						winCtl[1][12].value = randboxProxy[currentsource].value.sqrt;
 					}
 					{ (libnumbox.value != (lastN3D + 1))
 						&& (libnumbox.value != lastFUMA) }
@@ -288,12 +283,12 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[2][6].visible = true;
 						winCtl[1][6].visible = true;
 						winCtl[0][6].visible = true;
-						winCtl[0][4].value = llev[currentsource];
-						winCtl[1][4].value = llev[currentsource];
-						winCtl[0][5].value = rm[currentsource];
-						winCtl[1][5].value = rm[currentsource];
-						winCtl[0][6].value = dm[currentsource];
-						winCtl[1][6].value = dm[currentsource];
+						winCtl[0][4].value = ossiadstam[currentsource].v;
+						winCtl[1][4].value = ossiadstam[currentsource].v;
+						winCtl[0][5].value = ossiadstdec[currentsource].v;
+						winCtl[1][5].value = ossiadstdec[currentsource].v;
+						winCtl[0][6].value = ossiadstdec[currentsource].v;
+						winCtl[1][6].value = ossiadstdec[currentsource].v;
 					}
 					{dstrvboxProxy[currentsource].value >= 3}
 					{
@@ -306,8 +301,8 @@ may be downloaded here: http://escuta.org/mosca
 						winCtl[2][6].visible = false;
 						winCtl[1][6].visible = false;
 						winCtl[0][6].visible = false;
-						winCtl[0][4].value = llev[currentsource];
-						winCtl[1][4].value = llev[currentsource];
+						winCtl[0][4].value = ossiadstam[currentsource].v;
+						winCtl[1][4].value = ossiadstam[currentsource].v;
 					};
 				},
 				\clsrv,
@@ -362,7 +357,7 @@ may be downloaded here: http://escuta.org/mosca
 						bstream.visible = true;
 						loopcheck.visible = true;
 						{ bstream.value = streamdisk[currentsource].value; }.defer;
-						{ loopcheck.value = lp[currentsource].value; }.defer;
+						{ loopcheck.value = ossialoop[currentsource].v; }.defer;
 					}
 					{hwn[currentsource]}
 					{
@@ -633,20 +628,20 @@ may be downloaded here: http://escuta.org/mosca
 		StaticText(autoView, Rect(0, 40, 325, 20)).string_("Scale Factor");
 
 		scaleBox = NumberBox(autoView, Rect(285, 40, 40, 20));
-		scaleBox.value = 0;
+		scaleBox.value = 1;
 		scaleBox.clipHi = 10;
 		scaleBox.clipLo = 0.01;
 		scaleBox.step_(0.01);
 		scaleBox.scroll_step_(0.01);
 		scaleBox.action = { | num |
-			scaleFactProxy.valueAction = num.value;
-			{scaleslider.value = num.value.curvelin(curve:-3);}.defer;
+			scalefactProxy.valueAction = num.value;
+			{scaleslider.value = num.value.curvelin(inMin:0.01, inMax:10, curve:4);}.defer;
 		};
 
 		scaleslider = Slider(autoView, Rect(80, 40, 205, 20));
-		scaleslider.value = 0.62065661124753;
+		scaleslider.value = 0.46059446575451;
 		scaleslider.action = { | num |
-			{scaleBox.valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);}.defer;
+			{scaleBox.valueAction = num.value.lincurve(outMin:0.01, outMax:10, curve:4);}.defer;
 		};
 
 		StaticText(autoView, Rect(0, 60, 325, 20)).string_("Master Level");
@@ -662,9 +657,9 @@ may be downloaded here: http://escuta.org/mosca
 			{masterslider.value = num.value.curvelin(inMin:-96, inMax:12, curve:-3);}.defer;
 		};
 
-		scaleslider = Slider(autoView, Rect(80, 60, 205, 20));
-		scaleslider.value = 0.62065661124753;
-		scaleslider.action = { | num |
+		masterslider = Slider(autoView, Rect(80, 60, 205, 20));
+		masterslider.value = 0.62065661124753;
+		masterslider.action = { | num |
 			{masterBox.valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);}.defer;
 		};
 
@@ -841,7 +836,7 @@ may be downloaded here: http://escuta.org/mosca
 			sourceName.string = itensdemenu[currentsource];
 			updateGuiCtl.value(\chan);
 
-			loopcheck.value = lp[currentsource].value;
+			loopcheck.value = lpcheckProxy[currentsource].value;
 
 			updateGuiCtl.value(\lib, libboxProxy[currentsource].value);
 
@@ -849,28 +844,28 @@ may be downloaded here: http://escuta.org/mosca
 
 			updateGuiCtl.value(\src);
 
-			winCtl[0][0].value = level[currentsource];
-			winCtl[1][0].value = level[currentsource].curvelin(inMin:-96, inMax:12, curve:-3);
-			winCtl[0][1].value = dplev[currentsource];
-			winCtl[1][1].value = dplev[currentsource];
-			winCtl[1][2].value = clev[currentsource];
-			winCtl[1][2].value = clev[currentsource];
-			winCtl[0][3].value = glev[currentsource];
-			winCtl[1][3].value = glev[currentsource];
+			winCtl[0][0].value = vboxProxy[currentsource].value;
+			winCtl[1][0].value = vboxProxy[currentsource].value.curvelin(inMin:-96, inMax:12, curve:-3);
+			winCtl[0][1].value = dpboxProxy[currentsource].value;
+			winCtl[1][1].value = dpboxProxy[currentsource].value;
+			winCtl[1][2].value = cboxProxy[currentsource].value;
+			winCtl[1][2].value = cboxProxy[currentsource].value;
+			winCtl[0][3].value = ossiaclsam[currentsource].v;
+			winCtl[1][3].value = ossiaclsam[currentsource].v;
 
 			zslider.value = (zlev[currentsource] + 1) * 0.5;
 			znumbox.value = zlev[currentsource];
 
-			auxslider1.value = aux1[currentsource];
-			aux1numbox.value = aux1[currentsource];
-			auxslider2.value = aux2[currentsource];
-			aux2numbox.value = aux2[currentsource];
-			auxslider3.value = aux3[currentsource];
-			aux3numbox.value = aux3[currentsource];
-			auxslider4.value = aux4[currentsource];
-			aux4numbox.value = aux4[currentsource];
-			auxslider5.value = aux5[currentsource];
-			aux5numbox.value = aux5[currentsource];
+			auxslider1.value = a1boxProxy[currentsource].value;
+			aux1numbox.value = a1boxProxy[currentsource].value;
+			auxslider2.value = a2boxProxy[currentsource].value;
+			aux2numbox.value = a2boxProxy[currentsource].value;
+			auxslider3.value = a3boxProxy[currentsource].value;
+			aux3numbox.value = a3boxProxy[currentsource].value;
+			auxslider4.value = a4boxProxy[currentsource].value;
+			aux4numbox.value = a4boxProxy[currentsource].value;
+			auxslider5.value = a5boxProxy[currentsource].value;
+			aux5numbox.value = a5boxProxy[currentsource].value;
 
 			if(audit[currentsource]) {
 				// don't change button if we are playing via automation
@@ -1335,7 +1330,6 @@ may be downloaded here: http://escuta.org/mosca
 			if(ncan[currentsource] == 2) {
 				espacializador[currentsource].set(\angle, num.value);
 				this.setSynths(currentsource, \angle, num.value);
-				angle[currentsource] = num.value;
 			};
 		};
 		winCtl[0][7].visible = false;
@@ -1351,7 +1345,6 @@ may be downloaded here: http://escuta.org/mosca
 				espacializador[currentsource].set(\angle, num.value * pi);
 				this.setSynths(currentsource, \angle, num.value * pi);
 				//			angle[currentsource] = b.map(num.value);
-				angle[currentsource] = num.value * pi;
 			};
 		};
 		winCtl[1][7].visible = false;

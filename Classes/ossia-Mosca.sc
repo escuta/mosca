@@ -78,6 +78,14 @@ may be downloaded here: http://escuta.org/mosca
 			});
 		});
 
+		ossiascale = OSSIA_Parameter(ossiaParent, "Scale_factor", Float,
+			[0.01, 10],	1, 'clip', critical:allCrtitical);
+
+		ossiascale.callback_({ arg num;
+			if (scalefactProxy.value != num.value) {
+				scalefactProxy.valueAction = num.value;
+			};
+		});
 
 		ossiamaster = OSSIA_Parameter(ossiaParent, "Master_level", Float,
 			[-96, 12],	0, 'clip', critical:allCrtitical);
@@ -162,7 +170,7 @@ may be downloaded here: http://escuta.org/mosca
 
 				zlev[i] = spheval[i].z;
 
-				this.setSynths(i, \rotAngle, rlev[i] + heading);
+				this.setSynths(i, \rotAngle, ossiarot[i].v + heading);
 			};
 
 			ossiaCartBack = true;

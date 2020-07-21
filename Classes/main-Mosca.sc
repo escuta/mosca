@@ -24,7 +24,6 @@ Mosca {
 	globDec,
 	sysex, mmcslave,
 	synthRegistry, busini, ncan,
-	aux1, aux2, aux3, aux4, aux5,  // aux slider values
 	triggerFunc, stopFunc, subOutFunc, playInFunc, outPutFuncs,
 	localReverbFunc,
 	scInBus,
@@ -32,7 +31,6 @@ Mosca {
 	insertFlag,
 	insertBus,
 	<dur,
-	<>looping,
 	serport,
 	libbox, lpcheck, dstrvbox, hwncheck, scncheck,
 	spcheck, dfcheck,
@@ -59,10 +57,10 @@ Mosca {
 
 	// MOVED FROM the the gui method/////////////////////////
 
-	cbox, clev, angle, audit, gbus, gbfbus, n3dbus,
+	cbox, audit, gbus, gbfbus, n3dbus,
 	outbus, suboutbus, gbixfbus, nonambibus,
 	playEspacGrp, glbRevDecGrp,
-	level, lp, lib, libName, convert, dstrv, dstrvtypes, clsrv,
+	lib, convert, dstrv, dstrvtypes, clsrv,
 	clsRvtypes,
 	winCtl, originCtl, hwCtl,
 	xbox, ybox, sombuf,
@@ -75,23 +73,19 @@ Mosca {
 	//funcs, // apparently unused
 	//lastx, lasty, // apparently unused
 	zlev, znumbox, zslider, guiflag = false,
-	glev,
 	lslider,
-	llev, rlev, dlev,
-	dplev,
 	auxslider1, auxslider2, auxslider3, auxslider4, auxslider5,
 	auxbutton1, auxbutton2, auxbutton3, auxbutton4, auxbutton5,
 	aux1numbox, aux2numbox, aux3numbox, aux4numbox, aux5numbox,
-	a1but, a2but, a3but, a4but, a5but,
 
 	loopcheck, dstReverbox, clsReverbox, hwInCheck,
 	hwn, scInCheck, scn,
 	spreadcheck,
-	diffusecheck, sp, df,
+	diffusecheck,
 
 	hdtrk, hdtrkcheck,
 
-	<>runTriggers, <>runStops, <>runTrigger, <>runStop,
+	//<>runTriggers, <>runStops, <>runTrigger, <>runStop,
 	// isRec, // apparently unused
 
 	/////////////////////////////////////////////////////////
@@ -106,19 +100,19 @@ Mosca {
 	<>clsrvboxProxy, <>hwncheckProxy, <>scncheckProxy, <>dfcheckProxy,
 	<>spcheckProxy, <>ncanboxProxy, <>businiboxProxy,
 
-	grainrate, ratebox, <>rateboxProxy, // setable granular rate
-	winsize, winbox, <>winboxProxy, // setable granular window size
-	winrand, randbox, <>randboxProxy,
+	ratebox, <>rateboxProxy, // setable granular rate
+	winbox, <>winboxProxy, // setable granular window size
+	randbox, <>randboxProxy,
 	// setable granular window size random factor
 
-	rm, rmbox, <>rmboxProxy, // setable local room size
-	dm, dmbox, <>dmboxProxy, // setable local dampening
+	rmbox, <>rmboxProxy, // setable local room size
+	dmbox, <>dmboxProxy, // setable local dampening
 
-	clsrm, clsrmbox, <>clsrmboxProxy, // setable global room size
-	clsdm, clsdmbox, <>clsdmboxProxy, // setable global dampening
+	clsrmbox, <>clsrmboxProxy, // setable global room size
+	clsdmbox, <>clsdmboxProxy, // setable global dampening
 
 	<>masterlevProxy, masterBox,
-	<>scaleFactProxy, scaleBox,
+	<>scalefactProxy, scaleBox,
 
 	<parentOssiaNode,
 	ossiaorient, ossiaorigine, ossiaremotectl, ossiaplay, ossiatrasportLoop,
@@ -127,7 +121,7 @@ Mosca {
 	ossiaclsdec, ossiadst, ossiadstam, ossiadstdel, ossiadstdec, ossiaangle,
 	ossiarot, ossiadir, ossiactr, ossiaspread, ossiadiff, ossiaCartBack,
 	ossiaSpheBack, ossiarate, ossiawin, ossiarand, ossiaAval, ossiaAchek,
-	ossiamaster, ossiaMasterPlay, ossiaMasterLib, ossiaMasterRev;
+	ossiascale, ossiamaster, ossiaMasterPlay, ossiaMasterLib, ossiaMasterRev;
 
 	/////////////////////////////////////////
 
@@ -234,19 +228,13 @@ Mosca {
 
 		autoloopval = iautoloop;
 
-		looping = false;
-
 		///////////////////// DECLARATIONS FROM gui /////////////////////
 
 
 		espacializador = Array.newClear(nfontes);
-		libName = Array.newClear(nfontes);
 		lib = Array.newClear(nfontes);
 		dstrv = Array.newClear(nfontes);
 		convert = Array.newClear(nfontes);
-		lp = Array.newClear(nfontes);
-		sp = Array.newClear(nfontes);
-		df = Array.newClear(nfontes);
 		dstrvtypes = Array.newClear(nfontes);
 		hwn = Array.newClear(nfontes);
 		scn = Array.newClear(nfontes);
@@ -255,38 +243,14 @@ Mosca {
 		busini = Array.newClear(nfontes);
 		// initial bus # in streamed audio grouping
 		// (ie. mono, stereo or b-format)
-		aux1 = Array.newClear(nfontes);
-		aux2 = Array.newClear(nfontes);
-		aux3 = Array.newClear(nfontes);
-		aux4 = Array.newClear(nfontes);
-		aux5 = Array.newClear(nfontes);
-
-		a1but = Array.newClear(nfontes);
-		a2but = Array.newClear(nfontes);
-		a3but = Array.newClear(nfontes);
-		a4but = Array.newClear(nfontes);
-		a5but = Array.newClear(nfontes);
 
 		sombuf = Array.newClear(nfontes);
 		//		xoffset = Array.fill(nfontes, 0);
 		//		yoffset = Array.fill(nfontes, 0);
 		synt = Array.newClear(nfontes);
 		//sprite = Array2D.new(nfontes, 2);
-		angle = Array.newClear(nfontes); // ângulo dos canais estereofônicos
 		zlev = Array.newClear(nfontes);
-		level = Array.newClear(nfontes);
 		//	doplev = Array.newClear(nfontes);
-		glev = Array.newClear(nfontes);
-		llev = Array.newClear(nfontes);
-		rm = Array.newClear(nfontes);
-		dm = Array.newClear(nfontes);
-		rlev = Array.newClear(nfontes);
-		dlev = Array.newClear(nfontes);
-		dplev = Array.newClear(nfontes);
-		clev = Array.newClear(nfontes);
-		grainrate = Array.newClear(nfontes);
-		winsize = Array.newClear(nfontes);
-		winrand = Array.newClear(nfontes);
 
 		ncanbox = Array.newClear(nfontes);
 		businibox = Array.newClear(nfontes);
@@ -325,12 +289,6 @@ Mosca {
 		a4box = Array.newClear(nfontes); // aux - array of num boxes in data window
 		a5box = Array.newClear(nfontes); // aux - array of num boxes in data window
 
-		a1but = Array.newClear(nfontes); // aux - array of buttons in data window
-		a2but = Array.newClear(nfontes); // aux - array of buttons in data window
-		a3but = Array.newClear(nfontes); // aux - array of buttons in data window
-		a4but = Array.newClear(nfontes); // aux - array of buttons in data window
-		a5but = Array.newClear(nfontes); // aux - array of buttons in data window
-
 		a1check = Array.newClear(nfontes); // aux - array of buttons in data window
 		a2check = Array.newClear(nfontes); // aux - array of buttons in data window
 		a3check = Array.newClear(nfontes); // aux - array of buttons in data window
@@ -354,9 +312,6 @@ Mosca {
 
 		clsRvtypes = ""; // initialise close reverb type
 		clsrv = 0;
-		clsrm = 0.5; // initialise close reverb room size
-		clsdm = 0.5; // initialise close reverb dampening
-
 
 		////////////////////////////////////////////////
 
@@ -410,6 +365,7 @@ Mosca {
 		//set up automationProxy for single parameters outside of the previous loop,
 		// not to be docked
 		masterlevProxy = AutomationGuiProxy(0);
+		scalefactProxy = AutomationGuiProxy(1);
 		clsrvboxProxy = AutomationGuiProxy(0);
 		clsrmboxProxy = AutomationGuiProxy(0.5); // cls roomsize proxy
 		clsdmboxProxy = AutomationGuiProxy(0.5); // cls dampening proxy
@@ -439,36 +395,14 @@ Mosca {
 
 		nfontes.do { | i |
 
-			libName[i] = spatList[0];
 			lib[i] = 0;
 			dstrv[i] = 0;
 			convert[i] = false;
-			angle[i] = 1.05;
-			level[i] = 0;
-			glev[i] = 0;
-			llev[i] = 0;
-			rm[i] = 0.5;
-			dm[i] = 0.5;
-			lp[i] = false;
-			sp[i] = false;
-			df[i] = false;
 			dstrvtypes[i] = ""; // initialise distants reverbs types
 			hwn[i] = false;
 			scn[i] = false;
-			rlev[i] = 0;
-			dlev[i] = 0;
-			clev[i] = 1;
 			zlev[i] = 0;
-			dplev[i] = 0;
-			grainrate[i] = 10;
-			winsize[i] = 0.1;
-			winrand[i] = 0;
 
-			aux1[i] = 0;
-			aux2[i] = 0;
-			aux3[i] = 0;
-			aux4[i] = 0;
-			aux5[i] = 0;
 			streamdisk[i] = false;
 			ncan[i] = 1;
 			busini[i] = 0;
@@ -503,7 +437,7 @@ Mosca {
 			hwncheckProxy[i] = AutomationGuiProxy(false);
 
 			tfieldProxy[i] = AutomationGuiProxy("");
-			libboxProxy[i] = AutomationGuiProxy(lib[i]);
+			libboxProxy[i] = AutomationGuiProxy(0);
 			lpcheckProxy[i] = AutomationGuiProxy(false);
 			dstrvboxProxy[i] = AutomationGuiProxy(0);
 			scncheckProxy[i] = AutomationGuiProxy(false);
@@ -518,8 +452,6 @@ Mosca {
 
 
 			libboxProxy[i].action_({ | num |
-
-				libName[i] = spatList[num.value];
 
 				if (guiflag) {
 					{ libbox[i].value = num.value }.defer;
@@ -612,9 +544,7 @@ Mosca {
 
 			aboxProxy[i].action = { | num |
 				if(espacializador[i].notNil) {
-					angle[i] = num.value;
 					this.setSynths(i, \angle, num.value);
-					angle[i] = num.value;
 				};
 				if (guiflag) {
 					{abox[i].value = num.value}.defer;
@@ -632,7 +562,6 @@ Mosca {
 
 			vboxProxy[i].action = { | num |
 				this.setSynths(i, \amp, num.value.dbamp);
-				level[i] = num.value;
 
 				if (guiflag) {
 					{ vbox[i].value = num.value }.defer;
@@ -650,7 +579,6 @@ Mosca {
 
 			gboxProxy[i].action = { | num |
 				this.setSynths(i, \glev, num.value);
-				glev[i] = num.value;
 				if (guiflag) {
 					{ gbox[i].value = num.value }.defer;
 					if (i == currentsource)
@@ -667,7 +595,6 @@ Mosca {
 
 			lboxProxy[i].action = { | num |
 				this.setSynths(i, \llev, num.value);
-				llev[i] = num.value;
 				if (guiflag) {
 					{ lbox[i].value = num.value; }.defer;
 					if (i == currentsource)
@@ -684,7 +611,6 @@ Mosca {
 
 			rmboxProxy[i].action = { | num |
 				this.setSynths(i, \room, num.value);
-				rm[i] = num.value;
 				if (guiflag) {
 					{ rmbox[i].value = num.value; }.defer;
 					if (i == currentsource) {
@@ -700,7 +626,6 @@ Mosca {
 
 			dmboxProxy[i].action = { | num |
 				this.setSynths(i, \damp, num.value);
-				dm[i] = num.value;
 				if (guiflag) {
 					{ dmbox[i].value = num.value; };
 					if (i == currentsource) {
@@ -716,7 +641,6 @@ Mosca {
 
 			rboxProxy[i].action = { | num |
 				this.setSynths(i, \rotAngle, num.value  + heading);
-				rlev[i] = num.value;
 				if (guiflag) {
 					{rbox[i].value = num.value}.defer;
 					if(i == currentsource)
@@ -733,7 +657,6 @@ Mosca {
 
 			dboxProxy[i].action = { | num |
 				this.setSynths(i, \directang, num.value);
-				dlev[i] = num.value;
 				if (guiflag) {
 					{dbox[i].value = num.value}.defer;
 					if(i == currentsource)
@@ -750,7 +673,6 @@ Mosca {
 
 			cboxProxy[i].action = { | num |
 				this.setSynths(i, \contr, num.value);
-				clev[i] = num.value;
 				if (guiflag) {
 					{cbox[i].value = num.value}.defer;
 					if (i == currentsource)
@@ -768,7 +690,6 @@ Mosca {
 
 			dpboxProxy[i].action = { | num |
 				this.setSynths(i, \dopamnt, num.value);
-				dplev[i] = num.value;
 				if (guiflag) {
 					{dpbox[i].value = num.value}.defer;
 					if(i == currentsource) {
@@ -777,15 +698,14 @@ Mosca {
 					};
 				};
 
-				if (ossiadp[i].v != num.value) {
-					ossiadp[i].v_(num.value);
+				if (ossiadp[i].value != num.value) {
+					ossiadp[i].value_(num.value);
 				};
 			};
 
 
 			a1boxProxy[i].action = { | num |
 				this.setSynths(i, \aux1, num.value);
-				aux1[i] = num.value;
 				if((i == currentsource) && guiflag)
 				{
 					{auxslider1.value = num.value}.defer;
@@ -798,7 +718,6 @@ Mosca {
 
 			a2boxProxy[i].action = { | num |
 				this.setSynths(i, \aux2, num.value);
-				aux2[i] = num.value;
 				if((i == currentsource) && guiflag)
 				{
 					{auxslider2.value = num.value}.defer;
@@ -811,7 +730,6 @@ Mosca {
 
 			a3boxProxy[i].action = { | num |
 				this.setSynths(i, \aux3, num.value);
-				aux3[i] = num.value;
 				if((i == currentsource) && guiflag)
 				{
 					{auxslider3.value = num.value}.defer;
@@ -824,7 +742,6 @@ Mosca {
 
 			a4boxProxy[i].action = { | num |
 				this.setSynths(i, \aux4, num.value);
-				aux4[i] = num.value;
 				if((i == currentsource) && guiflag)
 				{
 					{auxslider4.value = num.value}.defer;
@@ -837,7 +754,6 @@ Mosca {
 
 			a5boxProxy[i].action = { | num |
 				this.setSynths(i, \aux5, num.value);
-				aux5[i] = num.value;
 				if((i == currentsource) && guiflag)
 				{
 					{auxslider5.value = num.value}.defer;
@@ -851,10 +767,8 @@ Mosca {
 			a1checkProxy[i].action = { | but |
 
 				if (but.value) {
-					a1but[i] = 1;
 					this.setSynths(i, \a1check, 1);
 				}{
-					this.a1but[i] = 0;
 					setSynths(i, \a1check, 0);
 				};
 
@@ -867,10 +781,8 @@ Mosca {
 			a2checkProxy[i].action = { | but |
 
 				if (but.value) {
-					a2but[i] = 1;
 					this.setSynths(i, \a2check, 1);
 				}{
-					a2but[i] = 0;
 					this.setSynths(i, \a2check, 0);
 				};
 				if (guiflag) {
@@ -882,10 +794,8 @@ Mosca {
 			a3checkProxy[i].action = { | but |
 
 				if (but.value) {
-					a3but[i] = 1;
 					this.setSynths(i, \a3check, 1);
 				}{
-					a3but[i] = 0;
 					this.setSynths(i, \a3check, 0);
 				};
 				if (guiflag) {
@@ -896,10 +806,8 @@ Mosca {
 			a4checkProxy[i].action = { | but |
 
 				if (but.value) {
-					a4but[i] = 1;
 					this.setSynths(i, \a4check, 1);
 				}{
-					a4but[i] = 0;
 					this.setSynths(i, \a4check, 0);
 				};
 				if (guiflag) {
@@ -910,10 +818,8 @@ Mosca {
 			a5checkProxy[i].action = { | but |
 
 				if (but.value) {
-					a5but[i] = 1;
 					this.setSynths(i, \a5check, 1);
 				}{
-					a5but[i] = 0;
 					this.setSynths(i, \a5check, 0);
 				};
 				if (guiflag) {
@@ -935,10 +841,8 @@ Mosca {
 
 			lpcheckProxy[i].action_({ | but |
 				if (but.value) {
-					lp[i] = 1;
 					this.setSynths(i, \lp, 1);
 				} {
-					lp[i] = 0;
 					this.setSynths(i, \lp, 0);
 				};
 				if (guiflag) {
@@ -1029,13 +933,10 @@ Mosca {
 					};
 					if((i==currentsource) && guiflag){
 						{diffusecheck.value = false}.defer;};
-					sp[i] = true;
-					df[i] = false;
 					this.setSynths(i, \sp, 1);
 					this.setSynths(i, \df, 0);
 					ossiadiff[i].v_(false);
 				} {
-					sp[i] = false;
 					this.setSynths(i, \sp, 0);
 				};
 				if (guiflag) {
@@ -1057,13 +958,10 @@ Mosca {
 					if((i==currentsource) && guiflag) {
 						{spreadcheck.value = false}.defer;
 					};
-					df[i] = true;
-					sp[i] = false;
 					this.setSynths(i, \df, 0);
 					this.setSynths(i, \sp, 1);
 					ossiaspread[i].v_(false);
 				} {
-					df[i] = false;
 					this.setSynths(i, \df, 0);
 				};
 				if (guiflag) {
@@ -1088,7 +986,6 @@ Mosca {
 
 			rateboxProxy[i].action = { | num |
 				this.setSynths(i, \grainrate, num.value);
-				grainrate[i] = num.value;
 				if (guiflag) {
 					{ ratebox[i].value = num.value }.defer;
 					if (i == currentsource) {
@@ -1104,7 +1001,6 @@ Mosca {
 
 			winboxProxy[i].action = { | num |
 				this.setSynths(i, \winsize, num.value);
-				winsize[i] = num.value;
 				if (guiflag) {
 					{ winbox[i].value = num.value; }.defer;
 					if (i == currentsource) {
@@ -1120,7 +1016,6 @@ Mosca {
 
 			randboxProxy[i].action = { | num |
 				this.setSynths(i, \winrand, num.value);
-				winrand[i] = num.value;
 				if (guiflag) {
 					{ randbox[i].value = num.value; }.defer;
 					if (i == currentsource) {
@@ -1204,6 +1099,17 @@ Mosca {
 		};
 
 
+		scalefactProxy.action_({ | num |
+
+			if (guiflag) {
+				{scaleBox.value = num.value; }.defer;
+			};
+
+			if (ossiascale.v != num.value) {
+				ossiascale.v_(num.value);
+			};
+		});
+
 		masterlevProxy.action_({ | num |
 
 			globDec.set(\level, num.value.dbamp);
@@ -1251,7 +1157,7 @@ Mosca {
 				{ revGlobal.set(\gate, 0); };
 
 				revGlobal = Synth(\revGlobalAmb++clsRvtypes,
-					[\gate, 1, \room, clsrm, \damp, clsdm] ++
+					[\gate, 1, \room, clsrmboxProxy.value, \damp, clsdmboxProxy.value] ++
 					irSpecPar.value(max((clsrv - 3), 0)),
 					glbRevDecGrp).register.onFree({
 					if (revGlobal.isPlaying.not) {
@@ -1280,7 +1186,6 @@ Mosca {
 
 		clsrmboxProxy.action_({ | num |
 			revGlobal.set(\room, num.value);
-			clsrm = num.value;
 
 			if (guiflag) {
 				{originCtl[1][0].value = num.value}.defer;
@@ -1295,7 +1200,6 @@ Mosca {
 		clsdmboxProxy.action_({ | num |
 
 			revGlobal.set(\damp, num.value);
-			clsdm = num.value;
 
 			if (guiflag) {
 				{originCtl[1][1].value = num.value}.defer;
@@ -2641,13 +2545,13 @@ Mosca {
 			/*nfontes.do { arg i;
 			firstTime[i]=true;
 			("NOW PLAYING = " ++ firstTime[i]).postln;*/
-			if (looping) {
+			if (ossiatrasportLoop) {
 				nfontes.do { | i |
 					firstTime[i] = true;
 					//("HERE = " ++ firstTime[i]).postln;
 
 				};
-				looping = false;
+				ossiatrasportLoop.v_(false);
 				"Was looping".postln;
 
 
@@ -2725,7 +2629,6 @@ Mosca {
 			if(autoloopval.not || (control.now.round != dur)) {
 				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++
 					control.now).postln;
-				runStops.value;
 				nfontes.do { | i |
 					// if sound is currently being "tested", don't switch off on stop
 					// leave that for user
@@ -2735,7 +2638,7 @@ Mosca {
 					};
 				};
 				isPlay = false;
-				looping = false;
+				ossiatrasportLoop.v_(false);
 				nfontes.do { | i |
 					firstTime[i] = true;
 					//("HERE = " ++ firstTime[i]).postln;
@@ -2744,7 +2647,7 @@ Mosca {
 			} {
 				( "Did not stop. dur = " ++ dur ++ " now = " ++
 					control.now).postln;
-				looping = true;
+				ossiatrasportLoop.v_(true);
 				control.play;
 			};
 
