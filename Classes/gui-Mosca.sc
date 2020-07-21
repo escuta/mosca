@@ -24,6 +24,7 @@ may be downloaded here: http://escuta.org/mosca
 		itensdemenu,
 		event, brec, bplay, bload, bstream, loadOrStream, bnodes, meters,
 		masterslider,
+		scaleslider,
 		mouseButton,
 		period,
 		conslider,
@@ -40,7 +41,6 @@ may be downloaded here: http://escuta.org/mosca
 		autoView,
 		originView,
 		cnumbox,
-		textbuf,
 		sourceName,
 		sourceList,
 		baux,
@@ -628,12 +628,30 @@ may be downloaded here: http://escuta.org/mosca
 			{ win.refresh; }.defer;
 		});
 
-		autoView = UserView(win, Rect(10, height - 65, 325, 60));
+		autoView = UserView(win);
 
-		textbuf = StaticText(autoView, Rect(0, 40, 325, 20));
-		textbuf.string = "Master Level";
+		StaticText(autoView, Rect(0, 40, 325, 20)).string_("Scale Factor");
 
-		masterBox = NumberBox(autoView, Rect(285, 40, 40, 20));
+		scaleBox = NumberBox(autoView, Rect(285, 40, 40, 20));
+		scaleBox.value = 0;
+		scaleBox.clipHi = 10;
+		scaleBox.clipLo = 0.01;
+		scaleBox.step_(0.01);
+		scaleBox.scroll_step_(0.01);
+		scaleBox.action = { | num |
+			scaleFactProxy.valueAction = num.value;
+			{scaleslider.value = num.value.curvelin(curve:-3);}.defer;
+		};
+
+		scaleslider = Slider(autoView, Rect(80, 40, 205, 20));
+		scaleslider.value = 0.62065661124753;
+		scaleslider.action = { | num |
+			{scaleBox.valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);}.defer;
+		};
+
+		StaticText(autoView, Rect(0, 60, 325, 20)).string_("Master Level");
+
+		masterBox = NumberBox(autoView, Rect(285, 60, 40, 20));
 		masterBox.value = 0;
 		masterBox.clipHi = 12;
 		masterBox.clipLo = -96;
@@ -644,13 +662,11 @@ may be downloaded here: http://escuta.org/mosca
 			{masterslider.value = num.value.curvelin(inMin:-96, inMax:12, curve:-3);}.defer;
 		};
 
-		masterslider = Slider(autoView, Rect(80, 40, 205, 20));
-		masterslider.value = 0.62065661124753;
-		masterslider.action = { | num |
+		scaleslider = Slider(autoView, Rect(80, 60, 205, 20));
+		scaleslider.value = 0.62065661124753;
+		scaleslider.action = { | num |
 			{masterBox.valueAction = num.value.lincurve(outMin:-96, outMax:12, curve:-3);}.defer;
 		};
-
-
 
 		// save automation - adapted from chooseDirectoryDialog in AutomationGui.sc
 
@@ -818,7 +834,7 @@ may be downloaded here: http://escuta.org/mosca
 			itensdemenu[i] = "Source " ++ (i + 1).asString;
 		};
 
-		sourceName = StaticText(win, Rect(10, 10, 150, 20)).string = "Source 1";
+		sourceName = StaticText(win, Rect(10, 10, 150, 20)).string_("Source 1");
 
 		sourceSelect = { | item |
 			currentsource = item.value;
@@ -922,8 +938,7 @@ may be downloaded here: http://escuta.org/mosca
 		/////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 110, 240, 20));
-		textbuf.string = "Library";
+		StaticText(win, Rect(163, 110, 240, 20)).string_("Library");
 		libnumbox = PopUpMenu( win, Rect(10, 110, 150, 20));
 		libnumbox.items = spatList;
 		libnumbox.action_({ | num |
@@ -935,10 +950,9 @@ may be downloaded here: http://escuta.org/mosca
 		/////////////////////////////////////////////////////////
 
 
-		zAxis = StaticText(win, Rect(width - 80, halfwidth - 10, 90, 20));
+		zAxis = StaticText(win);
 		zAxis.string = "Z-Axis";
-		znumbox = NumberBox(win, Rect(width - 45, ((width - zSliderHeight) * 0.5)
-			+ zSliderHeight, 40, 20));
+		znumbox = NumberBox(win);
 		znumbox.value = 0;
 		znumbox.decimals = 2;
 		//znumbox.clipHi = 100;
@@ -962,8 +976,7 @@ may be downloaded here: http://escuta.org/mosca
 			}.defer;
 		};
 
-		zslider = Slider(win, Rect(width - 35, ((width - zSliderHeight) * 0.5),
-			20, zSliderHeight));
+		zslider = Slider(win);
 		zslider.value = 0.5;
 		zslider.action = { | num |
 			{ znumbox.valueAction = num.value - 0.5 * 2; }.defer;
@@ -973,7 +986,7 @@ may be downloaded here: http://escuta.org/mosca
 		////////////////////////////// Orientation //////////////
 
 
-		originView = UserView(win, Rect(width - 255, height - 85, 250, 100));
+		originView = UserView(win);
 
 		originCtl = Array.newClear(2); // [0]numboxes, [1]texts
 		originCtl[0] = Array.newClear(8);
@@ -1020,8 +1033,7 @@ may be downloaded here: http://escuta.org/mosca
 		originCtl[1][4] = StaticText(originView, Rect(195, 60, 12, 22));
 		originCtl[1][4].string = "R:";
 
-		textbuf = StaticText(originView, Rect(207, 0, 45, 20));
-		textbuf.string = "Orient.";
+		StaticText(originView, Rect(207, 0, 45, 20)).string_("Orient.");
 
 		originCtl[0][5] = NumberBox(originView, Rect(150, 20, 40, 20));
 		originCtl[0][5].align = \center;
@@ -1057,10 +1069,9 @@ may be downloaded here: http://escuta.org/mosca
 		originCtl[1][7] = StaticText(originView, Rect(135, 60, 12, 22));
 		originCtl[1][7].string = "Z:";
 
-		textbuf = StaticText(originView, Rect(150, 0, 47, 20));
-		textbuf.string = "Origin";
+		StaticText(originView, Rect(150, 0, 47, 20)).string_("Origin");
 
-		hdtrkcheck = CheckBox(win, Rect(width - 125, height - 105, 265, 20), "Remote ctl.").action_({ | butt |
+		hdtrkcheck = CheckBox(win, text:"Remote ctl.").action_({ | butt |
 			this.remoteCtl(butt.value);
 		});
 		hdtrkcheck.value = true;
@@ -1137,8 +1148,7 @@ may be downloaded here: http://escuta.org/mosca
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(originView, Rect(0, 0, 150, 20));
-		textbuf.string = "Close Reverb";
+		StaticText(originView, Rect(0, 0, 150, 20)).string_("Close Reverb");
 		clsReverbox = PopUpMenu(originView, Rect(0, 20, 130, 20));
 		clsReverbox.items = ["no-reverb",
 			"freeverb",
@@ -1192,8 +1202,7 @@ may be downloaded here: http://escuta.org/mosca
 		/////////////////////////////////////////////////////////////////////////
 
 
-		textbuf = StaticText(win, Rect(163, 190, 150, 20));
-		textbuf.string = "Distant Reverb";
+		StaticText(win, Rect(163, 190, 150, 20)).string_("Distant Reverb");
 		dstReverbox = PopUpMenu(win, Rect(10, 190, 150, 20));
 		dstReverbox.items = ["no-reverb", "freeverb", "allpass"] ++ rirList;
 		// add the list of impule response if one is provided
@@ -1538,146 +1547,134 @@ may be downloaded here: http://escuta.org/mosca
 			);
 		};
 
-		textbuf = StaticText(wdados, Rect(20, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Lib";
-		textbuf = StaticText(wdados, Rect(45, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Rv";
-		textbuf = StaticText(wdados, Rect(70, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Lp";
-		textbuf = StaticText(wdados, Rect(85, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Hw";
-		textbuf = StaticText(wdados, Rect(100, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Sc";
+		StaticText(wdados, Rect(20, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Lib");
+		StaticText(wdados, Rect(45, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Rv");
+		StaticText(wdados, Rect(70, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Lp");
+		StaticText(wdados, Rect(85, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Hw");
+		StaticText(wdados, Rect(100, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Sc");
 
-		textbuf = StaticText(wdados, Rect(115, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Sp";
-		textbuf = StaticText(wdados, Rect(130, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Df";
+		StaticText(wdados, Rect(115, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Sp");
+		StaticText(wdados, Rect(130, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Df");
 
-		textbuf = StaticText(wdados, Rect(145, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "NCan";
-		textbuf = StaticText(wdados, Rect(170, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "SBus";
+		StaticText(wdados, Rect(145, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("NCan");
+		StaticText(wdados, Rect(170, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("SBus");
 
-		textbuf = StaticText(wdados, Rect(208, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "X";
-		textbuf = StaticText(wdados, Rect(241, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Y";
+		StaticText(wdados, Rect(208, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("X");
+		StaticText(wdados, Rect(241, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Y");
 
-		textbuf = StaticText(wdados, Rect(274, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Z";
+		StaticText(wdados, Rect(274, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Z");
 
-		/*
-		textbuf = StaticText(wdados, Rect(299, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "O.x";
-		textbuf = StaticText(wdados, Rect(333, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "O.y";
-		textbuf = StaticText(wdados, Rect(366, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "O.z";
-		*/
+		StaticText(wdados, Rect(300, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Lev");
+		StaticText(wdados, Rect(325, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("DAmt");
+		StaticText(wdados, Rect(350, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Prox");
+		StaticText(wdados, Rect(375, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Dist");
+		StaticText(wdados, Rect(400, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Room");
+		StaticText(wdados, Rect(425, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Damp");
+		StaticText(wdados, Rect(450, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Ang");
+		StaticText(wdados, Rect(475, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Rot");
+		StaticText(wdados, Rect(500, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Dir");
+		StaticText(wdados, Rect(525, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Cont");
+		StaticText(wdados, Rect(550, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Rate");
+		StaticText(wdados, Rect(575, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Win");
+		StaticText(wdados, Rect(600, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("Rand");
 
-		textbuf = StaticText(wdados, Rect(300, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Lev";
-		textbuf = StaticText(wdados, Rect(325, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "DAmt";
-		textbuf = StaticText(wdados, Rect(350, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Prox";
-		textbuf = StaticText(wdados, Rect(375, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Dist";
-		textbuf = StaticText(wdados, Rect(400, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Room";
-		textbuf = StaticText(wdados, Rect(425, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Damp";
-		textbuf = StaticText(wdados, Rect(450, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Ang";
-		textbuf = StaticText(wdados, Rect(475, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Rot";
-		textbuf = StaticText(wdados, Rect(500, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Dir";
-		textbuf = StaticText(wdados, Rect(525, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Cont";
-		textbuf = StaticText(wdados, Rect(550, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Rate";
-		textbuf = StaticText(wdados, Rect(575, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Win";
-		textbuf = StaticText(wdados, Rect(600, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "Rand";
+		StaticText(wdados, Rect(625, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("A1");
+		StaticText(wdados, Rect(650, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("A2");
+		StaticText(wdados, Rect(675, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("A3");
+		StaticText(wdados, Rect(700, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("A4");
+		StaticText(wdados, Rect(725, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("A5");
 
-		textbuf = StaticText(wdados, Rect(625, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "A1";
-		textbuf = StaticText(wdados, Rect(650, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "A2";
-		textbuf = StaticText(wdados, Rect(675, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "A3";
-		textbuf = StaticText(wdados, Rect(700, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "A4";
-		textbuf = StaticText(wdados, Rect(725, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "A5";
-
-		textbuf = StaticText(wdados, Rect(750, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a1";
-		textbuf = StaticText(wdados, Rect(765, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a2";
-		textbuf = StaticText(wdados, Rect(780, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a3";
-		textbuf = StaticText(wdados, Rect(795, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a4";
-		textbuf = StaticText(wdados, Rect(810, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "a5";
+		StaticText(wdados, Rect(750, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("a1");
+		StaticText(wdados, Rect(765, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("a2");
+		StaticText(wdados, Rect(780, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("a3");
+		StaticText(wdados, Rect(795, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("a4");
+		StaticText(wdados, Rect(810, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("a5");
 
 
-		textbuf = StaticText(wdados, Rect(825, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "File";
+		StaticText(wdados, Rect(825, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("File");
 
-		textbuf = StaticText(wdados, Rect(925, 20, 50, 20));
-		textbuf.font = Font(Font.defaultSansFace, 9);
-		textbuf.string = "St";
+		StaticText(wdados, Rect(925, 20, 50, 20))
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_("St");
 
 
 		nfontes.do { | i |
 
-			textbuf = StaticText(wdados, Rect(2, 40 + (i*20), 50, 20));
-			textbuf.font = Font(Font.defaultSansFace, 9);
-			textbuf.string = (i+1).asString;
+			StaticText(wdados, Rect(2, 40 + (i*20), 50, 20))
+			.font_(Font(Font.defaultSansFace, 9))
+			.string_((i+1).asString);
 
 			libbox[i] = NumberBox(wdados, Rect(20, 40 + (i*20), 25, 20));
 
@@ -1796,16 +1793,15 @@ may be downloaded here: http://escuta.org/mosca
 
 
 			tfield[i] = TextField(wdados, Rect(825, 40+ (i*20), 100, 20));
-			//tfield[i] = TextField(wdados, Rect(720, 40+ (i*20), 220, 20));
 
 			stcheck[i] = CheckBox( wdados, Rect(925, 40 + (i*20), 40, 20));
 			stcheck[i].action = { | but |
 				stcheckProxy[i].valueAction = but.value;
 			};
 
-			textbuf = StaticText(wdados, Rect(940, 40 + (i*20), 50, 20));
-			textbuf.font = Font(Font.defaultSansFace, 9);
-			textbuf.string = (i+1).asString;
+			StaticText(wdados, Rect(940, 40 + (i*20), 50, 20))
+			.font_(Font(Font.defaultSansFace, 9))
+			.string_((i+1).asString);
 
 			libbox[i].font = Font(Font.defaultSansFace, 9);
 			dstrvbox[i].font = Font(Font.defaultSansFace, 9);
@@ -1814,10 +1810,6 @@ may be downloaded here: http://escuta.org/mosca
 			xbox[i].font = Font(Font.defaultSansFace, 9);
 			ybox[i].font = Font(Font.defaultSansFace, 9);
 			zbox[i].font = Font(Font.defaultSansFace, 9);
-			//oxbox[i].font = Font(Font.defaultSansFace, 9);
-			//oybox[i].font = Font(Font.defaultSansFace, 9);
-			//ozbox[i].font = Font(Font.defaultSansFace, 9);
-
 
 			abox[i].font = Font(Font.defaultSansFace, 9);
 			vbox[i].font = Font(Font.defaultSansFace, 9);
@@ -2032,15 +2024,6 @@ may be downloaded here: http://escuta.org/mosca
 
 		};
 
-		//control = Automation(dur).front(win, Rect(halfwidth, 10, 400, 25));
-		/*~autotest = control = Automation(dur, showLoadSave: false,
-		showSnapshot: false,
-		minTimeStep: 0.001).front(win,
-		Rect(10, width - 80, 400, 22));
-		*/
-		//~autotest = control = Automation(dur, showLoadSave: false,
-		//showSnapshot: false,
-		//	minTimeStep: 0.001);
 		control.front(autoView, Rect(0, 0, 325, 20));
 
 		furthest = halfheight * 20;
@@ -2125,7 +2108,8 @@ may be downloaded here: http://escuta.org/mosca
 				znumbox.value);
 
 			if(ossiaorient.v == [0, 0, 0]) {
-				xboxProxy[currentsource].valueAction = point.x + origine.x; // exeption to record XY mouvements after Z automation
+				xboxProxy[currentsource].valueAction = point.x + origine.x;
+				// exeption to record XY mouvements after Z automation
 				yboxProxy[currentsource].valueAction = point.y + origine.y;
 			} {
 			spheval[currentsource] = point.asSpherical;
@@ -2155,7 +2139,7 @@ may be downloaded here: http://escuta.org/mosca
 			originView.bounds_(Rect(width - 255, height - 85, 250, 100));
 			hdtrkcheck.bounds_(Rect(width - 105, height - 105, 265, 20));
 
-			autoView.bounds_(Rect(10, height - 65, 325, 60));
+			autoView.bounds_(Rect(10, height - 85, 325, 80));
 
 			novoplot.value;
 

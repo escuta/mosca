@@ -118,6 +118,7 @@ Mosca {
 	clsdm, clsdmbox, <>clsdmboxProxy, // setable global dampening
 
 	<>masterlevProxy, masterBox,
+	<>scaleFactProxy, scaleBox,
 
 	<parentOssiaNode,
 	ossiaorient, ossiaorigine, ossiaremotectl, ossiaplay, ossiatrasportLoop,
