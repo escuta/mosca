@@ -155,7 +155,10 @@ may be downloaded here: http://escuta.org/mosca
 
 			nfontes.do { | i |
 				var euler = (cartval[i] - origine)
-				.rotate(num.value[0].neg).tilt(num.value[1].neg).tumble(num.value[2].neg);
+			.rotate(num.value[0].neg)
+				.tilt(num.value[1].neg)
+				.tumble(num.value[2].neg)
+				/ ossiascale.v;
 
 				ossiasphe[i].v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
@@ -192,12 +195,12 @@ may be downloaded here: http://escuta.org/mosca
 					.rotate(headingnumboxProxy.value)
 					.asCartesian + origine);
 
-				previousScale = num.value;
-
 				zlev[i] = spheval[i].z;
 
 				this.setSynths(i, \radius, spheval[i].rho);
 			};
+
+			previousScale = num.value;
 
 			if (scalefactProxy.value != num.value) {
 				scalefactProxy.valueAction = num.value;

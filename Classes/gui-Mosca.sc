@@ -611,8 +611,8 @@ may be downloaded here: http://escuta.org/mosca
 
 		baudi = Button(win,Rect(10, 90, 150, 20))
 		.states_([
-			["audition", Color.black, Color.green],
-			["stop", Color.white, Color.red]
+			["Audition", Color.black, Color.green],
+			["Stop", Color.white, Color.red]
 		])
 		.action_({ | but |
 			var bool = but.value.asBoolean;
