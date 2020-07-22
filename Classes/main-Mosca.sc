@@ -2542,7 +2542,7 @@ Mosca {
 			/*nfontes.do { arg i;
 			firstTime[i]=true;
 			("NOW PLAYING = " ++ firstTime[i]).postln;*/
-			if (ossiatrasportLoop) {
+			if (ossiatrasportLoop.v) {
 				nfontes.do { | i |
 					firstTime[i] = true;
 					//("HERE = " ++ firstTime[i]).postln;
