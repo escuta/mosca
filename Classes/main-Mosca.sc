@@ -1290,6 +1290,7 @@ Mosca {
 		control.dock(pitchnumboxProxy, "pitchProxy");
 		control.dock(rollnumboxProxy, "rollProxy");
 		control.dock(headingnumboxProxy, "headingProxy");
+		control.dock(scalefactProxy, "scaleProxy");
 
 
 		///////////////////////////////////////////////////
