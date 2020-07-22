@@ -812,10 +812,8 @@ may be downloaded here: http://escuta.org/mosca
 				success = true;
 				onSuccess.value(textField.value);
 				dwin.close;
-				control.load(textField.value);
-				//control.seek;
 				lastAutomation = textField.value;
-				this.loadNonAutomationData(textField.value);
+				this.loadAutomationData(textField.value);
 			};
 			dwin.front;
 		});

@@ -310,10 +310,13 @@ GUI Parameters usable in SynthDefs
 		};
 	}
 
-	loadNonAutomationData { | path |
+	loadAutomationData { | path, rewind = true |
 		var libf, loopedf, aformatrevf, hwinf, scinf,
 		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
 		//("THE PATH IS " ++ path ++ "/filenames.txt").postln;
+
+		control.load(path);
+
 		filenames = File((path ++ "/filenames.txt").standardizePath,"r");
 
 		libf = File((path ++ "/lib.txt").standardizePath,"r");
@@ -384,6 +387,8 @@ GUI Parameters usable in SynthDefs
 		ncanf.close;
 		businif.close;
 		stcheckf.close;
+
+		if (rewind, control.seek);
 
 		//"RARARARARAR".postln;
 
