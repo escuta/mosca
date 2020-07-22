@@ -29,8 +29,6 @@ may be downloaded here: http://escuta.org/mosca
 		// check box for streamed from disk audio
 		brecaudio,
 		blipcheck,
-		masterslider,
-		scaleslider,
 		zAxis,
 		bmark1, bmark2,
 		bdados,
@@ -1877,14 +1875,12 @@ may be downloaded here: http://escuta.org/mosca
 			ybox[i].action = { | num |
 				yboxProxy[i].valueAction = num.value;
 			};
-			ybox[i].value = 200;
+			ybox[i].value = 20;
 
 
 			zbox[i].action = { | num |
 				zboxProxy[i].valueAction = num.value;
 			};
-
-
 
 
 			abox[i].clipHi = pi;
@@ -2098,7 +2094,7 @@ may be downloaded here: http://escuta.org/mosca
 			var point = Cartesian(
 				(((x - halfwidth) / halfheight) / zoom_factor),
 				(((halfheight - y) / halfheight) / zoom_factor),
-				znumbox.value);
+				znumbox.value) / scalefactProxy.value;
 
 			if(ossiaorient.v == [0, 0, 0]) {
 				xboxProxy[currentsource].valueAction = point.x + origine.x;

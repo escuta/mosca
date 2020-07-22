@@ -43,9 +43,7 @@ Mosca {
 	streambuf, // streamrate, // apparently unused
 	origine,
 	oxnumboxProxy, oynumboxProxy, oznumboxProxy,
-	pitch, pitchnumboxProxy,
-	roll, rollnumboxProxy,
-	heading, headingnumboxProxy,
+	pitchnumboxProxy, rollnumboxProxy, headingnumboxProxy,
 	// head tracking
 	troutine, kroutine, ioffsetheading,
 	trackarr, trackarr2, tracki, trackPort,
@@ -111,8 +109,8 @@ Mosca {
 	clsrmbox, <>clsrmboxProxy, // setable global room size
 	clsdmbox, <>clsdmboxProxy, // setable global dampening
 
-	<>masterlevProxy, masterBox,
-	<>scalefactProxy, scaleBox,
+	<>masterlevProxy, masterBox, masterslider,
+	<>scalefactProxy, scaleBox, scaleslider,
 
 	<parentOssiaNode,
 	ossiaorient, ossiaorigine, ossiaremotectl, ossiaplay, ossiatrasportLoop,
@@ -305,10 +303,6 @@ Mosca {
 		audit = Array.newClear(nfontes);
 
 		origine = Cartesian();
-
-		pitch = 0;
-		roll = 0;
-		heading = 0;
 
 		clsRvtypes = ""; // initialise close reverb type
 		clsrv = 0;
@@ -640,7 +634,7 @@ Mosca {
 			};
 
 			rboxProxy[i].action = { | num |
-				this.setSynths(i, \rotAngle, num.value  + heading);
+				this.setSynths(i, \rotAngle, num.value  + headingnumboxProxy.value);
 				if (guiflag) {
 					{rbox[i].value = num.value}.defer;
 					if(i == currentsource)
@@ -1098,24 +1092,13 @@ Mosca {
 
 		};
 
-
-		scalefactProxy.action_({ | num |
-
-			if (guiflag) {
-				{scaleBox.value = num.value; }.defer;
-			};
-
-			if (ossiascale.v != num.value) {
-				ossiascale.v_(num.value);
-			};
-		});
-
 		masterlevProxy.action_({ | num |
 
 			globDec.set(\level, num.value.dbamp);
 
 			if (guiflag) {
 				{masterBox.value = num.value; }.defer;
+				{masterslider.value = num.value.curvelin(inMin:-96, inMax:12, curve:-3); }.defer;
 			};
 
 			if (ossiamaster.v != num.value) {
@@ -1284,6 +1267,19 @@ Mosca {
 			};
 		});
 
+
+		scalefactProxy.action_({ | num |
+
+			if (guiflag) {
+				{novoplot.value;}.defer;
+				{scaleBox.value = num.value; }.defer;
+				{scaleslider.value = num.value.curvelin(inMin:0.01, inMax:10, curve:4); }.defer;
+			};
+
+			if (ossiascale.v != num.value) {
+				ossiascale.v_(num.value);
+			};
+		});
 
 		control.dock(clsrvboxProxy, "globrevkindProxy");
 		control.dock(clsrmboxProxy, "localroomProxy");

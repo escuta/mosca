@@ -21,7 +21,7 @@ may be downloaded here: http://escuta.org/mosca
 	ossia { |allCrtitical|
 
 		var ossiaParent, ossiasrc, ossiaAutomation, ossiaMasterPlay,
-		ossiaMasterLib, ossiaMasterRev, ossiaAtk, ossiaJosh;
+		ossiaMasterLib, ossiaMasterRev, ossiaAtk, ossiaJosh, previousScale;
 
 		ossiasrc = Array.newClear(nfontes);
 		ossiaorient = Array.newClear(nfontes);
@@ -52,6 +52,7 @@ may be downloaded here: http://escuta.org/mosca
 		ossiaseekback = true;
 		ossiaCartBack = true;
 		ossiaSpheBack = true;
+		previousScale = 1;
 
 		ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");
 
@@ -76,15 +77,6 @@ may be downloaded here: http://escuta.org/mosca
 					ossialib[i].v_(string.value);
 				};
 			});
-		});
-
-		ossiascale = OSSIA_Parameter(ossiaParent, "Scale_factor", Float,
-			[0.01, 10],	1, 'clip', critical:allCrtitical);
-
-		ossiascale.callback_({ arg num;
-			if (scalefactProxy.value != num.value) {
-				scalefactProxy.valueAction = num.value;
-			};
 		});
 
 		ossiamaster = OSSIA_Parameter(ossiaParent, "Master_level", Float,
@@ -127,7 +119,10 @@ may be downloaded here: http://escuta.org/mosca
 
 			nfontes.do {  | i |
 				var cart = (cartval[i] - origine)
-				.rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				.rotate(headingnumboxProxy.value.neg)
+				.tilt(pitchnumboxProxy.value.neg)
+				.tumble(rollnumboxProxy.value.neg)
+				/ ossiascale.v;
 
 				ossiasphe[i].v_([cart.rho,
 					(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
@@ -156,9 +151,6 @@ may be downloaded here: http://escuta.org/mosca
 
 		ossiaorient.callback_({arg num;
 
-			heading = num.value[0];
-			pitch = num.value[1];
-			roll = num.value[2];
 			ossiaCartBack = false;
 
 			nfontes.do { | i |
@@ -170,7 +162,7 @@ may be downloaded here: http://escuta.org/mosca
 
 				zlev[i] = spheval[i].z;
 
-				this.setSynths(i, \rotAngle, ossiarot[i].v + heading);
+				this.setSynths(i, \rotAngle, ossiarot[i].v + headingnumboxProxy.value);
 			};
 
 			ossiaCartBack = true;
@@ -183,6 +175,32 @@ may be downloaded here: http://escuta.org/mosca
 			};
 			if (rollnumboxProxy.value != num[2].value) {
 				rollnumboxProxy.valueAction = num[2].value;
+			};
+		});
+
+		ossiascale = OSSIA_Parameter(ossiaParent, "Scale_factor", Float,
+			[0.01, 10],	1, 'clip', critical:allCrtitical);
+
+		ossiascale.callback_({ arg num;
+
+			nfontes.do { | i |
+				spheval[i].rho_(spheval[i].rho / previousScale);
+				spheval[i].rho_(spheval[i].rho * num.value);
+
+				cartval[i] = (spheval[i].tumble(rollnumboxProxy.value)
+					.tilt(pitchnumboxProxy.value)
+					.rotate(headingnumboxProxy.value)
+					.asCartesian + origine);
+
+				previousScale = num.value;
+
+				zlev[i] = spheval[i].z;
+
+				this.setSynths(i, \radius, spheval[i].rho);
+			};
+
+			if (scalefactProxy.value != num.value) {
+				scalefactProxy.valueAction = num.value;
 			};
 		});
 
@@ -283,7 +301,10 @@ may be downloaded here: http://escuta.org/mosca
 			ossiacart[i].callback_({arg num;
 				var sphe, sphediff;
 				cartval[i].set(num.value[0], num.value[1], num.value[2]);
-				sphe = (cartval[i] - origine).rotate(heading.neg).tilt(pitch.neg).tumble(roll.neg);
+				sphe = (cartval[i] - origine)
+				.rotate(headingnumboxProxy.value.neg)
+				.tilt(pitchnumboxProxy.value.neg)
+				.tumble(rollnumboxProxy.value.neg);
 
 				sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 
@@ -314,13 +335,16 @@ may be downloaded here: http://escuta.org/mosca
 			ossiasphe[i].unit_(OSSIA_position.spherical);
 
 			ossiasphe[i].callback_({arg num;
-				spheval[i].rho_(num.value[0]);
+				spheval[i].rho_(num.value[0] * ossiascale.v);
 				spheval[i].theta_(num.value[1].wrap(-pi, pi) + halfPi);
 				spheval[i].phi_(num.value[2].fold(halfPi.neg, halfPi));
 				ossiaSpheBack = false;
 				if (ossiaCartBack) {
 					ossiacart[i].v_(
-						(spheval[i].tumble(roll).tilt(pitch).rotate(heading).asCartesian + origine).asArray);
+						((spheval[i].tumble(rollnumboxProxy.value)
+							.tilt(pitchnumboxProxy.value)
+							.rotate(headingnumboxProxy.value)
+							.asCartesian) + origine).asArray);
 				};
 
 				if(espacializador[i].notNil) {
@@ -349,7 +373,7 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-			ossiaaud[i] = OSSIA_Parameter(ossiasrc[i], "audition", Boolean,
+			ossiaaud[i] = OSSIA_Parameter(ossiasrc[i], "Audition", Boolean,
 				critical:true, repetition_filter:true);
 
 			ossiaaud[i].callback_({ arg num;
@@ -359,7 +383,7 @@ may be downloaded here: http://escuta.org/mosca
 			});
 
 
-			ossialoop[i] = OSSIA_Parameter(ossiasrc[i], "loop", Boolean,
+			ossialoop[i] = OSSIA_Parameter(ossiasrc[i], "Loop", Boolean,
 				critical:true, repetition_filter:true);
 
 			ossialoop[i].callback_({ arg but;
