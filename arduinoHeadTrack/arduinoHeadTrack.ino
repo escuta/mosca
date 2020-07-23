@@ -1,5 +1,5 @@
 
-// Download and unzip https://github.com/arduino-libraries/NineAxesMotion/archive/master.zip in Arduino home folder
+// Download and unzip https://github.com/arduino-libraries/NineAxesMotion/archive/master.zip in your Arduino home folder
 #include <NineAxesMotion.h>
 #include <Wire.h>
 

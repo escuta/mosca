@@ -447,4 +447,19 @@ GUI Parameters usable in SynthDefs
 		isPlay = false;
 	}
 
+	headTracker { | serialPort, offsetheading = 0, gps = false |
+
+		if (hdtrk.isNil) {
+			hdtrk = HeadTracker(this, serialPort, offsetheading, gps);
+		};
+	}
+
+	freeHeadTracker {
+
+		if (hdtrk.notNil) {
+			hdtrk.free();
+			hdtrk = nil;
+		};
+	}
+
 }

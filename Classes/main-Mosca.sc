@@ -31,7 +31,6 @@ Mosca {
 	insertFlag,
 	insertBus,
 	<dur,
-	serport,
 	libbox, lpcheck, dstrvbox, hwncheck, scncheck,
 	spcheck, dfcheck,
 	ncanbox, businibox,
@@ -42,11 +41,8 @@ Mosca {
 	streamdisk,
 	streambuf, // streamrate, // apparently unused
 	origine,
-	oxnumboxProxy, oynumboxProxy, oznumboxProxy,
-	pitchnumboxProxy, rollnumboxProxy, headingnumboxProxy,
-	// head tracking
-	troutine, kroutine, trackarr, trackarr2, tracki, trackPort, headingOffset,
-	previousLat, previusLong,
+	<>oxnumboxProxy, <>oynumboxProxy, <>oznumboxProxy,
+	<>pitchnumboxProxy, <>rollnumboxProxy, <>headingnumboxProxy,
 	cartval, spheval,
 	recchans, recbus,
 	// mark1, mark2,	// 4 number arrays for marker data // apparently unused
@@ -2662,13 +2658,9 @@ Mosca {
 	free {
 
 		control.quit;
+		watcher.stop;
 
-		if (hdtrk) {
-			trackPort.close;
-			troutine.stop;
-			kroutine.stop;
-			watcher.stop;
-		};
+		this.freeTracker();
 
 		fumabus.free;
 		n3dbus.free;

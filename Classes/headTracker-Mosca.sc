@@ -16,19 +16,26 @@ and code examples. Further information and sample RIRs and B-format recordings
 may be downloaded here: http://escuta.org/mosca
 */
 
-+ Mosca {
+HeadTracker {
+	var moscaInstance, serport, <headingOffset,
+	troutine, kroutine,
+	trackarr, trackarr2, tracki, trackPort,
+	previousLat, previusLong, previusAlt;
 
-	headTracker { | serport, offsetheading = 0, gps = false |
+	*new { | aMosca, serialPort, offsetheading, gps |
 
-		hdtrk = true;
-		headingOffset = offsetheading;
+		^super.newCopyArgs(aMosca, serialPort, offsetheading).headTrackerCtr(gps);
+	}
+
+	headTrackerCtr { | gps |
+
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, 115200, crtscts: true);
 
 		if (gps) {  //protocol
 			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
-				nil, nil, nil, nil, nil, nil, nil, nil, 255];
+				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
 		} {
 			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
 		};
@@ -97,15 +104,16 @@ may be downloaded here: http://escuta.org/mosca
 
 		// Arduino code needs changing?
 
-		pitchnumboxProxy.valueAction = p * -1;
-		rollnumboxProxy.valueAction = r;
-		headingnumboxProxy.valueAction = h * -1;
+		moscaInstance.pitchnumboxProxy.valueAction = p * -1;
+		moscaInstance.rollnumboxProxy.valueAction = r;
+		moscaInstance.headingnumboxProxy.valueAction = h * -1;
 	}
 
-	procGps  { |lat, lon|
+	procGps { |lat, lon, alt|
 
 		postln( "latitude " + lat);
 		postln( "longitude " + lon);
+		postln( "altitude " + alt);
 	}
 
 	matchGyroByte { |byte|  // match incoming headtracker data
@@ -114,13 +122,11 @@ may be downloaded here: http://escuta.org/mosca
 			trackarr2[tracki] = byte;
 			tracki= tracki + 1;
 			if (tracki >= trackarr.size, {
-				if(hdtrk){
-					this.procTracker(
-						(trackarr2[5]<<8)+trackarr2[4],
-						(trackarr2[7]<<8)+trackarr2[6],
-						(trackarr2[9]<<8)+trackarr2[8]
-					);
-				};
+				this.procTracker(
+					(trackarr2[5]<<8)+trackarr2[4],
+					(trackarr2[7]<<8)+trackarr2[6],
+					(trackarr2[9]<<8)+trackarr2[8]
+				);
 				tracki = 0;
 			});
 		}, {
@@ -135,18 +141,16 @@ may be downloaded here: http://escuta.org/mosca
 			tracki= tracki + 1;
 			if (tracki >= trackarr.size, {
 
-				if(hdtrk){
-					this.procTracker(
-						(trackarr2[5]<<8)+trackarr2[4],
-						(trackarr2[7]<<8)+trackarr2[6],
-						(trackarr2[9]<<8)+trackarr2[8]
-					);
-					this.procGps(
-						(trackarr2[13]<<24) + (trackarr2[12]<<16) +
-						(trackarr2[11]<<8) + trackarr2[10],
-						(trackarr2[17]<<24) + (trackarr2[16]<<16) + (trackarr2[15]<<8) + trackarr2[14]
-					);
-				};
+				this.procTracker(
+					(trackarr2[5]<<8) + trackarr2[4],
+					(trackarr2[7]<<8) + trackarr2[6],
+					(trackarr2[9]<<8) + trackarr2[8]
+				);
+				this.procGps(
+					(trackarr2[13]<<24) + (trackarr2[12]<<16) + (trackarr2[11]<<8) + trackarr2[10],
+					(trackarr2[17]<<24) + (trackarr2[16]<<16) + (trackarr2[15]<<8) + trackarr2[14],
+					(trackarr2[21]<<24) + (trackarr2[20]<<16) + (trackarr2[19]<<8) + trackarr2[18]
+				);
 				tracki = 0;
 			});
 		}, {
@@ -182,5 +186,12 @@ may be downloaded here: http://escuta.org/mosca
 	offsetHeading { // give offset to reset North
 		| angle |
 		headingOffset = angle;
+	}
+
+	free {
+
+		trackPort.close;
+		troutine.stop;
+		kroutine.stop;
 	}
 }
