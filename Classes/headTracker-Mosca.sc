@@ -33,14 +33,16 @@ HeadTracker {
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, 115200, crtscts: true);
 
-		trackarr2 = trackarr.copy;
-		tracki = 0;
-
 		trackPort.doneAction = {
 			"Serial port down".postln;
 			troutine.stop;
 			troutine.reset;
 		};
+
+		this.setTracker();
+
+		trackarr2 = trackarr.copy;
+		tracki = 0;
 
 		troutine = Routine.new({
 			inf.do{
@@ -108,14 +110,15 @@ HeadTracker {
 		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
 
 			trackarr2[tracki] = byte;
-			tracki= tracki + 1;
+			tracki = tracki + 1;
 
 			if (tracki >= trackarr.size, {
 
-				this.procTracker(
-					(trackarr2[5]<<8)+trackarr2[4],
-					(trackarr2[7]<<8)+trackarr2[6],
-					(trackarr2[9]<<8)+trackarr2[8]);
+				this.procGyro(
+					(trackarr2[5]<<8) + trackarr2[4],
+					(trackarr2[7]<<8) + trackarr2[6],
+					(trackarr2[9]<<8) + trackarr2[8]
+				);
 
 				tracki = 0;
 			});
@@ -195,7 +198,7 @@ HeadTrackerGPS : HeadTracker {
 
 			if (tracki >= trackarr.size, {
 
-				this.procTracker(
+				this.procGyro(
 					(trackarr2[5]<<8) + trackarr2[4],
 					(trackarr2[7]<<8) + trackarr2[6],
 					(trackarr2[9]<<8) + trackarr2[8]
