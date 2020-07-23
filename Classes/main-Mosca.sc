@@ -45,10 +45,8 @@ Mosca {
 	oxnumboxProxy, oynumboxProxy, oznumboxProxy,
 	pitchnumboxProxy, rollnumboxProxy, headingnumboxProxy,
 	// head tracking
-	troutine, kroutine, ioffsetheading,
-	trackarr, trackarr2, tracki, trackPort,
-	// track2arr, track2arr2, track2i,
-	headingOffset,
+	troutine, kroutine, trackarr, trackarr2, tracki, trackPort, headingOffset,
+	previousLat, previusLong,
 	cartval, spheval,
 	recchans, recbus,
 	// mark1, mark2,	// 4 number arrays for marker data // apparently unused
@@ -154,7 +152,6 @@ Mosca {
 	watcher, prjDr,
 	plim = 1.2, // distance limit from origin where processes continue to run
 	fftsize = 2048, halfPi = 1.5707963267949, rad2deg = 57.295779513082 ,
-	offsetLag = 2.0,  // lag in seconds for incoming GPS data
 	foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, dur = 180, rirBank,
 		server = Server.local, parentOssiaNode = OSSIA_Device("SC"), allCrtitical = false, decoder,

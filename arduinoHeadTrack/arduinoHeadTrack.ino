@@ -1,4 +1,3 @@
-
 #include "NAxisMotion.h"        //Contains the bridge code between the API and the Arduino Environment
 #include <Wire.h>
 
@@ -112,8 +111,3 @@ void loop()
 
   }
 }
-
-
-
-
-

@@ -18,25 +18,23 @@ may be downloaded here: http://escuta.org/mosca
 
 + Mosca {
 
-	headTracker { | serport, offsetheading = 0 |
+	headTracker { | serport, offsetheading = 0, gps = false |
 
 		hdtrk = true;
-		ioffsetheading = offsetheading;
+		headingOffset = offsetheading;
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, 115200, crtscts: true);
-		//trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
-		//	nil, nil, nil, nil, nil, nil, nil, nil, 255];  //protocol
-		trackarr= [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
-		//protocol
-		trackarr2= trackarr.copy;
-		tracki= 0;
-		//track2arr=
-		//[247, 248, 249, 250, nil, nil, nil, nil, nil, nil, nil, nil, 255];
-		//protocol
-		//track2arr2= trackarr.copy;
-		//track2i= 0;
 
+		if (gps) {  //protocol
+			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
+				nil, nil, nil, nil, nil, nil, nil, nil, 255];
+		} {
+			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
+		};
+
+		trackarr2 = trackarr.copy;
+		tracki = 0;
 
 		trackPort.doneAction = {
 			"Serial port down".postln;
@@ -44,12 +42,20 @@ may be downloaded here: http://escuta.org/mosca
 			troutine.reset;
 		};
 
+		if (gps) {
+			troutine = Routine.new({
+				inf.do{
+					this.matchGPSByte(trackPort.read);
+				};
+			});
+		} {
+			troutine = Routine.new({
+				inf.do{
+					this.matchGyroByte(trackPort.read);
+				};
+			});
+		};
 
-		troutine = Routine.new({
-			inf.do{
-				this.matchTByte(trackPort.read);
-			};
-		});
 
 		kroutine = Routine.new({
 			inf.do{
@@ -71,18 +77,14 @@ may be downloaded here: http://escuta.org/mosca
 			};
 		});
 
-		//troutine = this.trackerRoutine; // start parsing of serial head tracker data
-		//	kroutine = this.serialKeepItUp;
 		troutine.play;
 		kroutine.play;
 	}
 
-		//	procTracker  {|heading, roll, pitch, lat, lon|
-	procTracker  {|heading, roll, pitch|
+	procTracker  { |heading, roll, pitch|
 		var h, r, p;
-		//lattemp, lontemp, newOX, newOY;
 		h = (heading / 100) - pi;
-		h = h - ioffsetheading;
+		h = h - headingOffset;
 		if (h < -pi) {
 			h = pi + (pi + h);
 		};
@@ -100,40 +102,61 @@ may be downloaded here: http://escuta.org/mosca
 		headingnumboxProxy.valueAction = h * -1;
 	}
 
-	matchTByte { |byte|  // match incoming headtracker data
+	procGps  { |lat, lon|
 
-		if(trackarr[tracki].isNil or:{trackarr[tracki]==byte}, {
-			trackarr2[tracki]= byte;
-			tracki= tracki+1;
-			if(tracki>=trackarr.size, {
-				//				this.procTracker(trackarr2[4]<<8+trackarr2[5],
-				//				trackarr2[6]<<8+trackarr2[7],
-				//              trackarr2[8]<<8+trackarr2[9],
+		postln( "latitude " + lat);
+		postln( "longitude " + lon);
+	}
+
+	matchGyroByte { |byte|  // match incoming headtracker data
+
+		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
+			trackarr2[tracki] = byte;
+			tracki= tracki + 1;
+			if (tracki >= trackarr.size, {
 				if(hdtrk){
 					this.procTracker(
 						(trackarr2[5]<<8)+trackarr2[4],
 						(trackarr2[7]<<8)+trackarr2[6],
 						(trackarr2[9]<<8)+trackarr2[8]
-						//,
-						//(trackarr2[13]<<24) + (trackarr2[12]<<16) +
-						//(trackarr2[11]<<8)
-						//+ trackarr2[10],
-						//(trackarr2[17]<<24) + (trackarr2[16]<<16) +
-						//(trackarr2[15]<<8)
-						//+ trackarr2[14]
 					);
 				};
-				tracki= 0;
+				tracki = 0;
 			});
 		}, {
-			tracki= 0;
+			tracki = 0;
+		});
+	}
+
+	matchGPSByte { |byte|  // match incoming headtracker data
+
+		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
+			trackarr2[tracki] = byte;
+			tracki= tracki + 1;
+			if (tracki >= trackarr.size, {
+
+				if(hdtrk){
+					this.procTracker(
+						(trackarr2[5]<<8)+trackarr2[4],
+						(trackarr2[7]<<8)+trackarr2[6],
+						(trackarr2[9]<<8)+trackarr2[8]
+					);
+					this.procGps(
+						(trackarr2[13]<<24) + (trackarr2[12]<<16) +
+						(trackarr2[11]<<8) + trackarr2[10],
+						(trackarr2[17]<<24) + (trackarr2[16]<<16) + (trackarr2[15]<<8) + trackarr2[14]
+					);
+				};
+				tracki = 0;
+			});
+		}, {
+			tracki = 0;
 		});
 	}
 
 	trackerRoutine { Routine.new
 		( {
 			inf.do{
-				//trackPort.read.postln;
 				this.matchTByte(trackPort.read);
 			};
 		})
@@ -156,10 +179,8 @@ may be downloaded here: http://escuta.org/mosca
 		};
 	})}
 
-	/*
 	offsetHeading { // give offset to reset North
 		| angle |
 		headingOffset = angle;
 	}
-	*/
 }
