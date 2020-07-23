@@ -1,4 +1,6 @@
-#include "NAxisMotion.h"        //Contains the bridge code between the API and the Arduino Environment
+
+// Download and unzip https://github.com/arduino-libraries/NineAxesMotion/archive/master.zip in Arduino home folder
+#include <NineAxesMotion.h>
 #include <Wire.h>
 
 
@@ -12,7 +14,7 @@ struct message_t
 
 message_t message;
 
-NAxisMotion mySensor;
+NineAxesMotion mySensor;
 unsigned long lastStreamTime = 0;     // the last streamed time stamp
 const int streamPeriod = 20;          // stream at 50Hz (time period(ms) =1000/frequency(Hz))
 

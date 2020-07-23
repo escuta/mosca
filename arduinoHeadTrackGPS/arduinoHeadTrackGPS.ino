@@ -2,11 +2,13 @@
  * Created by Iain Mott
  * updated by Gaël Jaton
  */
+ 
+// Download and unzip https://github.com/arduino-libraries/NineAxesMotion/archive/master.zip in Arduino home folder
+#include <NineAxesMotion.h> 
 
-#include <NMEAGPS.h>  // NeoGPS library
-#include <AltSoftSerial.h> //   AltSoftSerial Library (download zip from github)
-
-#include "NAxisMotion.h"        //Contains the bridge code between the API and the Arduino Environment
+// The NeoGPS and AltSoftSerial Library can be installed through the Library manager found in the /Tools tab or by pressing "Ctl+Maj+I"
+#include <NMEAGPS.h>       
+#include <AltSoftSerial.h> 
 #include <Wire.h>
 
 NMEAGPS       gps;
@@ -51,7 +53,7 @@ const unsigned char UBLOX_INIT[] PROGMEM = {
   0x06,0x02,10,0,1,0,0,0,0,0,0,0,0,0
 };
 
-NAxisMotion mySensor;
+NineAxesMotion mySensor;
 unsigned long lastStreamTime = 0;     // the last streamed time stamp
 const int streamPeriod = 20;          // stream at 50Hz (time period(ms) =1000/frequency(Hz))
 
