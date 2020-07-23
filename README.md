@@ -47,7 +47,11 @@ disrupting the encoded spatial characteristics. Please see the
 [guide](HelpSource/Guide/guide-Mosca) for examples.
 
 Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield
-and an appropriate Arduino board such as an Uno. Mosca may also run GUI-free and has a
+and an appropriate Arduino board such as an Uno. 
+
+[![simpleHeadtracker](arduinoHeadTrack/simplerVersion.jpg)]
+
+Mosca may also run GUI-free and has a
 mechanism for coded control of the interface (Setup example in the [guide](HelpSource/Guide/guide-Mosca).
 
 ## Acknowledgments
