@@ -22,23 +22,16 @@ HeadTracker {
 	trackarr, trackarr2, tracki, trackPort,
 	previousLat, previusLong, previusAlt;
 
-	*new { | aMosca, serialPort, offsetheading, gps |
+	*new { | aMosca, serialPort, offsetheading |
 
-		^super.newCopyArgs(aMosca, serialPort, offsetheading).headTrackerCtr(gps);
+		^super.newCopyArgs(aMosca, serialPort, offsetheading).headTrackerCtr();
 	}
 
-	headTrackerCtr { | gps |
+	headTrackerCtr {
 
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, 115200, crtscts: true);
-
-		if (gps) {  //protocol
-			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
-				nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
-		} {
-			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
-		};
 
 		trackarr2 = trackarr.copy;
 		tracki = 0;
@@ -49,20 +42,11 @@ HeadTracker {
 			troutine.reset;
 		};
 
-		if (gps) {
-			troutine = Routine.new({
-				inf.do{
-					this.matchGPSByte(trackPort.read);
-				};
-			});
-		} {
-			troutine = Routine.new({
-				inf.do{
-					this.matchGyroByte(trackPort.read);
-				};
-			});
-		};
-
+		troutine = Routine.new({
+			inf.do{
+				this.matchByte(trackPort.read);
+			};
+		});
 
 		kroutine = Routine.new({
 			inf.do{
@@ -88,13 +72,23 @@ HeadTracker {
 		kroutine.play;
 	}
 
-	procTracker  { |heading, roll, pitch|
+
+	setTracker {
+
+		//protocol
+		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
+	}
+
+	procGyro  { |heading, roll, pitch|
 		var h, r, p;
+
 		h = (heading / 100) - pi;
 		h = h - headingOffset;
+
 		if (h < -pi) {
 			h = pi + (pi + h);
 		};
+
 		if (h > pi) {
 			h = -pi - (pi - h);
 		};
@@ -109,24 +103,20 @@ HeadTracker {
 		moscaInstance.headingnumboxProxy.valueAction = h * -1;
 	}
 
-	procGps { |lat, lon, alt|
-
-		postln( "latitude " + lat);
-		postln( "longitude " + lon);
-		postln( "altitude " + alt);
-	}
-
-	matchGyroByte { |byte|  // match incoming headtracker data
+	matchByte { |byte|  // match incoming headtracker data
 
 		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
+
 			trackarr2[tracki] = byte;
 			tracki= tracki + 1;
+
 			if (tracki >= trackarr.size, {
+
 				this.procTracker(
 					(trackarr2[5]<<8)+trackarr2[4],
 					(trackarr2[7]<<8)+trackarr2[6],
-					(trackarr2[9]<<8)+trackarr2[8]
-				);
+					(trackarr2[9]<<8)+trackarr2[8]);
+
 				tracki = 0;
 			});
 		}, {
@@ -134,57 +124,41 @@ HeadTracker {
 		});
 	}
 
-	matchGPSByte { |byte|  // match incoming headtracker data
+	trackerRoutine {
 
-		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
-			trackarr2[tracki] = byte;
-			tracki= tracki + 1;
-			if (tracki >= trackarr.size, {
-
-				this.procTracker(
-					(trackarr2[5]<<8) + trackarr2[4],
-					(trackarr2[7]<<8) + trackarr2[6],
-					(trackarr2[9]<<8) + trackarr2[8]
-				);
-				this.procGps(
-					(trackarr2[13]<<24) + (trackarr2[12]<<16) + (trackarr2[11]<<8) + trackarr2[10],
-					(trackarr2[17]<<24) + (trackarr2[16]<<16) + (trackarr2[15]<<8) + trackarr2[14],
-					(trackarr2[21]<<24) + (trackarr2[20]<<16) + (trackarr2[19]<<8) + trackarr2[18]
-				);
-				tracki = 0;
-			});
-		}, {
-			tracki = 0;
-		});
-	}
-
-	trackerRoutine { Routine.new
-		( {
-			inf.do{
-				this.matchTByte(trackPort.read);
-			};
-		})
-	}
-
-	serialKeepItUp {Routine.new({
-		inf.do{
-			if (trackPort.isOpen.not) // if serial port is closed
+		Routine.new(
 			{
-				"Trying to reopen serial port!".postln;
-				if (SerialPort.devices.includesEqual(serport))
-				// and if device is actually connected
-				{
-					"Device connected! Opening port!".postln;
-					trackPort = SerialPort(serport, 115200, crtscts: true);
-					this.trackerRoutine; // start tracker routine again
-				}
-			};
-			1.wait;
-		};
-	})}
+				inf.do{
+					this.matchTByte(trackPort.read);
+				};
+			}
+		);
+	}
 
-	offsetHeading { // give offset to reset North
-		| angle |
+	serialKeepItUp {
+
+		Routine.new(
+			{
+				inf.do{
+					if (trackPort.isOpen.not) // if serial port is closed
+					{
+						"Trying to reopen serial port!".postln;
+						if (SerialPort.devices.includesEqual(serport))
+						// and if device is actually connected
+						{
+							"Device connected! Opening port!".postln;
+							trackPort = SerialPort(serport, 115200, crtscts: true);
+							this.trackerRoutine; // start tracker routine again
+						}
+					};
+					1.wait;
+				};
+			}
+		);
+	}
+
+	offsetHeading { | angle | // give offset to reset North
+
 		headingOffset = angle;
 	}
 
@@ -193,5 +167,50 @@ HeadTracker {
 		trackPort.close;
 		troutine.stop;
 		kroutine.stop;
+	}
+}
+
+HeadTrackerGPS : HeadTracker {
+
+	setTracker {
+
+		//protocol
+		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
+	}
+
+	procGps { |lat, lon, alt|
+
+		postln( "latitude " + lat);
+		postln( "longitude " + lon);
+		postln( "altitude " + alt);
+	}
+
+	matchByte { |byte| // match incoming headtracker data
+
+		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
+
+			trackarr2[tracki] = byte;
+			tracki= tracki + 1;
+
+			if (tracki >= trackarr.size, {
+
+				this.procTracker(
+					(trackarr2[5]<<8) + trackarr2[4],
+					(trackarr2[7]<<8) + trackarr2[6],
+					(trackarr2[9]<<8) + trackarr2[8]
+				);
+
+				this.procGps(
+					(trackarr2[13]<<24) + (trackarr2[12]<<16) + (trackarr2[11]<<8) + trackarr2[10],
+					(trackarr2[17]<<24) + (trackarr2[16]<<16) + (trackarr2[15]<<8) + trackarr2[14],
+					(trackarr2[21]<<24) + (trackarr2[20]<<16) + (trackarr2[19]<<8) + trackarr2[18]
+				);
+
+				tracki = 0;
+			});
+		}, {
+			tracki = 0;
+		});
 	}
 }

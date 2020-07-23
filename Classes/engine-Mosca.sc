@@ -450,7 +450,12 @@ GUI Parameters usable in SynthDefs
 	headTracker { | serialPort, offsetheading = 0, gps = false |
 
 		if (hdtrk.isNil) {
-			hdtrk = HeadTracker(this, serialPort, offsetheading, gps);
+
+			if (gps) {
+				hdtrk = HeadTrackerGPS(this, serialPort, offsetheading);
+			} {
+				hdtrk = HeadTracker(this, serialPort, offsetheading);
+			};
 		};
 	}
 
