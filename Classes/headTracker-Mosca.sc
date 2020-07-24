@@ -46,7 +46,9 @@ HeadTracker {
 
 		troutine = Routine.new({
 			inf.do{
-				this.matchByte(trackPort.read);
+				if (moscaInstance.ossiaremotectl.v) {
+					this.matchByte(trackPort.read);
+				};
 			};
 		});
 
@@ -167,9 +169,10 @@ HeadTracker {
 
 	free {
 
-		trackPort.close;
+		postln("bbbbbbbbbbbbbbbb");
 		troutine.stop;
 		kroutine.stop;
+		trackPort.close;
 	}
 }
 

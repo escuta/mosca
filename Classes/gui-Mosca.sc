@@ -1062,7 +1062,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		StaticText(originView, Rect(150, 0, 47, 20)).string_("Origin");
 
-		hdtrkcheck = CheckBox(win, text:"Remote ctl.").action_({ | butt |
+		hdtrkcheck = CheckBox(win, text:"Track").action_({ | butt |
 			this.remoteCtl(butt.value);
 		});
 		hdtrkcheck.value = true;

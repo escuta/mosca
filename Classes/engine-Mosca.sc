@@ -87,12 +87,10 @@ GUI Parameters usable in SynthDefs
 
 	remoteCtl { |bool|
 		if (bool) {
-			hdtrk = true;
 
 			ossiaorient.access_mode_(\bi);
 			ossiaorigine.access_mode_(\bi);
 		} {
-			hdtrk = false;
 			headingnumboxProxy.valueAction = 0;
 			pitchnumboxProxy.valueAction = 0;
 			rollnumboxProxy.valueAction = 0;
@@ -462,6 +460,7 @@ GUI Parameters usable in SynthDefs
 	freeHeadTracker {
 
 		if (hdtrk.notNil) {
+
 			hdtrk.free();
 			hdtrk = nil;
 		};

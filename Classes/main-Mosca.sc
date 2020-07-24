@@ -107,7 +107,7 @@ Mosca {
 	<>scalefactProxy, scaleBox, scaleslider,
 
 	<parentOssiaNode,
-	ossiaorient, ossiaorigine, ossiaremotectl, ossiaplay, ossiatrasportLoop,
+	ossiaorient, ossiaorigine, <ossiaremotectl, ossiaplay, ossiatrasportLoop,
 	ossiatransport, ossiaseekback, ossiarec, ossiacart, ossiasphe, ossiaaud,
 	ossialoop, ossialib, ossialev, ossiadp, ossiacls, ossiaclsam, ossiaclsdel,
 	ossiaclsdec, ossiadst, ossiadstam, ossiadstdel, ossiadstdec, ossiaangle,
