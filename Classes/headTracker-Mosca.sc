@@ -20,7 +20,7 @@ HeadTracker {
 	var moscaInstance, serport, <headingOffset,
 	troutine, kroutine,
 	trackarr, trackarr2, tracki, trackPort,
-	previousLat, previusLong, previusAlt;
+	previousLat, previusLon, previusAlt;
 
 	*new { | aMosca, serialPort, offsetheading |
 
@@ -129,39 +129,6 @@ HeadTracker {
 		});
 	}
 
-	trackerRoutine {
-
-		Routine.new(
-			{
-				inf.do{
-					this.matchTByte(trackPort.read);
-				};
-			}
-		);
-	}
-
-	serialKeepItUp {
-
-		Routine.new(
-			{
-				inf.do{
-					if (trackPort.isOpen.not) // if serial port is closed
-					{
-						"Trying to reopen serial port!".postln;
-						if (SerialPort.devices.includesEqual(serport))
-						// and if device is actually connected
-						{
-							"Device connected! Opening port!".postln;
-							trackPort = SerialPort(serport, 115200, crtscts: true);
-							this.trackerRoutine; // start tracker routine again
-						}
-					};
-					1.wait;
-				};
-			}
-		);
-	}
-
 	offsetHeading { | angle | // give offset to reset North
 
 		headingOffset = angle;
@@ -169,7 +136,6 @@ HeadTracker {
 
 	free {
 
-		postln("bbbbbbbbbbbbbbbb");
 		troutine.stop;
 		kroutine.stop;
 		trackPort.close;

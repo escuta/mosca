@@ -18,6 +18,40 @@ may be downloaded here: http://escuta.org/mosca
 
 
 Mosca {
+
+	const plim = 1.2, // distance limit from origin where processes continue to run
+	fftsize = 2048, halfPi = 1.5707963267949, rad2deg = 57.295779513082;
+
+	classvar server,
+	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum, rirA12Spectrum,
+	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
+	rirList, irSpecPar, wxyzSpecPar, zSpecPar, wSpecPar,
+	spatList, spatFuncs,
+	// list of spat libs
+	lastN3D = -1, // last N3D lib index
+	lastFUMA = -1, // last FUMA lib index
+	playList = #["File","HWBus","SWBus","Stream"],
+	b2a, a2b, n2f, f2n,
+	blips,
+	maxorder,
+	convert_fuma,
+	convert_n3d,
+	convert_direct,
+	azimuths, radiusses, elevations,
+	numoutputs,
+	longest_radius, quarterRadius, twoAndaHalfRadius, highest_elevation, lowest_elevation,
+	vbap_buffer,
+	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
+	cart, spher, foa_a12_decoder_matrix,
+	novoplot, updateGuiCtl,
+	lastAutomation = nil,
+	firstTime,
+	isPlay = false,
+	playingBF,
+	currentsource, baudi,
+	watcher, prjDr,
+	foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
+
 	var <nfontes,
 	revGlobal, nonAmbi2FuMa, convertor,
 	libnumbox, <>control,
@@ -117,38 +151,6 @@ Mosca {
 
 	/////////////////////////////////////////
 
-
-	classvar server,
-	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum, rirA12Spectrum,
-	rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum,
-	rirList, irSpecPar, wxyzSpecPar, zSpecPar, wSpecPar,
-	spatList, spatFuncs,
-	// list of spat libs
-	lastN3D = -1, // last N3D lib index
-	lastFUMA = -1, // last FUMA lib index
-	playList = #["File","HWBus","SWBus","Stream"],
-	b2a, a2b, n2f, f2n,
-	blips,
-	maxorder,
-	convert_fuma,
-	convert_n3d,
-	convert_direct,
-	azimuths, radiusses, elevations,
-	numoutputs,
-	longest_radius, quarterRadius, twoAndaHalfRadius, highest_elevation, lowest_elevation,
-	vbap_buffer,
-	soa_a12_decoder_matrix, soa_a12_encoder_matrix,
-	cart, spher, foa_a12_decoder_matrix,
-	novoplot, updateGuiCtl,
-	lastAutomation = nil,
-	firstTime,
-	isPlay = false,
-	playingBF,
-	currentsource, baudi,
-	watcher, prjDr,
-	plim = 1.2, // distance limit from origin where processes continue to run
-	fftsize = 2048, halfPi = 1.5707963267949, rad2deg = 57.295779513082 ,
-	foaEncoderOmni, foaEncoderSpread, foaEncoderDiffuse;
 	*new { arg projDir, nsources = 10, dur = 180, rirBank,
 		server = Server.local, parentOssiaNode = OSSIA_Device("SC"), allCrtitical = false, decoder,
 		maxorder = 1, speaker_array, outbus = 0, suboutbus, rawformat = \FuMa, rawoutbus, autoloop = false;
