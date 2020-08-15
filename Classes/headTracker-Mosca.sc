@@ -102,7 +102,7 @@ HeadTracker {
 
 		// Arduino code needs changing?
 
-		moscaInstance.pitchnumboxProxy.valueAction = p * -1;
+		moscaInstance.pitchnumboxProxy.valueAction = p;
 		moscaInstance.rollnumboxProxy.valueAction = r;
 		moscaInstance.headingnumboxProxy.valueAction = h * -1;
 	}

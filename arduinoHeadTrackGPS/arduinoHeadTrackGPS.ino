@@ -7,9 +7,9 @@
  * and unziped in your Arduino home folder
  */
 
-#define GPS      // Use the Neo GPS module
-// #define SIDEWAYS // For a device rotated by 90 degrees on Headphones
-#define DEBUG    // Print out human readable data
+// #define GPS      // Use the Neo GPS module
+#define SIDEWAYS // For a device rotated by 90 degrees on Headphones
+// #define DEBUG    // Print out human readable data
 
 #include <NineAxesMotion.h> 
 #include <Wire.h>
@@ -128,9 +128,9 @@ void loop()
 
     // correct heading data for 90deg rotation of hardware 
     float headingf = mySensor.readEulerHeading();  
-    if (headingf < 0) {
-      headingf = (360 + headingf);
-    }
+//    if (headingf < 0) {
+//      headingf = (360 + headingf);
+//    }
     
     // adjust data to suit the receiving software
     if (headingf > 180) {
@@ -157,8 +157,8 @@ void loop()
     message.roll = (pitchf + PI) * 100;
 #else
     message.heading = (headingf + PI) * 100;
-    message.roll = (pitchf + PI) * 100;
-    message.pitch = (rollf + PI) * 100;
+    message.pitch = (pitchf + PI) * 100; 
+    message.roll = (rollf + PI) * 100;
 #endif
 
 #ifdef DEBUG

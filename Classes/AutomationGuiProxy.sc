@@ -29,13 +29,9 @@ AutomationGuiProxy : QView {
 		this.bounds(Rect(0,0,0,0)); // set fake bounds to keep Automation happy!
 	}
 
-	value {
-		^this.val;
-	}
+	value { ^this.val; }
 
-	value_ { | value |
-		this.val = value;
-	}
+	value_ { | value | this.val = value; }
 
 	mapToGlobal { | point |
 		_QWidget_MapToGlobal
@@ -43,22 +39,14 @@ AutomationGuiProxy : QView {
 	}
 
 	absoluteBounds {
-		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ) );
+		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ); );
 	}
 
-	bounds {
-		^this.getProperty(\geometry)
-	}
+	bounds { ^this.getProperty(\geometry); }
 
-	bounds_ { | rect |
-		this.setProperty(\geometry, rect.asRect )
-	}
+	bounds_ { | rect | this.setProperty(\geometry, rect.asRect); }
 
-	doAction {
-		this.action.value(this.val)
-	}
+	doAction { this.action.value(this.val); }
 
-	valueAction_ { |val|
-		this.value_(val).doAction
-	}
+	valueAction_ { |val| this.value_(val).doAction; }
 }
