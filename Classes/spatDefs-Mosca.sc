@@ -18,7 +18,7 @@ may be downloaded here: http://escuta.org/mosca
 //
 // SpatDef {
 //
-// 	const halfPi = 1.5707963267949, rad2deg = 57.295779513082;
+// 	const halfPi = Mosca.halfPi, rad2deg = Mosca.rad2deg;
 //
 // 	classvar <spatList, spatFuncs, distFilter,
 // 	// list of spat libs
@@ -501,6 +501,8 @@ may be downloaded here: http://escuta.org/mosca
 
 	spatDef { |maxorder, bFormNumChan, bfOrFmh, fourOrNine|
 
+		var halfPi = MoscaUtils.halfPi(), rad2deg = MoscaUtils.rad2deg();
+
 		// all gains are suposed to match VBAP output levels
 
 		// Ambitools
@@ -650,7 +652,7 @@ may be downloaded here: http://escuta.org/mosca
 	}
 
 	makeSpatialisers { | rev_type |
-		var out_type = 0;
+		var out_type = 0, halfPi = MoscaUtils.halfPi(), plim = MoscaUtils.plim();
 
 		spatList.do { |item, i|
 

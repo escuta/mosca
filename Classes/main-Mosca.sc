@@ -19,8 +19,7 @@ may be downloaded here: http://escuta.org/mosca
 
 Mosca {
 
-	const plim = 1.2, // distance limit from origin where processes continue to run
-	fftsize = 2048, halfPi = 1.5707963267949, rad2deg = 57.295779513082;
+	const fftsize = 2048;
 
 	classvar server,
 	rirWspectrum, rirXspectrum, rirYspectrum, rirZspectrum, rirA12Spectrum,
@@ -651,7 +650,7 @@ Mosca {
 					if(i == currentsource)
 					{
 						{winCtl[0][9].value = num.value}.defer;
-						{winCtl[1][9].value = num.value / halfPi}.defer;
+						{winCtl[1][9].value = num.value / MoscaUtils.halfPi()}.defer;
 					};
 				};
 
@@ -2467,6 +2466,7 @@ Mosca {
 
 		// this regulates file playing synths
 		watcher = Routine.new({
+			var plim = MoscaUtils.plim();
 			"WATCHER!!!".postln;
 			inf.do({
 				0.1.wait;

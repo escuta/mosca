@@ -50,6 +50,7 @@ may be downloaded here: http://escuta.org/mosca
 		zSliderHeight,
 		lastGui = Main.elapsedTime,
 		halfwidth, height, halfheight,
+		halfPi = MoscaUtils.halfPi(),
 		iguiint;
 
 		guiflag = true;
@@ -89,7 +90,7 @@ may be downloaded here: http://escuta.org/mosca
 				{x = halfwidth + (topView.x * halfheight)}.defer;
 				{y = halfheight - (topView.y * halfheight)}.defer;
 				Pen.addArc(x@y, max(14 + (lev * halfheight * 0.02), 0), 0, 2pi);
-				if ((audit[i] || isPlay) && (lev.abs <= plim)) {
+				if ((audit[i] || isPlay) && (lev.abs <= MoscaUtils.plim())) {
 					Pen.fillColor = Color.new255(179, 90, 209, 55 + (cboxProxy[i].value * 200));
 					Pen.fill;
 				} {
@@ -960,7 +961,7 @@ may be downloaded here: http://escuta.org/mosca
 				spheval[currentsource] = spheval[currentsource].asCartesian.z_(num.value).asSpherical;
 
 				ossiasphe[currentsource].v_([spheval[currentsource].rho,
-					(spheval[currentsource].theta - halfPi).wrap(-pi, pi),
+						(spheval[currentsource].theta - halfPi).wrap(-pi, pi),
 					spheval[currentsource].phi]);
 				};
 
@@ -2017,6 +2018,12 @@ may be downloaded here: http://escuta.org/mosca
 
 		win.view.mouseDownAction = { | view, mx, my, modifiers, buttonNumber, clickCount |
 			mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
+
+			if (sourceList.notNil) {
+				sourceList.close;
+				sourceList = nil;
+			};
+
 			case
 			{mouseButton == 0} {
 				var x = ((mx - halfwidth) / halfheight) / zoom_factor,
@@ -2037,19 +2044,14 @@ may be downloaded here: http://escuta.org/mosca
 				moveSource.value(mx, my);
 			}
 			{mouseButton == 1} {
-				if (sourceList.isNil) {
-					sourceList = ListView(win, Rect(mx,my,
-						90,70)).items_(itensdemenu).value_(-1) // to avoid the deffault to 1
-					.action_({ |sel|
-						sourceSelect.value(sel.value);
-						moveSource.value(mx + 45, my + 35);
-						sourceList.close;
-						sourceList = nil;
-					});
-				} {
+				sourceList = ListView(win, Rect(mx,my,
+					90,70)).items_(itensdemenu).value_(-1) // to avoid the deffault to 1
+				.action_({ |sel|
+					sourceSelect.value(sel.value);
+					moveSource.value(mx + 45, my + 35);
 					sourceList.close;
 					sourceList = nil;
-				};
+				});
 			}
 			{mouseButton == 2} {
 				nfontes.do { | i |
@@ -2102,7 +2104,7 @@ may be downloaded here: http://escuta.org/mosca
 			spheval[currentsource] = point.asSpherical;
 
 			ossiasphe[currentsource].v_([spheval[currentsource].rho,
-				(spheval[currentsource].theta - halfPi).wrap(-pi, pi),
+					(spheval[currentsource].theta - halfPi).wrap(-pi, pi),
 			spheval[currentsource].phi]);
 			};
 		};

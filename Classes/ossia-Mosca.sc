@@ -20,6 +20,8 @@ may be downloaded here: http://escuta.org/mosca
 
 	ossia { |allCrtitical|
 
+		var halfPi = MoscaUtils.halfPi();
+
 		var ossiaParent, ossiasrc, ossiaAutomation, ossiaMasterPlay,
 		ossiaMasterLib, ossiaMasterRev, ossiaAtk, ossiaJosh, previousScale;
 
@@ -93,7 +95,7 @@ may be downloaded here: http://escuta.org/mosca
 
 		ossiaMasterRev = OSSIA_Parameter(ossiaParent, "Distant_Reverb_all", String,
 			[nil, nil, ["no-reverb","freeverb","allpass", "A-format"]
-			++ rirList], "no-reverb",critical:true, repetition_filter:true);
+				++ rirList], "no-reverb",critical:true, repetition_filter:true);
 
 		ossiaMasterRev.description_((["no-reverb",
 			"freeverb","allpass","A-format"] ++ rirList).asString);
@@ -155,7 +157,7 @@ may be downloaded here: http://escuta.org/mosca
 
 			nfontes.do { | i |
 				var euler = (cartval[i] - origine)
-			.rotate(num.value[0].neg)
+				.rotate(num.value[0].neg)
 				.tilt(num.value[1].neg)
 				.tumble(num.value[2].neg)
 				/ ossiascale.v;
@@ -280,7 +282,7 @@ may be downloaded here: http://escuta.org/mosca
 			};
 		});
 
-        ossiarec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,
+		ossiarec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,
 			critical:true, repetition_filter:true);
 
 		ossiarec.callback_({ arg but;
@@ -612,5 +614,4 @@ may be downloaded here: http://escuta.org/mosca
 		});
 
 	}
-
 }

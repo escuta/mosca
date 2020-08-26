@@ -59,7 +59,7 @@ GUI Parameters usable in SynthDefs
 	auditionFunc { |source, bool|
 		if(bool) {
 			audit[source] = true;
-			if(isPlay.not && espacializador[source].isNil && (spheval[source].rho < plim)) {
+			if(isPlay.not && espacializador[source].isNil && (spheval[source].rho < MoscaUtils.plim())) {
 				this.newtocar(source, 0, force: true);
 				firstTime[source] = false;
 			};
