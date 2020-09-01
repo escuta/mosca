@@ -17,10 +17,11 @@ may be downloaded here: http://escuta.org/mosca
 */
 
 HeadTracker {
+	const baudRate = 115200;
+
 	var moscaInstance, serport, <headingOffset,
 	troutine, kroutine,
-	trackarr, trackarr2, tracki, trackPort,
-	previousLat, previusLon, previusAlt;
+	trackarr, trackarr2, tracki, trackPort;
 
 	*new { | aMosca, serialPort, offsetheading |
 
@@ -31,7 +32,7 @@ HeadTracker {
 
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
-		trackPort = SerialPort(serport, 115200, crtscts: true);
+		trackPort = SerialPort(serport, baudRate, crtscts: true);
 
 		trackPort.doneAction = {
 			"Serial port down".postln;
@@ -63,7 +64,7 @@ HeadTracker {
 						"Device connected! Opening port!".postln;
 						troutine.stop;
 						troutine.reset;
-						trackPort = SerialPort(serport, 115200,
+						trackPort = SerialPort(serport, baudRate,
 							crtscts: true);
 						troutine.play; // start tracker routine again
 					}
@@ -99,8 +100,6 @@ HeadTracker {
 
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
-
-		// Arduino code needs changing?
 
 		moscaInstance.pitchnumboxProxy.valueAction = p;
 		moscaInstance.rollnumboxProxy.valueAction = r;
@@ -143,6 +142,7 @@ HeadTracker {
 }
 
 HeadTrackerGPS : HeadTracker {
+	var previousLat, previusLon, previusAlt;
 
 	setTracker {
 

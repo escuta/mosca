@@ -113,6 +113,10 @@ OssiaAutomationProxy : AutomationView {
 	action_ { | function | param.callback_(function); }
 }
 
+	//-------------------------------------------//
+	//             COORDINATE SYSTEM             //
+	//-------------------------------------------//
+
 OssiaAutomatCenter {
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// 3D value version for absolute and relative coordiantes
@@ -121,11 +125,11 @@ OssiaAutomatCenter {
 	var heading, pitch, roll;
 	var origine, scale;
 
-	*new { | parent_node, allCrtitical |
-		^super.new.ctr(parent_node, allCrtitical);
+	*new { | parent_node, allCrtitical, sourcesArray |
+		^super.new.ctr(parent_node, allCrtitical, sourcesArray);
 	}
 
-	ctr { | parent_node, allCrtitical |
+	ctr { | parent_node, allCrtitical, sourcesArray |
 
 		ossiaOrigine = OSSIA_Parameter(parent_node, "Origine", OSSIA_vec3f,
 			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 0, 0],
@@ -143,26 +147,97 @@ OssiaAutomatCenter {
 
 		ossiaOrient.unit_(OSSIA_orientation.euler);
 
-		this.setAction();
+		heading = AutomationProxy(0.0);
+		pitch = AutomationProxy(0.0);
+		roll = AutomationProxy(0.0);
+
+		scale = OssiaAutomationProxy(parent_node, "Scale_factor", Float,
+			[0.01, 10],	1, 'clip', critical:allCrtitical);
+
+		this.setAction(sourcesArray);
 	}
 
-	setActions {
+	setActions { | sources |
 		var halfPi = MoscaUtils.halfPi();
+
+		ossiaOrigine.callback_({arg num;
+
+			origine.set(num[0].value, num[1].value, num[2].value);
+
+			sources.do {
+				var cart = (_.cartVal - origine)
+				.rotate(heading.value.neg)
+				.tilt(pitch.value.neg)
+				.tumble(roll.value.neg)
+				/ scale.v;
+
+				_.cartBack = false;
+
+				_.sphe.v_([cart.rho,
+				(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
+
+				_.cartBack = true;
+			};
+
+			if (oX.value != num[0].value) { oX.valueAction = num[0].value; };
+
+			if (oY.value != num[1].value) { oY.valueAction = num[1].value; };
+
+			if (oZ.value != num[2].value) { oZ.valueAction = num[2].value; };
+		});
+
+		ossiaOrient.callback_({arg num;
+
+			sources.do {
+				var euler = (_.cartVal - origine)
+				.rotate(num.value[0].neg)
+				.tilt(num.value[1].neg)
+				.tumble(num.value[2].neg)
+				/ scale.v;
+
+				_.cartBack = false;
+
+				_.sphe.v_([euler.rho,
+					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
+
+				_.setSynths(\rotAngle, _.rot.v + heading.value);
+
+				_.cartBack = true;
+			};
+
+			if (heading.value != num[0].value) { heading.valueAction = num[0].value; };
+
+			if (pitch.value != num[1].value) { pitch.valueAction = num[1].value; };
+
+			if (roll.value != num[2].value) { roll.valueAction = num[2].value; };
+		});
+
+		oX.action_({ | num | ossiaOrigine.v_([num.value, oY.value, oZ.value]); });
+
+		oY.action_({ | num | ossiaOrigine.v_([oX.value, num.value, oZ.value]); });
+
+		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]); });
+
+		heading.action_({ | num | ossiaOrient.v_([num.value, pitch.value, roll.value]); });
+
+		pitch.action_({ | num | ossiaOrient.v_([heading.value, num.value, roll.value]); });
+
+		roll.action_({ | num | ossiaOrient.v_([heading.value, pitch.value, num.value]); });
 	}
 }
 
 OssiaAutomatCoordinates {
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// 3D value version for absolute and relative coordiantes
-	var espacializador, synth;
-	var <x, <y, <z, <cart, <sphe;
-	var cartval, cartBack, spheval, spheBack;
+	var x, y, z, <>cart, <>sphe;
+	var <>cartVal, >cartBack, <>spheVal, >spheBack;
+	var >rot; // add the rotation parameter
 
-	*new { | espacializador, synth, parent_node, allCrtitical, origine, scale, heading, pitch, roll |
-		^super.newCopyrgs(espacializador, synth).ctr(parent_node, allCrtitical, origine, heading, pitch, roll);
+	*new { | parent_node, allCrtitical, origine, scale, heading, pitch, roll, espacializador, synth |
+		^super.ctr(parent_node, allCrtitical, origine, heading, pitch, roll, espacializador, synth);
 	}
 
-	ctr { | parent_node, allCrtitical, origine, scale, heading, pitch, roll |
+	ctr { | parent_node, allCrtitical, origine, scale, heading, pitch, roll, espacializador, synth |
 		var halfPi = MoscaUtils.halfPi();
 
 		cart = OSSIA_Parameter(parent_node, "Cartesian", OSSIA_vec3f,
@@ -171,8 +246,8 @@ OssiaAutomatCoordinates {
 
 		cart.unit_(OSSIA_position.cart3D);
 
-		cartval = Cartesian(0, 20, 0);
-		spheval = cartval.asSpherical;
+		cartVal = Cartesian(0, 20, 0);
+		spheVal = cartVal.asSpherical;
 
 		x = AutomationProxy(0.0);
 		y = AutomationProxy(20.0);
@@ -184,16 +259,16 @@ OssiaAutomatCoordinates {
 
 		sphe.unit_(OSSIA_position.spherical);
 
-		this.setAction(origine, scale, heading, pitch, roll);
+		this.setAction(origine, scale, heading, pitch, roll, espacializador, synth);
 	}
 
-	setActions { | origine, scale, heading, pitch, roll |
+	setActions { | origine, scale, heading, pitch, roll, espacializador, synth |
 		var halfPi = MoscaUtils.halfPi();
 
 		cart.callback_({arg num;
 			var sphe, sphediff;
-			cartval.set(num.value[0], num.value[1], num.value[2]);
-			sphe = (cartval - origine)
+			cartVal.set(num.value[0], num.value[1], num.value[2]);
+			sphe = (cartVal - origine)
 			.rotate(heading.value.neg)
 			.tilt(pitch.value.neg)
 			.tumble(roll.value.neg);
@@ -202,63 +277,48 @@ OssiaAutomatCoordinates {
 
 			cartBack = false;
 
-			if (spheBack && (sphe.v != sphediff)) {
-				sphe.v_(sphediff);
-			};
+			if (spheBack && (sphe.v != sphediff)) { sphe.v_(sphediff); };
 
-			if (x.value != num[0].value) {
-				x.valueAction_(num[0].value);
-			};
-			if (y.value != num[1].value) {
-				y.valueAction_(num[1].value);
-			};
-			if (z.value != num[2].value) {
-				z.valueAction_(num[2].value);
-			};
+			if (x.value != num[0].value) { x.valueAction_(num[0].value); };
+
+			if (y.value != num[1].value) { y.valueAction_(num[1].value); };
+
+			if (z.value != num[2].value) { z.valueAction_(num[2].value); };
 
 			cartBack = true;
 		});
 
 		x.action_({ | num |
-			if (cartBack && (cart.v[0] != num.value)) {
-				cart.v_([num.value, y.value,
-					z.value]);
-			};
+			if (cartBack && (cart.v[0] != num.value)) { cart.v_([num.value, y.value, z.value]); };
 		});
 
 		y.action_({ | num |
-			if (cartBack && (cart.v[1] != num.value)) {
-				cart.v_([x.value, num.value,
-					z.value]);
-			};
+			if (cartBack && (cart.v[1] != num.value)) { cart.v_([x.value, num.value, z.value]); };
 		});
 
 		z.action_({ | num |
-			if (cartBack && (cart.v[2] != num.value)) {
-				cart.v_([x.value, y.value,
-					num.value]);
-			};
+			if (cartBack && (cart.v[2] != num.value)) { cart.v_([x.value, y.value, num.value]); };
 		});
 
 		sphe.callback_({arg num;
-			spheval.rho_(num.value[0] * scale.v);
-			spheval.theta_(num.value[1].wrap(-pi, pi) + halfPi);
-			spheval.phi_(num.value[2].fold(halfPi.neg, halfPi));
+			spheVal.rho_(num.value[0] * scale.v);
+			spheVal.theta_(num.value[1].wrap(-pi, pi) + halfPi);
+			spheVal.phi_(num.value[2].fold(halfPi.neg, halfPi));
 			spheBack = false;
 			if (cartBack) {
 				cart.v_(
-					((spheval.tumble(roll.value)
+					((spheVal.tumble(roll.value)
 						.tilt(pitch.value)
 						.rotate(heading.value)
 						.asCartesian) + origine).asArray);
 			};
 
 			if(espacializador.notNil) {
-				espacializador.set(\radius, spheval.rho, \azim, spheval.theta, \elev, spheval.phi);
+				espacializador.set(\radius, spheVal.rho, \azim, spheVal.theta, \elev, spheVal.phi);
 			};
 
 			if (synth.notNil) {
-				synth.do({ _.set(\radius, spheval.rho, \azim, spheval.theta, \elev, spheval.phi); });
+				synth.do({ _.set(\radius, spheVal.rho, \azim, spheVal.theta, \elev, spheVal.phi); });
 			};
 
 			spheBack = true;

@@ -53,7 +53,7 @@ GUI Parameters usable in SynthDefs
 	}
 
 	audition { |source = 1, bool = true|
-		this.auditionFunc(source-1, bool);
+		this.auditionFunc(source - 1, bool);
 	}
 
 	auditionFunc { |source, bool|
@@ -308,7 +308,7 @@ GUI Parameters usable in SynthDefs
 		};
 	}
 
-	loadAutomationData { | path, rewind = true |
+	loadData { | path, rewind = true |
 		var libf, loopedf, aformatrevf, hwinf, scinf,
 		spreadf, diffusef, ncanf, businif, stcheckf, filenames;
 		//("THE PATH IS " ++ path ++ "/filenames.txt").postln;
@@ -387,8 +387,6 @@ GUI Parameters usable in SynthDefs
 		stcheckf.close;
 
 		if (rewind, control.seek);
-
-		//"RARARARARAR".postln;
 
 		// delay necessary here because streamdisks take some time to register
 		// after control.load
