@@ -225,7 +225,7 @@ OssiaAutomatCenter {
 	}
 }
 
-OssiaAutomatcoordinatesinates {
+OssiaAutomatCoordinates {
 	// 3D value version for absolute and relative coordinatesiantes
 	var x, y, z, <cart, <sphe;
 	var <cartVal, <cartBack, <spheVal, <spheBack;
