@@ -94,7 +94,7 @@ AutomationProxy : AutomationView {
 OssiaAutomationProxy : AutomationView {
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// single value version
-	var <>param;
+	var <param;
 
 	*new { | parent_node, name, type, domain, default_value, bounding_mode = 'free', critical = false, repetition_filter = true |
 		^super.new.ctr(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
@@ -113,27 +113,28 @@ OssiaAutomationProxy : AutomationView {
 	action_ { | function | param.callback_(function); }
 }
 
+
 	//-------------------------------------------//
-	//             COORDINATE SYSTEM             //
+	//             coordinatesINATE SYSTEM             //
 	//-------------------------------------------//
+
 
 OssiaAutomatCenter {
-	// embed an OSSIA_Parameter in a View to be used with Automation
-	// 3D value version for absolute and relative coordiantes
+	// defines the listenig point position and orientation
 	var <ossiaOrigine, <ossiaOrient;
 	var oX, oY, oZ;
-	var heading, pitch, roll;
-	var origine, scale;
+	var <heading, <pitch, <roll;
+	var <origine, <scale;
 
-	*new { | parent_node, allCrtitical, sourcesArray |
-		^super.new.ctr(parent_node, allCrtitical, sourcesArray);
+	*new { | parent_node, allCritical, sourcesArray |
+		^super.new.ctr(parent_node, allCritical, sourcesArray);
 	}
 
-	ctr { | parent_node, allCrtitical, sourcesArray |
+	ctr { | parent_node, allCritical, sourcesArray |
 
 		ossiaOrigine = OSSIA_Parameter(parent_node, "Origine", OSSIA_vec3f,
 			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 0, 0],
-			critical:allCrtitical, repetition_filter:true);
+			critical:allCritical, repetition_filter:true);
 
 		ossiaOrigine.unit_(OSSIA_position.cart3D);
 
@@ -143,7 +144,7 @@ OssiaAutomatCenter {
 
 		ossiaOrient = OSSIA_Parameter(parent_node, "Orientation", OSSIA_vec3f,
 			domain:[[-pi, -pi, -pi], [pi, pi, pi]], default_value:[0, 0, 0],
-			bounding_mode:'wrap', critical:allCrtitical, repetition_filter:true);
+			bounding_mode:'wrap', critical:allCritical, repetition_filter:true);
 
 		ossiaOrient.unit_(OSSIA_orientation.euler);
 
@@ -152,7 +153,7 @@ OssiaAutomatCenter {
 		roll = AutomationProxy(0.0);
 
 		scale = OssiaAutomationProxy(parent_node, "Scale_factor", Float,
-			[0.01, 10],	1, 'clip', critical:allCrtitical);
+			[0.01, 10],	1, 'clip', critical:allCritical);
 
 		this.setAction(sourcesArray);
 	}
@@ -165,18 +166,18 @@ OssiaAutomatCenter {
 			origine.set(num[0].value, num[1].value, num[2].value);
 
 			sources.do {
-				var cart = (_.cartVal - origine)
+				var cart = (_.coordinates.cartVal - origine)
 				.rotate(heading.value.neg)
 				.tilt(pitch.value.neg)
 				.tumble(roll.value.neg)
 				/ scale.v;
 
-				_.cartBack = false;
+				_.coordinates.cartBack = false;
 
-				_.sphe.v_([cart.rho,
+				_.coordinates.sphe.v_([cart.rho,
 				(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
 
-				_.cartBack = true;
+				_.coordinates.cartBack = true;
 			};
 
 			if (oX.value != num[0].value) { oX.valueAction = num[0].value; };
@@ -189,20 +190,18 @@ OssiaAutomatCenter {
 		ossiaOrient.callback_({arg num;
 
 			sources.do {
-				var euler = (_.cartVal - origine)
+				var euler = (_.coordinates.cartVal - origine)
 				.rotate(num.value[0].neg)
 				.tilt(num.value[1].neg)
 				.tumble(num.value[2].neg)
 				/ scale.v;
 
-				_.cartBack = false;
+				_.coordinates.cartBack = false;
 
-				_.sphe.v_([euler.rho,
+				_.coordinates.sphe.v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
-				_.setSynths(\rotAngle, _.rot.v + heading.value);
-
-				_.cartBack = true;
+				_.coordinates.cartBack = true;
 			};
 
 			if (heading.value != num[0].value) { heading.valueAction = num[0].value; };
@@ -226,23 +225,21 @@ OssiaAutomatCenter {
 	}
 }
 
-OssiaAutomatCoordinates {
-	// embed an OSSIA_Parameter in a View to be used with Automation
-	// 3D value version for absolute and relative coordiantes
-	var x, y, z, <>cart, <>sphe;
-	var <>cartVal, >cartBack, <>spheVal, >spheBack;
-	var >rot; // add the rotation parameter
+OssiaAutomatcoordinatesinates {
+	// 3D value version for absolute and relative coordinatesiantes
+	var x, y, z, <cart, <sphe;
+	var <cartVal, <cartBack, <spheVal, <spheBack;
 
-	*new { | parent_node, allCrtitical, origine, scale, heading, pitch, roll, espacializador, synth |
-		^super.ctr(parent_node, allCrtitical, origine, heading, pitch, roll, espacializador, synth);
+	*new { | parent_node, allCritical, center, espacializador, synth |
+		^super.ctr(parent_node, allCritical, center, espacializador, synth);
 	}
 
-	ctr { | parent_node, allCrtitical, origine, scale, heading, pitch, roll, espacializador, synth |
+	ctr { | parent_node, allCritical, center, espacializador, synth |
 		var halfPi = MoscaUtils.halfPi();
 
 		cart = OSSIA_Parameter(parent_node, "Cartesian", OSSIA_vec3f,
 			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 20, 0],
-		critical:allCrtitical, repetition_filter:true);
+		critical:allCritical, repetition_filter:true);
 
 		cart.unit_(OSSIA_position.cart3D);
 
@@ -255,23 +252,23 @@ OssiaAutomatCoordinates {
 
 		sphe = OSSIA_Parameter(parent_node, "Spherical", OSSIA_vec3f,
 			domain:[[0, -pi, halfPi.neg], [20, pi, halfPi]],
-		default_value:[20, 0, 0], critical:allCrtitical, repetition_filter:true);
+		default_value:[20, 0, 0], critical:allCritical, repetition_filter:true);
 
 		sphe.unit_(OSSIA_position.spherical);
 
-		this.setAction(origine, scale, heading, pitch, roll, espacializador, synth);
+		this.setAction(center, espacializador, synth);
 	}
 
-	setActions { | origine, scale, heading, pitch, roll, espacializador, synth |
+	setActions { | center, espacializador, synth |
 		var halfPi = MoscaUtils.halfPi();
 
 		cart.callback_({arg num;
 			var sphe, sphediff;
 			cartVal.set(num.value[0], num.value[1], num.value[2]);
-			sphe = (cartVal - origine)
-			.rotate(heading.value.neg)
-			.tilt(pitch.value.neg)
-			.tumble(roll.value.neg);
+			sphe = (cartVal - center.origine)
+			.rotate(center.heading.value.neg)
+			.tilt(center.pitch.value.neg)
+			.tumble(center.roll.value.neg);
 
 			sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
 
@@ -301,16 +298,16 @@ OssiaAutomatCoordinates {
 		});
 
 		sphe.callback_({arg num;
-			spheVal.rho_(num.value[0] * scale.v);
+			spheVal.rho_(num.value[0] * center.scale.v);
 			spheVal.theta_(num.value[1].wrap(-pi, pi) + halfPi);
 			spheVal.phi_(num.value[2].fold(halfPi.neg, halfPi));
 			spheBack = false;
 			if (cartBack) {
 				cart.v_(
-					((spheVal.tumble(roll.value)
-						.tilt(pitch.value)
-						.rotate(heading.value)
-						.asCartesian) + origine).asArray);
+					((spheVal.tumble(center.roll.value)
+						.tilt(center.pitch.value)
+						.rotate(center.heading.value)
+						.asCartesian) + center.origine).asArray);
 			};
 
 			if(espacializador.notNil) {
