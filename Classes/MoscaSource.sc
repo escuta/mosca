@@ -17,19 +17,20 @@
 */
 
 MoscaSource {
-	var index, src, <defName, <playType, <nChan, <dstrvTypes;
-	var spatializer, synths; // communicatin with the audio server
+	var index, server, src, <defName, <playType, <nChan, <dstrvTypes;
+	var spatializer, synths, buffer; // communicatin with the audio server
+	var scInBus, triggerFunc, stopFunc, synthRegistry; // sc synth specific
 	// common automation and ossia parameters
 	var <coordinates, <audition, <loop, <library, <level, <contraction ,<doppler;
 	// reveb parameters
-	var <file, stream, scSynths, external; // inputs types
+	var file, stream, scSynths, external; // inputs types
 	var <globalAmount, <localReverb, <localAmount, <localRoom, <localDamp;
 	var <angle, <rotation, <directivity; // input specific parameters
 	var <spread, <diffuse; // atk specific parameters
 	var <rate, <window, <random; // joshGrain specific parameters
 
-	*new { | index, ossiaParent, allCritical, spatList, center |
-		^super.newCopyArgs(index).ctr(ossiaParent, allCritical, center);
+	*new { | index, server, ossiaParent, allCritical, spatList, center |
+		^super.newCopyArgs(index, server).ctr(ossiaParent, allCritical, center);
 	}
 
 	ctr { | ossiaParent, allCritical, spatList, rirList, center |
@@ -39,6 +40,22 @@ MoscaSource {
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
 
 		input = OSSIA_Node(ossiaParent, "Input");
+
+		file = OssiaAutomationProxy(input, "File_path", String, critical: true);
+
+		file.param.description_("For loading or streaming sound files");
+
+		stream = OssiaAutomationProxy(input, "Stream", Boolean, critical: true);
+
+		stream.param.description_("Prefer loading smaler files and streaming and streaming when thy excid 6 minutes");
+
+		external = OssiaAutomationProxy(input, "External", Boolean, critical: true);
+
+		external.param.description_("External input, harware or software");
+
+		scSynths = OssiaAutomationProxy(input, "SCSynths", Boolean, critical: true);
+
+		scSynths.param.description_("Launch SC Synths");
 
 		coordinates = OssiaAutomatCoordinates(ossiaParent, allCritical, center, spatializer, synths);
 
@@ -130,9 +147,64 @@ MoscaSource {
 			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
 
 		random.description_("JoshGrain only");
+
+		this.setAction(spatList, rirList, center);
 	}
 
 	setAction { | spatList, rirList, center |
+
+		file.action_({ | path |
+
+			if (path != "") {
+				var sf = SoundFile.new;
+				sf.openRead(path);
+				nChan.valueAction_(sf.numChannels);
+				sf.close;
+
+				if (stream.value.not) {
+					if (buffer.notNil) {
+						buffer.freeMsg({
+							"Buffer freed".postln;
+						});
+					};
+
+					buffer = Buffer.read(server, path.value, action: { | buf |
+						"Loaded file".postln;
+					});
+				} {
+					"To stream file".postln;
+				};
+			} {
+				if (buffer.notNil) {
+					buffer.freeMsg({
+						buffer = nil;
+						"Buffer freed".postln;
+					});
+				};
+			};
+		});
+
+		external.action = { | val |
+			if (val.value == true) {
+				nChan.valueAction_(nChan.value);
+				scSynths.valueAction_(false);
+			};
+		};
+
+		scSynths.action_({ | val |
+			if (val.value == true) {
+				nChan.valueAction_(nChan.value);
+				external.valueAction_(false);
+			}{
+				if (scInBus.notNil) {
+					scInBus.free;
+					scInBus = nil;
+				};
+				triggerFunc = nil;
+				stopFunc = nil;
+				synthRegistry.clear;
+			};
+		});
 
 		library.action_({ | val |
 			var index = spatList.detectIndex({ | item | item == val.value });
