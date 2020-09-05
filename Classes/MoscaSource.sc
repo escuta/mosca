@@ -17,7 +17,7 @@
 */
 
 MoscaSource {
-	var index, server, src, <defName, <playType, <nChan, <dstrvTypes;
+	var index, server, src, <defName, playType, nChan, <dstrvTypes;
 	var spatializer, synths, buffer; // communicatin with the audio server
 	var scInBus, triggerFunc, stopFunc, synthRegistry; // sc synth specific
 	// common automation and ossia parameters
@@ -163,8 +163,6 @@ MoscaSource {
 			if (path != "") {
 				var sf = SoundFile.new;
 				sf.openRead(path);
-				nChan.valueAction_(sf.numChannels);
-				sf.close;
 
 				if (stream.value.not) {
 					if (buffer.notNil) {
@@ -176,9 +174,15 @@ MoscaSource {
 					buffer = Buffer.read(server, path.value, action: { | buf |
 						"Loaded file".postln;
 					});
+
+					playType = "File";
 				} {
+					playType = "Stream";
 					"To stream file".postln;
 				};
+
+				nChan.valueAction_(sf.numChannels);
+				sf.close;
 			} {
 				if (buffer.notNil) {
 					buffer.freeMsg({
@@ -190,86 +194,79 @@ MoscaSource {
 		});
 
 		external.action = { | val |
+
 			if (val.value == true) {
-				nChan.valueAction_(nChan.value);
+				if (file.value == "") {
+					playType = "EXBus";
+				};
 				scSynths.valueAction_(false);
 			};
 		};
 
 		scSynths.action_({ | val |
-			if (val.value == true) {
-				nChan.valueAction_(nChan.value);
-				external.valueAction_(false);
-			}{
-				if (scInBus.notNil) {
-					scInBus.free;
-					scInBus = nil;
+
+			if (file.value == "") {
+				if (val.value == true) {
+					external.valueAction_(false);
+					playType = "SWBus";
+				}{
+					if (scInBus.notNil) {
+						scInBus.free;
+						scInBus = nil;
+					};
+					triggerFunc = nil;
+					stopFunc = nil;
+					synthRegistry.clear;
 				};
-				triggerFunc = nil;
-				stopFunc = nil;
-				synthRegistry.clear;
 			};
 		});
 
-		library.action_({ | val |
-			var index = spatList.detectIndex({ | item | item == val.value });
+		nChan.action = { | val |
 
-			defName = val ++ nChan ++ playType ++ localReverb.value;
-		});
+			if ((file.value == "") && scSynths.value) { this.setSCBus(val.value); };
 
-		audition.action({ | val |
-			this.auditionFunc(val.value);
-		});
+			if (val.value < 4) {
+				contraction.valueAction_(1);
+			} {
+				contraction.valueAction_(0.5);
+			};
 
-		loop.action_({ | val |
-			this.setSynths(\lp, val.value.asInt);
-		});
+			this.setDefName();
+		};
 
-		level.action_({ | val |
-			this.setSynths(\amp, val.value.dbamp);
-		});
+		library.action_({ | val | this.setDefName(); });
 
-		contraction.action_({ | val |
-			this.setSynths(\contr, val.value);
-		});
+		audition.action({ | val | this.auditionFunc(val.value); });
 
-		doppler.action_({ | val |
-			this.setSynths(\dopamnt, val.value);
-		});
+		loop.action_({ | val | this.setSynths(\lp, val.value.asInt); });
 
-		globalAmount.action_({ | val |
-			this.setSynths(\glev, val.value);
-		});
+		level.action_({ | val | this.setSynths(\amp, val.value.dbamp); });
+
+		contraction.action_({ | val | this.setSynths(\contr, val.value); });
+
+		doppler.action_({ | val | this.setSynths(\dopamnt, val.value); });
+
+		globalAmount.action_({ | val | this.setSynths(\glev, val.value); });
 
 		localReverb.action_({ | val |
 			var index = (["no-reverb","freeverb","allpass"] ++ rirList).detectIndex({ | item | item == val.value });
 
-			defName = library.value ++ nChan ++ playType ++ val.value;
+			this.setDefName();
 		});
 
-		localAmount.action_({ | val |
-			this.setSynths(\llev, val.value);
-		});
+		localAmount.action_({ | val | this.setSynths(\llev, val.value); });
 
-		localRoom.action_({ | val |
-			this.setSynths(\room, val.value);
-		});
+		localRoom.action_({ | val | this.setSynths(\room, val.value); });
 
-		localDamp.action_({ | val |
-			this.setSynths(\damp, val.value);
-		});
+		localDamp.action_({ | val | this.setSynths(\damp, val.value); });
 
-		angle.action_({ | val |
-			this.setSynths(\angle, val.value);
-		});
+		angle.action_({ | val | this.setSynths(\angle, val.value); });
 
 		rotation.action_({ | val |
 			this.setSynths(\rotAngle, val.value  + center.heading.value);
 		});
 
-		directivity.action_({ | val |
-			this.setSynths(\directang, val.value);
-		});
+		directivity.action_({ | val | this.setSynths(\directang, val.value); });
 
 		spread.action_({ | val |
 			this.setSynths(\sp, val.value.asInt);
@@ -283,16 +280,21 @@ MoscaSource {
 			if (val.value) { spread.value_(false) };
 		});
 
-		rate.action_({ | val |
-			this.setSynths(\grainrate, val.value);
-		});
+		rate.action_({ | val | this.setSynths(\grainrate, val.value); });
 
-		window.action_({ | val |
-			this.setSynths(\winsize, val.value);
-		});
+		window.action_({ | val | this.setSynths(\winsize, val.value); });
 
-		random.action_({ | val |
-			this.setSynths(\winrand, val.value);
-		});
+		random.action_({ | val | this.setSynths(\winrand, val.value); });
+	}
+
+	setNumChannels { | val | if (file.value != "") { nChan.valueAction_(val); }; }
+
+	setDefName {
+
+		if ((file.value == "") && (scSynths.value || external.value)) {
+			defName = "";
+		} {
+			defName = library.value ++ nChan.value ++ playType ++ localReverb.value;
+		};
 	}
 }
