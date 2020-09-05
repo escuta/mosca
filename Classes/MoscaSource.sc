@@ -57,6 +57,11 @@ MoscaSource {
 
 		scSynths.param.description_("Launch SC Synths");
 
+		nChan = OssiaAutomationProxy(input, "Chanels", Integer,
+			[nil, nil, [1, 2, 4, 9, 16, 25]], critical: true, repetition_filter: false);
+
+		nChan.param.description_("number of channels for SC or external inputs");
+
 		coordinates = OssiaAutomatCoordinates(ossiaParent, allCritical, center, spatializer, synths);
 
 		library = OssiaAutomationProxy(ossiaParent, "Library", String, [nil, nil, spatList],
