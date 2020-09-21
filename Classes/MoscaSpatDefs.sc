@@ -1,57 +1,58 @@
 /*
-Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
-Creative Commons Attribution-NonCommercial 4.0 International License
-http://creativecommons.org/licenses/by-nc/4.0/
-The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
-by Joseph Anderson and the Automation quark
-(https://github.com/neeels/Automation) by Neels Hofmeyr.
-Required Quarks : Automation, Ctk, XML and  MathLib
-Required classes:
-SC Plugins: https://github.com/supercollider/sc3-plugins
-User must set up a project directory with subdirectoties "rir" and "auto"
-RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
-and must be placed in the "rir" directory.
-Run help on the "Mosca" class in SuperCollider for detailed information
-and code examples. Further information and sample RIRs and B-format recordings
-may be downloaded here: http://escuta.org/mosca
-*/
+ * Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+ * Creative Commons Attribution-NonCommercial 4.0 International License
+ * http://creativecommons.org/licenses/by-nc/4.0/
+ * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
+ * by Joseph Anderson and the Automation quark
+ * (https://github.com/neeels/Automation) by Neels Hofmeyr.
+ * Required Quarks : Automation, Ctk, XML and  MathLib
+ * Required classes:
+ * SC Plugins: https://github.com/supercollider/sc3-plugins
+ * User must set up a project directory with subdirectoties "rir" and "auto"
+ * RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
+ * and must be placed in the "rir" directory.
+ * Run help on the "Mosca" class in SuperCollider for detailed information
+ * and code examples. Further information and sample RIRs and B-format recordings
+ * may be downloaded here: http://escuta.org/mosca
+ */
 
 MoscaSpatDef {
-	const playList = #["File","HWBus","SWBus","Stream"]; // the diferent types of inputs to spatilizer synths
+	const playList = #["File","Stream","SCBus","EXBus"]; // the diferent types of inputs to spatilizer synths
 
-	classvar playInFunc, <spatList, spatFuncs, distFilter,
+	classvar playInFunc, distFilter,
 	// list of spat libs
-	lastN3D = -1, // last N3D lib index
-	lastFUMA = -1; // last FUMA lib index
+	<lastN3D = -1, // last N3D lib index
+	<lastFUMA = -1, // last FUMA lib index
+	<spatList;
 
-	var outPutFuncs;
+	var outPutFuncs, spatFuncs;
 
-	*new { | order, server, renderer, reverbDef |
+	initClass {
 
-		^super.new().ctr(order, server, renderer, reverbDef);
-	}
-
-	ctr { | order, server, renderer, reverbDef |
-
-		outPutFuncs = Array.newClear(3);
-		// contains the synthDef blocks for each spatialyers
-
-		outPutFuncs[0] = { |dry, wet, globrev|
-			Out.ar(reverbDef.gBixBus, wet * globrev);
-			Out.ar(renderer.n3dBus, wet);
+		distFilter = { | input, distance |
+			LPF.ar(input, (1 - distance) * 18000 + 2000);
 		};
 
-		outPutFuncs[1] = { |dry, wet, globrev|
-			Out.ar(reverbDef.gbfBus, wet * globrev);
-			Out.ar(renderer.fumaBus, wet);
-		};
+		playInFunc = [ // one for File, Stereo, BFormat, Stream - streamed file;
+			// Make File-in SynthDefs
+			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			var spos = tpos * BufSampleRate.kr(bufnum),
+			scaledRate = rate * BufRateScale.kr(bufnum);
+			playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
+				loop: lp, doneAction:2);
+			},
+			// Make Stream-in SynthDefs
+			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			var trig;
+			playerRef.value = DiskIn.ar(channum, bufnum, lp);
+			trig = Done.kr(playerRef.value);
+			FreeSelf.kr(trig);
+			},
+			// Make SCBus-in SynthDefs
+			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			playerRef.value = In.ar(busini, channum);
+			}]; // Note, all variables are needed
 
-		outPutFuncs[2] = { |dry, wet, globrev|
-			Out.ar(reverbDef.gBus, dry * globrev);
-			Out.ar(renderer.nonambiBus, wet);
-		};
-
-		this.spatDef(order, server, renderer);
 	}
 
 	spatDef { | maxOrder, server, renderer |
@@ -82,7 +83,7 @@ MoscaSpatDef {
 
 			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
-				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
+				var sig = distFilter.value(input, distance);
 				// attenuate high freq with distance
 				sig = HOALibEnc3D.ar(maxOrder,
 					ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
@@ -99,7 +100,7 @@ MoscaSpatDef {
 
 			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
-				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
+				var sig = distFilter.value(input, distance);
 				// attenuate high freq with distance
 				sig = HOAmbiPanner.ar(maxOrder,
 					ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
@@ -116,7 +117,7 @@ MoscaSpatDef {
 
 			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
-				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
+				var sig = distFilter.value(input, distance);
 				// attenuate high freq with distance
 				sig = HOASphericalHarmonics.coefN3D(maxOrder,
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation))
@@ -158,7 +159,7 @@ MoscaSpatDef {
 
 			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
-				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
+				var sig = distFilter.value(input, distance);
 				// attenuate high freq with distance
 				sig = MoscaUtils.bfOrFmh(maxOrder).ar(ref.value + sig, azimuth, elevation,
 					(renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius)), 0.5);
@@ -173,7 +174,7 @@ MoscaSpatDef {
 
 			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
 				contract, win, rate, rand|
-				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000);
+				var sig = distFilter.value(input, distance);
 				// attenuate high freq with distance
 				ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 					azimuth, 1 - contract, elevation, 1 - contract,
@@ -204,6 +205,36 @@ MoscaSpatDef {
 			});
 		};
 
+	}
+
+	*new { | order, server, renderer, reverbDef |
+
+		^super.new().ctr(order, server, renderer, reverbDef);
+	}
+
+	ctr { | order, server, renderer, reverbDef |
+
+		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
+
+		playInFunc = playInFunc.add({ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			playerRef.value = In.ar(busini + server.inputBus.index, channum);
+		});
+
+		outPutFuncs = [ // contains the synthDef blocks for each spatialyers
+			{ |dry, wet, globrev|
+			Out.ar(reverbDef.gBixBus, wet * globrev);
+			Out.ar(renderer.n3dBus, wet);
+			},
+			{ |dry, wet, globrev|
+			Out.ar(reverbDef.gbfBus, wet * globrev);
+			Out.ar(renderer.fumaBus, wet);
+			},
+			{ |dry, wet, globrev|
+			Out.ar(reverbDef.gBus, dry * globrev);
+			Out.ar(renderer.nonambiBus, wet);
+		}];
+
+		this.spatDef(order, server, renderer);
 	}
 
 	makeSpatialisers { | maxOrder, reverbDef, server |
@@ -244,8 +275,7 @@ MoscaSpatDef {
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 						reverbDef.localReverbFunc[count, 1].value(lrevRef, p, wir, rad * llev,
-							// local reverberation
-							room, damp);
+							room, damp); // local reverberation
 
 						lrevRef.value = lrevRef.value * revCut;
 
@@ -255,7 +285,6 @@ MoscaSpatDef {
 						outPutFuncs[out_type].value(p, lrevRef.value,
 							globallev.clip(0, 1) * glev);
 					});
-
 
 					stereo = SynthDef(item++"Stereo"++play_type++reverbDef.localReverbFunc[count, 0], {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
@@ -280,7 +309,7 @@ MoscaSpatDef {
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
 						reverbDef.localReverbFunc[count, 2].value(lrev1Ref, lrev2Ref, p[0], p[1],
-							wir, rad * llev, room, damp);
+							wir, rad * llev, room, damp); // local reverberation
 
 						lrev1Ref.value = lrev1Ref.value * revCut;
 						lrev2Ref.value = lrev2Ref.value * revCut;
@@ -476,7 +505,6 @@ MoscaSpatDef {
 
 						};
 					};
-
 				};
 			};
 		});

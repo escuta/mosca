@@ -6,6 +6,8 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 
 	*rad2deg { ^57.295779513082; }
 
+	*fftSize { ^2048; }
+
 	*n2f { ^FoaEncoderMatrix.newHoa1(); }
 
 	*b2a { ^FoaDecoderMatrix.newBtoA; }
