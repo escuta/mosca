@@ -17,59 +17,6 @@
 */
 
 //-------------------------------------------//
-//                 FREEVERB                  //
-//-------------------------------------------//
-
-FreeVerbDef : RevDefBase {
-	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
-
-	*initClass {
-
-		defList = defList.add(this.asClass);
-
-		defName = "FreeVerb";
-
-		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
-			lrevRef.value = FreeVerb.ar(p, mix: 1, room: room, damp: damp, mul: locallev);
-		};
-
-		localStereoReverbFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev
-			room = 0.5, damp = 0.5 |
-			var temp;
-			temp = FreeVerb2.ar(p1, p2, mix: 1, room: room, damp: damp, mul: locallev);
-			lrev1Ref.value = temp[0];
-			lrev2Ref.value = temp[1];
-		};
-	}
-
-	prFourChanGlobal {
-
-		globalRevFunc = { | sig, room, damp |
-			^[
-				FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
-				FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
-				FreeVerb.ar(sig[2], mix: 1, room: room, damp: damp),
-				FreeVerb.ar(sig[3], mix: 1, room: room, damp: damp)
-			].flat;
-		};
-	}
-
-	prTwelveChanGlobal {
-
-		globalRevFunc = { | sig, room, damp |
-			^[
-				FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
-				FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp),
-				FreeVerb2.ar(sig[4], sig[5], mix: 1, room: room, damp: damp),
-				FreeVerb2.ar(sig[6], sig[7], mix: 1, room: room, damp: damp),
-				FreeVerb2.ar(sig[8], sig[9], mix: 1, room: room, damp: damp),
-				FreeVerb2.ar(sig[10], sig[11], mix: 1, room: room, damp: damp)
-			].flat;
-		};
-	}
-}
-
-//-------------------------------------------//
 //                  ALLPASS                  //
 //-------------------------------------------//
 
@@ -126,6 +73,59 @@ PassRevDef : RevDefBase {
 }
 
 //-------------------------------------------//
+//                 FREEVERB                  //
+//-------------------------------------------//
+
+FreeVerbDef : RevDefBase {
+	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
+
+	*initClass {
+
+		defList = defList.add(this.asClass);
+
+		defName = "FreeVerb";
+
+		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
+			lrevRef.value = FreeVerb.ar(p, mix: 1, room: room, damp: damp, mul: locallev);
+		};
+
+		localStereoReverbFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev
+			room = 0.5, damp = 0.5 |
+			var temp;
+			temp = FreeVerb2.ar(p1, p2, mix: 1, room: room, damp: damp, mul: locallev);
+			lrev1Ref.value = temp[0];
+			lrev2Ref.value = temp[1];
+		};
+	}
+
+	prFourChanGlobal {
+
+		globalRevFunc = { | sig, room, damp |
+			^[
+				FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig[2], mix: 1, room: room, damp: damp),
+				FreeVerb.ar(sig[3], mix: 1, room: room, damp: damp)
+			].flat;
+		};
+	}
+
+	prTwelveChanGlobal {
+
+		globalRevFunc = { | sig, room, damp |
+			^[
+				FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
+				FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp),
+				FreeVerb2.ar(sig[4], sig[5], mix: 1, room: room, damp: damp),
+				FreeVerb2.ar(sig[6], sig[7], mix: 1, room: room, damp: damp),
+				FreeVerb2.ar(sig[8], sig[9], mix: 1, room: room, damp: damp),
+				FreeVerb2.ar(sig[10], sig[11], mix: 1, room: room, damp: damp)
+			].flat;
+		};
+	}
+}
+
+//-------------------------------------------//
 //               CONVOLUTION                 //
 //-------------------------------------------//
 
@@ -133,6 +133,8 @@ ConVerbDef : RevDefBase {
 	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
 
 	*initClass {
+
+		// Skipp adding it, wait till a rirBank is specified
 
 		defName = "Convolv";
 
@@ -193,6 +195,8 @@ NoRevDef : RevDefBase {
 
 	*initClass {
 
+		defList = defList.add(this.asClass);
+
 		defName = "no reverb";
 
 		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp| };
@@ -212,27 +216,14 @@ RevDefBase {
 	var	<convolution = false, <multyThread;
 	var <globalRevFunc;
 
-	*initClass {
-		Class.initClassTree(MoscaUtils);
-	}
+	*initClass { Class.initClassTree(MoscaUtils); }
 
-	*new { | maxOrder |
+	*new1stOrder { ^super.new.ctr1stOrder(); }
 
-		^super.new.ctr(maxOrder);
-	}
+	*new2ndOrder { ^super.new.ctr2ndOrder(); }
 
-	ctr { | maxOrder |
+	ctr1stOrder { this.prFourChanGlobal(); }
 
-		multyThread = Server.program.asString.endsWith("supernova");
-
-		if (maxOrder == 1 ) {
-			this.prFourChanMulty();
-		}{
-			this.prTwelveChanMulty();
-		};
-	}
-
-	prFourChanMulty {}
-	prTwelveChanMulty {}
+	ctr2ndOrder { this.prTwelveChanGlobal(); }
 
 }
