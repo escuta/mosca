@@ -16,16 +16,13 @@
  * may be downloaded here: http://escuta.org/mosca
  */
 
-MoscaSpatDef {
+MoscaSpatializer {
 	const playList = #["File","Stream","SCBus","EXBus"]; // the diferent types of inputs to spatilizer synths
 
 	classvar playInFunc, distFilter,
-	// list of spat libs
-	<lastN3D = -1, // last N3D lib index
-	<lastFUMA = -1, // last FUMA lib index
-	<spatList;
+	<spatList;	// list of spat libs
 
-	var outPutFuncs, spatFuncs;
+	var outPutFuncs;
 
 	initClass {
 
@@ -55,164 +52,12 @@ MoscaSpatDef {
 
 	}
 
-	spatDef { | maxOrder, server, renderer |
+	*new { | order, server, renderer, effectDef |
 
-		// all gains are suposed to match VBAP output levels
-
-		// Ambitools
-		if (\HOAAzimuthRotator1.asClass.notNil) {
-			lastN3D = lastN3D + 1; // increment last N3D lib index
-			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
-			spatList = spatList.add("Ambitools");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var sig = HOAEncoder.ar(maxOrder,
-					(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-					Lag.kr(elevation), 0, 1, distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius), renderer.longestRadius);
-				ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-			});
-		};
-
-
-		// HoaLib
-		if (\HOALibEnc3D1.asClass.notNil) {
-			lastN3D = lastN3D + 1; // increment last N3D lib index
-			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
-			spatList = spatList.add("HoaLib");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var sig = distFilter.value(input, distance);
-				// attenuate high freq with distance
-				sig = HOALibEnc3D.ar(maxOrder,
-					ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
-					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
-				ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-			});
-		};
-
-		// ADT
-		if (\HOAmbiPanner1.asClass.notNil) {
-			lastN3D = lastN3D + 1; // increment last N3D lib index
-			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
-			spatList = spatList.add("ADT");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var sig = distFilter.value(input, distance);
-				// attenuate high freq with distance
-				sig = HOAmbiPanner.ar(maxOrder,
-					ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
-					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
-				ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-			});
-		};
-
-		// SC-HOA
-		if (\HOASphericalHarmonics.asClass.notNil) {
-			lastN3D = lastN3D + 1; // increment last N3D lib index
-			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
-			spatList = spatList.add("SC-HOA");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var sig = distFilter.value(input, distance);
-				// attenuate high freq with distance
-				sig = HOASphericalHarmonics.coefN3D(maxOrder,
-					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation))
-				* (ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))));
-				ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-			});
-		};
-
-
-		// ATK
-		if (\FoaEncode.asClass.notNil) {
-			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
-			spatList = spatList.add("ATK");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var diffuse, spread, omni,
-				sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
-				// attenuate high freq with distance
-				rad = renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius);
-				sig = ref.value + (sig * rad);
-				omni = FoaEncode.ar(sig, FoaEncoderMatrix.newOmni);
-				spread = FoaEncode.ar(sig, FoaEncoderKernel.newSpread(subjectID: 6, kernelSize: 2048,
-					server:server, sampleRate:server.sampleRate.asInteger); );
-				diffuse = FoaEncode.ar(sig, FoaEncoderKernel.newDiffuse(subjectID: 3, kernelSize: 2048,
-					server:server, sampleRate:server.sampleRate.asInteger); );
-				sig = Select.ar(difu, [omni, diffuse]);
-				sig = Select.ar(spre, [sig, spread]);
-				sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract, azimuth, elevation);
-				sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
-				ref.value = FoaTransform.ar(sig, 'proximity', distance);
-			});
-		};
-
-		// BF-FMH
-		if (\FMHEncode1.asClass.notNil) {
-			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
-			spatList = spatList.add("BF-FMH");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var sig = distFilter.value(input, distance);
-				// attenuate high freq with distance
-				sig = MoscaUtils.bfOrFmh(maxOrder).ar(ref.value + sig, azimuth, elevation,
-					(renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius)), 0.5);
-				ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-			});
-		};
-
-		// JoshGrain
-		if (\MonoGrainBF.asClass.notNil) {
-			lastFUMA = lastFUMA + 1; // increment last FUMA lib index
-			spatList = spatList.add("Josh");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var sig = distFilter.value(input, distance);
-				// attenuate high freq with distance
-				ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
-					azimuth, 1 - contract, elevation, 1 - contract,
-					rho: (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius)) - 1,
-					mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
-			});
-		};
-
-		// VBAP
-		if (\VBAP.asClass.notNil) {
-			spatList = spatList.add("VBAP");
-
-			spatFuncs = spatFuncs.add({ |ref, input, distance, azimuth, elevation, difu, spre,
-				contract, win, rate, rand|
-				var sig = LPF.ar(input, (1 - distance) * 18000 + 2000),
-				// attenuate high freq with distance
-				azi = azimuth * MoscaUtils.rad2deg, // convert to degrees
-				elev = elevation * MoscaUtils.rad2deg, // convert to degrees
-				elevexcess = Select.kr(elev < renderer.lowestElevation, [0, elev.abs]);
-				elevexcess = Select.kr(elev > renderer.highestElevation, [0, elev]);
-				// get elevation overshoot
-				elev = elev.clip(renderer.lowestElevation, renderer.highestElevation);
-				// restrict between min & max
-				ref.value = VBAP.ar(renderer.numOutputs,
-					ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
-					renderer.vbapBuffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
-					((1 - contract) + (elevexcess / 90)) * 100);
-			});
-		};
-
+		^super.new().ctr(order, server, renderer, effectDef);
 	}
 
-	*new { | order, server, renderer, reverbDef |
-
-		^super.new().ctr(order, server, renderer, reverbDef);
-	}
-
-	ctr { | order, server, renderer, reverbDef |
+	ctr { | order, server, renderer, effectDef |
 
 		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
 
@@ -220,39 +65,37 @@ MoscaSpatDef {
 			playerRef.value = In.ar(busini + server.inputBus.index, channum);
 		});
 
-		outPutFuncs = [ // contains the synthDef blocks for each spatialyers
+		outPutFuncs = [ // contains the synthDef blocks for each spatialyers, 0 = n3d, 1 = fuma, 2 = nonAmbi
 			{ |dry, wet, globrev|
-			Out.ar(reverbDef.gBixBus, wet * globrev);
-			Out.ar(renderer.n3dBus, wet);
+				Out.ar(effectDef.gBixBus, wet * globrev);
+				Out.ar(renderer.n3dBus, wet);
 			},
 			{ |dry, wet, globrev|
-			Out.ar(reverbDef.gbfBus, wet * globrev);
-			Out.ar(renderer.fumaBus, wet);
+				Out.ar(effectDef.gbfBus, wet * globrev);
+				Out.ar(renderer.fumaBus, wet);
 			},
 			{ |dry, wet, globrev|
-			Out.ar(reverbDef.gBus, dry * globrev);
-			Out.ar(renderer.nonambiBus, wet);
+				Out.ar(effectDef.gbfBus[0], dry * globrev);
+				Out.ar(renderer.nonambiBus, wet);
 		}];
-
-		this.spatDef(order, server, renderer);
 	}
 
-	makeSpatialisers { | maxOrder, reverbDef, server |
+	makeSpatialisers { | maxOrder, effectDef, server |
 		var out_type = 0;
 
-		reverbDef.localReverbFunc.rowsDo({ |item, count|
+		effectDef.do({ | effect, count |
 
-			spatList.do { |item, i|
+			spatList.do { | spat, i |
 
 				case
-				{ i <= lastN3D } { out_type = 0 }
-				{ (i > lastN3D) && (i <= lastFUMA) } { out_type = 1 }
-				{ i > lastFUMA } { out_type = 2 };
+				{ spat.format == \N3D } { out_type = 0 }
+				{ spat.format == \FUMA } { out_type = 1 }
+				{ out_type = 2 };
 
 				playList.do { |play_type, j|
 					var mono, stereo;
 
-					mono = SynthDef(item++play_type++reverbDef.localReverbFunc[count, 0], {
+					mono = SynthDef(spat ++ play_type ++ 1 ++ effect.defName, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0,
@@ -274,19 +117,19 @@ MoscaSpatDef {
 						p = p * amp;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-						reverbDef.localReverbFunc[count, 1].value(lrevRef, p, wir, rad * llev,
+						effect.localReverbFunc[count, 1].value(lrevRef, p, wir, rad * llev,
 							room, damp); // local reverberation
 
 						lrevRef.value = lrevRef.value * revCut;
 
-						spatFuncs[i].value(lrevRef, p * cut, rad, az, elev, df, sp, contr,
+						spat.spatFunc.value(lrevRef, p * cut, rad, az, elev, df, sp, contr,
 							winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(p, lrevRef.value,
 							globallev.clip(0, 1) * glev);
 					});
 
-					stereo = SynthDef(item++"Stereo"++play_type++reverbDef.localReverbFunc[count, 0], {
+					stereo = SynthDef(spat ++ play_type ++ 2 ++ effect.defName, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
@@ -308,7 +151,7 @@ MoscaSpatDef {
 						p = p * amp;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-						reverbDef.localReverbFunc[count, 2].value(lrev1Ref, lrev2Ref, p[0], p[1],
+						effect.localReverbFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
 							wir, rad * llev, room, damp); // local reverberation
 
 						lrev1Ref.value = lrev1Ref.value * revCut;
@@ -316,9 +159,9 @@ MoscaSpatDef {
 
 						p = p * cut;
 
-						spatFuncs[i].value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
+						spat.spatFunc.value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
 							elev, df, sp, contr, winsize, grainrate, winrand);
-						spatFuncs[i].value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
+						spat.spatFunc.value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
 							elev, df, sp, contr, winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(Mix.ar(p) * 0.5,
@@ -339,10 +182,10 @@ MoscaSpatDef {
 						};
 					};
 
-					if (item == "ATK") {
+					if (spat.defName == \ATK) {
 
 						// assume FuMa input
-						SynthDef(\ATKBFormat++play_type++4, {
+						SynthDef(\ATKBFormat ++ play_type ++ 4, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
@@ -367,7 +210,7 @@ MoscaSpatDef {
 							p = p * amp;
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-							reverbDef.localReverbFunc[count, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
+							effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
 							p = FoaDirectO.ar((lrevRef.value * revCut) + (p * cut), directang);
@@ -406,7 +249,7 @@ MoscaSpatDef {
 								p = p * amp;
 								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-								reverbDef.localReverbFunc[count, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
+								effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 								// local reverberation
 
 								p = FoaEncode.ar((lrevRef.value * revCut) + (p * cut), MoscaUtils.n2f);
@@ -421,10 +264,10 @@ MoscaSpatDef {
 						};
 					};
 
-					if (item == "Ambitools") {
+					if (spat == \Ambitools) {
 
 						// assume FuMa input
-						SynthDef(\AmbitoolsBFormat++play_type++4, {
+						SynthDef(\AmbitoolsBFormat ++ play_type ++ 4, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
@@ -449,7 +292,7 @@ MoscaSpatDef {
 							p = p * amp * (1 + (contr * 3));
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-							reverbDef.localReverbFunc[count, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
+							effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
 							p = FoaDecode.ar((lrevRef.value * revCut) + (p * cut), MoscaUtils.f2n);
@@ -464,7 +307,7 @@ MoscaSpatDef {
 							var ord = (item.sqrt) - 1,
 
 							// assume N3D input
-							hoaSynth = SynthDef(\AmbitoolsBFormat++play_type++item, {
+							hoaSynth = SynthDef(\AmbitoolsBFormat ++ play_type ++ item, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 								azim = 0, elev = 0, radius = 20, amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
@@ -488,7 +331,7 @@ MoscaSpatDef {
 								p = p * amp * (1 + (contr * 3));
 								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-								reverbDef.localReverbFunc[count, 1].value(lrevRef, p[0], wir, rad * llev, room, damp);
+								effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 								// local reverberation
 
 								p = HOATransRotateAz.ar(ord, lrevRef.value * revCut + (p * cut), rotAngle);

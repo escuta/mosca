@@ -20,7 +20,7 @@
 //                  ALLPASS                  //
 //-------------------------------------------//
 
-PassRevDef : RevDefBase {
+PassRevDef : EffectDef {
 	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
 
 	*initClass {
@@ -53,7 +53,8 @@ PassRevDef : RevDefBase {
 
 	prFourChanGlobal {
 
-		globalRevFunc = { | sig, room, damp |
+		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
 				{ Rand(0, 0.001) },
 			damp * 2)});
@@ -63,7 +64,8 @@ PassRevDef : RevDefBase {
 
 	prTwelveChanGlobal {
 
-		globalRevFunc = { | sig, room, damp |
+		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(12) +
 				{ Rand(0, 0.001) },
 			damp * 2)});
@@ -76,7 +78,7 @@ PassRevDef : RevDefBase {
 //                 FREEVERB                  //
 //-------------------------------------------//
 
-FreeVerbDef : RevDefBase {
+FreeVerbDef : EffectDef {
 	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
 
 	*initClass {
@@ -100,7 +102,8 @@ FreeVerbDef : RevDefBase {
 
 	prFourChanGlobal {
 
-		globalRevFunc = { | sig, room, damp |
+		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
 				FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
@@ -112,7 +115,8 @@ FreeVerbDef : RevDefBase {
 
 	prTwelveChanGlobal {
 
-		globalRevFunc = { | sig, room, damp |
+		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
 				FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp),
@@ -129,14 +133,14 @@ FreeVerbDef : RevDefBase {
 //               CONVOLUTION                 //
 //-------------------------------------------//
 
-ConVerbDef : RevDefBase {
+ConVerbDef : EffectDef {
 	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
 
 	*initClass {
 
 		// Skipp adding it, wait till a rirBank is specified
 
-		defName = "Convolv";
+		defName = "Conv";
 
 		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			lrevRef.value = PartConv.ar(p, MoscaUtils.fftSize(), rirWspectrum, locallev);
@@ -154,12 +158,13 @@ ConVerbDef : RevDefBase {
 
 	prFourChanGlobal {
 
-		globalRevFunc = { | sig, room, damp, fluir, frdir, bldir, bruir |
+		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
-				PartConv.ar(sig[0], MoscaUtils.fftSize(), fluir),
-				PartConv.ar(sig[1], MoscaUtils.fftSize(), frdir),
-				PartConv.ar(sig[2], MoscaUtils.fftSize(), bldir),
-				PartConv.ar(sig[3], MoscaUtils.fftSize(), bruir)
+				PartConv.ar(sig[0], MoscaUtils.fftSize(), a0ir),
+				PartConv.ar(sig[1], MoscaUtils.fftSize(), a1ir),
+				PartConv.ar(sig[2], MoscaUtils.fftSize(), a2ir),
+				PartConv.ar(sig[3], MoscaUtils.fftSize(), a3ir)
 			];
 		};
 	}
@@ -167,7 +172,7 @@ ConVerbDef : RevDefBase {
 	prTwelveChanGlobal {
 
 		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
-			a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir|
+		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				PartConv.ar(sig[0], MoscaUtils.fftSize(), a0ir),
 				PartConv.ar(sig[1], MoscaUtils.fftSize(), a1ir),
@@ -190,14 +195,14 @@ ConVerbDef : RevDefBase {
 //                 NOREVERB                  //
 //-------------------------------------------//
 
-NoRevDef : RevDefBase {
+NoRevDef : EffectDef {
 	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "no reverb";
+		defName = "clear";
 
 		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp| };
 
@@ -211,7 +216,7 @@ NoRevDef : RevDefBase {
 //               Base Classe                 //
 //-------------------------------------------//
 
-RevDefBase {
+EffectDef {
 	classvar <defList;
 	var	<convolution = false, <multyThread;
 	var <globalRevFunc;

@@ -1,4 +1,42 @@
 MoscaUtils { // virtual class holding constants for Mosca related classes
+	classvar cart = #[
+		0.850650808352E+00,
+		0,
+		-0.525731112119E+00,
+		0.525731112119E+00,
+		-0.850650808352E+00,
+		0.000000000000E+00,
+		0,
+		-0.525731112119E+00,
+		0.850650808352E+00,
+		0.850650808352E+00,
+		0,
+		0.525731112119E+00,
+		-0.525731112119E+00,
+		-0.850650808352E+00,
+		0,
+		0,
+		0.525731112119E+00,
+		-0.850650808352E+00,
+		-0.850650808352E+00,
+		0,
+		-0.525731112119E+00,
+		-0.525731112119E+00,
+		0.850650808352E+00,
+		0,
+		0,
+		0.525731112119E+00,
+		0.850650808352E+00,
+		-0.850650808352E+00,
+		0,
+		0.525731112119E+00,
+		0.525731112119E+00,
+		0.850650808352E+00,
+		0,
+		0,
+		-0.525731112119E+00,
+		-0.850650808352E+00
+	];
 
 	*plim { ^1.2; } // distance limit from origin where processes continue to run
 
@@ -8,13 +46,13 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 
 	*fftSize { ^2048; }
 
-	*n2f { ^FoaEncoderMatrix.newHoa1(); }
+	*n2f { | sig | ^FoaEncoderMatrix.newHoa1(); }
 
-	*b2a { ^FoaDecoderMatrix.newBtoA; }
+	*b2a { | sig | ^FoaDecoderMatrix.newBtoA(); }
 
-	*a2b { ^FoaEncoderMatrix.newAtoB; }
+	*a2b { | sig | ^FoaEncoderMatrix.newAtoB(); }
 
-	*f2n { ^FoaDecoderMatrix.newHoa1(); }
+	*f2n { | sig | ^FoaDecoderMatrix.newHoa1(); }
 
 	*fourOrNine { | order |
 		if (order > 1) {
@@ -98,52 +136,33 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 	// 1st-order FuMa-MaxN A-format decoder
 
 	*foa_a12_decoder_matrix {
-		var cart, spher;
-
-		cart = [
-			0.850650808352E+00,
-			0,
-			-0.525731112119E+00,
-			0.525731112119E+00,
-			-0.850650808352E+00,
-			0.000000000000E+00,
-			0,
-			-0.525731112119E+00,
-			0.850650808352E+00,
-			0.850650808352E+00,
-			0,
-			0.525731112119E+00,
-			-0.525731112119E+00,
-			-0.850650808352E+00,
-			0,
-			0,
-			0.525731112119E+00,
-			-0.850650808352E+00,
-			-0.850650808352E+00,
-			0,
-			-0.525731112119E+00,
-			-0.525731112119E+00,
-			0.850650808352E+00,
-			0,
-			0,
-			0.525731112119E+00,
-			0.850650808352E+00,
-			-0.850650808352E+00,
-			0,
-			0.525731112119E+00,
-			0.525731112119E+00,
-			0.850650808352E+00,
-			0,
-			0,
-			-0.525731112119E+00,
-			-0.850650808352E+00
-		];
+		var spher;
 
 		// convert to angles -- use these directions
-		spher = cart.clump(3).collect({ | cart, i |
+		spher = cart.collect({ | cart, i |
 			cart.asCartesian.asSpherical.angles;
 		});
 
 		^FoaEncoderMatrix.newDirections(spher).matrix.pseudoInverse;
+	}
+
+	// 1st-order FuMa-MaxN A-format decoder
+
+	*foa_n3d_encoder {
+
+		^4.collect({ | i |
+			var sphe = cart.clump(3)[i].asCartesian.asSpherical;
+			HOASphericalHarmonics.coefN3D(1, sphe.theta(), sphe.phi());
+		});
+	}
+
+	// 1st-order FuMa-MaxN A-format decoder
+
+	*soa_n3d_encoder {
+
+		^cart.clump(3).collect({ | cart |
+			var sphe = cart.asCartesian.asSpherical;
+			HOASphericalHarmonics.coefN3D(1, sphe.theta(), sphe.phi());
+		});
 	}
 }

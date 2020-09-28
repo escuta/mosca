@@ -18,7 +18,7 @@ may be downloaded here: http://escuta.org/mosca
 
 MoscaRenderer {
 	var <nonAmbiBus, <fumaBus, <n3dBus; // buses
-	var <convertDirect, <convertFuma, <convertN3D; // conversion
+	var <convertFuma, <convertN3D; // conversion
 	var numOutputs, bFormNumChan; // usefull number of chanels
 	var <longestRadius, quarterRadius, twoAndaHalfRadius, <lowestElevation, <highestElevation; // utils
 	var <vbapBuffer;
@@ -38,7 +38,6 @@ MoscaRenderer {
 
 		// setup Vbap
 		if (speaker_array.notNil) {
-
 			var max_func, min_func, dimention, vbap_setup, adjust;
 
 			numOutputs = speaker_array.size;
@@ -175,7 +174,6 @@ MoscaRenderer {
 			{
 				convertFuma = false;
 				convertN3D = true;
-				convertDirect = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var n3dsig, env;
@@ -200,7 +198,6 @@ MoscaRenderer {
 			{
 				convertFuma = true;
 				convertN3D = false;
-				convertDirect = true;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -229,7 +226,6 @@ MoscaRenderer {
 			{
 				convertFuma = false;
 				convertN3D = true;
-				convertDirect = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var n3dsig, env;
@@ -291,7 +287,6 @@ MoscaRenderer {
 
 					convertFuma = false;
 					convertN3D = true;
-					convertDirect = false;
 
 					if (elevations.isNil) {
 						elevations = Array.fill(numOutputs, { 0 });
@@ -322,7 +317,6 @@ MoscaRenderer {
 				} { // assume ADT Decoder
 					convertFuma = true;
 					convertN3D = false;
-					convertDirect = false;
 
 					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
@@ -351,7 +345,6 @@ MoscaRenderer {
 			{
 				convertFuma = true;
 				convertN3D = false;
-				convertDirect = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -380,7 +373,6 @@ MoscaRenderer {
 			{
 				convertFuma = true;
 				convertN3D = false;
-				convertDirect = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
@@ -411,7 +403,6 @@ MoscaRenderer {
 			{
 				convertFuma = true;
 				convertN3D = false;
-				convertDirect = false;
 
 				SynthDef("ambiConverter", { | gate = 1 |
 					var sig, env;
