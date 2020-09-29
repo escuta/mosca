@@ -17,38 +17,35 @@
  */
 
 MoscaSpatializer {
-	const playList = #["File","Stream","SCBus","EXBus"]; // the diferent types of inputs to spatilizer synths
+	const playList = #["File","Stream","SCBus","EXBus"];
+	// the diferent types of inputs to spatilizer synths
 
-	classvar playInFunc, distFilter,
-	<spatList;	// list of spat libs
+	classvar playInFunc, distFilter, <spatList;
+	// list of spat libs
 
 	var outPutFuncs;
 
-	initClass {
-
-		distFilter = { | input, distance |
-			LPF.ar(input, (1 - distance) * 18000 + 2000);
-		};
+	*initClass {
 
 		playInFunc = [ // one for File, Stereo, BFormat, Stream - streamed file;
 			// Make File-in SynthDefs
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-			var spos = tpos * BufSampleRate.kr(bufnum),
-			scaledRate = rate * BufRateScale.kr(bufnum);
-			playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
-				loop: lp, doneAction:2);
+				var spos = tpos * BufSampleRate.kr(bufnum),
+				scaledRate = rate * BufRateScale.kr(bufnum);
+				playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
+					loop: lp, doneAction:2);
 			},
 			// Make Stream-in SynthDefs
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-			var trig;
-			playerRef.value = DiskIn.ar(channum, bufnum, lp);
-			trig = Done.kr(playerRef.value);
-			FreeSelf.kr(trig);
+				var trig;
+				playerRef.value = DiskIn.ar(channum, bufnum, lp);
+				trig = Done.kr(playerRef.value);
+				FreeSelf.kr(trig);
 			},
 			// Make SCBus-in SynthDefs
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-			playerRef.value = In.ar(busini, channum);
-			}]; // Note, all variables are needed
+				playerRef.value = In.ar(busini, channum);
+		}]; // Note, all variables are needed
 
 	}
 
@@ -66,15 +63,15 @@ MoscaSpatializer {
 		});
 
 		outPutFuncs = [ // contains the synthDef blocks for each spatialyers, 0 = n3d, 1 = fuma, 2 = nonAmbi
-			{ |dry, wet, globrev|
+			{ | dry, wet, globrev |
 				Out.ar(effectDef.gBixBus, wet * globrev);
 				Out.ar(renderer.n3dBus, wet);
 			},
-			{ |dry, wet, globrev|
+			{ | dry, wet, globrev |
 				Out.ar(effectDef.gbfBus, wet * globrev);
 				Out.ar(renderer.fumaBus, wet);
 			},
-			{ |dry, wet, globrev|
+			{ | dry, wet, globrev |
 				Out.ar(effectDef.gbfBus[0], dry * globrev);
 				Out.ar(renderer.nonambiBus, wet);
 		}];
@@ -95,7 +92,7 @@ MoscaSpatializer {
 				playList.do { |play_type, j|
 					var mono, stereo;
 
-					mono = SynthDef(spat ++ play_type ++ 1 ++ effect.defName, {
+					mono = SynthDef(spat.defName ++ play_type ++ 1 ++ effect.defName, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0,
@@ -117,7 +114,7 @@ MoscaSpatializer {
 						p = p * amp;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-						effect.localReverbFunc[count, 1].value(lrevRef, p, wir, rad * llev,
+						effect.localMonoFunc.value(lrevRef, p, wir, rad * llev,
 							room, damp); // local reverberation
 
 						lrevRef.value = lrevRef.value * revCut;
@@ -129,7 +126,7 @@ MoscaSpatializer {
 							globallev.clip(0, 1) * glev);
 					});
 
-					stereo = SynthDef(spat ++ play_type ++ 2 ++ effect.defName, {
+					stereo = SynthDef(spat.defName ++ play_type ++ 2 ++ effect.defName, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
@@ -151,7 +148,7 @@ MoscaSpatializer {
 						p = p * amp;
 						p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-						effect.localReverbFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
+						effect.localStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
 							wir, rad * llev, room, damp); // local reverberation
 
 						lrev1Ref.value = lrev1Ref.value * revCut;
@@ -210,7 +207,7 @@ MoscaSpatializer {
 							p = p * amp;
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-							effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
+							effect.localMonoFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
 							p = FoaDirectO.ar((lrevRef.value * revCut) + (p * cut), directang);
@@ -224,6 +221,7 @@ MoscaSpatializer {
 
 						[9, 16, 25].do { |item, count|
 							var ord = (item.sqrt) - 1;
+
 							// assume N3D input
 							SynthDef(\ATKBFormat++play_type++item, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
@@ -249,7 +247,7 @@ MoscaSpatializer {
 								p = p * amp;
 								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-								effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
+								effect.localMonoFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 								// local reverberation
 
 								p = FoaEncode.ar((lrevRef.value * revCut) + (p * cut), MoscaUtils.n2f);
@@ -264,7 +262,7 @@ MoscaSpatializer {
 						};
 					};
 
-					if (spat == \Ambitools) {
+					if (spat.defName == \Ambitools) {
 
 						// assume FuMa input
 						SynthDef(\AmbitoolsBFormat ++ play_type ++ 4, {
@@ -292,7 +290,7 @@ MoscaSpatializer {
 							p = p * amp * (1 + (contr * 3));
 							p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-							effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
+							effect.localMonoFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 							// local reverberation
 
 							p = FoaDecode.ar((lrevRef.value * revCut) + (p * cut), MoscaUtils.f2n);
@@ -331,7 +329,7 @@ MoscaSpatializer {
 								p = p * amp * (1 + (contr * 3));
 								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
-								effect.localReverbFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
+								effect.localMonoFunc.value(lrevRef, p[0], wir, rad * llev, room, damp);
 								// local reverberation
 
 								p = HOATransRotateAz.ar(ord, lrevRef.value * revCut + (p * cut), rotAngle);

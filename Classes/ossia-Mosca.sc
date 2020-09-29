@@ -16,7 +16,7 @@ and code examples. Further information and sample RIRs and B-format recordings
 may be downloaded here: http://escuta.org/mosca
 */
 
-+ Mosca {
++ Moscav2 {
 
 	ossia { |allCrtitical|
 

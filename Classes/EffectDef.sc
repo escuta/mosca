@@ -20,8 +20,8 @@
 //                  ALLPASS                  //
 //-------------------------------------------//
 
-PassRevDef : EffectDef {
-	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
+AllPassDef : EffectDef {
+	classvar <localMonoFunc, <localStereoFunc, <defName;
 
 	*initClass {
 
@@ -29,7 +29,7 @@ PassRevDef : EffectDef {
 
 		defName = "AllPass";
 
-		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
+		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			var temp = p;
 			16.do({ temp = AllpassC.ar(temp, 0.08, room * { Rand(0, 0.08) } +
 				{ Rand(0, 0.001) },
@@ -37,7 +37,7 @@ PassRevDef : EffectDef {
 			lrevRef.value = temp * locallev;
 		};
 
-		localStereoReverbFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
+		localStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
 			locallev, room, damp |
 			var temp1 = p1, temp2 = p2;
 			8.do({ temp1 = AllpassC.ar(temp1, 0.08, room * { Rand(0, 0.08) } +
@@ -53,7 +53,7 @@ PassRevDef : EffectDef {
 
 	prFourChanGlobal {
 
-		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
 				{ Rand(0, 0.001) },
@@ -64,7 +64,7 @@ PassRevDef : EffectDef {
 
 	prTwelveChanGlobal {
 
-		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(12) +
 				{ Rand(0, 0.001) },
@@ -79,7 +79,7 @@ PassRevDef : EffectDef {
 //-------------------------------------------//
 
 FreeVerbDef : EffectDef {
-	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
+	classvar <localMonoFunc, <localStereoFunc, <defName;
 
 	*initClass {
 
@@ -87,11 +87,11 @@ FreeVerbDef : EffectDef {
 
 		defName = "FreeVerb";
 
-		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
+		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			lrevRef.value = FreeVerb.ar(p, mix: 1, room: room, damp: damp, mul: locallev);
 		};
 
-		localStereoReverbFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev
+		localStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev
 			room = 0.5, damp = 0.5 |
 			var temp;
 			temp = FreeVerb2.ar(p1, p2, mix: 1, room: room, damp: damp, mul: locallev);
@@ -102,7 +102,7 @@ FreeVerbDef : EffectDef {
 
 	prFourChanGlobal {
 
-		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
@@ -115,7 +115,7 @@ FreeVerbDef : EffectDef {
 
 	prTwelveChanGlobal {
 
-		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
@@ -133,8 +133,8 @@ FreeVerbDef : EffectDef {
 //               CONVOLUTION                 //
 //-------------------------------------------//
 
-ConVerbDef : EffectDef {
-	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
+ConvolutionDef : EffectDef {
+	classvar <localMonoFunc, <localStereoFunc, <defName;
 
 	*initClass {
 
@@ -142,11 +142,11 @@ ConVerbDef : EffectDef {
 
 		defName = "Conv";
 
-		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
+		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			lrevRef.value = PartConv.ar(p, MoscaUtils.fftSize(), rirWspectrum, locallev);
 		};
 
-		localStereoReverbFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev
+		localStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum, locallev
 			room = 0.5, damp = 0.5 |
 			var temp1 = p1, temp2 = p2;
 			temp1 = PartConv.ar(p1, MoscaUtils.fftSize(), rirZspectrum, locallev);
@@ -158,7 +158,7 @@ ConVerbDef : EffectDef {
 
 	prFourChanGlobal {
 
-		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				PartConv.ar(sig[0], MoscaUtils.fftSize(), a0ir),
@@ -171,7 +171,7 @@ ConVerbDef : EffectDef {
 
 	prTwelveChanGlobal {
 
-		globalRevFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				PartConv.ar(sig[0], MoscaUtils.fftSize(), a0ir),
@@ -195,18 +195,18 @@ ConVerbDef : EffectDef {
 //                 NOREVERB                  //
 //-------------------------------------------//
 
-NoRevDef : EffectDef {
-	classvar <localMonoReverbFunc, <localStereoReverbFunc, <defName;
+ClearDef : EffectDef {
+	classvar <localMonoFunc, <localStereoFunc, <defName;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "clear";
+		defName = "Clear";
 
-		localMonoReverbFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp| };
+		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp| };
 
-		localStereoReverbFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
+		localStereoFunc = { | lrev1Ref, lrev2Ref, p1, p2, rirZspectrum,
 			locallev, room, damp |
 		};
 	}
@@ -219,7 +219,7 @@ NoRevDef : EffectDef {
 EffectDef {
 	classvar <defList;
 	var	<convolution = false, <multyThread;
-	var <globalRevFunc;
+	var <globalFunc;
 
 	*initClass { Class.initClassTree(MoscaUtils); }
 

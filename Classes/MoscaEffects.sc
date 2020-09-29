@@ -17,17 +17,18 @@
 */
 
 MoscaEffects {
+	var multyThread;
 	var <wSpecPar, <zSpecPar, wxyzSpecPar, irSpecPar;
 	var <gBfBus, <gBxBus, glbRevGrp;
 	var defs;
 	var encodeFunc, decodeFunc;
 
-	*new { | server, maxOrder, renderer, rirBank |
+	*new { | server, maxOrder, multyThread, renderer, rirBank |
 
-		^super.new.ctr(server, maxOrder, renderer, rirBank);
+		^super.newCopyArgs(multyThread).ctr(server, maxOrder, renderer, rirBank);
 	}
 
-	ctr { | server, maxOrder, multyThread, renderer, rirBank |
+	ctr { | server, maxOrder, renderer, rirBank |
 		var busChans = MoscaUtils.fourOrNine(maxOrder);
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus

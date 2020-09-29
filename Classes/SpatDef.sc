@@ -38,8 +38,10 @@ ABTDef : SpatDef {
 			contract, win, rate, rand|
 			var sig = HOAEncoder.ar(maxOrder,
 				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-				Lag.kr(elevation), 0, 1, distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius), renderer.longestRadius);
-			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
+				Lag.kr(elevation), 0, 1, distance.linlin(0, 0.75, renderer.quarterRadius,
+					renderer.twoAndaHalfRadius), renderer.longestRadius);
+			ref.value = (sig * contract) +
+			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
 }

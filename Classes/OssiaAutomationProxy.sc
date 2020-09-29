@@ -1,19 +1,19 @@
 /*
-Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
-Creative Commons Attribution-NonCommercial 4.0 International License
-http://creativecommons.org/licenses/by-nc/4.0/
-The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
-by Joseph Anderson and the Automation quark
-(https://github.com/neeels/Automation) by Neels Hofmeyr.
-Required Quarks : Automation, Ctk, XML and  MathLib
-Required classes:
-SC Plugins: https://github.com/supercollider/sc3-plugins
-User must set up a project directory with subdirectoties "rir" and "auto"
-RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
-and must be placed in the "rir" directory.
-Run help on the "Mosca" class in SuperCollider for detailed information
-and code examples. Further information and sample RIRs and B-format recordings
-may be downloaded here: http://escuta.org/mosca
+ * Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+ * Creative Commons Attribution-NonCommercial 4.0 International License
+ * http://creativecommons.org/licenses/by-nc/4.0/
+ * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
+ * by Joseph Anderson and the Automation quark
+ * (https://github.com/neeels/Automation) by Neels Hofmeyr.
+ * Required Quarks : Automation, Ctk, XML and  MathLib
+ * Required classes:
+ * SC Plugins: https://github.com/supercollider/sc3-plugins
+ * User must set up a project directory with subdirectoties "rir" and "auto"
+ * RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
+ * and must be placed in the "rir" directory.
+ * Run help on the "Mosca" class in SuperCollider for detailed information
+ * and code examples. Further information and sample RIRs and B-format recordings
+ * may be downloaded here: http://escuta.org/mosca
 */
 
 
@@ -75,8 +75,10 @@ AutomationView : QView {
 	bounds_ { | rect | this.setProperty(\geometry, rect.asRect); }
 }
 
-AutomationProxy : AutomationView {
-	var val, action;
+AutomationProxy //: AutomationView
+// is the QView inheritence needed ?
+{
+	var val, >action;
 
 	*new { | val |
 		^super.newCopyArgs(val);
@@ -91,7 +93,9 @@ AutomationProxy : AutomationView {
 	valueAction_ { |val| this.value_(val).doAction; }
 }
 
-OssiaAutomationProxy : AutomationView {
+OssiaAutomationProxy //: AutomationView
+// is the QView inheritence needed ?
+{
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// single value version
 	var <param;
@@ -115,22 +119,24 @@ OssiaAutomationProxy : AutomationView {
 
 
 	//-------------------------------------------//
-	//             coordinatesINATE SYSTEM             //
+	//             COORDINATE SYSTEM             //
 	//-------------------------------------------//
 
 
-OssiaAutomatCenter {
+OssiaAutomationCenter {
 	// defines the listenig point position and orientation
 	var <ossiaOrigine, <ossiaOrient;
 	var oX, oY, oZ;
 	var <heading, <pitch, <roll;
 	var <origine, <scale;
 
-	*new { | parent_node, allCritical, sourcesArray |
-		^super.new.ctr(parent_node, allCritical, sourcesArray);
+	*new { | parent_node, allCritical |
+		^super.new.ctr(parent_node, allCritical);
 	}
 
-	ctr { | parent_node, allCritical, sourcesArray |
+	ctr { | parent_node, allCritical, automation |
+
+		origine = Cartesian();
 
 		ossiaOrigine = OSSIA_Parameter(parent_node, "Origine", OSSIA_vec3f,
 			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 0, 0],
@@ -154,31 +160,29 @@ OssiaAutomatCenter {
 
 		scale = OssiaAutomationProxy(parent_node, "Scale_factor", Float,
 			[0.01, 10],	1, 'clip', critical:allCritical);
-
-		this.setAction(sourcesArray);
 	}
 
 	setActions { | sources |
 		var halfPi = MoscaUtils.halfPi();
 
-		ossiaOrigine.callback_({arg num;
+		ossiaOrigine.callback_({ | num |
 
 			origine.set(num[0].value, num[1].value, num[2].value);
 
-			sources.do {
-				var cart = (_.coordinates.cartVal - origine)
+			sources.do({ | item |
+				var cart = (item.coordinates.cartVal - origine)
 				.rotate(heading.value.neg)
 				.tilt(pitch.value.neg)
 				.tumble(roll.value.neg)
-				/ scale.v;
+				/ scale.value;
 
-				_.coordinates.cartBack = false;
+				item.coordinates.cartBack_(false);
 
-				_.coordinates.sphe.v_([cart.rho,
+				item.coordinates.sphe.v_([cart.rho,
 				(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
 
-				_.coordinates.cartBack = true;
-			};
+				item.coordinates.cartBack_(true);
+			});
 
 			if (oX.value != num[0].value) { oX.valueAction = num[0].value; };
 
@@ -187,28 +191,28 @@ OssiaAutomatCenter {
 			if (oZ.value != num[2].value) { oZ.valueAction = num[2].value; };
 		});
 
-		ossiaOrient.callback_({arg num;
+		ossiaOrient.callback_({ | num |
 
-			sources.do {
-				var euler = (_.coordinates.cartVal - origine)
+			sources.do({ | item |
+				var euler = (item.coordinates.cartVal - origine)
 				.rotate(num.value[0].neg)
 				.tilt(num.value[1].neg)
 				.tumble(num.value[2].neg)
-				/ scale.v;
+				/ scale.value;
 
-				_.coordinates.cartBack = false;
+				item.coordinates.cartBack_(false);
 
-				_.coordinates.sphe.v_([euler.rho,
+				item.coordinates.sphe.v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
-				_.coordinates.cartBack = true;
-			};
+				item.coordinates.cartBack_(true);
+			});
 
-			if (heading.value != num[0].value) { heading.valueAction = num[0].value; };
+			if (heading.value != num[0].value) { heading.valueAction_(num[0].value); };
 
-			if (pitch.value != num[1].value) { pitch.valueAction = num[1].value; };
+			if (pitch.value != num[1].value) { pitch.valueAction_(num[1].value); };
 
-			if (roll.value != num[2].value) { roll.valueAction = num[2].value; };
+			if (roll.value != num[2].value) { roll.valueAction_(num[2].value); };
 		});
 
 		oX.action_({ | num | ossiaOrigine.v_([num.value, oY.value, oZ.value]); });
@@ -225,16 +229,16 @@ OssiaAutomatCenter {
 	}
 }
 
-OssiaAutomatCoordinates {
+OssiaAutomationCoordinates {
 	// 3D value version for absolute and relative coordinatesiantes
 	var x, y, z, <cart, <sphe;
-	var <cartVal, <cartBack, <spheVal, <spheBack;
+	var <cartVal, <>cartBack, <spheVal, <spheBack;
 
-	*new { | parent_node, allCritical, center, espacializador, synth |
-		^super.ctr(parent_node, allCritical, center, espacializador, synth);
+	*new { | parent_node, allCritical, center, spatializer, synth |
+		^super.new.ctr(parent_node, allCritical, center, spatializer, synth);
 	}
 
-	ctr { | parent_node, allCritical, center, espacializador, synth |
+	ctr { | parent_node, allCritical, center, spatializer, synth |
 		var halfPi = MoscaUtils.halfPi();
 
 		cart = OSSIA_Parameter(parent_node, "Cartesian", OSSIA_vec3f,
@@ -256,13 +260,13 @@ OssiaAutomatCoordinates {
 
 		sphe.unit_(OSSIA_position.spherical);
 
-		this.setAction(center, espacializador, synth);
+		this.setActions(center, spatializer, synth);
 	}
 
-	setActions { | center, espacializador, synth |
+	setActions { | center, spatializer, synth |
 		var halfPi = MoscaUtils.halfPi();
 
-		cart.callback_({arg num;
+		cart.callback_({ | num |
 			var sphe, sphediff;
 			cartVal.set(num.value[0], num.value[1], num.value[2]);
 			sphe = (cartVal - center.origine)
@@ -297,8 +301,8 @@ OssiaAutomatCoordinates {
 			if (cartBack && (cart.v[2] != num.value)) { cart.v_([x.value, y.value, num.value]); };
 		});
 
-		sphe.callback_({arg num;
-			spheVal.rho_(num.value[0] * center.scale.v);
+		sphe.callback_({ | num |
+			spheVal.rho_(num.value[0] * center.scale.value);
 			spheVal.theta_(num.value[1].wrap(-pi, pi) + halfPi);
 			spheVal.phi_(num.value[2].fold(halfPi.neg, halfPi));
 			spheBack = false;
@@ -310,8 +314,8 @@ OssiaAutomatCoordinates {
 						.asCartesian) + center.origine).asArray);
 			};
 
-			if(espacializador.notNil) {
-				espacializador.set(\radius, spheVal.rho, \azim, spheVal.theta, \elev, spheVal.phi);
+			if(spatializer.notNil) {
+				spatializer.set(\radius, spheVal.rho, \azim, spheVal.theta, \elev, spheVal.phi);
 			};
 
 			if (synth.notNil) {

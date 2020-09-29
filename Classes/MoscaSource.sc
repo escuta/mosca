@@ -24,22 +24,22 @@ MoscaSource {
 	var <coordinates, <audition, <loop, <library, <level, <contraction ,<doppler;
 	// reveb parameters
 	var file, stream, scSynths, external; // inputs types
-	var <globalAmount, <localReverb, <localAmount, <localRoom, <localDamp;
+	var <globalAmount, <localEffect, <localAmount, <localRoom, <localDamp;
 	var <angle, <rotation, <directivity; // input specific parameters
 	var <spread, <diffuse; // atk specific parameters
 	var <rate, <window, <random; // joshGrain specific parameters
 
-	*new { | index, server, ossiaParent, allCritical, spatList, center |
-		^super.newCopyArgs(index, server).ctr(ossiaParent, allCritical, center);
+	*new { | index, server, ossiaParent, allCritical, spatList, fxList, center |
+		^super.newCopyArgs(index, server).ctr(ossiaParent, allCritical, spatList, fxList, center);
 	}
 
-	ctr { | ossiaParent, allCritical, spatList, rirList, center |
+	ctr { | ossiaParent, allCritical, spatList, fxList, center |
 
 		var input, atk, josh;
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
 
-		input = OSSIA_Node(ossiaParent, "Input");
+		input = OSSIA_Node(src, "Input");
 
 		file = OssiaAutomationProxy(input, "File_path", String, critical: true);
 
@@ -47,7 +47,7 @@ MoscaSource {
 
 		stream = OssiaAutomationProxy(input, "Stream", Boolean, critical: true);
 
-		stream.param.description_("Prefer loading smaler files and streaming and streaming when thy excid 6 minutes");
+		stream.param.description_("Prefer loading smaler files and streaming when thy excid 6 minutes");
 
 		external = OssiaAutomationProxy(input, "External", Boolean, critical: true);
 
@@ -58,73 +58,71 @@ MoscaSource {
 		scSynths.param.description_("Launch SC Synths");
 
 		nChan = OssiaAutomationProxy(input, "Chanels", Integer,
-			[nil, nil, [1, 2, 4, 9, 16, 25]], critical: true, repetition_filter: false);
+			[nil, nil, [1, 2, 4, 9, 16, 25]], 1, critical: true, repetition_filter: false);
 
-		nChan.param.description_("number of channels for SC or external inputs");
+		nChan.param.description_("number of channels for SC or External inputs");
 
-		coordinates = OssiaAutomatCoordinates(ossiaParent, allCritical, center, spatializer, synths);
+		coordinates = OssiaAutomationCoordinates(src, allCritical, center, spatializer, synths);
 
-		library = OssiaAutomationProxy(ossiaParent, "Library", String, [nil, nil, spatList],
-		spatList.first, critical:true, repetition_filter:true);
+		library = OssiaAutomationProxy(src, "Library", String, [nil, nil, spatList],
+			"Ambitools", critical:true, repetition_filter:true);
 
 		library.param.description_(spatList.asString);
 
-		audition = OssiaAutomationProxy(ossiaParent, "Audition", Boolean,
+		audition = OssiaAutomationProxy(src, "Audition", Boolean,
 		critical:true, repetition_filter:true);
 
-		loop = OssiaAutomationProxy(ossiaParent, "Loop", Boolean,
+		loop = OssiaAutomationProxy(src, "Loop", Boolean,
 		critical:true, repetition_filter:true);
 
-		level = OssiaAutomationProxy(ossiaParent, "Level", Float, [-96, 12],
+		level = OssiaAutomationProxy(src, "Level", Float, [-96, 12],
 		0, 'clip', critical:allCritical, repetition_filter:true);
 
 		level.param.unit_(OSSIA_gain.decibel);
 
-		contraction = OssiaAutomationProxy(ossiaParent, "Contraction", Float,
+		contraction = OssiaAutomationProxy(src, "Contraction", Float,
 			[0, 1], 1.0, 'clip', critical:allCritical, repetition_filter:true);
 
-		doppler = OssiaAutomationProxy(ossiaParent, "Doppler_amount", Float,
+		doppler = OssiaAutomationProxy(src, "Doppler_amount", Float,
 		[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
 
-		globalAmount = OssiaAutomationProxy(ossiaParent, "Global_amount", Float,
+		globalAmount = OssiaAutomationProxy(src, "Global_amount", Float,
 			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
 
 		globalAmount.param.unit_(OSSIA_gain.linear);
 
-		localReverb = OssiaAutomationProxy(ossiaParent, "Local_reverb", String,
-			[nil, nil, ["no-reverb","freeverb","allpass", "A-format"] ++ rirList],
-			"no-reverb", critical:true, repetition_filter:true);
+		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
+			[nil, nil, fxList], "Clear", critical:true, repetition_filter:true);
 
-		localReverb.param.description_((["no-reverb","freeverb","allpass", "A-format"]
-			++ rirList).asString);
+		localEffect.param.description_(fxList.asString);
 
-		localAmount = OssiaAutomationProxy(localReverb, "Local_amount", Float,
+		localAmount = OssiaAutomationProxy(localEffect.param, "Local_amount", Float,
 			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
 
 		localAmount.param.unit_(OSSIA_gain.linear);
 
-		localRoom = OssiaAutomationProxy(localReverb, "Distant_room_delay", Float,
+		localRoom = OssiaAutomationProxy(localEffect.param, "Room_delay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
-		localDamp = OssiaAutomationProxy(localReverb, "Distant_damp_decay", Float,
+		localDamp = OssiaAutomationProxy(localEffect.param, "Damp_decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
-		angle = OssiaAutomationProxy(ossiaParent, "Stereo_angle", Float,
+		angle = OssiaAutomationProxy(src, "Stereo_angle", Float,
 			[0, pi], 1.05, 'clip', critical:allCritical, repetition_filter:true);
 
 		angle.param.unit_(OSSIA_angle.radian).description_("Stereo_only");
 
-		rotation = OssiaAutomationProxy(ossiaParent, "B-Format_rotation", Float,
+		rotation = OssiaAutomationProxy(src, "B-Format_rotation", Float,
 			[-pi, pi], 0, 'wrap', critical:allCritical, repetition_filter:true);
 
 		rotation.param.unit_(OSSIA_angle.radian).description_("B-Format only");
 
-		atk = OSSIA_Node(ossiaParent, "Atk");
+		atk = OSSIA_Node(src, "Atk");
 
 		directivity = OssiaAutomationProxy(atk, "Directivity", Float,
 			[0, pi * 0.5], 0, 'clip', critical:allCritical, repetition_filter:true);
 
-		directivity.pram.description_("ATK B-Format only");
+		directivity.param.description_("ATK B-Format only");
 
 		spread = OssiaAutomationProxy(atk, "Spread", Boolean,
 			critical:true, repetition_filter:true);
@@ -134,9 +132,9 @@ MoscaSource {
 		diffuse = OssiaAutomationProxy(atk, "Diffuse", Boolean,
 			critical:true, repetition_filter:true);
 
-		diffuse.description_("ATK only");
+		diffuse.param.description_("ATK only");
 
-		josh = OSSIA_Node(ossiaParent, "Josh");
+		josh = OSSIA_Node(src, "Josh");
 
 		rate = OssiaAutomationProxy(josh, "Grain_rate", Float,
 			[1, 60], 10, 'clip', critical:allCritical, repetition_filter:true);
@@ -151,12 +149,12 @@ MoscaSource {
 		random = OssiaAutomationProxy(josh, "Randomize_window", Float,
 			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
 
-		random.description_("JoshGrain only");
+		random.param.description_("JoshGrain only");
 
-		this.setAction(spatList, rirList, center);
+		this.prSetAction(spatList, fxList, center);
 	}
 
-	setAction { | spatList, rirList, center |
+	prSetAction { | spatList, fxList, center |
 
 		file.action_({ | path |
 
@@ -231,10 +229,10 @@ MoscaSource {
 				contraction.valueAction_(0.5);
 			};
 
-			this.setDefName();
+			this.prSetDefName();
 		};
 
-		library.action_({ | val | this.setDefName(); });
+		library.action_({ | val | this.prSetDefName(); });
 
 		audition.action({ | val | this.auditionFunc(val.value); });
 
@@ -248,10 +246,10 @@ MoscaSource {
 
 		globalAmount.action_({ | val | this.setSynths(\glev, val.value); });
 
-		localReverb.action_({ | val |
-			var index = (["no-reverb","freeverb","allpass"] ++ rirList).detectIndex({ | item | item == val.value });
+		localEffect.action_({ | val |
+			var index = fxList.detectIndex({ | item | item == val.value });
 
-			this.setDefName();
+			this.prSetDefName();
 		});
 
 		localAmount.action_({ | val | this.setSynths(\llev, val.value); });
@@ -289,12 +287,12 @@ MoscaSource {
 
 	setNumChannels { | val | if (file.value != "") { nChan.valueAction_(val); }; }
 
-	setDefName {
+	prSetDefName {
 
 		if ((file.value == "") && (scSynths.value || external.value)) {
-			defName = "";
+			defName = nil;
 		} {
-			defName = library.value ++ nChan.value ++ playType ++ localReverb.value;
+			defName = library.value ++ playType ++ nChan.value ++ localEffect.value;
 		};
 	}
 }

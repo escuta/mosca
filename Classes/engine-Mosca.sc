@@ -17,7 +17,7 @@ may be downloaded here: http://escuta.org/mosca
 */
 
 
-+ Mosca {
++ Moscav2 {
 
 	*printSynthParams {
 		var string =
