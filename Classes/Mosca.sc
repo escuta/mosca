@@ -1,42 +1,41 @@
 /*
- * Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
- * Creative Commons Attribution-NonCommercial 4.0 International License
- * http://creativecommons.org/licenses/by-nc/4.0/
- * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
- * by Joseph Anderson and the Automation quark
- * (https://github.com/neeels/Automation) by Neels Hofmeyr.
- * Required Quarks : Automation, Ctk, XML and  MathLib
- * Required classes:
- * SC Plugins: https://github.com/supercollider/sc3-plugins
- * User must set up a project directory with subdirectoties "rir" and "auto"
- * RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
- * and must be placed in the "rir" directory.
- * Run help on the "Mosca" class in SuperCollider for detailed information
- * and code examples. Further information and sample RIRs and B-format recordings
- * may be downloaded here: http://escuta.org/mosca
- */
+* Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+* Creative Commons Attribution-NonCommercial 4.0 International License
+* http://creativecommons.org/licenses/by-nc/4.0/
+* The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
+* by Joseph Anderson and the Automation quark
+* (https://github.com/neeels/Automation) by Neels Hofmeyr.
+* Required Quarks : Automation, Ctk, XML and  MathLib
+* Required classes:
+* SC Plugins: https://github.com/supercollider/sc3-plugins
+* User must set up a project directory with subdirectoties "ir" and "auto"
+* irs should have the first 100 or 120ms silenced to act as "tail" reverberators
+* and must be placed in the "ir" directory.
+* Run help on the "Mosca" class in SuperCollider for detailed information
+* and code examples. Further information and sample irs and B-format recordings
+* may be downloaded here: http://escuta.org/mosca
+*/
 
 Mosca {
 	var projDir, dur, server, <ossiaParent; // initial rguments
 	var renderer, effects, center, sources;
+	var ossiaMasterPlay, ossiaMasterLib;
 
-	*new { | projDir, nsources = 10, dur = 180, rirBank, server, parentOssiaNode,
+	*new { | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCrtitical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus, autoloop = false |
 
-		^super.newCopyArgs(projDir, dur, server).initMosca(nsources, rirBank, parentOssiaNode,
+		^super.newCopyArgs(projDir, dur, server).initMosca(nsources, irBank, parentOssiaNode,
 			allCrtitical, decoder, maxorder, speaker_array, outbus, suboutbus, rawformat,
 			rawoutbus, autoloop);
 	}
 
-	initMosca { | nsources, rirBank, parentOssiaNode, allCrtitical, decoder, maxOrder,
+	initMosca { | nsources, irBank, parentOssiaNode, allCrtitical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, autoloop |
 
-		var multyThread;
+		var multyThread = Server.program.asString.endsWith("supernova");
 
 		if (server.isNil) { server = Server.local; };
-
-		multyThread = Server.program.asString.endsWith("supernova");
 
 		if (parentOssiaNode.isNil) {
 			ossiaParent = OSSIA_Device("Mosca");
@@ -47,13 +46,22 @@ Mosca {
 		server.doWhenBooted({
 
 			try({
-				var spatList = SpatDef.defList.collect({ | item | item.defName; });
-				var fxList = EffectDef.defList.collect({ | item | item.defName; });
+				var fxList, spatList = SpatDef.defList.collect({ | item | item.defName; });
+
+				ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
+					critical:true);
+
+				ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", String,
+					[nil, nil, spatList], spatList.first, critical:true, repetition_filter:true);
+
+				ossiaMasterLib.description_(spatList.asString);
 
 				renderer = MoscaRenderer(server, speaker_array, maxOrder, decoder,
 					outBus, rawOutBus, rawFormat);
 
-				effects = MoscaEffects(server, maxOrder, multyThread, renderer, rirBank);
+				renderer.setMasterControl(ossiaParent, allCrtitical);
+
+				effects = MoscaEffects(server, maxOrder, multyThread, renderer, irBank);
 
 				center = OssiaAutomationCenter(ossiaParent, allCrtitical);
 

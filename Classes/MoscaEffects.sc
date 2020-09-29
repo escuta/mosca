@@ -8,37 +8,37 @@
 * Required Quarks : Automation, Ctk, XML and  MathLib
 * Required classes:
 * SC Plugins: https://github.com/supercollider/sc3-plugins
-* User must set up a project directory with subdirectoties "rir" and "auto"
-* RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
-* and must be placed in the "rir" directory.
+* User must set up a project directory with subdirectoties "ir" and "auto"
+* irs should have the first 100 or 120ms silenced to act as "tail" reverberators
+* and must be placed in the "ir" directory.
 * Run help on the "Mosca" class in SuperCollider for detailed information
-* and code examples. Further information and sample RIRs and B-format recordings
+* and code examples. Further information and sample irs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
 */
 
 MoscaEffects {
-	var multyThread;
+	var multyThread, <defs, <irList, <fxList;
 	var <wSpecPar, <zSpecPar, wxyzSpecPar, irSpecPar;
-	var <gBfBus, <gBxBus, glbRevGrp;
-	var defs;
+	var <gBfBus, <gBxBus, glbFxGrp, globalFx;
 	var encodeFunc, decodeFunc;
+	var ossiaGlobal, ossiaDel, ossiaDec;
 
-	*new { | server, maxOrder, multyThread, renderer, rirBank |
+	*new { | server, maxOrder, multyThread, renderer, irBank |
 
-		^super.newCopyArgs(multyThread).ctr(server, maxOrder, renderer, rirBank);
+		^super.newCopyArgs(multyThread).ctr(server, maxOrder, renderer, irBank);
 	}
 
-	ctr { | server, maxOrder, renderer, rirBank |
+	ctr { | server, maxOrder, renderer, irBank |
 		var busChans = MoscaUtils.fourOrNine(maxOrder);
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
-		glbRevGrp = ParGroup.tail(server.defaultGroup);
+		glbFxGrp = ParGroup.tail(server.defaultGroup);
 
 		defs = Array.newFrom(EffectDef.defList);
 
-		if (rirBank.notNil) {
-			this.prLoadRir(server, maxOrder, rirBank);
+		if (irBank.notNil) {
+			this.prLoadir(server, maxOrder, irBank);
 			defs = defs.add(ConVerbDef);
 		};
 
@@ -96,43 +96,71 @@ MoscaEffects {
 				}
 			};
 		};
-
 	}
 
-	prLoadRir { | server, maxOrder, rirBank |
-		var rirWspectrum, rirxspectrum, rirYspectrum, rirZspectrum;
-		var rirFLUspectrum, rirFRDspectrum, rirBLDspectrum, rirBRUspectrum;
-		var rirXspectrum, rirA12Spectrum;
-		var rirW, rirX, rirY, rirZ, bufWXYZ, rirFLU, rirFRD, rirBLD, rirBRU,
-		bufAformat, bufAformat_soa_a12, rirA12, bufsize,
+	setGlobalControl { | ossiaParent, allCritical, automation, fxList |
+
+		ossiaGlobal = OssiaAutomationProxy(ossiaParent, "Global_effect", String,
+			[nil, nil, fxList], "Clear", critical:true, repetition_filter:true);
+
+		ossiaGlobal.param.description_(fxList.asString);
+
+		ossiaGlobal.action_({ | num |
+
+			if (globalFx.isPlaying) { globalFx.set(\gate, 0) };
+
+			if (num.value != "Clear") {
+
+				globalFx = Synth(\globalFx_ ++ num.value,
+					[\gate, 1, \room, ossiaDel.value, \damp, ossiaDec.value],
+					glbFxGrp).register;
+			};
+		});
+
+		ossiaDel = OssiaAutomationProxy(ossiaGlobal, "Room_delay", Float,
+			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
+
+		ossiaDel.action_({ | num | globalFx.set(\room, num.value); });
+
+		ossiaDec = OssiaAutomationProxy(ossiaGlobal, "Damp_decay", Float,
+			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
+
+		ossiaDec.action_({ | num |	globalFx.set(\damp, num.value); });
+	}
+
+	prLoadIr { | server, maxOrder, irBank |
+		var irWspectrum, irxspectrum, irYspectrum, irZspectrum;
+		var irFLUspectrum, irFRDspectrum, irBLDspectrum, irBRUspectrum;
+		var irXspectrum, irA12Spectrum;
+		var irW, irX, irY, irZ, bufWXYZ, irFLU, irFRD, irBLD, irBRU,
+		bufAformat, bufAformat_soa_a12, irA12, bufsize,
 		// prepare list of impulse responses for close and distant reverb
 
-		rirList = [],
-		rirPath = PathName(rirBank),
-		rirNum = 0; // initialize
+		irPath = PathName(irBank),
+		irNum = 0; // initialize
 
-		rirW = [];
-		rirX = [];
-		rirY = [];
-		rirZ = [];
+		irW = [];
+		irX = [];
+		irY = [];
+		irZ = [];
 		bufWXYZ = [];
 
-		rirPath.entries.do({ |item, count|
+		irPath.entries.do({ |item, count|
 
 			if (item.extension == "amb") {
-				var rirName = item.fileNameWithoutExtension;
+				var irName = item.fileNameWithoutExtension;
 
-				rirNum = rirNum + 1;
+				irNum = irNum + 1;
 
-				rirList = rirList ++ [rirName];
+				irList = irList ++ [irName];
 
-				rirW = rirW ++ [ Buffer.readChannel(server, item.fullPath,
+				irW = irW ++ [ Buffer.readChannel(server, item.fullPath,
 					channels: [0]) ];
-				rirX = rirX ++ [ Buffer.readChannel(server, item.fullPath,
+				irX = irX ++ [ Buffer.readChannel(server, item.fullPath,
 					channels: [1]) ];
-				rirY = rirY ++ [ Buffer.readChannel(server, item.fullPath,
+				irY = irY ++ [ Buffer.readChannel(server, item.fullPath,
 					channels: [2]) ];
-				rirZ = rirZ ++ [ Buffer.readChannel(server, item.fullPath,
+				irZ = irZ ++ [ Buffer.readChannel(server, item.fullPath,
 					channels: [3]) ];
 
 				bufWXYZ = bufWXYZ ++ [ Buffer.read(server, item.fullPath) ];
@@ -140,29 +168,29 @@ MoscaEffects {
 
 		});
 
-		bufAformat = Array.newClear(rirNum);
-		bufAformat_soa_a12 = Array.newClear(rirNum);
-		rirFLU = Array.newClear(rirNum);
-		rirFRD = Array.newClear(rirNum);
-		rirBLD = Array.newClear(rirNum);
-		rirBRU = Array.newClear(rirNum);
-		bufsize = Array.newClear(rirNum);
+		bufAformat = Array.newClear(irNum);
+		bufAformat_soa_a12 = Array.newClear(irNum);
+		irFLU = Array.newClear(irNum);
+		irFRD = Array.newClear(irNum);
+		irBLD = Array.newClear(irNum);
+		irBRU = Array.newClear(irNum);
+		bufsize = Array.newClear(irNum);
 
-		rirWspectrum = Array.newClear(rirNum);
-		rirXspectrum = Array.newClear(rirNum);
-		rirYspectrum = Array.newClear(rirNum);
-		rirZspectrum = Array.newClear(rirNum);
+		irWspectrum = Array.newClear(irNum);
+		irXspectrum = Array.newClear(irNum);
+		irYspectrum = Array.newClear(irNum);
+		irZspectrum = Array.newClear(irNum);
 
-		rirFLUspectrum = Array.newClear(rirNum);
-		rirFRDspectrum = Array.newClear(rirNum);
-		rirBLDspectrum = Array.newClear(rirNum);
-		rirBRUspectrum = Array.newClear(rirNum);
+		irFLUspectrum = Array.newClear(irNum);
+		irFRDspectrum = Array.newClear(irNum);
+		irBLDspectrum = Array.newClear(irNum);
+		irBRUspectrum = Array.newClear(irNum);
 
 		server.sync;
 
-		rirList.do({ |item, count|
+		irList.do({ |item, count|
 
-			bufsize[count] = PartConv.calcBufSize(MoscaUtils.fftSize(), rirW[count]);
+			bufsize[count] = PartConv.calcBufSize(MoscaUtils.fftSize(), irW[count]);
 
 			bufAformat[count] = Buffer.alloc(server, bufWXYZ[count].numFrames,
 				bufWXYZ[count].numChannels);
@@ -170,9 +198,9 @@ MoscaEffects {
 				bufWXYZ[count].numFrames, 12);
 			// for second order conv
 
-			if (File.exists(rirBank ++ "/" ++ item ++ "_Flu.wav").not) {
+			if (File.exists(irBank ++ "/" ++ item ++ "_Flu.wav").not) {
 
-				("writing " ++ item ++ "_Flu.wav file in" ++ rirBank).postln;
+				("writing " ++ item ++ "_Flu.wav file in" ++ irBank).postln;
 
 				{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ[count],
 					loop: 0, doneAction: 2), MoscaUtils.b2a),
@@ -184,16 +212,16 @@ MoscaEffects {
 
 				(bufAformat[count].numFrames / server.sampleRate).wait;
 
-				bufAformat[count].write(rirBank ++ "/" ++ item ++ "_Flu.wav",
+				bufAformat[count].write(irBank ++ "/" ++ item ++ "_Flu.wav",
 					headerFormat: "wav", sampleFormat: "int24");
 
 				"done".postln;
 			};
 
 
-			if (File.exists(rirBank ++ "/" ++ item ++ "_SoaA12.wav").not) {
+			if (File.exists(irBank ++ "/" ++ item ++ "_SoaA12.wav").not) {
 
-				("writing " ++ item ++ "_SoaA12.wav file in " ++ rirBank).postln;
+				("writing " ++ item ++ "_SoaA12.wav file in " ++ irBank).postln;
 
 				{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ[count],
 					loop: 0, doneAction: 2),
@@ -207,127 +235,127 @@ MoscaEffects {
 				(bufAformat[count].numFrames / server.sampleRate).wait;
 
 				bufAformat_soa_a12[count].write(
-					rirBank ++ "/" ++ item ++ "_SoaA12.wav",
+					irBank ++ "/" ++ item ++ "_SoaA12.wav",
 					headerFormat: "wav", sampleFormat: "int24");
 
 				"done".postln;
 			};
 		});
 
-		"Loading rir bank".postln;
+		"Loading ir bank".postln;
 
-		rirList.do({ |item, count|
+		irList.do({ |item, count|
 
 			server.sync;
 
 			bufAformat[count].free;
 			bufWXYZ[count].free;
 
-			rirFLU[count] = Buffer.readChannel(server,
-				rirBank ++ "/" ++ item ++ "_Flu.wav",
+			irFLU[count] = Buffer.readChannel(server,
+				irBank ++ "/" ++ item ++ "_Flu.wav",
 				channels: [0]);
-			rirFRD[count] = Buffer.readChannel(server,
-				rirBank ++ "/" ++ item ++ "_Flu.wav",
+			irFRD[count] = Buffer.readChannel(server,
+				irBank ++ "/" ++ item ++ "_Flu.wav",
 				channels: [1]);
-			rirBLD[count] = Buffer.readChannel(server,
-				rirBank ++ "/" ++ item ++ "_Flu.wav",
+			irBLD[count] = Buffer.readChannel(server,
+				irBank ++ "/" ++ item ++ "_Flu.wav",
 				channels: [2]);
-			rirBRU[count] = Buffer.readChannel(server,
-				rirBank ++ "/" ++ item ++ "_Flu.wav",
+			irBRU[count] = Buffer.readChannel(server,
+				irBank ++ "/" ++ item ++ "_Flu.wav",
 				channels: [3]);
 
-			rirWspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirXspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirYspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirZspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirWspectrum[count].preparePartConv(rirW[count], MoscaUtils.fftSize());
-			rirW[count].free;
+			irWspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irXspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irYspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irZspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irWspectrum[count].preparePartConv(irW[count], MoscaUtils.fftSize());
+			irW[count].free;
 			// don't need time domain data anymore, just needed spectral version
-			rirXspectrum[count].preparePartConv(rirX[count], MoscaUtils.fftSize());
-			rirX[count].free;
-			rirYspectrum[count].preparePartConv(rirY[count], MoscaUtils.fftSize());
-			rirY[count].free;
-			rirZspectrum[count].preparePartConv(rirZ[count], MoscaUtils.fftSize());
-			rirZ[count].free;
+			irXspectrum[count].preparePartConv(irX[count], MoscaUtils.fftSize());
+			irX[count].free;
+			irYspectrum[count].preparePartConv(irY[count], MoscaUtils.fftSize());
+			irY[count].free;
+			irZspectrum[count].preparePartConv(irZ[count], MoscaUtils.fftSize());
+			irZ[count].free;
 
-			rirFLUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirFRDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirBLDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirBRUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
-			rirFLUspectrum[count].preparePartConv(rirFLU[count], MoscaUtils.fftSize());
-			rirFLU[count].free;
-			rirFRDspectrum[count].preparePartConv(rirFRD[count], MoscaUtils.fftSize());
-			rirFRD[count].free;
-			rirBLDspectrum[count].preparePartConv(rirBLD[count], MoscaUtils.fftSize());
-			rirBLD[count].free;
-			rirBRUspectrum[count].preparePartConv(rirBRU[count], MoscaUtils.fftSize());
-			rirBRU[count].free;
+			irFLUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irFRDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irBLDspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irBRUspectrum[count] = Buffer.alloc(server, bufsize[count], 1);
+			irFLUspectrum[count].preparePartConv(irFLU[count], MoscaUtils.fftSize());
+			irFLU[count].free;
+			irFRDspectrum[count].preparePartConv(irFRD[count], MoscaUtils.fftSize());
+			irFRD[count].free;
+			irBLDspectrum[count].preparePartConv(irBLD[count], MoscaUtils.fftSize());
+			irBLD[count].free;
+			irBRUspectrum[count].preparePartConv(irBRU[count], MoscaUtils.fftSize());
+			irBRU[count].free;
 
-			/////////// END loading rirBank /////////////////////
+			/////////// END loading irBank /////////////////////
 		});
 
 		if (maxOrder > 1) {
 
-			rirA12 = Array.newClear(12);
-			rirA12Spectrum = Array2D(rirNum, 12);
+			irA12 = Array.newClear(12);
+			irA12Spectrum = Array2D(irNum, 12);
 
-			rirList.do({ |item, count|
+			irList.do({ |item, count|
 
 				12.do({ | i |
-					rirA12[i] = Buffer.readChannel(server,
-						rirBank ++ "/" ++ item ++ "_SoaA12.wav",
+					irA12[i] = Buffer.readChannel(server,
+						irBank ++ "/" ++ item ++ "_SoaA12.wav",
 						channels: [i]);
 					server.sync;
-					rirA12Spectrum[count, i] = Buffer.alloc(server,
+					irA12Spectrum[count, i] = Buffer.alloc(server,
 						bufsize[count], 1);
 					server.sync;
-					rirA12Spectrum[count, i].preparePartConv(rirA12[i], MoscaUtils.fftSize());
+					irA12Spectrum[count, i].preparePartConv(irA12[i], MoscaUtils.fftSize());
 					server.sync;
-					rirA12[i].free;
+					irA12[i].free;
 				});
 
 			});
 		};
 
-		// create fonctions to pass rir as Synth arguments
+		// create fonctions to pass ir as Synth arguments
 
 		wSpecPar = {|i|
-			^[\wir, rirWspectrum[i]]
+			^[\wir, irWspectrum[i]]
 		};
 
 		zSpecPar = {|i|
-			^[\zir, rirZspectrum[i]]
+			^[\zir, irZspectrum[i]]
 		};
 
 		wxyzSpecPar = {|i|
-			^[\wir, rirWspectrum[i],
-				\xir, rirXspectrum[i],
-				\yir, rirYspectrum[i],
-				\zir, rirZspectrum[i]]
+			^[\wir, irWspectrum[i],
+				\xir, irXspectrum[i],
+				\yir, irYspectrum[i],
+				\zir, irZspectrum[i]]
 		};
 
 		if (maxOrder == 1) {
 
 			irSpecPar = { |i|
-				^[\a0ir, rirFLUspectrum[i],
-					\a1ir, rirFRDspectrum[i],
-					\a2ir, rirBLDspectrum[i],
-					\a3ir, rirBRUspectrum[i]]
+				^[\a0ir, irFLUspectrum[i],
+					\a1ir, irFRDspectrum[i],
+					\a2ir, irBLDspectrum[i],
+					\a3ir, irBRUspectrum[i]]
 			};
 		} {
 			irSpecPar = { |i|
-				^[\a0ir, rirA12Spectrum[i, 0],
-					\a1ir, rirA12Spectrum[i, 1],
-					\a2ir, rirA12Spectrum[i, 2],
-					\a3ir, rirA12Spectrum[i, 3],
-					\a4ir, rirA12Spectrum[i, 4],
-					\a5ir, rirA12Spectrum[i, 5],
-					\a6ir, rirA12Spectrum[i, 6],
-					\a7ir, rirA12Spectrum[i, 7],
-					\a8ir, rirA12Spectrum[i, 8],
-					\a9ir, rirA12Spectrum[i, 9],
-					\a10ir, rirA12Spectrum[i, 10],
-					\a11ir, rirA12Spectrum[i, 11]]
+				^[\a0ir, irA12Spectrum[i, 0],
+					\a1ir, irA12Spectrum[i, 1],
+					\a2ir, irA12Spectrum[i, 2],
+					\a3ir, irA12Spectrum[i, 3],
+					\a4ir, irA12Spectrum[i, 4],
+					\a5ir, irA12Spectrum[i, 5],
+					\a6ir, irA12Spectrum[i, 6],
+					\a7ir, irA12Spectrum[i, 7],
+					\a8ir, irA12Spectrum[i, 8],
+					\a9ir, irA12Spectrum[i, 9],
+					\a10ir, irA12Spectrum[i, 10],
+					\a11ir, irA12Spectrum[i, 11]]
 			};
 		};
 	}
@@ -336,15 +364,16 @@ MoscaEffects {
 
 		if (multyThread) {
 		} {
-			defs.do({
-				SynthDef("revGlobal" ++ _.defName, { | gate = 1, room = 0.5, damp = 0.5,
+			defs.do({ | item |
+
+				SynthDef(\globalFx_ ++ item.defName, { | gate = 1, room = 0.5, damp = 0.5,
 					a0ir, a1ir, a2ir, a3ir, a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 					var sig = decodeFunc.vaue();
 					sig = _.globalRevFunc.value(sig, room, damp,a0ir, a1ir, a2ir, a3ir, a4ir,
 						a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir);
 					encodeFunc.value(sig, gate);
 				}).send(server);
-			}).fork();
+			});
 		};
 	}
 }

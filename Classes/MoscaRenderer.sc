@@ -17,12 +17,11 @@ may be downloaded here: http://escuta.org/mosca
 */
 
 MoscaRenderer {
-	var <nonAmbiBus, <fumaBus, <n3dBus; // buses
+	var <nonAmbiBus, <fumaBus, <n3dBus, <vbapBuffer; // buses & buffer
 	var <convertFuma, <convertN3D; // conversion
-	var numOutputs, bFormNumChan; // usefull number of chanels
 	var <longestRadius, quarterRadius, twoAndaHalfRadius, <lowestElevation, <highestElevation; // utils
-	var <vbapBuffer;
 	var renderFunc, convertFunc, renderer; // synth
+	var ossiaMasterLevel;
 
 	*new { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
 
@@ -31,8 +30,7 @@ MoscaRenderer {
 
 	ctr { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
 
-		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc;
-
+		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc, numOutputs,
 		bFormNumChan = (maxOrder + 1).squared;
 
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
@@ -57,7 +55,7 @@ MoscaRenderer {
 
 			case
 			{ speaker_array[0].size < 2 || speaker_array[0].size > 3 }
-			{ Error("bad speaker array").throw; }
+			{ ^Error("bad speaker array").throw; }
 			{ speaker_array[0].size == 2 }
 			{
 				dimention = 2;
@@ -311,42 +309,15 @@ MoscaRenderer {
 						Out.ar(outBus, sig);
 					};
 
-					} { // assume ADT Decoder
-						convertFuma = true;
-						convertN3D = false;
-
-						convertFunc = { | gate = 1 |
-							var sig, env;
-							env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
-							sig = In.ar(fumaBus, MoscaUtils.fourOrNine(maxOrder));
-							sig = HOAConvert.ar(maxOrder, sig, \FuMa, \ACN_N3D) * env;
-							Out.ar(n3dBus, sig);
-						};
-
-						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
-							var sig, nonambi;
-							sig = In.ar(n3dBus, bFormNumChan);
-							sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-								sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
-							nonambi = In.ar(nonAmbiBus, numOutputs);
-							perfectSphereFunc.value(nonambi);
-							sig = (sig + nonambi) * level;
-							subOutFunc.value(sig, sub);
-							Out.ar(outBus, sig);
-						};
-					};
-				}
-
-				{ maxOrder == 3 } // assume ADT Decoder
-				{
+				} { // assume ADT Decoder
 					convertFuma = true;
 					convertN3D = false;
 
 					convertFunc = { | gate = 1 |
 						var sig, env;
 						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
-						sig = In.ar(fumaBus, 9);
-						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
+						sig = In.ar(fumaBus, MoscaUtils.fourOrNine(maxOrder));
+						sig = HOAConvert.ar(maxOrder, sig, \FuMa, \ACN_N3D) * env;
 						Out.ar(n3dBus, sig);
 					};
 
@@ -354,69 +325,7 @@ MoscaRenderer {
 						var sig, nonambi;
 						sig = In.ar(n3dBus, bFormNumChan);
 						sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
-							sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
-						nonambi = In.ar(nonAmbiBus, numOutputs);
-						perfectSphereFunc.value(nonambi);
-						sig = (sig + nonambi) * level;
-						subOutFunc.value(sig, sub);
-						Out.ar(outBus, sig);
-					};
-				}
-				{ maxOrder == 4 } // assume ADT Decoder
-				{
-					convertFuma = true;
-					convertN3D = false;
-
-					convertFunc = { | gate = 1 |
-						var sig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
-						sig = In.ar(fumaBus, 9);
-						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
-						Out.ar(n3dBus, sig);
-					};
-
-					renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
-						var sig, nonambi;
-						sig = In.ar(n3dBus, bFormNumChan);
-						sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
-							sig[12], sig[13], sig[14],sig[15], sig[16], sig[17], sig[18],
-							sig[19], sig[20], sig[21], sig[22], sig[23], sig[24],
-							0, lf_hf, xover:xover);
-						nonambi = In.ar(nonAmbiBus, numOutputs);
-						perfectSphereFunc.value(nonambi);
-						sig = (sig + nonambi) * level;
-						subOutFunc.value(sig, sub);
-						Out.ar(outBus, sig);
-					};
-				}
-
-				{ maxOrder == 5 } // assume ADT Decoder
-				{
-					convertFuma = true;
-					convertN3D = false;
-
-					convertFunc = { | gate = 1 |
-						var sig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
-						sig = In.ar(fumaBus, 9);
-						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
-						Out.ar(n3dBus, sig);
-					};
-
-					renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
-						var sig, nonambi;
-						sig = In.ar(n3dBus, bFormNumChan);
-						sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
-							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
-							sig[12], sig[13], sig[14], sig[15], sig[16], sig[17],
-							sig[18], sig[19], sig[20], sig[21], sig[22], sig[23],
-							sig[24], sig[15], sig[16], sig[17], sig[18], sig[19],
-							sig[20], sig[21], sig[22], sig[23], sig[24], sig[25],
-							sig[26], sig[27], sig[28], sig[29], sig[30], sig[31],
-							sig[32], sig[33], sig[34], sig[35],
-							0, lf_hf, xover:xover);
+							sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
 						nonambi = In.ar(nonAmbiBus, numOutputs);
 						perfectSphereFunc.value(nonambi);
 						sig = (sig + nonambi) * level;
@@ -424,13 +333,112 @@ MoscaRenderer {
 						Out.ar(outBus, sig);
 					};
 				};
+			}
+
+			{ maxOrder == 3 } // assume ADT Decoder
+			{
+				convertFuma = true;
+				convertN3D = false;
+
+				convertFunc = { | gate = 1 |
+					var sig, env;
+					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+					sig = In.ar(fumaBus, 9);
+					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
+					Out.ar(n3dBus, sig);
+				};
+
+				renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
+					var sig, nonambi;
+					sig = In.ar(n3dBus, bFormNumChan);
+					sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
+						sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
+						sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
+					nonambi = In.ar(nonAmbiBus, numOutputs);
+					perfectSphereFunc.value(nonambi);
+					sig = (sig + nonambi) * level;
+					subOutFunc.value(sig, sub);
+					Out.ar(outBus, sig);
+				};
+			}
+			{ maxOrder == 4 } // assume ADT Decoder
+			{
+				convertFuma = true;
+				convertN3D = false;
+
+				convertFunc = { | gate = 1 |
+					var sig, env;
+					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+					sig = In.ar(fumaBus, 9);
+					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
+					Out.ar(n3dBus, sig);
+				};
+
+				renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
+					var sig, nonambi;
+					sig = In.ar(n3dBus, bFormNumChan);
+					sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
+						sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
+						sig[12], sig[13], sig[14],sig[15], sig[16], sig[17], sig[18],
+						sig[19], sig[20], sig[21], sig[22], sig[23], sig[24],
+						0, lf_hf, xover:xover);
+					nonambi = In.ar(nonAmbiBus, numOutputs);
+					perfectSphereFunc.value(nonambi);
+					sig = (sig + nonambi) * level;
+					subOutFunc.value(sig, sub);
+					Out.ar(outBus, sig);
+				};
+			}
+
+			{ maxOrder == 5 } // assume ADT Decoder
+			{
+				convertFuma = true;
+				convertN3D = false;
+
+				convertFunc = { | gate = 1 |
+					var sig, env;
+					env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+					sig = In.ar(fumaBus, 9);
+					sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
+					Out.ar(n3dBus, sig);
+				};
+
+				renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
+					var sig, nonambi;
+					sig = In.ar(n3dBus, bFormNumChan);
+					sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
+						sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
+						sig[12], sig[13], sig[14], sig[15], sig[16], sig[17],
+						sig[18], sig[19], sig[20], sig[21], sig[22], sig[23],
+						sig[24], sig[15], sig[16], sig[17], sig[18], sig[19],
+						sig[20], sig[21], sig[22], sig[23], sig[24], sig[25],
+						sig[26], sig[27], sig[28], sig[29], sig[30], sig[31],
+						sig[32], sig[33], sig[34], sig[35],
+						0, lf_hf, xover:xover);
+					nonambi = In.ar(nonAmbiBus, numOutputs);
+					perfectSphereFunc.value(nonambi);
+					sig = (sig + nonambi) * level;
+					subOutFunc.value(sig, sub);
+					Out.ar(outBus, sig);
+				};
 			};
-		}
-
-		launchRenderer	{ | server, target |
-
-			SynthDef("ambiConverter", convertFunc).send(server);
-
-			renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addAfter);
-		}
+		};
 	}
+
+	setMasterControl { | ossiaParent, allCritical, automation |
+
+		ossiaMasterLevel = OssiaAutomationProxy(ossiaParent, "Master_level", Float,
+			[-96, 12],	0, 'clip', critical:allCritical);
+
+		ossiaMasterLevel.param.unit_(OSSIA_gain.decibel);
+
+		ossiaMasterLevel.action_({ | num | renderer.set(\level, num.value.dbamp); });
+	}
+
+	launchRenderer { | server, target |
+
+		SynthDef("ambiConverter", convertFunc).send(server);
+
+		renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addAfter);
+	}
+}
