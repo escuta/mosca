@@ -46,7 +46,7 @@ Mosca {
 		server.doWhenBooted({
 
 			try({
-				var fxList, spatList = SpatDef.defList.collect({ | item | item.defName; });
+				var spatList = SpatDef.defList.collect({ | item | item.key; });
 
 				ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
 					critical:true);
@@ -66,7 +66,7 @@ Mosca {
 				center = OssiaAutomationCenter(ossiaParent, allCrtitical);
 
 				sources = Array.fill(nsources,
-					{ | i | MoscaSource(i, server, ossiaParent, allCrtitical, spatList, fxList, center); };
+					{ | i | MoscaSource(i, server, ossiaParent, allCrtitical, spatList, effects, center); };
 				);
 
 				center.setActions(sources);

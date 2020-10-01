@@ -21,13 +21,13 @@
 //-------------------------------------------//
 
 ABTDef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "Ambitools";
+		key = "Ambitools";
 
 		format = \N3D;
 	}
@@ -51,18 +51,16 @@ ABTDef : SpatDef {
 //-------------------------------------------//
 
 HOALibDef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
-		if (\HOALibEnc3D1.asClass.notNil) {
+		if (\HOALibEnc3D1.asClass.notNil) { defList = defList.add(this.asClass); };
 
-			defList = defList.add(this.asClass);
+		key = "HoaLib";
 
-			defName = "HoaLib";
+		format = \N3D;
 
-			format = \N3D;
-		};
 	}
 
 	prSetFunc { | maxOrder, renderer, server |
@@ -84,18 +82,15 @@ HOALibDef : SpatDef {
 //-------------------------------------------//
 
 ADTDef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
-		if (\HOAmbiPanner1.asClass.notNil) {
+		if (\HOAmbiPanner1.asClass.notNil) { defList = defList.add(this.asClass); };
 
-			defList = defList.add(this.asClass);
+		key = "ADT";
 
-			defName = "ADT";
-
-			format = \N3D;
-		};
+		format = \N3D;
 	}
 
 	prSetFunc { | maxOrder, renderer, server |
@@ -117,13 +112,13 @@ ADTDef : SpatDef {
 //-------------------------------------------//
 
 SCHOADef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "SC-HOA";
+		key = "SC-HOA";
 
 		format = \N3D;
 	}
@@ -147,13 +142,13 @@ SCHOADef : SpatDef {
 //-------------------------------------------//
 
 ATKDef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "ATK";
+		key = "ATK";
 
 		format = \FUMA;
 	}
@@ -185,13 +180,13 @@ ATKDef : SpatDef {
 //-------------------------------------------//
 
 BFFMHDef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "BF-FMH";
+		key = "BF-FMH";
 
 		format = \FUMA;
 	}
@@ -214,13 +209,13 @@ BFFMHDef : SpatDef {
 //-------------------------------------------//
 
 JOSHDef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "Josh";
+		key = "Josh";
 
 		format = \FUMA;
 	}
@@ -243,13 +238,13 @@ JOSHDef : SpatDef {
 //-------------------------------------------//
 
 VBAPDef : SpatDef {
-	classvar <defName, <format;
+	classvar <key, <format;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
-		defName = "VBAP";
+		key = "VBAP";
 
 		format = \NONAMBI;
 	}
@@ -285,6 +280,8 @@ SpatDef {
 	*initClass {
 
 		Class.initClassTree(MoscaUtils);
+
+		defList = [];
 
 		distFilter = { | input, distance | // attenuate high freq with distance
 			LPF.ar(input, (1 - distance) * 18000 + 2000);

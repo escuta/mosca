@@ -16,7 +16,7 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-MoscaSource {
+MoscaSource[] {
 	var index, server, src, <defName, playType, nChan, <dstrvTypes;
 	var spatializer, synths, buffer; // communicatin with the audio server
 	var scInBus, triggerFunc, stopFunc, synthRegistry; // sc synth specific

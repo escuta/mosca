@@ -21,13 +21,11 @@
 //-------------------------------------------//
 
 AllPassDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <defName;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 
-		defList = defList.add(this.asClass);
-
-		defName = "AllPass";
+		key = "AllPass";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			var temp = p;
@@ -79,13 +77,11 @@ AllPassDef : EffectDef {
 //-------------------------------------------//
 
 FreeVerbDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <defName;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 
-		defList = defList.add(this.asClass);
-
-		defName = "FreeVerb";
+		key = "FreeVerb";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			lrevRef.value = FreeVerb.ar(p, mix: 1, room: room, damp: damp, mul: locallev);
@@ -134,13 +130,11 @@ FreeVerbDef : EffectDef {
 //-------------------------------------------//
 
 ConvolutionDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <defName;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 
-		// Skipp adding it, wait till a rirBank is specified
-
-		defName = "Conv";
+		key = "Conv";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
 			lrevRef.value = PartConv.ar(p, MoscaUtils.fftSize(), rirWspectrum, locallev);
@@ -196,13 +190,11 @@ ConvolutionDef : EffectDef {
 //-------------------------------------------//
 
 ClearDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <defName;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 
-		defList = defList.add(this.asClass);
-
-		defName = "Clear";
+		key = "Clear";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp| };
 
@@ -217,8 +209,6 @@ ClearDef : EffectDef {
 //-------------------------------------------//
 
 EffectDef {
-	classvar <defList;
-	var	<convolution = false, <multyThread;
 	var <globalFunc;
 
 	*initClass { Class.initClassTree(MoscaUtils); }
