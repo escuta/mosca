@@ -17,10 +17,10 @@
 */
 
 MoscaEffects {
-	var multyThread, <defs, <irs;
+	var multyThread, <defs, <effectList, <irs;
 	var <gBfBus, <gBxBus, glbFxGrp, globalFx;
 	var encodeFunc, decodeFunc;
-	var ossiaGlobal, ossiaDel, ossiaDec;
+	var ossiaGlobal, ossiaDelay, ossiaDecay;
 
 	*new { | server, maxOrder, multyThread, renderer, irBank |
 
@@ -34,11 +34,16 @@ MoscaEffects {
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
 		glbFxGrp = ParGroup.tail(server.defaultGroup);
 
-		defs = Array.newFrom(EffectDef.defList);
+		defs = Array.newFrom(EffectDef.subclasses);
 
-		if (irBank.notNil) {
+		if (irBank.isNil) {
+
+			defs.removeAt(defs.detectIndex({ | item |
+				item == ConvolutionDef.asClass; })
+			);
+		} {
+			irs = Dictionary.new;
 			this.prLoadir(server, maxOrder, irBank);
-			defs = defs.add(ConVerbDef);
 		};
 
 		if (multyThread) {
@@ -111,25 +116,32 @@ MoscaEffects {
 			if (num.value != "Clear") {
 
 				globalFx = Synth(\globalFx_ ++ num.value,
-					[\gate, 1, \room, ossiaDel.value, \damp, ossiaDec.value],
+					[\gate, 1, \room, ossiaDelay.value, \damp, ossiaDecay.value],
 					glbFxGrp).register;
 			};
 		});
 
-		ossiaDel = OssiaAutomationProxy(ossiaGlobal, "Room_delay", Float,
+		ossiaDelay = OssiaAutomationProxy(ossiaGlobal, "Room_delay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
-		ossiaDel.action_({ | num | globalFx.set(\room, num.value); });
+		ossiaDelay.action_({ | num | globalFx.set(\room, num.value); });
 
-		ossiaDec = OssiaAutomationProxy(ossiaGlobal, "Damp_decay", Float,
+		ossiaDecay = OssiaAutomationProxy(ossiaGlobal, "Damp_decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
-		ossiaDec.action_({ | num |	globalFx.set(\damp, num.value); });
+		ossiaDecay.action_({ | num |	globalFx.set(\damp, num.value); });
 	}
 
 	prLoadIr { | server, maxOrder, irBank | // prepare list of impulse responses for local and global reverb
+		var def;
 
-		PathName(irBank).entries.do({ | ir | irs = irs.add(IrDef(server, ir)); });
+		if (maxOrder == 1) { def = IrDef; } { def = Ir12chanDef; };
+
+		PathName(irBank).entries.do({ | ir |
+			var impulse = def(server, ir);
+
+			irs.add(impulse.key -> impulse);
+		});
 	}
 
 	sendReverbs { | multyThread, server |
