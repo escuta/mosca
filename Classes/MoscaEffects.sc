@@ -129,7 +129,7 @@ MoscaEffects {
 
 	prLoadIr { | server, maxOrder, irBank | // prepare list of impulse responses for local and global reverb
 
-		PathName(irBank).entries.do({ | ir | irs.add(IrDef(server, maxOrder, ir)) });
+		PathName(irBank).entries.do({ | ir | irs = irs.add(IrDef(server, ir)); });
 	}
 
 	sendReverbs { | multyThread, server |

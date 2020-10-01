@@ -25,12 +25,12 @@ Mosca {
 		allCrtitical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus, autoloop = false |
 
-		^super.newCopyArgs(projDir, dur, server).initMosca(nsources, irBank, parentOssiaNode,
+		^super.newCopyArgs(projDir, dur, server).ctr(nsources, irBank, parentOssiaNode,
 			allCrtitical, decoder, maxorder, speaker_array, outbus, suboutbus, rawformat,
 			rawoutbus, autoloop);
 	}
 
-	initMosca { | nsources, irBank, parentOssiaNode, allCrtitical, decoder, maxOrder,
+	ctr { | nsources, irBank, parentOssiaNode, allCrtitical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, autoloop |
 
 		var multyThread = Server.program.asString.endsWith("supernova");

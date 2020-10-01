@@ -139,7 +139,7 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 		var spher;
 
 		// convert to angles -- use these directions
-		spher = cart.collect({ | cart, i |
+		spher = cart.clump(3).collect({ | cart, i |
 			cart.asCartesian.asSpherical.angles;
 		});
 

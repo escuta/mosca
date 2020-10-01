@@ -18,51 +18,18 @@
 
 IrDef[] {
 	var <key, irSpectrum, bufsize;
-	var irWspectrum, irXspectrum, irYspectrum, irZspectrum;
+	var irWspectrum, irZspectrum;
+	// var irXspectrum, irYspectrum;
 
 	*new { | server, ir |
 
-		^Super.new.ctr(server, ir);
+		^super.new.ctr(server, ir);
 	}
 
 	ctr { | server, ir |
+		var bufWXYZ, bufAformat;
 
 		key = ir.fileNameWithoutExtension;
-
-		this.prLoadLocalIr(server, ir);
-		this.prLoadGlobalIr(server, ir);
-	}
-
-	prLoadLocalIr { | server, ir |
-		var irW, irX, irY, irZ;
-
-		irW = Buffer.readChannel(server, ir.fullPath, channels: [0]);
-		irX = Buffer.readChannel(server, ir.fullPath, channels: [1]);
-		irY = Buffer.readChannel(server, ir.fullPath, channels: [2]);
-		irZ = Buffer.readChannel(server, ir.fullPath, channels: [3]);
-
-		server.sync;
-
-		bufsize = PartConv.calcBufSize(MoscaUtils.fftSize(), irW);
-
-		irWspectrum = Buffer.alloc(server, bufsize, 1);
-		irXspectrum = Buffer.alloc(server, bufsize, 1);
-		irYspectrum = Buffer.alloc(server, bufsize, 1);
-		irZspectrum = Buffer.alloc(server, bufsize, 1);
-
-		// don't need time domain data anymore, just needed spectral version
-		irWspectrum.preparePartConv(irW, MoscaUtils.fftSize());
-		irW.free;
-		irXspectrum.preparePartConv(irX, MoscaUtils.fftSize());
-		irX.free;
-		irYspectrum.preparePartConv(irY, MoscaUtils.fftSize());
-		irY.free;
-		irZspectrum.preparePartConv(irZ, MoscaUtils.fftSize());
-		irZ.free;
-	}
-
-	prLoadGlobalIr { | server, ir |
-		var bufWXYZ, bufAformat, irA4;
 
 		bufWXYZ = Buffer.read(server, ir.fullPath);
 
@@ -70,36 +37,69 @@ IrDef[] {
 
 		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
 
+		this.prLoadLocalIr(server, ir);
+		this.prLoadGlobalIr(server, ir, bufWXYZ, bufAformat);
+	}
+
+	prLoadLocalIr { | server, ir |
+		var irW, irX, irY, irZ;
+
+		irW = Buffer.readChannel(server, ir.fullPath, channels: [0]);
+		// irX = Buffer.readChannel(server, ir.fullPath, channels: [1]);
+		// irY = Buffer.readChannel(server, ir.fullPath, channels: [2]);
+		irZ = Buffer.readChannel(server, ir.fullPath, channels: [3]);
+
 		server.sync;
 
-		if (File.exists(ir.fullPath ++ "_Flu.wav").not) {
+		bufsize = PartConv.calcBufSize(MoscaUtils.fftSize(), irW);
 
-			("writing " ++ key ++ "_Flu.wav file in" ++ ir.fullPath).postln;
+		irWspectrum = Buffer.alloc(server, bufsize, 1);
+		// irXspectrum = Buffer.alloc(server, bufsize, 1);
+		// irYspectrum = Buffer.alloc(server, bufsize, 1);
+		irZspectrum = Buffer.alloc(server, bufsize, 1);
+
+		// don't need time domain data anymore, just needed spectral version
+		irWspectrum.preparePartConv(irW, MoscaUtils.fftSize());
+		irW.free;
+		// irXspectrum.preparePartConv(irX, MoscaUtils.fftSize());
+		// irX.free;
+		// irYspectrum.preparePartConv(irY, MoscaUtils.fftSize());
+		// irY.free;
+		irZspectrum.preparePartConv(irZ, MoscaUtils.fftSize());
+		irZ.free;
+	}
+
+	prLoadGlobalIr { | server, ir, bufWXYZ, bufAformat |
+		var irA4, afmtDir = ir.pathOnly ++ $/ ++ key ++ "_Flu.wav";
+
+		if (File.exists(afmtDir).not) {
+
+			("writing " ++ key ++ "_Flu.wav file in" + ir.pathOnly).postln;
 
 			{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ,
-				loop: 0, doneAction: 2), MoscaUtils.b2a),
+				loop: 0, doneAction: 2), MoscaUtils.b2a()),
 			bufAformat, Phasor.ar(0,
 				BufRateScale.kr(bufAformat),
 				0, BufFrames.kr(bufAformat)));
 			Out.ar(0, Silent.ar);
-			}.play;
+			}.play(server);
 
 			(bufAformat.numFrames / server.sampleRate).wait;
 
-			bufAformat.write(ir.fullPath ++ "_Flu.wav", headerFormat: "wav", sampleFormat: "int24");
+			bufAformat.write(afmtDir, headerFormat: "wav", sampleFormat: "int24",
+				completionMessage:{ ("done writing" + key ++ "_Flu.wav").postln; });
+
+			server.sync;
+
+			bufAformat.free;
+			bufWXYZ.free;
 		};
 
-		server.sync;
-
-		bufAformat.free;
-		bufWXYZ.free;
-
 		irA4 = Array.newClear(4);
-		irSpectrum = Array.newClear(12);
+		irSpectrum = Array.newClear(4);
 
 		4.do({ | i |
-			irA4[i] = Buffer.readChannel(server, ir.fullPath ++ "_Flu.wav", channels: [i]);
-			server.sync;
+			irA4[i] = Buffer.readChannel(server, afmtDir, channels: [i]);
 			irSpectrum[i] = Buffer.alloc(server, bufsize, 1);
 			server.sync;
 			irSpectrum[i].preparePartConv(irA4[i], MoscaUtils.fftSize());
@@ -114,8 +114,8 @@ IrDef[] {
 
 	wxyzSpecPar {
 		^[\wir, irWspectrum,
-			\xir, irXspectrum,
-			\yir, irYspectrum,
+			// \xir, irXspectrum,
+			// \yir, irYspectrum,
 			\zir, irZspectrum];
 	}
 
@@ -129,55 +129,41 @@ IrDef[] {
 
 Ir12chanDef : IrDef {
 
-	*new { | server, ir |
+	prLoadGlobalIr { | server, ir, bufWXYZ, bufAformat |
+		var bufAformat_soa_a12, irA12,
+		afmtDir = ir.pathOnly ++ $/ ++ key ++ "_SoaA12.wav";
 
-		^Super.new.ctr(server, ir);
-	}
+		if (File.exists(afmtDir).not) {
 
-	ctr { | server, ir |
+			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12);
 
-		this.prLoadLocalIr(server, ir);
-		this.prLoadGlobalIr(server, ir);
-	}
+			("writing " ++ key ++ "_SoaA12.wav file in " + ir.pathOnly).postln;
 
-	prLoadGlobalIr { | server, ir |
-		var bufWXYZ, bufAformat, irA12;
-
-		bufWXYZ = Buffer.read(server, ir.fullPath);
-
-		server.sync;
-
-		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, 12);
-
-		if (File.exists(ir.fullPath ++ "_SoaA12.wav").not) {
-
-			("writing " ++ key ++ "_SoaA12.wav file in " ++ ir.fullPath).postln;
-
-			{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ,
-				loop: 0, doneAction: 2),
-			MoscaUtils.foa_a12_decoder_matrix),
-			bufAformat,
-			Phasor.ar(0, BufRateScale.kr(bufAformat), 0,
-				BufFrames.kr(bufAformat)));
+			{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
+				MoscaUtils.foa_a12_decoder_matrix()),
+				bufAformat_soa_a12,
+				Phasor.ar(0, BufRateScale.kr(bufAformat),
+					0, BufFrames.kr(bufAformat)));
 			Out.ar(0, Silent.ar);
-			}.play;
+			}.play(server);
 
 			(bufAformat.numFrames / server.sampleRate).wait;
 
-			bufAformat.write(ir.fullPath ++ "_SoaA12.wav", headerFormat: "wav", sampleFormat: "int24");
+			bufAformat_soa_a12.write(afmtDir, headerFormat: "wav", sampleFormat: "int24",
+				completionMessage:{ ("done writing" + key ++ "_SoaA12.wav").postln; });
+
+			server.sync;
+
+			bufAformat_soa_a12.free;
+			bufAformat.free;
+			bufWXYZ.free;
 		};
-
-		server.sync;
-
-		bufAformat.free;
-		bufWXYZ.free;
 
 		irA12 = Array.newClear(12);
 		irSpectrum = Array.newClear(12);
 
 		12.do({ | i |
-			irA12[i] = Buffer.readChannel(server, ir.fullPath ++ "_SoaA12.wav", channels: [i]);
-			server.sync;
+			irA12[i] = Buffer.readChannel(server, afmtDir, channels: [i]);
 			irSpectrum[i] = Buffer.alloc(server, bufsize, 1);
 			server.sync;
 			irSpectrum[i].preparePartConv(irA12[i], MoscaUtils.fftSize());
