@@ -17,17 +17,17 @@
 */
 
 MoscaEffects {
-	var multyThread, <defs, <effectList, <irs;
+	var multyThread, <defs, <effectList;
 	var <gBfBus, <gBxBus, glbFxGrp, globalFx;
 	var encodeFunc, decodeFunc;
-	var ossiaGlobal, ossiaDelay, ossiaDecay;
+	var <ossiaGlobal, <ossiaDelay, <ossiaDecay;
 
-	*new { | server, maxOrder, multyThread, renderer, irBank |
+	*new { | server, maxOrder, multyThread, renderer, irBank, ossiaParent, allCritical, automation |
 
-		^super.newCopyArgs(multyThread).ctr(server, maxOrder, renderer, irBank);
+		^super.newCopyArgs(multyThread).ctr(server, maxOrder, renderer, irBank, ossiaParent, allCritical, automation);
 	}
 
-	ctr { | server, maxOrder, renderer, irBank |
+	ctr { | server, maxOrder, renderer, irBank, ossiaParent, allCritical, automation |
 		var busChans = MoscaUtils.fourOrNine(maxOrder);
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
@@ -39,23 +39,49 @@ MoscaEffects {
 		if (irBank.isNil) {
 
 			defs.removeAt(defs.detectIndex({ | item |
-				item == ConvolutionDef.asClass; })
-			);
+				item == ConvolutionDef.asClass; }));
+
+			effectList = defs.collect({ | item | item.key; });
 		} {
-			irs = Dictionary.new;
+			effectList = defs;
+
+			effectList.removeAt(effectList.detectIndex({ | item |
+				item == ConvolutionDef.asClass; }));
+
 			this.prLoadir(server, maxOrder, irBank);
 		};
 
+		ossiaGlobal = OssiaAutomationProxy(ossiaParent, "Global_effect", String,
+			[nil, nil,
+				effectList.collect({ | item |
+					if (item.class == String) { item; } { item.key; };
+				};
+		)], "Clear", critical:true, repetition_filter:true);
+
+		ossiaGlobal.node.description_(effectList.asString);
+
+		ossiaDelay = OssiaAutomationProxy(ossiaGlobal.node, "Room_delay", Float,
+			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
+
+		ossiaDecay = OssiaAutomationProxy(ossiaGlobal.node, "Damp_decay", Float,
+			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
+
+		defs.removeAt(defs.detectIndex({ | item |
+			item == ClearDef.asClass; }));
+
 		if (multyThread) {
+
 		} {
 			if (maxOrder == 1) {
+
+				defs = defs.collect({ | item | item.new1stOrder() });
 
 				decodeFunc = {
 					var sigf = In.ar(gBfBus, 4);
 					var sigx = In.ar(gBxBus, 4);
 					sigx = FoaEncode.ar(sigx, MoscaUtils.n2f());
 					sigf = sigf + sigx;
-					^sigf = FoaDecode.ar(sigf, MoscaUtils.b2a());
+					FoaDecode.ar(sigf, MoscaUtils.b2a());
 				};
 
 				if (renderer.convertFuma) {
@@ -74,12 +100,14 @@ MoscaEffects {
 					};
 				};
 			} {
+				defs = defs.collect({ | item | item.new1stOrder(); });
+
 				decodeFunc = {
 					var sigf = In.ar(gBfBus, 9);
 					var sigx = In.ar(gBxBus, 9);
 					sigx = HOAConvert.ar(2, sigx, \FuMa, \ACN_N3D);
 					sigf = sigf + sigx;
-					^sigf = AtkMatrixMix.ar(sigf, MoscaUtils.soa_a12_decoder_matrix());
+					AtkMatrixMix.ar(sigf, MoscaUtils.soa_a12_decoder_matrix());
 				};
 
 				if (renderer.convertFuma) {
@@ -97,39 +125,33 @@ MoscaEffects {
 						convsig = convsig * EnvGen.kr(Env.asr(1), gate, doneAction:2);
 						Out.ar(renderer.fumaBus, convsig);
 					};
-				}
+				};
 			};
 		};
+
+		this.prSetActions(automation);
 	}
 
-	setGlobalControl { | ossiaParent, allCritical, automation, fxList |
-
-		ossiaGlobal = OssiaAutomationProxy(ossiaParent, "Global_effect", String,
-			[nil, nil, fxList], "Clear", critical:true, repetition_filter:true);
-
-		ossiaGlobal.param.description_(fxList.asString);
+	prSetActions { | automation |
 
 		ossiaGlobal.action_({ | num |
 
 			if (globalFx.isPlaying) { globalFx.set(\gate, 0) };
 
 			if (num.value != "Clear") {
+				var synthArgs, i = ossiaGlobal.node.domain.values().detectIndex({ | item | item == num.value });
 
-				globalFx = Synth(\globalFx_ ++ num.value,
-					[\gate, 1, \room, ossiaDelay.value, \damp, ossiaDecay.value],
-					glbFxGrp).register;
+				if (effectList[i].class != String) { synthArgs = effectList[i].irSpecPar(); };
+
+				globalFx = Synth(\globalFx ++ num.value,
+					[\gate, 1, \room, ossiaDelay.value, \damp, ossiaDecay.value] ++
+					synthArgs, glbFxGrp).register;
 			};
 		});
 
-		ossiaDelay = OssiaAutomationProxy(ossiaGlobal, "Room_delay", Float,
-			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
+		ossiaDelay.action_({ | num | if (globalFx.isPlaying) { globalFx.set(\room, num.value); }; });
 
-		ossiaDelay.action_({ | num | globalFx.set(\room, num.value); });
-
-		ossiaDecay = OssiaAutomationProxy(ossiaGlobal, "Damp_decay", Float,
-			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
-
-		ossiaDecay.action_({ | num |	globalFx.set(\damp, num.value); });
+		ossiaDecay.action_({ | num | if (globalFx.isPlaying) { globalFx.set(\damp, num.value); }; });
 	}
 
 	prLoadIr { | server, maxOrder, irBank | // prepare list of impulse responses for local and global reverb
@@ -137,11 +159,7 @@ MoscaEffects {
 
 		if (maxOrder == 1) { def = IrDef; } { def = Ir12chanDef; };
 
-		PathName(irBank).entries.do({ | ir |
-			var impulse = def(server, ir);
-
-			irs.add(impulse.key -> impulse);
-		});
+		PathName(irBank).entries.do({ | ir | effectList.add(def(server, ir)); });
 	}
 
 	sendReverbs { | multyThread, server |
@@ -150,10 +168,10 @@ MoscaEffects {
 		} {
 			defs.do({ | item |
 
-				SynthDef(\globalFx_ ++ item.defName, { | gate = 1, room = 0.5, damp = 0.5,
+				SynthDef(\globalFx ++ item.key, { | gate = 1, room = 0.5, damp = 0.5,
 					a0ir, a1ir, a2ir, a3ir, a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
-					var sig = decodeFunc.vaue();
-					sig = _.globalRevFunc.value(sig, room, damp,a0ir, a1ir, a2ir, a3ir, a4ir,
+					var sig = decodeFunc.value();
+					sig = item.globalFunc.value(sig, room, damp, a0ir, a1ir, a2ir, a3ir, a4ir,
 						a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir);
 					encodeFunc.value(sig, gate);
 				}).send(server);

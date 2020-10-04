@@ -98,23 +98,23 @@ OssiaAutomationProxy //: AutomationView
 {
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// single value version
-	var <param;
+	var <node;
 
 	*new { | parent_node, name, type, domain, default_value, bounding_mode = 'free', critical = false, repetition_filter = true |
 		^super.new.ctr(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
 	}
 
 	ctr { | parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter |
-		param = OSSIA_Parameter(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
+		node = OSSIA_Parameter(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
 	}
 
-	value { ^param.v; }
+	value { ^node.v; }
 
-	value_ { | value | param.v_(value); }
+	value_ { | value | node.v_(value); }
 
-	action { ^param.callback; }
+	action { ^node.callback; }
 
-	action_ { | function | param.callback_(function); }
+	action_ { | function | node.callback_(function); }
 }
 
 

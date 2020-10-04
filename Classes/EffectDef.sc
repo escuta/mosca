@@ -21,7 +21,7 @@
 //-------------------------------------------//
 
 AllPassDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <key;
+	classvar localMonoFunc, localStereoFunc, <key;
 
 	*initClass {
 
@@ -54,9 +54,8 @@ AllPassDef : EffectDef {
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
-				{ Rand(0, 0.001) },
-			damp * 2)});
-			^sig;
+				{ Rand(0, 0.001) }, damp * 2)});
+			sig;
 		};
 	}
 
@@ -65,11 +64,16 @@ AllPassDef : EffectDef {
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(12) +
-				{ Rand(0, 0.001) },
-			damp * 2)});
-			^sig;
+				{ Rand(0, 0.001) }, damp * 2)});
+			sig;
 		};
 	}
+
+	key { ^key; }
+
+	localMonoFunc { ^localMonoFunc; }
+
+	localStereoFunc { ^localStereoFunc; }
 }
 
 //-------------------------------------------//
@@ -77,7 +81,7 @@ AllPassDef : EffectDef {
 //-------------------------------------------//
 
 FreeVerbDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <key;
+	classvar localMonoFunc, localStereoFunc, <key;
 
 	*initClass {
 
@@ -100,7 +104,7 @@ FreeVerbDef : EffectDef {
 
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
-			^[
+			[
 				FreeVerb.ar(sig[0], mix: 1, room: room, damp: damp),
 				FreeVerb.ar(sig[1], mix: 1, room: room, damp: damp),
 				FreeVerb.ar(sig[2], mix: 1, room: room, damp: damp),
@@ -113,7 +117,7 @@ FreeVerbDef : EffectDef {
 
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
-			^[
+			[
 				FreeVerb2.ar(sig[0], sig[1], mix: 1, room: room, damp: damp),
 				FreeVerb2.ar(sig[2], sig[3], mix: 1, room: room, damp: damp),
 				FreeVerb2.ar(sig[4], sig[5], mix: 1, room: room, damp: damp),
@@ -123,6 +127,12 @@ FreeVerbDef : EffectDef {
 			].flat;
 		};
 	}
+
+	key { ^key; }
+
+	localMonoFunc { ^localMonoFunc; }
+
+	localStereoFunc { ^localStereoFunc; }
 }
 
 //-------------------------------------------//
@@ -130,7 +140,7 @@ FreeVerbDef : EffectDef {
 //-------------------------------------------//
 
 ConvolutionDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <key;
+	classvar localMonoFunc, localStereoFunc, <key;
 
 	*initClass {
 
@@ -154,7 +164,7 @@ ConvolutionDef : EffectDef {
 
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
-			^[
+			[
 				PartConv.ar(sig[0], MoscaUtils.fftSize(), a0ir),
 				PartConv.ar(sig[1], MoscaUtils.fftSize(), a1ir),
 				PartConv.ar(sig[2], MoscaUtils.fftSize(), a2ir),
@@ -183,6 +193,12 @@ ConvolutionDef : EffectDef {
 			];
 		};
 	}
+
+	key { ^key; }
+
+	localMonoFunc { ^localMonoFunc; }
+
+	localStereoFunc { ^localStereoFunc; }
 }
 
 //-------------------------------------------//
@@ -190,7 +206,7 @@ ConvolutionDef : EffectDef {
 //-------------------------------------------//
 
 ClearDef : EffectDef {
-	classvar <localMonoFunc, <localStereoFunc, <key;
+	classvar localMonoFunc, localStereoFunc, <key;
 
 	*initClass {
 
@@ -220,5 +236,4 @@ EffectDef {
 	ctr1stOrder { this.prFourChanGlobal(); }
 
 	ctr2ndOrder { this.prTwelveChanGlobal(); }
-
 }

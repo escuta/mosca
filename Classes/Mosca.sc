@@ -18,22 +18,23 @@
 
 Mosca {
 	var projDir, dur, server, <ossiaParent; // initial rguments
-	var renderer, effects, center, sources;
+	var renderer, effects, center, sources, <control;
 	var ossiaMasterPlay, ossiaMasterLib;
 
 	*new { | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
-		allCrtitical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
+		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus, autoloop = false |
 
 		^super.newCopyArgs(projDir, dur, server).ctr(nsources, irBank, parentOssiaNode,
-			allCrtitical, decoder, maxorder, speaker_array, outbus, suboutbus, rawformat,
+			allCritical, decoder, maxorder, speaker_array, outbus, suboutbus, rawformat,
 			rawoutbus, autoloop);
 	}
 
-	ctr { | nsources, irBank, parentOssiaNode, allCrtitical, decoder, maxOrder,
+	ctr { | nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, autoloop |
 
-		var multyThread = Server.program.asString.endsWith("supernova");
+		var multyThread = false;
+		// Server.program.asString.endsWith("supernova");
 
 		if (server.isNil) { server = Server.local; };
 
@@ -43,35 +44,35 @@ Mosca {
 			ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");
 		};
 
+		control = Automation(dur, showLoadSave: false, showSnapshot: true,
+			minTimeStep: 0.001);
+
 		server.doWhenBooted({
 
-			try({
-				var spatList = SpatDef.defList.collect({ | item | item.key; });
+			var spatList = SpatDef.defList.collect({ | item | item.key; });
 
-				ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
-					critical:true);
+			ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
+				critical:true);
 
-				ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", String,
-					[nil, nil, spatList], spatList.first, critical:true, repetition_filter:true);
+			ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", String,
+				[nil, nil, spatList], "Ambitools", critical:true, repetition_filter:true);
 
-				ossiaMasterLib.description_(spatList.asString);
+			ossiaMasterLib.description_(spatList.asString);
 
-				renderer = MoscaRenderer(server, speaker_array, maxOrder, decoder,
-					outBus, rawOutBus, rawFormat);
+			renderer = MoscaRenderer(server, speaker_array, maxOrder, decoder, outBus,
+				subOutBus, rawOutBus, rawFormat, ossiaParent, allCritical, control);
 
-				renderer.setMasterControl(ossiaParent, allCrtitical);
+			effects = MoscaEffects(server, maxOrder, multyThread, renderer, irBank, ossiaParent, allCritical, control);
 
-				effects = MoscaEffects(server, maxOrder, multyThread, renderer, irBank);
+			center = OssiaAutomationCenter(ossiaParent, allCritical);
 
-				center = OssiaAutomationCenter(ossiaParent, allCrtitical);
+			sources = Array.fill(nsources,
+				{ | i | MoscaSource(i, server, ossiaParent, allCritical, spatList, effects, center); };
+			);
 
-				sources = Array.fill(nsources,
-					{ | i | MoscaSource(i, server, ossiaParent, allCrtitical, spatList, effects, center); };
-				);
+			center.setActions(sources);
 
-				center.setActions(sources);
-			},
-			{ | error | ^Error(error).throw; });
+			effects.sendReverbs(multyThread, server);
 
 			renderer.launchRenderer(server, server.defaultGroup);
 		},

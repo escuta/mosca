@@ -21,20 +21,27 @@ MoscaRenderer {
 	var <convertFuma, <convertN3D; // conversion
 	var <longestRadius, quarterRadius, twoAndaHalfRadius, <lowestElevation, <highestElevation; // utils
 	var renderFunc, convertFunc, renderer; // synth
-	var ossiaMasterLevel;
+	var <ossiaMasterLevel;
 
-	*new { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
+	*new { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat,
+		ossiaParent, allCritical, automation |
 
-		^super.new.ctr(server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat);
+		^super.new.ctr(server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat,
+			ossiaParent, allCritical, automation);
 	}
 
-	ctr { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
-
+	ctr { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat,
+		ossiaParent, allCritical, automation |
 		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc, numOutputs,
 		bFormNumChan = (maxOrder + 1).squared;
 
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
 		n3dBus = Bus.audio(server, bFormNumChan); // global b-format ACN-N3D bus
+
+		ossiaMasterLevel = OssiaAutomationProxy(ossiaParent, "Master_level", Float,
+		[-96, 12],	0, 'clip', critical:allCritical);
+
+		ossiaMasterLevel.node.unit_(OSSIA_gain.decibel);
 
 		// setup Vbap
 		if (speaker_array.notNil) {
@@ -106,7 +113,6 @@ MoscaRenderer {
 				speaker_array.collect({ |val| val.pop });
 
 				azimuths = speaker_array.flat;
-
 			};
 
 			vbapBuffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
@@ -118,7 +124,6 @@ MoscaRenderer {
 
 			server.sync;
 		} {
-
 			var emulate_array, vbap_setup;
 
 			numOutputs = 26;
@@ -423,14 +428,11 @@ MoscaRenderer {
 				};
 			};
 		};
+
+		// this.prSetActions(automation);
 	}
 
-	setMasterControl { | ossiaParent, allCritical, automation |
-
-		ossiaMasterLevel = OssiaAutomationProxy(ossiaParent, "Master_level", Float,
-			[-96, 12],	0, 'clip', critical:allCritical);
-
-		ossiaMasterLevel.param.unit_(OSSIA_gain.decibel);
+	prSetActions { | automation |
 
 		ossiaMasterLevel.action_({ | num | renderer.set(\level, num.value.dbamp); });
 	}
