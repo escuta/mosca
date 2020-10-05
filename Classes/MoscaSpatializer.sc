@@ -20,12 +20,16 @@ MoscaSpatializer {
 	const playList = #["File","Stream","SCBus","EXBus"];
 	// the diferent types of inputs to spatilizer synths
 
-	classvar playInFunc, distFilter, <spatList;
+	classvar playInFunc, <spatList;
 	// list of spat libs
 
 	var outPutFuncs;
 
 	*initClass {
+
+		Class.initClassTree(SpatDef);
+
+		spatList = SpatDef.defList.collect({ | item | item.key; });
 
 		playInFunc = [ // one for File, Stereo, BFormat, Stream - streamed file;
 			// Make File-in SynthDefs
@@ -46,53 +50,57 @@ MoscaSpatializer {
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 				playerRef.value = In.ar(busini, channum);
 		}]; // Note, all variables are needed
-
 	}
 
-	*new { | order, server, renderer, effectDef |
+	spatList { ^spatList; }
 
-		^super.new().ctr(order, server, renderer, effectDef);
+	*new { | server, order, renderer, effect |
+
+		^super.new.ctr(server, order, renderer, effect);
 	}
 
-	ctr { | order, server, renderer, effectDef |
+	ctr { | server, order, renderer, effect |
 
 		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
-
 		playInFunc = playInFunc.add({ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 			playerRef.value = In.ar(busini + server.inputBus.index, channum);
 		});
 
 		outPutFuncs = [ // contains the synthDef blocks for each spatialyers, 0 = n3d, 1 = fuma, 2 = nonAmbi
 			{ | dry, wet, globrev |
-				Out.ar(effectDef.gBixBus, wet * globrev);
+				Out.ar(effect.gBxBus, wet * globrev);
 				Out.ar(renderer.n3dBus, wet);
 			},
 			{ | dry, wet, globrev |
-				Out.ar(effectDef.gbfBus, wet * globrev);
+				Out.ar(effect.gBfBus, wet * globrev);
 				Out.ar(renderer.fumaBus, wet);
 			},
 			{ | dry, wet, globrev |
-				Out.ar(effectDef.gbfBus[0], dry * globrev);
-				Out.ar(renderer.nonambiBus, wet);
+				Out.ar(effect.gBfBus, dry * globrev);
+				Out.ar(renderer.nonAmbiBus, wet);
 		}];
+
+		this.prMakeSpatialisers(server, order, renderer, effect.defs)
 	}
 
-	makeSpatialisers { | maxOrder, effectDef, server |
-		var out_type = 0;
+	prMakeSpatialisers { | server, maxOrder, renderer, effectDefs |
+		var spatInstances, out_type = 0;
 
-		effectDef.do({ | effect, count |
+		spatInstances = SpatDef.defList.collect({ | def | def.new(maxOrder, renderer, server); });
 
-			spatList.do { | spat, i |
+		effectDefs.do({ | effect, count |
+
+			spatInstances.do({ | spat, i |
 
 				case
 				{ spat.format == \N3D } { out_type = 0 }
 				{ spat.format == \FUMA } { out_type = 1 }
 				{ out_type = 2 };
 
-				playList.do { |play_type, j|
+				playList.do({ | play_type, j |
 					var mono, stereo;
 
-					mono = SynthDef(spat.defName ++ play_type ++ 1 ++ effect.defName, {
+					mono = SynthDef(spat.key ++ play_type ++ 1 ++ effect.key, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0,
@@ -126,7 +134,7 @@ MoscaSpatializer {
 							globallev.clip(0, 1) * glev);
 					});
 
-					stereo = SynthDef(spat.defName ++ play_type ++ 2 ++ effect.defName, {
+					stereo = SynthDef(spat.key ++ play_type ++ 2 ++ effect.key, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						azim = 0, elev = 0, radius = 20, amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
@@ -179,10 +187,10 @@ MoscaSpatializer {
 						};
 					};
 
-					if (spat.defName == \ATK) {
+					if (spat.key == \ATK) {
 
 						// assume FuMa input
-						SynthDef(\ATKBFormat ++ play_type ++ 4, {
+						SynthDef(\ATKBFormat ++ play_type ++ 4 ++ effect.key, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
@@ -215,15 +223,14 @@ MoscaSpatializer {
 							p = FoaTransform.ar(p, 'rotate', rotAngle);
 							p = FoaTransform.ar(p, 'push', pushang, az, elev);
 
-							outPutFuncs[1].value(p, p,
-								globallev.clip(0, 1) * glev);
+							outPutFuncs[1].value(p, p, globallev.clip(0, 1) * glev);
 						}).send(server);
 
-						[9, 16, 25].do { |item, count|
-							var ord = (item.sqrt) - 1;
+						[9, 16, 25].do({ | item, count |
+							var ord = (item.sqrt) - 1,
 
 							// assume N3D input
-							SynthDef(\ATKBFormat++play_type++item, {
+							hoaSynth = SynthDef(\ATKBFormat ++ play_type ++ item ++ effect.key, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 								azim = 0, elev = 0, radius = 20, amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
@@ -256,16 +263,21 @@ MoscaSpatializer {
 								p = FoaTransform.ar(p, 'rotate', rotAngle);
 								p = FoaTransform.ar(p, 'push', pushang, az, elev);
 
-								outPutFuncs[1].value(p, p,
-									globallev.clip(0, 1) * glev);
+								outPutFuncs[1].value(p, p, globallev.clip(0, 1) * glev);
 							});
-						};
+
+							if (item > 16) {
+								hoaSynth.load(server);
+							} {
+								hoaSynth.send(server);
+							};
+						});
 					};
 
-					if (spat.defName == \Ambitools) {
+					if (spat.key == \Ambitools) {
 
 						// assume FuMa input
-						SynthDef(\AmbitoolsBFormat ++ play_type ++ 4, {
+						SynthDef(\AmbitoolsBFormat ++ play_type ++ 4 ++ effect.key, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							azim = 0, elev = 0, radius = 20, amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
@@ -301,11 +313,11 @@ MoscaSpatializer {
 								globallev.clip(0, 1) * glev);
 						}).send(server);
 
-						[9, 16, 25].do { |item, count|
+						[9, 16, 25].do({ | item, count |
 							var ord = (item.sqrt) - 1,
 
 							// assume N3D input
-							hoaSynth = SynthDef(\AmbitoolsBFormat ++ play_type ++ item, {
+							hoaSynth = SynthDef(\AmbitoolsBFormat ++ play_type ++ item ++ effect.key, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 								azim = 0, elev = 0, radius = 20, amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
@@ -335,19 +347,18 @@ MoscaSpatializer {
 								p = HOATransRotateAz.ar(ord, lrevRef.value * revCut + (p * cut), rotAngle);
 								p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:pushang);
 
-								outPutFuncs[0].value(p, p,
-									globallev.clip(0, 1) * glev);
+								outPutFuncs[0].value(p, p, globallev.clip(0, 1) * glev);
 							});
 
 							if (item > 16) {
 								hoaSynth.load(server);
-							} { hoaSynth.send(server);
+							} {
+								hoaSynth.send(server);
 							};
-
-						};
+						});
 					};
-				};
-			};
+				});
+			});
 		});
 	}
 }

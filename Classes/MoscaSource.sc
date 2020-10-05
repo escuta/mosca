@@ -18,11 +18,10 @@
 
 MoscaSource[] {
 	var index, server, src, defName, effect, playType, chanNum;
-	var spatializer, synths, buffer; // communicatin with the audio server
-	var scInBus, triggerFunc, stopFunc, synthRegistry; // sc synth specific
+	var <spatializer, synths, buffer; // communicatin with the audio server
+	var scInBus, triggerFunc, stopFunc, synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
 	var <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
-	// reveb parameters
 	var <file, <stream, <scSynths, <external, <nChan; // inputs types
 	var <globalAmount, <localEffect, <localAmount, <localRoom, <localDamp;
 	var <angle, <rotation, <directivity; // input specific parameters
@@ -71,6 +70,8 @@ MoscaSource[] {
 
 		play = OssiaAutomationProxy(src, "play", Boolean,
 		critical:true, repetition_filter:true);
+
+		firstTime = true;
 
 		loop = OssiaAutomationProxy(src, "Loop", Boolean,
 		critical:true, repetition_filter:true);
@@ -335,10 +336,17 @@ MoscaSource[] {
 
 		args.postln;
 	}
-}
 
-//
-// if ((file.value != "") && (scSynths.value || external.value).not) {
-//
-// 	args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInt];
-// };
+	launchSynth { | force |
+		var args = [];
+
+		if ((file.value != "") && (scSynths.value || external.value).not) {
+
+			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInt];
+
+		};
+	}
+
+	runStop {
+	}
+}

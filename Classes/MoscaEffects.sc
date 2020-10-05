@@ -162,7 +162,7 @@ MoscaEffects {
 		PathName(irBank).entries.do({ | ir | effectList.add(def(server, ir)); });
 	}
 
-	sendReverbs { | multyThread, server |
+	sendFx { | multyThread, server |
 
 		if (multyThread) {
 		} {

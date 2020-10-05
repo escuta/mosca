@@ -21,7 +21,7 @@
 //-------------------------------------------//
 
 ABTDef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -44,6 +44,10 @@ ABTDef : SpatDef {
 			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//
@@ -51,7 +55,7 @@ ABTDef : SpatDef {
 //-------------------------------------------//
 
 HOALibDef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -75,6 +79,10 @@ HOALibDef : SpatDef {
 			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//
@@ -82,7 +90,7 @@ HOALibDef : SpatDef {
 //-------------------------------------------//
 
 ADTDef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -105,6 +113,10 @@ ADTDef : SpatDef {
 			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//
@@ -112,7 +124,7 @@ ADTDef : SpatDef {
 //-------------------------------------------//
 
 SCHOADef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -135,6 +147,10 @@ SCHOADef : SpatDef {
 			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//
@@ -142,7 +158,7 @@ SCHOADef : SpatDef {
 //-------------------------------------------//
 
 ATKDef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -154,18 +170,25 @@ ATKDef : SpatDef {
 	}
 
 	prSetFunc { | maxOrder, renderer, server |
+		var foaEncoderSpread, foaEncoderDiffuse;
+
+		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
+		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
+
+		server.sync;
 
 		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var diffuse, spread, omni,
 			sig = distFilter.value(input, distance),
-			rad = renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius);
+			rad = renderer.longestRadius / distance.linlin(0, 0.75,
+				renderer.quarterRadius, renderer.twoAndaHalfRadius);
 			sig = ref.value + (sig * rad);
 			omni = FoaEncode.ar(sig, FoaEncoderMatrix.newOmni);
-			spread = FoaEncode.ar(sig, FoaEncoderKernel.newSpread(subjectID: 6, kernelSize: 2048,
-				server:server, sampleRate:server.sampleRate.asInteger); );
-			diffuse = FoaEncode.ar(sig, FoaEncoderKernel.newDiffuse(subjectID: 3, kernelSize: 2048,
-				server:server, sampleRate:server.sampleRate.asInteger); );
+			spread = FoaEncode.ar(sig, foaEncoderSpread);
+			diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
 			sig = Select.ar(difu, [omni, diffuse]);
 			sig = Select.ar(spre, [sig, spread]);
 			sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract, azimuth, elevation);
@@ -173,6 +196,10 @@ ATKDef : SpatDef {
 			ref.value = FoaTransform.ar(sig, 'proximity', distance);
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//
@@ -180,7 +207,7 @@ ATKDef : SpatDef {
 //-------------------------------------------//
 
 BFFMHDef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -198,10 +225,16 @@ BFFMHDef : SpatDef {
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, distance);
 			sig = enc.ar(ref.value + sig, azimuth, elevation,
-				(renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius)), 0.5);
-			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
+				(renderer.longestRadius / distance.linlin(0, 0.75,
+					renderer.quarterRadius, renderer.twoAndaHalfRadius)), 0.5);
+			ref.value = (sig * contract) +
+			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//
@@ -209,7 +242,7 @@ BFFMHDef : SpatDef {
 //-------------------------------------------//
 
 JOSHDef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -227,10 +260,15 @@ JOSHDef : SpatDef {
 			var sig = distFilter.value(input, distance);
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 				azimuth, 1 - contract, elevation, 1 - contract,
-				rho: (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius)) - 1,
+				rho: (renderer.longestRadius / distance.linlin(0, 0.75,
+					renderer.quarterRadius, renderer.twoAndaHalfRadius)) - 1,
 				mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//
@@ -238,7 +276,7 @@ JOSHDef : SpatDef {
 //-------------------------------------------//
 
 VBAPDef : SpatDef {
-	classvar <key, <format;
+	classvar <key, format;
 
 	*initClass {
 
@@ -262,11 +300,16 @@ VBAPDef : SpatDef {
 			elev = elev.clip(renderer.lowestElevation, renderer.highestElevation);
 			// restrict between min & max
 			ref.value = VBAP.ar(renderer.numOutputs,
-				ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
+				ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75,
+					renderer.quarterRadius, renderer.twoAndaHalfRadius))),
 				renderer.vbapBuffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100);
 		};
 	}
+
+	key { ^key; }
+
+	format { ^format; }
 }
 
 //-------------------------------------------//

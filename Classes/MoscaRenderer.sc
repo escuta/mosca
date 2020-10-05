@@ -19,7 +19,8 @@ may be downloaded here: http://escuta.org/mosca
 MoscaRenderer {
 	var <nonAmbiBus, <fumaBus, <n3dBus, <vbapBuffer; // buses & buffer
 	var <convertFuma, <convertN3D; // conversion
-	var <longestRadius, quarterRadius, twoAndaHalfRadius, <lowestElevation, <highestElevation; // utils
+	var <longestRadius, <quarterRadius, <twoAndaHalfRadius, <lowestElevation, <highestElevation;
+	var <bFormNumChan, <numOutputs; // utils
 	var renderFunc, convertFunc, renderer; // synth
 	var <ossiaMasterLevel;
 
@@ -32,7 +33,8 @@ MoscaRenderer {
 
 	ctr { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat,
 		ossiaParent, allCritical, automation |
-		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc, numOutputs,
+		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc;
+
 		bFormNumChan = (maxOrder + 1).squared;
 
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
