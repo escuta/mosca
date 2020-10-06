@@ -21,7 +21,7 @@
 //-------------------------------------------//
 
 ABTDef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 
@@ -55,7 +55,7 @@ ABTDef : SpatDef {
 //-------------------------------------------//
 
 HOALibDef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 
@@ -90,7 +90,7 @@ HOALibDef : SpatDef {
 //-------------------------------------------//
 
 ADTDef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 
@@ -124,7 +124,7 @@ ADTDef : SpatDef {
 //-------------------------------------------//
 
 SCHOADef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 
@@ -158,7 +158,7 @@ SCHOADef : SpatDef {
 //-------------------------------------------//
 
 ATKDef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 
@@ -207,7 +207,7 @@ ATKDef : SpatDef {
 //-------------------------------------------//
 
 BFFMHDef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 
@@ -242,7 +242,7 @@ BFFMHDef : SpatDef {
 //-------------------------------------------//
 
 JOSHDef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 
@@ -276,7 +276,7 @@ JOSHDef : SpatDef {
 //-------------------------------------------//
 
 VBAPDef : SpatDef {
-	classvar <key, format;
+	classvar <key, <format;
 
 	*initClass {
 

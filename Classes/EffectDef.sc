@@ -21,7 +21,7 @@
 //-------------------------------------------//
 
 AllPassDef : EffectDef {
-	classvar localMonoFunc, localStereoFunc, <key;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 
@@ -81,7 +81,7 @@ AllPassDef : EffectDef {
 //-------------------------------------------//
 
 FreeVerbDef : EffectDef {
-	classvar localMonoFunc, localStereoFunc, <key;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 
@@ -140,7 +140,7 @@ FreeVerbDef : EffectDef {
 //-------------------------------------------//
 
 ConvolutionDef : EffectDef {
-	classvar localMonoFunc, localStereoFunc, <key;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 
@@ -206,7 +206,7 @@ ConvolutionDef : EffectDef {
 //-------------------------------------------//
 
 ClearDef : EffectDef {
-	classvar localMonoFunc, localStereoFunc, <key;
+	classvar <localMonoFunc, <localStereoFunc, <key;
 
 	*initClass {
 

@@ -1,20 +1,20 @@
 /*
- * Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
- * Creative Commons Attribution-NonCommercial 4.0 International License
- * http://creativecommons.org/licenses/by-nc/4.0/
- * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
- * by Joseph Anderson and the Automation quark
- * (https://github.com/neeels/Automation) by Neels Hofmeyr.
- * Required Quarks : Automation, Ctk, XML and  MathLib
- * Required classes:
- * SC Plugins: https://github.com/supercollider/sc3-plugins
- * User must set up a project directory with subdirectoties "rir" and "auto"
- * RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
- * and must be placed in the "rir" directory.
- * Run help on the "Mosca" class in SuperCollider for detailed information
- * and code examples. Further information and sample RIRs and B-format recordings
- * may be downloaded here: http://escuta.org/mosca
- */
+* Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+* Creative Commons Attribution-NonCommercial 4.0 International License
+* http://creativecommons.org/licenses/by-nc/4.0/
+* The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
+* by Joseph Anderson and the Automation quark
+* (https://github.com/neeels/Automation) by Neels Hofmeyr.
+* Required Quarks : Automation, Ctk, XML and  MathLib
+* Required classes:
+* SC Plugins: https://github.com/supercollider/sc3-plugins
+* User must set up a project directory with subdirectoties "rir" and "auto"
+* RIRs should have the first 100 or 120ms silenced to act as "tail" reverberators
+* and must be placed in the "rir" directory.
+* Run help on the "Mosca" class in SuperCollider for detailed information
+* and code examples. Further information and sample RIRs and B-format recordings
+* may be downloaded here: http://escuta.org/mosca
+*/
 
 MoscaSpatializer {
 	const playList = #["File","Stream","SCBus","EXBus"];
@@ -23,7 +23,7 @@ MoscaSpatializer {
 	classvar playInFunc, <spatList;
 	// list of spat libs
 
-	var outPutFuncs;
+	var outPutFuncs, spatInstances;
 
 	*initClass {
 
@@ -54,17 +54,26 @@ MoscaSpatializer {
 
 	spatList { ^spatList; }
 
-	*new { | server, order, renderer, effect |
+	*new { | server |
 
-		^super.new.ctr(server, order, renderer, effect);
+		^super.new.ctr(server);
 	}
 
-	ctr { | server, order, renderer, effect |
+	ctr { | server |
 
 		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
 		playInFunc = playInFunc.add({ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 			playerRef.value = In.ar(busini + server.inputBus.index, channum);
 		});
+	}
+
+	initSpat { | order, renderer, server |
+
+		spatInstances = SpatDef.defList.collect({ | def | def.new(order, renderer, server); });
+	}
+
+	makeSpatialisers { | server, maxOrder, renderer, effect |
+		var out_type = 0;
 
 		outPutFuncs = [ // contains the synthDef blocks for each spatialyers, 0 = n3d, 1 = fuma, 2 = nonAmbi
 			{ | dry, wet, globrev |
@@ -80,15 +89,7 @@ MoscaSpatializer {
 				Out.ar(renderer.nonAmbiBus, wet);
 		}];
 
-		this.prMakeSpatialisers(server, order, renderer, effect.defs)
-	}
-
-	prMakeSpatialisers { | server, maxOrder, renderer, effectDefs |
-		var spatInstances, out_type = 0;
-
-		spatInstances = SpatDef.defList.collect({ | def | def.new(maxOrder, renderer, server); });
-
-		effectDefs.do({ | effect, count |
+		effect.defs.do({ | effect, count |
 
 			spatInstances.do({ | spat, i |
 

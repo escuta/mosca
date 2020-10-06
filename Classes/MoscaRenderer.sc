@@ -24,28 +24,35 @@ MoscaRenderer {
 	var renderFunc, convertFunc, renderer; // synth
 	var <ossiaMasterLevel;
 
-	*new { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat,
-		ossiaParent, allCritical, automation |
+	*new { | maxOrder |
 
-		^super.new.ctr(server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat,
-			ossiaParent, allCritical, automation);
+		^super.new.ctr(maxOrder);
 	}
 
-	ctr { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat,
-		ossiaParent, allCritical, automation |
-		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc;
+	ctr { | maxOrder |
 
 		bFormNumChan = (maxOrder + 1).squared;
+	}
+
+	setParam { | ossiaParent, allCritical |
+
+		ossiaMasterLevel = OssiaAutomationProxy(ossiaParent, "Master_level", Float,
+			[-96, 12],	0, 'clip', critical:allCritical);
+
+		ossiaMasterLevel.node.unit_(OSSIA_gain.decibel);
+	}
+
+	setAction {
+
+		ossiaMasterLevel.action_({ | num | renderer.set(\level, num.value.dbamp); });
+	}
+
+	setup { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
+		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc;
 
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
 		n3dBus = Bus.audio(server, bFormNumChan); // global b-format ACN-N3D bus
 
-		ossiaMasterLevel = OssiaAutomationProxy(ossiaParent, "Master_level", Float,
-		[-96, 12],	0, 'clip', critical:allCritical);
-
-		ossiaMasterLevel.node.unit_(OSSIA_gain.decibel);
-
-		// setup Vbap
 		if (speaker_array.notNil) {
 			var max_func, min_func, dimention, vbap_setup, adjust;
 
@@ -434,15 +441,10 @@ MoscaRenderer {
 		// this.prSetActions(automation);
 	}
 
-	prSetActions { | automation |
-
-		ossiaMasterLevel.action_({ | num | renderer.set(\level, num.value.dbamp); });
-	}
-
 	launchRenderer { | server, target |
 
 		SynthDef("ambiConverter", convertFunc).send(server);
 
-		renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addAfter);
+		renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
 	}
 }
