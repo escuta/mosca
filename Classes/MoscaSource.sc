@@ -23,17 +23,17 @@ MoscaSource[] {
 	// common automation and ossia parameters
 	var <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
 	var <file, <stream, <scSynths, <external, <nChan; // inputs types
-	var <globalAmount, <localEffect, <localAmount, <localRoom, <localDamp;
+	var <globalAmount, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <angle, <rotation, <directivity; // input specific parameters
 	var <spread, <diffuse; // atk specific parameters
 	var <rate, <window, <random; // joshGrain specific parameters
+	var auxiliary, <aux, <check;
 
-	*new { | index, server, ossiaParent, allCritical, spatList, effects, center |
-		^super.newCopyArgs(index, server).ctr(ossiaParent, allCritical, spatList, effects, center);
+	*new { | index, server, ossiaParent, allCritical, spatList, effectList, center |
+		^super.newCopyArgs(index, server).ctr(ossiaParent, allCritical, spatList, effectList, center);
 	}
 
-	ctr { | ossiaParent, allCritical, spatList, effects, center |
-
+	ctr { | ossiaParent, allCritical, spatList, effectList, center |
 		var input, atk, josh;
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
@@ -69,15 +69,15 @@ MoscaSource[] {
 		library.node.description_(spatList.asString);
 
 		play = OssiaAutomationProxy(src, "play", Boolean,
-		critical:true, repetition_filter:true);
+			critical:true, repetition_filter:true);
 
 		firstTime = true;
 
 		loop = OssiaAutomationProxy(src, "Loop", Boolean,
-		critical:true, repetition_filter:true);
+			critical:true, repetition_filter:true);
 
 		level = OssiaAutomationProxy(src, "Level", Float, [-96, 12],
-		0, 'clip', critical:allCritical, repetition_filter:true);
+			0, 'clip', critical:allCritical, repetition_filter:true);
 
 		level.node.unit_(OSSIA_gain.decibel);
 
@@ -85,7 +85,7 @@ MoscaSource[] {
 			[0, 1], 1.0, 'clip', critical:allCritical, repetition_filter:true);
 
 		doppler = OssiaAutomationProxy(src, "Doppler_amount", Float,
-		[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
 
 		globalAmount = OssiaAutomationProxy(src, "Global_amount", Float,
 			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
@@ -93,21 +93,21 @@ MoscaSource[] {
 		globalAmount.node.unit_(OSSIA_gain.linear);
 
 		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
-			[nil, nil, effects.ossiaGlobal.node.domain.values()], "Clear", critical:true, repetition_filter:true);
+			[nil, nil, effectList], "Clear", critical:true, repetition_filter:true);
 
 		effect = "Clear";
 
-		localEffect.node.description_(effects.effectList.asString);
+		localEffect.node.description_(effectList.asString);
 
 		localAmount = OssiaAutomationProxy(localEffect.node, "Local_amount", Float,
 			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
 
 		localAmount.node.unit_(OSSIA_gain.linear);
 
-		localRoom = OssiaAutomationProxy(localEffect.node, "Room_delay", Float,
+		localDelay = OssiaAutomationProxy(localEffect.node, "Room_delay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
-		localDamp = OssiaAutomationProxy(localEffect.node, "Damp_decay", Float,
+		localDecay = OssiaAutomationProxy(localEffect.node, "Damp_decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
 		angle = OssiaAutomationProxy(src, "Stereo_angle", Float,
@@ -154,10 +154,20 @@ MoscaSource[] {
 
 		random.node.description_("JoshGrain only");
 
-		this.prSetActions(spatList, effects, center);
+		auxiliary = OSSIA_Node(src, "Auxiliary");
+
+		aux = Array.fill(5,
+			{ | i | OssiaAutomationProxy(auxiliary, "Aux_" ++ (i + 1), Float,
+			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
+		});
+
+		check = Array.fill(5,
+			{ | i | OssiaAutomationProxy(auxiliary, "Ckeck_" ++ (i + 1),
+				Boolean, critical:allCritical, repetition_filter:true);
+		});
 	}
 
-	prSetActions { | spatList, effects, center |
+	setAction { | effectList, center |
 
 		file.action_({ | path |
 
@@ -258,7 +268,7 @@ MoscaSource[] {
 		localEffect.action_({ | val |
 			var i = localEffect.node.domain.values().detectIndex({ | item | item == val.value });
 
-			effect = effects.effectList[i];
+			if (effectList[i]) {} {};
 
 			this.prSetDefName();
 			this.prSetSynthArgs();
@@ -266,9 +276,9 @@ MoscaSource[] {
 
 		localAmount.action_({ | val | this.setSynths(\llev, val.value); });
 
-		localRoom.action_({ | val | this.setSynths(\room, val.value); });
+		localDelay.action_({ | val | this.setSynths(\room, val.value); });
 
-		localDamp.action_({ | val | this.setSynths(\damp, val.value); });
+		localDecay.action_({ | val | this.setSynths(\damp, val.value); });
 
 		angle.action_({ | val | this.setSynths(\angle, val.value); });
 
@@ -295,6 +305,20 @@ MoscaSource[] {
 		window.action_({ | val | this.setSynths(\winsize, val.value); });
 
 		random.action_({ | val | this.setSynths(\winrand, val.value); });
+
+		aux.do({ | item |
+			item.action_({
+				this.setSynths(\aux, [aux[0].value, aux[1].value,
+					aux[2].value, aux[3].value, aux[4].value]);
+			});
+		});
+
+		check.do({ | item |
+			item.action_({
+				this.setSynths(\check, [check[0].value, check[1].value,
+					check[2].value, check[3].value, check[4].value]);
+			});
+		});
 	}
 
 	prSetDefName {
@@ -319,7 +343,7 @@ MoscaSource[] {
 	prSetSynthArgs { | effect |
 		var args = [];
 
-		switch ( library.value,
+		switch (library.value,
 			"ATK", {
 				args ++ [\sp, spread.value.asInt, \df, diffuse.value.asInt];
 			}, "Josh", {
@@ -345,6 +369,33 @@ MoscaSource[] {
 			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInt];
 
 		};
+	}
+
+	dockTo { | automation |
+
+		coordinates.dockTo(automation, index);
+
+		automation.dock(level, "levelProxy_" ++ index);
+		automation.dock(doppler, "dopamtProxy_" ++ index);
+		automation.dock(globalAmount, "globaamtlProxy_" ++ index);
+		automation.dock(localEffect, "localProxy_" ++ index);
+		automation.dock(localDelay, "localDelayProxy_" ++ index);
+		automation.dock(localDecay, "localDecayProxy_" ++ index);
+		automation.dock(angle, "angleProxy_" ++ index);
+		automation.dock(rotation, "rotationProxy_" ++ index);
+		automation.dock(directivity, "directivityProxy_" ++ index);
+		automation.dock(contraction, "contractionProxy_" ++ index);
+		automation.dock(rate, "grainrateProxy_" ++ index);
+		automation.dock(window, "windowsizeProxy_" ++ index);
+		automation.dock(random, "randomwindowProxy_" ++ index);
+
+		aux.do({ | item, i | automation.dock(item,
+			"aux" ++ (i + 1) ++ "Proxy_" ++ index)
+		});
+
+		check.do({ | item, i | automation.dock(item,
+			"check" ++ (i + 1) ++ "Proxy_" ++ index)
+		});
 	}
 
 	runStop {

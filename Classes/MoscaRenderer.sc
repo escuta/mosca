@@ -447,4 +447,9 @@ MoscaRenderer {
 
 		renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
 	}
+
+	dockTo { | automation |
+
+		automation.dock(ossiaMasterLevel, "masterlevProxy");
+	}
 }

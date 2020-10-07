@@ -162,7 +162,7 @@ OssiaAutomationCenter {
 			[0.01, 10],	1, 'clip', critical:allCritical);
 	}
 
-	setActions { | sources |
+	setAction { | sources |
 		var halfPi = MoscaUtils.halfPi();
 
 		ossiaOrigine.callback_({ | num |
@@ -227,6 +227,19 @@ OssiaAutomationCenter {
 
 		roll.action_({ | num | ossiaOrient.v_([heading.value, pitch.value, num.value]); });
 	}
+
+	dockTo { | automation |
+
+		automation.dock(oX, "oxProxy");
+		automation.dock(oY, "oyProxy");
+		automation.dock(oZ, "ozProxy");
+
+		automation.dock(heading, "headingProxy");
+		automation.dock(pitch, "pitchProxy");
+		automation.dock(roll, "rollProxy");
+
+		automation.dock(scale, "scaleProxy");
+	}
 }
 
 OssiaAutomationCoordinates {
@@ -260,10 +273,10 @@ OssiaAutomationCoordinates {
 
 		sphe.unit_(OSSIA_position.spherical);
 
-		this.setActions(center, spatializer, synth);
+		this.setAction(center, spatializer, synth);
 	}
 
-	setActions { | center, spatializer, synth |
+	setAction { | center, spatializer, synth |
 		var halfPi = MoscaUtils.halfPi();
 
 		cart.callback_({ | num |
@@ -324,5 +337,12 @@ OssiaAutomationCoordinates {
 
 			spheBack = true;
 		});
+	}
+
+	dockTo { | automation, index |
+
+		automation.dock(x, "x_axisProxy_" ++ index);
+		automation.dock(y, "y_axisProxy_" ++ index);
+		automation.dock(z, "z_axisProxy_" ++ index);
 	}
 }

@@ -151,14 +151,14 @@ MoscaEffects {
 
 		ossiaGlobal.node.description_(effectList.asString);
 
-		ossiaDelay = OssiaAutomationProxy(ossiaGlobal.node, "Room_delay", Float,
+		ossiaDelay = OssiaAutomationProxy(ossiaGlobal.node, "Delay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
-		ossiaDecay = OssiaAutomationProxy(ossiaGlobal.node, "Damp_decay", Float,
+		ossiaDecay = OssiaAutomationProxy(ossiaGlobal.node, "Decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 	}
 
-	setActions {
+	setAction {
 
 		ossiaGlobal.action_({ | num |
 
@@ -178,5 +178,12 @@ MoscaEffects {
 		ossiaDelay.action_({ | num | if (globalFx.isPlaying) { globalFx.set(\room, num.value); }; });
 
 		ossiaDecay.action_({ | num | if (globalFx.isPlaying) { globalFx.set(\damp, num.value); }; });
+	}
+
+	dockTo { | automation |
+
+		automation.dock(ossiaGlobal, "globProxy");
+		automation.dock(ossiaDelay, "globDelProxy");
+		automation.dock(ossiaDecay, "globDecProxy");
 	}
 }

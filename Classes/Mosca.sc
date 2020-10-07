@@ -17,7 +17,7 @@
 */
 
 Mosca {
-	var projDir, dur, autoLoop, server, <ossiaParent; // initial rguments
+	var dur, autoLoop, server, <ossiaParent; // initial rguments
 	var renderer, effects, center, sources, gui, tracker;
 	var ossiaMasterPlay, ossiaMasterLib;
 	var <control, watcher, ossiaAutomation, isPlay = false, // automation control
@@ -27,12 +27,12 @@ Mosca {
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus, autoloop = false |
 
-		^super.newCopyArgs(projDir, dur, autoloop, server).ctr(nsources, irBank,
+		^super.newCopyArgs(dur, autoloop, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
 			outbus, suboutbus, rawformat, rawoutbus);
 	}
 
-	ctr { | nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
+	ctr { | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
 
 		var spat, multyThread = false; // Server.program.asString.endsWith("supernova");
@@ -69,56 +69,63 @@ Mosca {
 			ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");
 		};
 
-		this.prSetParams(spat.spatList, allCritical); // global control
+		this.prSetParam(spat.spatList, allCritical); // global control
 
 		center = OssiaAutomationCenter(ossiaParent, allCritical);
 
 		sources = Array.fill(nsources,
 			{ | i | MoscaSource(i, server, ossiaParent, allCritical,
-				spat.spatList, effects, center); });
+				spat.spatList, effects.ossiaGlobal.node.domain.values(), center); });
 
-		control = Automation(dur, showLoadSave: false, showSnapshot: true,
-			minTimeStep: 0.001);
-
-		this.prSetActions();
-
-		// setup and run underlying synth routine
-		watcher = Routine.new({
-			var plim = MoscaUtils.plim();
-			"WATCHER!!!".postln;
-			inf.do({
-				0.1.wait;
-
-				sources.do({ | item |
-
-					if (item.coordinates.spheVal.rho >= plim) {
-						if(item.spatializer.notNil) {
-							item.runStop(); // to kill SC input synths
-							item.spatializer.free;
-						};
-
-						item.firstTime = true;
-					} {
-						if((isPlay || item.play.value) && item.spatializer.isNil && item.firstTime) {
-							// could set the start point for file
-							item.launchSynth(true);
-							item.firstTime = false;
-						};
-					};
-				});
-
-				if (isPlay) {
-					ossiaSeekBack = false;
-					ossiaTransport.v_(control.now);
-					ossiaSeekBack = true;
-				};
-			});
-		});
-
-		watcher.play;
+		// control = Automation(dur, showLoadSave: false, showSnapshot: true,
+		// minTimeStep: 0.001);
+		//
+		// if (projDir.notNil) {
+		// 	control.presetDir = projDir ++ "/auto";
+		// 	control.load(control.presetDir);
+		// } {
+		// 	control.presetDir = "/auto";
+		// };
+		//
+		// this.prSetActions();
+		//
+		// // setup and run underlying synth routine
+		// watcher = Routine.new({
+		// 	var plim = MoscaUtils.plim();
+		//
+		// 	inf.do({
+		// 		0.1.wait;
+		//
+		// 		sources.do({ | item |
+		//
+		// 			if (item.coordinates.spheVal.rho >= plim) {
+		// 				if(item.spatializer.notNil) {
+		// 					item.runStop(); // to kill SC input synths
+		// 					item.spatializer.free;
+		// 				};
+		//
+		// 				item.firstTime = true;
+		// 			} {
+		// 				if((isPlay || item.play.value) && item.spatializer.isNil && item.firstTime) {
+		// 					// could set the start point for file
+		// 					item.launchSynth(true);
+		// 					item.firstTime = false;
+		// 				};
+		// 			};
+		// 		});
+		//
+		// 		if (isPlay) {
+		// 			ossiaSeekBack = false;
+		// 			ossiaTransport.v_(control.now);
+		// 			ossiaSeekBack = true;
+		// 		};
+		// 	});
+		// });
+		//
+		// watcher.play;
 	}
 
-	prSetParams { | spatList, allCritical |
+	prSetParam { | spatList, allCritical |
 
 		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
 			critical:true);
@@ -147,9 +154,17 @@ Mosca {
 
 		ossiaRec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,
 			critical:true, repetition_filter:true);
+
+		sources.do({ | item | item.setAction(effects.effectList, center); });
 	}
 
 	prSetActions {
+
+		center.setAction(sources);
+
+		renderer.setAction();
+
+		effects.setAction();
 
 		control.onPlay_({
 			var startTime;
@@ -202,14 +217,20 @@ Mosca {
 			ossiaPlay.value_(false);
 		});
 
-		control.onEnd_({ control.seek(); });
+		// if (gui.isNil) {
+		// 	// when there is no gui, Automation callback does not work,
+		// 	// so here we monitor when the transport reaches end
+		//
+		// 	if (control.now > dur) {
+		// 		if (autoloopval) {
+		// 			control.seek; // note, onSeek not called
+		// 		} {
+		// 			this.blindControlStop; // stop everything
+		// 		};
+		// 	};
+		// };
 
-		if (projDir.notNil) {
-			control.presetDir = projDir ++ "/auto";
-			control.load(control.presetDir);
-		} {
-			control.presetDir = "/auto";
-		};
+		control.onEnd_({ control.seek(); });
 
 		ossiaPlay.callback_({ | bool |
 			if (bool) {
@@ -240,25 +261,14 @@ Mosca {
 				control.stopRecording;
 			};
 		});
+	}
 
-		center.setActions(sources);
+	prDockTo {
 
-		renderer.setAction();
+		center.dockTo(control);
+		effects.dockTo(control);
+		renderer.dockTo(control);
 
-		effects.setActions();
+		sources.do({ | item | item.dockTo(control); });
 	}
 }
-
-//
-// if (gui.isNil) {
-// 	// when there is no gui, Automation callback does not work,
-// 	// so here we monitor when the transport reaches end
-//
-// 	if (control.now > dur) {
-// 		if (autoloopval) {
-// 			control.seek; // note, onSeek not called
-// 		} {
-// 			this.blindControlStop; // stop everything
-// 		};
-// 	};
-// };
