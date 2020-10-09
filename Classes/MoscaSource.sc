@@ -17,7 +17,7 @@
 */
 
 MoscaSource[] {
-	var index, server, src, defName, effect, playType, chanNum;
+	var index, server, src, defName, effect, chanNum, playType, <toConvert, <toAmbi;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var scInBus, triggerFunc, stopFunc, synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -167,7 +167,7 @@ MoscaSource[] {
 		});
 	}
 
-	setAction { | effectList, center |
+	setAction { | effectList, center, spat, server |
 
 		file.action_({ | path |
 
@@ -249,7 +249,14 @@ MoscaSource[] {
 			this.prSetDefName();
 		});
 
-		library.action_({ | val | this.prSetDefName(); });
+		library.action_({ | val |
+			var i = spat.spatlist({ | item | item == val.value });
+
+			if (spat.defs[i]) {} {};
+
+			this.prSetDefName();
+			this.prSetSynthArgs();
+		});
 
 		play.action_({ | val |
 
@@ -367,7 +374,6 @@ MoscaSource[] {
 		if ((file.value != "") && (scSynths.value || external.value).not) {
 
 			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInt];
-
 		};
 	}
 

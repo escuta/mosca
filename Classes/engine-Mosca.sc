@@ -130,7 +130,6 @@ GUI Parameters usable in SynthDefs
 	deregisterSynth { | source, synth |
 		if(synthRegistry[source - 1].notNil){
 			synthRegistry[source - 1].remove(synth);
-
 		};
 	}
 

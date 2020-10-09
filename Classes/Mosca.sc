@@ -16,6 +16,18 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
+/*
+* TODO
+* defName and Synth args for sources
+* get clear on conversion (general + 2effects)
+* conveterNeeded methode
+* API
+* Multythread evrything
+* GUI
+* DBAP https://github.com/woolgathering/dbap
+* NHHall
+*/
+
 Mosca {
 	var dur, autoLoop, server, <ossiaParent; // initial rguments
 	var renderer, effects, center, sources, gui, tracker;
@@ -77,52 +89,52 @@ Mosca {
 			{ | i | MoscaSource(i, server, ossiaParent, allCritical,
 				spat.spatList, effects.ossiaGlobal.node.domain.values(), center); });
 
-		// control = Automation(dur, showLoadSave: false, showSnapshot: true,
-		// minTimeStep: 0.001);
-		//
-		// if (projDir.notNil) {
-		// 	control.presetDir = projDir ++ "/auto";
-		// 	control.load(control.presetDir);
-		// } {
-		// 	control.presetDir = "/auto";
-		// };
-		//
-		// this.prSetActions();
-		//
-		// // setup and run underlying synth routine
-		// watcher = Routine.new({
-		// 	var plim = MoscaUtils.plim();
-		//
-		// 	inf.do({
-		// 		0.1.wait;
-		//
-		// 		sources.do({ | item |
-		//
-		// 			if (item.coordinates.spheVal.rho >= plim) {
-		// 				if(item.spatializer.notNil) {
-		// 					item.runStop(); // to kill SC input synths
-		// 					item.spatializer.free;
-		// 				};
-		//
-		// 				item.firstTime = true;
-		// 			} {
-		// 				if((isPlay || item.play.value) && item.spatializer.isNil && item.firstTime) {
-		// 					// could set the start point for file
-		// 					item.launchSynth(true);
-		// 					item.firstTime = false;
-		// 				};
-		// 			};
-		// 		});
-		//
-		// 		if (isPlay) {
-		// 			ossiaSeekBack = false;
-		// 			ossiaTransport.v_(control.now);
-		// 			ossiaSeekBack = true;
-		// 		};
-		// 	});
-		// });
-		//
-		// watcher.play;
+		control = Automation(dur, showLoadSave: false, showSnapshot: true,
+			minTimeStep: 0.001);
+
+		if (projDir.isNil) {
+			control.presetDir = "HOME".getenv ++ "/auto/";
+		} {
+			control.presetDir = projDir;
+			control.load(control.presetDir);
+		};
+
+		this.prSetAction(spat.defs);
+
+		// setup and run underlying synth routine
+		watcher = Routine.new({
+			var plim = MoscaUtils.plim();
+
+			inf.do({
+				0.1.wait;
+
+				sources.do({ | item |
+
+					if (item.coordinates.spheVal.rho >= plim) {
+						if(item.spatializer.notNil) {
+							item.runStop(); // to kill SC input synths
+							item.spatializer.free;
+						};
+
+						item.firstTime = true;
+					} {
+						if((isPlay || item.play.value) && item.spatializer.isNil && item.firstTime) {
+							// could set the start point for file
+							item.launchSynth(true);
+							item.firstTime = false;
+						};
+					};
+				});
+
+				if (isPlay) {
+					ossiaSeekBack = false;
+					ossiaTransport.v_(control.now);
+					ossiaSeekBack = true;
+				};
+			});
+		});
+
+		watcher.play;
 	}
 
 	prSetParam { | spatList, allCritical |
@@ -154,17 +166,17 @@ Mosca {
 
 		ossiaRec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,
 			critical:true, repetition_filter:true);
-
-		sources.do({ | item | item.setAction(effects.effectList, center); });
 	}
 
-	prSetActions {
+	prSetAction { | spatTypes |
 
 		center.setAction(sources);
 
 		renderer.setAction();
 
 		effects.setAction();
+
+		sources.do({ | item | item.setAction(effects.effectList, spatTypes, center); });
 
 		control.onPlay_({
 			var startTime;
@@ -270,5 +282,31 @@ Mosca {
 		renderer.dockTo(control);
 
 		sources.do({ | item | item.dockTo(control); });
+	}
+
+	nonAmbi2BfNeeded { | i = 0 |
+
+		if (i == sources.size) {
+			^false.asBoolean;
+		} {
+			if (sources[i].toAmbi && sources[i].spatializer.notNil) {
+				^true.asBoolean;
+			} {
+				^this.nonAmbi2BfNeeded(i + 1);
+			};
+		};
+	}
+
+	converterNeeded { | i = 0 |
+
+		if (i == sources.size) {
+			^false.asBoolean;
+		} {
+			if (sources[i].toConvert && sources[i].spatializer.notNil) {
+				^true.asBoolean;
+			} {
+				^this.converterNeeded(i + 1);
+			};
+		};
 	}
 }

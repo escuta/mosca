@@ -33,7 +33,7 @@ IrDef[] {
 
 		bufWXYZ = Buffer.read(server, ir.fullPath);
 
-		server.sync;
+		// server.sync;
 
 		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
 
@@ -49,7 +49,7 @@ IrDef[] {
 		// irY = Buffer.readChannel(server, ir.fullPath, channels: [2]);
 		irZ = Buffer.readChannel(server, ir.fullPath, channels: [3]);
 
-		server.sync;
+		// server.sync;
 
 		bufsize = PartConv.calcBufSize(MoscaUtils.fftSize(), irW);
 
@@ -152,7 +152,7 @@ Ir12chanDef : IrDef {
 			bufAformat_soa_a12.write(afmtDir, headerFormat: "wav", sampleFormat: "int24",
 				completionMessage:{ ("done writing" + key ++ "_SoaA12.wav").postln; });
 
-			server.sync;
+			// server.sync;
 
 			bufAformat_soa_a12.free;
 			bufAformat.free;
@@ -165,9 +165,9 @@ Ir12chanDef : IrDef {
 		12.do({ | i |
 			irA12[i] = Buffer.readChannel(server, afmtDir, channels: [i]);
 			irSpectrum[i] = Buffer.alloc(server, bufsize, 1);
-			server.sync;
+			// server.sync;
 			irSpectrum[i].preparePartConv(irA12[i], MoscaUtils.fftSize());
-			server.sync;
+			// server.sync;
 			irA12[i].free;
 		});
 	}

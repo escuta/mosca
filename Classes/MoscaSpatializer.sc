@@ -20,7 +20,7 @@ MoscaSpatializer {
 	const playList = #["File","Stream","SCBus","EXBus"];
 	// the diferent types of inputs to spatilizer synths
 
-	classvar playInFunc, <spatList;
+	classvar playInFunc, defs, <spatList;
 	// list of spat libs
 
 	var outPutFuncs, spatInstances;
@@ -29,30 +29,33 @@ MoscaSpatializer {
 
 		Class.initClassTree(SpatDef);
 
-		spatList = SpatDef.defList.collect({ | item | item.key; });
+		defs = SpatDef.defList;
+		spatList = defs.collect({ | item | item.key; });
 
-		playInFunc = [ // one for File, Stereo, BFormat, Stream - streamed file;
-			// Make File-in SynthDefs
+		playInFunc = [ // one for File, Stream & Input;
+			// for File-in SynthDefs
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 				var spos = tpos * BufSampleRate.kr(bufnum),
 				scaledRate = rate * BufRateScale.kr(bufnum);
 				playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
 					loop: lp, doneAction:2);
 			},
-			// Make Stream-in SynthDefs
+			// for Stream-in SynthDefs
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 				var trig;
 				playerRef.value = DiskIn.ar(channum, bufnum, lp);
 				trig = Done.kr(playerRef.value);
 				FreeSelf.kr(trig);
 			},
-			// Make SCBus-in SynthDefs
+			// for SCBus-in SynthDefs
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 				playerRef.value = In.ar(busini, channum);
 		}]; // Note, all variables are needed
 	}
 
 	spatList { ^spatList; }
+
+	defs { ^defs; }
 
 	*new { | server |
 
