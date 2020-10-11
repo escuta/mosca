@@ -17,24 +17,24 @@
 */
 
 MoscaSource[] {
-	var index, server, src, defName, effect, chanNum, playType, <toConvert, <toAmbi;
+	var index, server, srcGrp, defName, effect, chanNum, playType, <spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var scInBus, triggerFunc, stopFunc, synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
-	var <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
-	var <file, <stream, <scSynths, <external, <nChan; // inputs types
+	var src, <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
+	var input, <file, <stream, <scSynths, <external, <nChan; // inputs types
 	var <globalAmount, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <angle, <rotation, <directivity; // input specific parameters
-	var <spread, <diffuse; // atk specific parameters
-	var <rate, <window, <random; // joshGrain specific parameters
+	var atk, <spread, <diffuse; // atk specific parameters
+	var josh, <rate, <window, <random; // joshGrain specific parameters
 	var auxiliary, <aux, <check;
 
-	*new { | index, server, ossiaParent, allCritical, spatList, effectList, center |
-		^super.newCopyArgs(index, server).ctr(ossiaParent, allCritical, spatList, effectList, center);
+	*new { | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, center |
+		^super.newCopyArgs(index, server, sourceGroup)
+		.ctr(ossiaParent, allCritical, spatList, effectList, center);
 	}
 
 	ctr { | ossiaParent, allCritical, spatList, effectList, center |
-		var input, atk, josh;
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
 
@@ -67,6 +67,8 @@ MoscaSource[] {
 			"Ambitools", critical:true, repetition_filter:true);
 
 		library.node.description_(spatList.asString);
+
+		spatType = \N3D;
 
 		play = OssiaAutomationProxy(src, "play", Boolean,
 			critical:true, repetition_filter:true);
@@ -167,7 +169,7 @@ MoscaSource[] {
 		});
 	}
 
-	setAction { | effectList, center, spat, server |
+	setAction { | effectList, spatDefs, center, plying |
 
 		file.action_({ | path |
 
@@ -250,17 +252,15 @@ MoscaSource[] {
 		});
 
 		library.action_({ | val |
-			var i = spat.spatlist({ | item | item == val.value });
+			var i = spatDefs.detectIndex({ | item | item.key == val.value });
 
-			if (spat.defs[i]) {} {};
+			spatType = spatDefs.defs[i].format;
 
 			this.prSetDefName();
 			this.prSetSynthArgs();
 		});
 
-		play.action_({ | val |
-
-		});
+		play.action_({ | val | this.check4Synth(val.value, srcGrp, plying); });
 
 		loop.action_({ | val | this.setSynths(\lp, val.value.asInt); });
 
@@ -273,12 +273,23 @@ MoscaSource[] {
 		globalAmount.action_({ | val | this.setSynths(\glev, val.value); });
 
 		localEffect.action_({ | val |
-			var i = localEffect.node.domain.values().detectIndex({ | item | item == val.value });
 
-			if (effectList[i]) {} {};
+			if (val.value != "Clear") {
+				var i = localEffect.node.domain.values().detectIndex(
+					{ | item | item == val.value; });
+
+				if (effectList[i].class != String) {
+					effect = "Conv";
+					this.prSetSynthArgs(effectList[i]);
+				} {
+					this.prSetSynthArgs();
+				};
+			} {
+				effect = "Clear";
+				this.prSetSynthArgs();
+			};
 
 			this.prSetDefName();
-			this.prSetSynthArgs();
 		});
 
 		localAmount.action_({ | val | this.setSynths(\llev, val.value); });
@@ -334,14 +345,7 @@ MoscaSource[] {
 
 			defName = nil;
 		} {
-			var effectName;
-			if (effect.class == String) {
-				effectName = effect;
-			} {
-				effectName = "Conv";
-			};
-
-			defName = library.value ++ playType ++ chanNum ++ effectName;
+			defName = library.value ++ playType ++ chanNum ++ effect;
 		};
 
 		defName.postln;
@@ -368,7 +372,24 @@ MoscaSource[] {
 		args.postln;
 	}
 
-	launchSynth { | force |
+	check4Synth { | bool, plying |
+
+		if(bool) {
+			if (plying.not && spatializer.isNil && (coordinates.spheVal.rho < MoscaUtils.plim())) {
+				this.prLaunchSynth(true);
+				firstTime = false;
+			};
+		} {
+			if (plying.not && spatializer.notNil) {
+				spatializer.free;
+				this.runStop();
+				firstTime = true;
+				("Source_" + index + " stopping!").postln;
+			};
+		};
+	}
+
+	prLaunchSynth { | force |
 		var args = [];
 
 		if ((file.value != "") && (scSynths.value || external.value).not) {

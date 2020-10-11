@@ -30,7 +30,7 @@
 
 Mosca {
 	var dur, autoLoop, server, <ossiaParent; // initial rguments
-	var renderer, effects, center, sources, gui, tracker;
+	var renderer, effects, center, sources, srcGrp, gui, tracker;
 	var ossiaMasterPlay, ossiaMasterLib;
 	var <control, watcher, ossiaAutomation, isPlay = false, // automation control
 	ossiaPlay, ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
@@ -60,12 +60,14 @@ Mosca {
 		// start asynchronious processes
 		server.doWhenBooted({
 
+			srcGrp = ParGroup.tail(server.defaultGroup);
+
 			renderer.setup(server, speaker_array, maxOrder, decoder,
 				outBus, subOutBus, rawOutBus, rawFormat);
 
 			spat.initSpat(maxOrder, renderer, server);
 
-			effects.setup(server, multyThread, maxOrder, renderer, irBank);
+			effects.setup(server, srcGrp, multyThread, maxOrder, renderer, irBank);
 
 			spat.makeSpatialisers(server, maxOrder, renderer, effects);
 
@@ -168,7 +170,7 @@ Mosca {
 			critical:true, repetition_filter:true);
 	}
 
-	prSetAction { | spatTypes |
+	prSetAction { | spatDefs |
 
 		center.setAction(sources);
 
@@ -176,7 +178,9 @@ Mosca {
 
 		effects.setAction();
 
-		sources.do({ | item | item.setAction(effects.effectList, spatTypes, center); });
+		sources.do({ | item |
+			item.setAction(effects.effectList, spatDefs, center, isPlay);
+		});
 
 		control.onPlay_({
 			var startTime;

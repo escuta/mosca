@@ -20,7 +20,7 @@ MoscaSpatializer {
 	const playList = #["File","Stream","SCBus","EXBus"];
 	// the diferent types of inputs to spatilizer synths
 
-	classvar playInFunc, defs, <spatList;
+	classvar playInFunc, <defs, <spatList;
 	// list of spat libs
 
 	var outPutFuncs, spatInstances;

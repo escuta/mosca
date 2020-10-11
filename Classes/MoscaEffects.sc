@@ -45,14 +45,14 @@ MoscaEffects {
 			item == ClearDef.asClass; }));
 	}
 
-	setup { | server, multyThread, maxOrder, renderer, irBank |
+	setup { | server, sourceGroup, multyThread, maxOrder, renderer, irBank |
 		var busChans = MoscaUtils.fourOrNine(maxOrder);
 
 		if (irBank.notNil) { this.prLoadir(server, maxOrder, irBank); };
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
-		glbFxGrp = ParGroup.tail(server.defaultGroup);
+		glbFxGrp = ParGroup.after(sourceGroup);
 
 		if (multyThread) {
 
