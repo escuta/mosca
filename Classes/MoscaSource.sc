@@ -169,7 +169,7 @@ MoscaSource[] {
 		});
 	}
 
-	setAction { | effectList, spatDefs, center, plying |
+	setAction { | effectList, spatDefs, center, playing |
 
 		file.action_({ | path |
 
@@ -216,7 +216,9 @@ MoscaSource[] {
 
 				scSynths.value_(false);
 				nChan.value_(nChan.value);
-			};
+			} {
+				this.prSetDefName();
+			}
 		});
 
 		scSynths.action_({ | val |
@@ -235,6 +237,8 @@ MoscaSource[] {
 				triggerFunc = nil;
 				stopFunc = nil;
 				synthRegistry.clear;
+
+				this.prSetDefName();
 			};
 		});
 
@@ -254,13 +258,13 @@ MoscaSource[] {
 		library.action_({ | val |
 			var i = spatDefs.detectIndex({ | item | item.key == val.value });
 
-			spatType = spatDefs.defs[i].format;
+			spatType = spatDefs[i].format;
 
 			this.prSetDefName();
 			this.prSetSynthArgs();
 		});
 
-		play.action_({ | val | this.check4Synth(val.value, srcGrp, plying); });
+		play.action_({ | val | this.prCheck4Synth(val.value, playing); });
 
 		loop.action_({ | val | this.setSynths(\lp, val.value.asInt); });
 
@@ -278,11 +282,12 @@ MoscaSource[] {
 				var i = localEffect.node.domain.values().detectIndex(
 					{ | item | item == val.value; });
 
-				if (effectList[i].class != String) {
+				if (effectList[i].class == String) {
+					effect = val.value;
+					this.prSetSynthArgs();
+				} {
 					effect = "Conv";
 					this.prSetSynthArgs(effectList[i]);
-				} {
-					this.prSetSynthArgs();
 				};
 			} {
 				effect = "Clear";
@@ -307,13 +312,13 @@ MoscaSource[] {
 		directivity.action_({ | val | this.setSynths(\directang, val.value); });
 
 		spread.action_({ | val |
-			this.setSynths(\sp, val.value.asInt);
+			this.setSynths(\sp, val.value.asInteger);
 
 			if (val.value) { diffuse.value_(false) };
 		});
 
 		diffuse.action_({ | val |
-			this.setSynths(\df, val.value.asInt);
+			this.setSynths(\df, val.value.asInteger);
 
 			if (val.value) { spread.value_(false) };
 		});
@@ -356,7 +361,7 @@ MoscaSource[] {
 
 		switch (library.value,
 			"ATK", {
-				args ++ [\sp, spread.value.asInt, \df, diffuse.value.asInt];
+				args ++ [\sp, spread.value.asInteger, \df, diffuse.value.asInteger];
 			}, "Josh", {
 				args ++ [\grainrate, rate.value, \winsize, window.value,
 					\winrand, random.value];
@@ -368,19 +373,17 @@ MoscaSource[] {
 
 			if (library.value == "ATK") { args ++ [\directang, directivity.value]; };
 		};
-
-		args.postln;
 	}
 
-	check4Synth { | bool, plying |
+	prCheck4Synth { | bool, playing |
 
 		if(bool) {
-			if (plying.not && spatializer.isNil && (coordinates.spheVal.rho < MoscaUtils.plim())) {
-				this.prLaunchSynth(true);
+			if (playing.get.not && spatializer.isNil && (coordinates.spheVal.rho < MoscaUtils.plim())) {
+				this.launchSynth(true);
 				firstTime = false;
 			};
 		} {
-			if (plying.not && spatializer.notNil) {
+			if (playing.get.not && spatializer.notNil) {
 				spatializer.free;
 				this.runStop();
 				firstTime = true;
@@ -389,13 +392,25 @@ MoscaSource[] {
 		};
 	}
 
-	prLaunchSynth { | force |
+	launchSynth { | force |
 		var args = [];
 
 		if ((file.value != "") && (scSynths.value || external.value).not) {
 
 			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInt];
 		};
+
+		this.changed(true);
+	}
+
+	setSynths { | param, value |
+
+		if (spatializer.notNil) { spatializer.set(param, value); };
+
+		if (synths.notNil) {
+			synths.do({ _.set(param, value); });
+		};
+
 	}
 
 	dockTo { | automation |

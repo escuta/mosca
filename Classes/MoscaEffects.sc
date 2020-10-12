@@ -18,7 +18,7 @@
 
 MoscaEffects {
 	var <defs, <effectList;
-	var <gBfBus, <gBxBus, glbFxGrp, globalFx;
+	var <gBfBus, <gBxBus, <transformGrp, globalFx;
 	var encodeFunc, decodeFunc;
 	var <ossiaGlobal, <ossiaDelay, <ossiaDecay;
 
@@ -52,7 +52,7 @@ MoscaEffects {
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
-		glbFxGrp = ParGroup.after(sourceGroup);
+		transformGrp = ParGroup.after(sourceGroup);
 
 		if (multyThread) {
 
@@ -171,7 +171,7 @@ MoscaEffects {
 
 				globalFx = Synth(\globalFx ++ num.value,
 					[\gate, 1, \room, ossiaDelay.value, \damp, ossiaDecay.value] ++
-					synthArgs, glbFxGrp).register;
+					synthArgs, transformGrp).register;
 			};
 		});
 

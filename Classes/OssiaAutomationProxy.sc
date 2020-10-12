@@ -178,7 +178,7 @@ OssiaAutomationCenter {
 
 				item.coordinates.cartBack_(false);
 
-				item.coordinates.sphe.v_([cart.rho,
+				item.coordinates.spherical.v_([cart.rho,
 				(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
 
 				item.coordinates.cartBack_(true);
@@ -202,7 +202,7 @@ OssiaAutomationCenter {
 
 				item.coordinates.cartBack_(false);
 
-				item.coordinates.sphe.v_([euler.rho,
+				item.coordinates.spherical.v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
 				item.coordinates.cartBack_(true);
@@ -244,8 +244,9 @@ OssiaAutomationCenter {
 
 OssiaAutomationCoordinates {
 	// 3D value version for absolute and relative coordinatesiantes
-	var x, y, z, <cart, <sphe;
-	var <cartVal, <>cartBack, <spheVal, <spheBack;
+	var x, y, z, <cartesian, <spherical;
+	var <cartVal, <spheVal;
+	var <>cartBack = true, <spheBack = true;
 
 	*new { | parent_node, allCritical, center, spatializer, synth |
 		^super.new.ctr(parent_node, allCritical, center, spatializer, synth);
@@ -254,11 +255,11 @@ OssiaAutomationCoordinates {
 	ctr { | parent_node, allCritical, center, spatializer, synth |
 		var halfPi = MoscaUtils.halfPi();
 
-		cart = OSSIA_Parameter(parent_node, "Cartesian", OSSIA_vec3f,
+		cartesian = OSSIA_Parameter(parent_node, "Cartesian", OSSIA_vec3f,
 			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 20, 0],
 		critical:allCritical, repetition_filter:true);
 
-		cart.unit_(OSSIA_position.cart3D);
+		cartesian.unit_(OSSIA_position.cart3D);
 
 		cartVal = Cartesian(0, 20, 0);
 		spheVal = cartVal.asSpherical;
@@ -267,11 +268,11 @@ OssiaAutomationCoordinates {
 		y = AutomationProxy(20.0);
 		z = AutomationProxy(0.0);
 
-		sphe = OSSIA_Parameter(parent_node, "Spherical", OSSIA_vec3f,
+		spherical = OSSIA_Parameter(parent_node, "Spherical", OSSIA_vec3f,
 			domain:[[0, -pi, halfPi.neg], [20, pi, halfPi]],
 		default_value:[20, 0, 0], critical:allCritical, repetition_filter:true);
 
-		sphe.unit_(OSSIA_position.spherical);
+		spherical.unit_(OSSIA_position.spherical);
 
 		this.setAction(center, spatializer, synth);
 	}
@@ -279,7 +280,7 @@ OssiaAutomationCoordinates {
 	setAction { | center, spatializer, synth |
 		var halfPi = MoscaUtils.halfPi();
 
-		cart.callback_({ | num |
+		cartesian.callback_({ | num |
 			var sphe, sphediff;
 			cartVal.set(num.value[0], num.value[1], num.value[2]);
 			sphe = (cartVal - center.origine)
@@ -291,7 +292,7 @@ OssiaAutomationCoordinates {
 
 			cartBack = false;
 
-			if (spheBack && (sphe.v != sphediff)) { sphe.v_(sphediff); };
+			if (spheBack) { spherical.v_(sphediff); };
 
 			if (x.value != num[0].value) { x.valueAction_(num[0].value); };
 
@@ -303,24 +304,24 @@ OssiaAutomationCoordinates {
 		});
 
 		x.action_({ | num |
-			if (cartBack && (cart.v[0] != num.value)) { cart.v_([num.value, y.value, z.value]); };
+			if (cartBack) { cartesian.v_([num.value, y.value, z.value]); };
 		});
 
 		y.action_({ | num |
-			if (cartBack && (cart.v[1] != num.value)) { cart.v_([x.value, num.value, z.value]); };
+			if (cartBack) { cartesian.v_([x.value, num.value, z.value]); };
 		});
 
 		z.action_({ | num |
-			if (cartBack && (cart.v[2] != num.value)) { cart.v_([x.value, y.value, num.value]); };
+			if (cartBack) { cartesian.v_([x.value, y.value, num.value]); };
 		});
 
-		sphe.callback_({ | num |
+		spherical.callback_({ | num |
 			spheVal.rho_(num.value[0] * center.scale.value);
 			spheVal.theta_(num.value[1].wrap(-pi, pi) + halfPi);
 			spheVal.phi_(num.value[2].fold(halfPi.neg, halfPi));
 			spheBack = false;
 			if (cartBack) {
-				cart.v_(
+				cartesian.v_(
 					((spheVal.tumble(center.roll.value)
 						.tilt(center.pitch.value)
 						.rotate(center.heading.value)

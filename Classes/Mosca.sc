@@ -31,8 +31,8 @@
 Mosca {
 	var dur, autoLoop, server, <ossiaParent; // initial rguments
 	var renderer, effects, center, sources, srcGrp, gui, tracker;
-	var ossiaMasterPlay, ossiaMasterLib;
-	var <control, watcher, ossiaAutomation, isPlay = false, // automation control
+	var ossiaMasterPlay, ossiaMasterLib, dependant, convertor;
+	var <control, watcher, ossiaAutomation, isPlay, // automation control
 	ossiaPlay, ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
 
 	*new { | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
@@ -88,11 +88,13 @@ Mosca {
 		center = OssiaAutomationCenter(ossiaParent, allCritical);
 
 		sources = Array.fill(nsources,
-			{ | i | MoscaSource(i, server, ossiaParent, allCritical,
+			{ | i | MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
 				spat.spatList, effects.ossiaGlobal.node.domain.values(), center); });
 
 		control = Automation(dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
+
+		isPlay = `false;
 
 		if (projDir.isNil) {
 			control.presetDir = "HOME".getenv ++ "/auto/";
@@ -120,7 +122,8 @@ Mosca {
 
 						item.firstTime = true;
 					} {
-						if((isPlay || item.play.value) && item.spatializer.isNil && item.firstTime) {
+						if((isPlay.get() || item.play.value) && item.spatializer.isNil
+							&& item.firstTime) {
 							// could set the start point for file
 							item.launchSynth(true);
 							item.firstTime = false;
@@ -128,7 +131,7 @@ Mosca {
 					};
 				});
 
-				if (isPlay) {
+				if (isPlay.get) {
 					ossiaSeekBack = false;
 					ossiaTransport.v_(control.now);
 					ossiaSeekBack = true;
@@ -178,8 +181,11 @@ Mosca {
 
 		effects.setAction();
 
+		dependant = { | obj ... loadArgs | this.prCheck4Convert(loadArgs); };
+
 		sources.do({ | item |
 			item.setAction(effects.effectList, spatDefs, center, isPlay);
+			item.addDependant(dependant);
 		});
 
 		control.onPlay_({
@@ -200,7 +206,7 @@ Mosca {
 				startTime = control.now
 			};
 
-			isPlay = true;
+			isPlay.set(true);
 
 			ossiaPlay.v_(true);
 		});
@@ -222,7 +228,7 @@ Mosca {
 					item.firstTime = true;
 				});
 
-				isPlay = false;
+				isPlay.set(false);
 				ossiaLoop.v_(false);
 			} {
 				("Did not stop. dur = " ++ dur ++ " now = " ++ control.now).postln;
@@ -250,10 +256,10 @@ Mosca {
 
 		ossiaPlay.callback_({ | bool |
 			if (bool) {
-				if (isPlay.not) {
+				if (isPlay.get.not) {
 					control.play; };
 			} {
-				if (isPlay) {
+				if (isPlay.get) {
 					control.stop; };
 			};
 		});
@@ -286,6 +292,33 @@ Mosca {
 		renderer.dockTo(control);
 
 		sources.do({ | item | item.dockTo(control); });
+	}
+
+	prCheck4Convert { | loadArgs |
+		var newSynth, spatType;
+
+		#newSynth, spatType = loadArgs;
+
+		loadArgs.postln;
+
+		if (newSynth) {
+
+			if (spatType != renderer.format) {
+
+				if (convertor.notNil) {
+					convertor.set(\gate, 1);
+				} {
+					convertor = Synth(\ambiConverter, [\gate, 1],
+						target:effects.transformGrp).onFree({
+						convertor = nil;
+					});
+				};
+
+			};
+
+		} {
+
+		};
 	}
 
 	nonAmbi2BfNeeded { | i = 0 |
