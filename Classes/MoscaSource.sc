@@ -17,7 +17,7 @@
 */
 
 MoscaSource[] {
-	var index, server, srcGrp, defName, effect, chanNum, playType, <spatType;
+	var index, server, srcGrp, defName, effect, chanNum, playType, spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var scInBus, triggerFunc, stopFunc, synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -30,8 +30,8 @@ MoscaSource[] {
 	var auxiliary, <aux, <check;
 
 	*new { | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, center |
-		^super.newCopyArgs(index, server, sourceGroup)
-		.ctr(ossiaParent, allCritical, spatList, effectList, center);
+		^super.newCopyArgs(index, server, sourceGroup).ctr(
+			ossiaParent, allCritical, spatList, effectList, center);
 	}
 
 	ctr { | ossiaParent, allCritical, spatList, effectList, center |
@@ -400,7 +400,7 @@ MoscaSource[] {
 			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInt];
 		};
 
-		this.changed(true);
+		this.changed(true, spatType);
 	}
 
 	setSynths { | param, value |

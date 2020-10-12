@@ -69,7 +69,7 @@ MoscaEffects {
 					FoaDecode.ar(sigf, MoscaUtils.b2a());
 				};
 
-				if (renderer.convertFuma) {
+				if (renderer.format != \FUMA) {
 					var enc = MoscaUtils.foa_n3d_encoder();
 
 					encodeFunc = { | sig, gate |
@@ -95,7 +95,7 @@ MoscaEffects {
 					AtkMatrixMix.ar(sigf, MoscaUtils.soa_a12_decoder_matrix());
 				};
 
-				if (renderer.convertFuma) {
+				if (renderer.format != \FUMA) {
 					var enc = MoscaUtils.soa_n3d_encoder();
 
 					encodeFunc = { | sig, gate |

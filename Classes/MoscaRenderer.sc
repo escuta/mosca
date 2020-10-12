@@ -18,10 +18,10 @@
 
 MoscaRenderer {
 	var <nonAmbiBus, <fumaBus, <n3dBus, <vbapBuffer; // buses & buffer
-	var <format, <virtualAmbi; // conversion
+	var <format, <virtualSetup; // conversion
 	var <longestRadius, <quarterRadius, <twoAndaHalfRadius, <lowestElevation, <highestElevation;
 	var <bFormNumChan, <numOutputs; // utils
-	var renderFunc, convertFunc, renderer; // synth
+	var renderFunc, renderer; // synth
 	var <ossiaMasterLevel;
 
 	*new { | maxOrder |
@@ -131,6 +131,8 @@ MoscaRenderer {
 					delaytime:adjust[i][0], mul:adjust[i][1]) });
 			};
 
+			virtualSetup = false;
+
 		} {
 			var emulate_array, vbap_setup;
 
@@ -157,14 +159,15 @@ MoscaRenderer {
 
 			nonAmbiBus = Bus.audio(server, numOutputs);
 
-			virtualAmbi = true;
-
-			SynthDef("virtualAmbi", {
+			SynthDef("virtualSetup", {
 				var sig = In.ar(nonAmbiBus, numOutputs);
 				sig = FoaEncode.ar(sig,
 					FoaEncoderMatrix.newDirections(emulate_array.degrad));
 				Out.ar(fumaBus, sig);
 			}).send(server);
+
+			virtualSetup = true;
+
 		};
 
 		quarterRadius = longestRadius / 4;
@@ -186,13 +189,12 @@ MoscaRenderer {
 				{
 					format = \FUMA;
 
-					convertFunc = { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var n3dsig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						n3dsig = In.ar(n3dBus, bFormNumChan);
-						n3dsig = HOAConvert.ar(maxOrder, n3dsig, \ACN_N3D, \FuMa) * env;
+						n3dsig = HOAConvert.ar(maxOrder, n3dsig, \ACN_N3D, \FuMa);
 						Out.ar(fumaBus, n3dsig);
-					};
+					}).send(server);
 
 					renderFunc = { | sub = 1, level = 1 |
 						var sig, nonambi;
@@ -209,13 +211,12 @@ MoscaRenderer {
 				{
 					format = \N3D;
 
-					convertFunc = { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						sig = In.ar(fumaBus, MoscaUtils.fourOrNine(maxOrder));
-						sig = HOAConvert.ar(maxOrder, sig, \FuMa, \ACN_N3D) * env;
+						sig = HOAConvert.ar(maxOrder, sig, \FuMa, \ACN_N3D);
 						Out.ar(n3dBus, sig);
-					};
+					}).send(server);
 
 					renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 						var sig, nonambi;
@@ -230,19 +231,17 @@ MoscaRenderer {
 				{ Error("Unknown raw format").throw; };
 			);
 		} {
-
 			switch (maxOrder,
 				{ 1 },
 				{
 					format = \FUMA;
 
-					convertFunc = { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var n3dsig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						n3dsig = In.ar(n3dBus, 4);
-						n3dsig = FoaEncode.ar(n3dsig, MoscaUtils.n2f) * env;
+						n3dsig = FoaEncode.ar(n3dsig, MoscaUtils.n2f);
 						Out.ar(fumaBus, n3dsig);
-					};
+					}).send(server);
 
 					if (decoder == "internal") {
 
@@ -266,7 +265,7 @@ MoscaRenderer {
 
 						if (speaker_array.notNil) {
 
-							convertFunc = { | sub = 1, level = 1 |
+							SynthDef("ambiConverter", { | sub = 1, level = 1 |
 								var sig, nonambi;
 								sig = In.ar(fumaBus, 4);
 								sig = FoaDecode.ar(sig, decoder);
@@ -275,7 +274,7 @@ MoscaRenderer {
 								sig = (sig + nonambi) * level;
 								subOutFunc.value(sig, sub);
 								Out.ar(outBus, sig);
-							};
+							}).send(server);
 						} {
 							renderFunc = { | sub = 1, level = 1 |
 								var sig, nonambi;
@@ -298,15 +297,14 @@ MoscaRenderer {
 							elevations = Array.fill(numOutputs, { 0 });
 						};
 
-						convertFunc = { | gate = 1 |
+						SynthDef("ambiConverter", { | gate = 1 |
 							var n3dsig, env;
-							env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 							n3dsig = In.ar(n3dBus, 9);
-							n3dsig = HOAConvert.ar(2, n3dsig, \ACN_N3D, \FuMa) * env;
+							n3dsig = HOAConvert.ar(2, n3dsig, \ACN_N3D, \FuMa);
 							Out.ar(fumaBus, n3dsig);
-						};
+						}).send(server);
 
-						convertFunc = { | sub = 1, level = 1 |
+						renderFunc = { | sub = 1, level = 1 |
 							var sig, nonambi;
 							sig = In.ar(fumaBus, 9);
 							sig = FMHDecode1.ar1(sig[0], sig[1], sig[2], sig[3], sig[4],
@@ -323,13 +321,12 @@ MoscaRenderer {
 					} { // assume ADT Decoder
 						format = \N3D;
 
-						convertFunc = { | gate = 1 |
+						SynthDef("ambiConverter", { | gate = 1 |
 							var sig, env;
-							env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 							sig = In.ar(fumaBus, MoscaUtils.fourOrNine(maxOrder));
-							sig = HOAConvert.ar(maxOrder, sig, \FuMa, \ACN_N3D) * env;
+							sig = HOAConvert.ar(maxOrder, sig, \FuMa, \ACN_N3D);
 							Out.ar(n3dBus, sig);
-						};
+						}).send(server);
 
 						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 							var sig, nonambi;
@@ -348,13 +345,12 @@ MoscaRenderer {
 				{
 					format = \N3D;
 
-					convertFunc = { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						sig = In.ar(fumaBus, 9);
-						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
+						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D);
 						Out.ar(n3dBus, sig);
-					};
+					}).send(server);
 
 					renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 						var sig, nonambi;
@@ -373,13 +369,12 @@ MoscaRenderer {
 				{
 					format = \N3D;
 
-					convertFunc = { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						sig = In.ar(fumaBus, 9);
-						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
+						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D);
 						Out.ar(n3dBus, sig);
-					};
+					}).send(server);
 
 					renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 						var sig, nonambi;
@@ -400,13 +395,12 @@ MoscaRenderer {
 				{
 					format = \N3D;
 
-					convertFunc = { | gate = 1 |
+					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
-						env = EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						sig = In.ar(fumaBus, 9);
-						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D) * env;
+						sig = HOAConvert.ar(2, sig, \FuMa, \ACN_N3D);
 						Out.ar(n3dBus, sig);
-					};
+					}).send(server);
 
 					renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 						var sig, nonambi;
@@ -433,8 +427,6 @@ MoscaRenderer {
 	}
 
 	launchRenderer { | server, target |
-
-		SynthDef("ambiConverter", convertFunc).send(server);
 
 		renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
 	}

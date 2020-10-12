@@ -31,7 +31,7 @@
 Mosca {
 	var dur, autoLoop, server, <ossiaParent; // initial rguments
 	var renderer, effects, center, sources, srcGrp, gui, tracker;
-	var ossiaMasterPlay, ossiaMasterLib, dependant, convertor;
+	var ossiaMasterPlay, ossiaMasterLib, dependant, convertor, virtualAmbi;
 	var <control, watcher, ossiaAutomation, isPlay, // automation control
 	ossiaPlay, ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
 
@@ -301,21 +301,32 @@ Mosca {
 
 		loadArgs.postln;
 
-		if (newSynth) {
+		if (newSynth) { // evaluate before launching a new spatializer synth
 
-			if (spatType != renderer.format) {
+			if (spatType == \NONAMBI) {
 
-				if (convertor.notNil) {
-					convertor.set(\gate, 1);
-				} {
-					convertor = Synth(\ambiConverter, [\gate, 1],
-						target:effects.transformGrp).onFree({
-						convertor = nil;
-					});
+				if (renderer.virtualSetup) {
+
+					if (virtualAmbi.isNil) { // launch virtualAmbi if needed
+
+						virtualAmbi = Synth(\virtualAmbi,
+							target:effects.transformGrp).onFree({
+							virtualAmbi = nil;
+						});
+					};
 				};
+			} {
+				if (spatType != renderer.format) {
 
+					if (convertor.isNil) { // launch converter if needed
+
+						convertor = Synth(\virtualAmbi,
+							target:effects.transformGrp).onFree({
+							convertor = nil;
+						});
+					};
+				};
 			};
-
 		} {
 
 		};
