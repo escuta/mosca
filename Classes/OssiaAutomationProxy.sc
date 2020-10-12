@@ -329,11 +329,11 @@ OssiaAutomationCoordinates {
 			};
 
 			if(spatializer.notNil) {
-				spatializer.set(\radius, spheVal.rho, \azim, spheVal.theta, \elev, spheVal.phi);
+				spatializer.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]);
 			};
 
 			if (synth.notNil) {
-				synth.do({ _.set(\radius, spheVal.rho, \azim, spheVal.theta, \elev, spheVal.phi); });
+				synth.do({ _.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]); });
 			};
 
 			spheBack = true;

@@ -79,16 +79,16 @@ MoscaSpatializer {
 		var out_type = 0;
 
 		outPutFuncs = [ // contains the synthDef blocks for each spatialyers, 0 = n3d, 1 = fuma, 2 = nonAmbi
-			{ | dry, wet, globrev |
-				Out.ar(effect.gBxBus, wet * globrev);
+			{ | dry, wet, globFx |
+				Out.ar(effect.gBxBus, wet * globFx);
 				Out.ar(renderer.n3dBus, wet);
 			},
-			{ | dry, wet, globrev |
-				Out.ar(effect.gBfBus, wet * globrev);
+			{ | dry, wet, globFx |
+				Out.ar(effect.gBfBus, wet * globFx);
 				Out.ar(renderer.fumaBus, wet);
 			},
-			{ | dry, wet, globrev |
-				Out.ar(effect.gBfBus, dry * globrev);
+			{ | dry, wet, globFx |
+				Out.ar(effect.gBfBus, dry * globFx);
 				Out.ar(renderer.nonAmbiBus, wet);
 		}];
 
@@ -104,18 +104,19 @@ MoscaSpatializer {
 				playList.do({ | play_type, j |
 					var mono, stereo;
 
-					mono = SynthDef(spat.key ++ play_type ++ 1 ++ effect.key, {
+					mono = SynthDef(\truc, {
+					//mono = SynthDef(spat.key ++ play_type ++ 1 ++ effect.key, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 20, amp = 1,
+						radAzimElev = #[20, 0, 0], amp = 1,
 						dopamnt = 0, glev = 0, llev = 0,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-						var rad = Lag.kr(radius),
+						var rad = Lag.kr(radAzimElev[0]),
 						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						locallev, lrevRef = Ref(0),
-						az = azim - MoscaUtils.halfPi,
+						az = radAzimElev[1] - MoscaUtils.halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
 						revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
@@ -131,7 +132,7 @@ MoscaSpatializer {
 
 						lrevRef.value = lrevRef.value * revCut;
 
-						spat.spatFunc.value(lrevRef, p * cut, rad, az, elev, df, sp, contr,
+						spat.spatFunc.value(lrevRef, p * cut, rad, az, radAzimElev[2], df, sp, contr,
 							winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(p, lrevRef.value,
@@ -140,16 +141,16 @@ MoscaSpatializer {
 
 					stereo = SynthDef(spat.key ++ play_type ++ 2 ++ effect.key, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						azim = 0, elev = 0, radius = 20, amp = 1,
+						radAzimElev = #[20, 0, 0], amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir, df, sp,
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
-						var rad = Lag.kr(radius),
+						var rad = Lag.kr(radAzimElev[0]),
 						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						lrev1Ref = Ref(0), lrev2Ref = Ref(0),
-						az = Lag.kr(azim - MoscaUtils.halfPi),
+						az = Lag.kr(radAzimElev[1] - MoscaUtils.halfPi),
 						p = Ref(0),
 						rd = rad * 340, // Doppler
 						revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
@@ -169,9 +170,9 @@ MoscaSpatializer {
 						p = p * cut;
 
 						spat.spatFunc.value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
-							elev, df, sp, contr, winsize, grainrate, winrand);
+							radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
 						spat.spatFunc.value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
-							elev, df, sp, contr, winsize, grainrate, winrand);
+							radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(Mix.ar(p) * 0.5,
 							(lrev1Ref.value + lrev2Ref.value) * 0.5,
@@ -196,23 +197,23 @@ MoscaSpatializer {
 						// assume FuMa input
 						SynthDef(\ATKBFormat ++ play_type ++ 4 ++ effect.key, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 20, amp = 1,
+							radAzimElev = #[20, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, directang = 1, rotAngle = 0 |
 
-							var rad = Lag.kr(radius),
+							var rad = Lag.kr(radAzimElev[0]),
 							pushang = 2 - (contr * 2),
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
-							az = azim - MoscaUtils.halfPi,
+							az = radAzimElev[1] - MoscaUtils.halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
 							revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
-							pushang = radius.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi); // degree of sound field displacement
+							pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi); // degree of sound field displacement
 
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
@@ -225,7 +226,7 @@ MoscaSpatializer {
 							p = FoaDirectO.ar((lrevRef.value * revCut) + (p * cut), directang);
 							// directivity
 							p = FoaTransform.ar(p, 'rotate', rotAngle);
-							p = FoaTransform.ar(p, 'push', pushang, az, elev);
+							p = FoaTransform.ar(p, 'push', pushang, az, radAzimElev[2]);
 
 							outPutFuncs[1].value(p, p, globallev.clip(0, 1) * glev);
 						}).send(server);
@@ -236,23 +237,23 @@ MoscaSpatializer {
 							// assume N3D input
 							hoaSynth = SynthDef(\ATKBFormat ++ play_type ++ item ++ effect.key, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-								azim = 0, elev = 0, radius = 20, amp = 1,
+								radAzimElev = #[20, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
 								insertFlag = 0, insertOut, insertBack,
 								room = 0.5, damp = 05, wir, df, sp,
 								contr = 0, directang = 1, rotAngle = 0 |
 
-								var rad = Lag.kr(radius),
+								var rad = Lag.kr(radAzimElev[0]),
 								pushang = 2 - (contr * 2),
 								globallev = (1 / rad.sqrt) - 1, //global reverberation
 								locallev, lrevRef = Ref(0),
-								az = azim - MoscaUtils.halfPi,
+								az = radAzimElev[1] - MoscaUtils.halfPi,
 								p = Ref(0),
 								rd = rad * 340, // Doppler
 								revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 								cut = rad.linlin(0.75, 1, 1, 0);
 								rad = rad.max(0.01);
-								pushang = radius.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi); // degree of sound field displacement
+								pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi); // degree of sound field displacement
 
 								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 								p = p * amp;
@@ -265,7 +266,7 @@ MoscaSpatializer {
 								p = FoaDirectO.ar(p, directang);
 								// directivity
 								p = FoaTransform.ar(p, 'rotate', rotAngle);
-								p = FoaTransform.ar(p, 'push', pushang, az, elev);
+								p = FoaTransform.ar(p, 'push', pushang, az, radAzimElev[2]);
 
 								outPutFuncs[1].value(p, p, globallev.clip(0, 1) * glev);
 							});
@@ -283,23 +284,23 @@ MoscaSpatializer {
 						// assume FuMa input
 						SynthDef(\AmbitoolsBFormat ++ play_type ++ 4 ++ effect.key, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							azim = 0, elev = 0, radius = 20, amp = 1,
+							radAzimElev = #[20, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, df, sp,
 							contr = 0, rotAngle = 0|
 
-							var rad = Lag.kr(radius),
+							var rad = Lag.kr(radAzimElev[0]),
 							pushang = 2 - (contr * 2),
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
-							az = azim - MoscaUtils.halfPi,
+							az = radAzimElev[1] - MoscaUtils.halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
 							revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
-							pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
+							pushang = rad.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
@@ -311,7 +312,7 @@ MoscaSpatializer {
 
 							p = FoaDecode.ar((lrevRef.value * revCut) + (p * cut), MoscaUtils.f2n);
 							p = HOATransRotateAz.ar(1, p, rotAngle);
-							p = HOABeamDirac2Hoa.ar(1, p, az, elev, timer_manual:1, focus:pushang);
+							p = HOABeamDirac2Hoa.ar(1, p, az, radAzimElev[2], timer_manual:1, focus:pushang);
 
 							outPutFuncs[0].value(p, p,
 								globallev.clip(0, 1) * glev);
@@ -323,23 +324,23 @@ MoscaSpatializer {
 							// assume N3D input
 							hoaSynth = SynthDef(\AmbitoolsBFormat ++ play_type ++ item ++ effect.key, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-								azim = 0, elev = 0, radius = 20, amp = 1,
+								radAzimElev = #[20, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
 								insertFlag = 0, insertOut, insertBack,
 								room = 0.5, damp = 05, wir, df, sp,
 								contr = 0, rotAngle = 0|
 
-								var rad = Lag.kr(radius),
+								var rad = Lag.kr(radAzimElev[0]),
 								pushang = 2 - (contr * 2),
 								globallev = (1 / rad.sqrt) - 1, //global reverberation
 								locallev, lrevRef = Ref(0),
-								az = azim - MoscaUtils.halfPi,
+								az = radAzimElev[1] - MoscaUtils.halfPi,
 								p = Ref(0),
 								rd = rad * 340, // Doppler
 								revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 								cut = rad.linlin(0.75, 1, 1, 0);
 								rad = rad.max(0.01);
-								pushang = radius.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
+								pushang = rad.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
 
 								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
 								p = p * amp * (1 + (contr * 3));
@@ -349,7 +350,7 @@ MoscaSpatializer {
 								// local reverberation
 
 								p = HOATransRotateAz.ar(ord, lrevRef.value * revCut + (p * cut), rotAngle);
-								p = HOABeamDirac2Hoa.ar(ord, p, az, elev, timer_manual:1, focus:pushang);
+								p = HOABeamDirac2Hoa.ar(ord, p, az, radAzimElev[2], timer_manual:1, focus:pushang);
 
 								outPutFuncs[0].value(p, p, globallev.clip(0, 1) * glev);
 							});

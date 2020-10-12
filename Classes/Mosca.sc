@@ -19,7 +19,6 @@
 /*
 * TODO
 * defName and Synth args for sources
-* get clear on conversion (general + 2effects)
 * conveterNeeded methode
 * API
 * Multythread evrything
@@ -29,9 +28,9 @@
 */
 
 Mosca {
-	var dur, autoLoop, server, <ossiaParent; // initial rguments
-	var renderer, effects, center, sources, srcGrp, gui, tracker;
-	var ossiaMasterPlay, ossiaMasterLib, dependant, convertor, virtualAmbi;
+	var dur, autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
+	var renderer, effects, center, sources, srcGrp, convertor, virtualAmbi;
+	var ossiaMasterPlay, ossiaMasterLib, dependant, needConvert, needVirtualAmbi;
 	var <control, watcher, ossiaAutomation, isPlay, // automation control
 	ossiaPlay, ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
 
@@ -57,17 +56,19 @@ Mosca {
 
 		effects = MoscaEffects();
 
+		srcGrp = Ref();
+
 		// start asynchronious processes
 		server.doWhenBooted({
 
-			srcGrp = ParGroup.tail(server.defaultGroup);
+			srcGrp.set(ParGroup.tail(server.defaultGroup));
 
 			renderer.setup(server, speaker_array, maxOrder, decoder,
 				outBus, subOutBus, rawOutBus, rawFormat);
 
 			spat.initSpat(maxOrder, renderer, server);
 
-			effects.setup(server, srcGrp, multyThread, maxOrder, renderer, irBank);
+			effects.setup(server, srcGrp.get, multyThread, maxOrder, renderer, irBank);
 
 			spat.makeSpatialisers(server, maxOrder, renderer, effects);
 
@@ -181,7 +182,11 @@ Mosca {
 
 		effects.setAction();
 
-		dependant = { | obj ... loadArgs | this.prCheck4Convert(loadArgs); };
+		dependant = { | obj ... loadArgs | this.prCheckConversion(loadArgs); };
+
+		needConvert = 0;
+
+		needVirtualAmbi = 0;
 
 		sources.do({ | item |
 			item.setAction(effects.effectList, spatDefs, center, isPlay);
@@ -294,7 +299,7 @@ Mosca {
 		sources.do({ | item | item.dockTo(control); });
 	}
 
-	prCheck4Convert { | loadArgs |
+	prCheckConversion { | loadArgs |
 		var newSynth, spatType;
 
 		#newSynth, spatType = loadArgs;
@@ -307,6 +312,8 @@ Mosca {
 
 				if (renderer.virtualSetup) {
 
+					needVirtualAmbi = needVirtualAmbi + 1;
+
 					if (virtualAmbi.isNil) { // launch virtualAmbi if needed
 
 						virtualAmbi = Synth(\virtualAmbi,
@@ -318,9 +325,11 @@ Mosca {
 			} {
 				if (spatType != renderer.format) {
 
+					needConvert = needConvert + 1;
+
 					if (convertor.isNil) { // launch converter if needed
 
-						convertor = Synth(\virtualAmbi,
+						convertor = Synth(\ambiConverter,
 							target:effects.transformGrp).onFree({
 							convertor = nil;
 						});
@@ -328,11 +337,32 @@ Mosca {
 				};
 			};
 		} {
+			if (spatType == \NONAMBI) {
 
+				if (renderer.virtualSetup) {
+
+					needVirtualAmbi = needVirtualAmbi - 1;
+
+					if (virtualAmbi.notNil && (needVirtualAmbi == 0)) {
+
+						virtualAmbi.free; // free virtualAmbi if no longer needed
+					};
+				};
+			} {
+				if (spatType != renderer.format) {
+
+					needConvert = needConvert - 1;
+
+					if (convertor.notNil && (needConvert == 0)) {
+
+						convertor.free; // free converter if no longer needed
+					};
+				};
+			};
 		};
 	}
 
-	nonAmbi2BfNeeded { | i = 0 |
+	virtualAmbiNeeded { | i = 0 |
 
 		if (i == sources.size) {
 			^false.asBoolean;

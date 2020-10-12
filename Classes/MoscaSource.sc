@@ -17,7 +17,7 @@
 */
 
 MoscaSource[] {
-	var index, server, srcGrp, defName, effect, chanNum, playType, spatType;
+	var index, server, srcGrp, defName, synthArgs, effect, chanNum, playType, spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var scInBus, triggerFunc, stopFunc, synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -359,6 +359,11 @@ MoscaSource[] {
 	prSetSynthArgs { | effect |
 		var args = [];
 
+		if ((file.value != "") && (scSynths.value || external.value).not) {
+
+			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInteger];
+		};
+
 		switch (library.value,
 			"ATK", {
 				args ++ [\sp, spread.value.asInteger, \df, diffuse.value.asInteger];
@@ -373,6 +378,10 @@ MoscaSource[] {
 
 			if (library.value == "ATK") { args ++ [\directang, directivity.value]; };
 		};
+
+		synthArgs = args;
+
+		synthArgs.postln;
 	}
 
 	prCheck4Synth { | bool, playing |
@@ -393,14 +402,32 @@ MoscaSource[] {
 	}
 
 	launchSynth { | force |
-		var args = [];
 
-		if ((file.value != "") && (scSynths.value || external.value).not) {
+		if (defName.notNil) {
 
-			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInt];
+			this.changed(true, spatType);
+
+			srcGrp.get().postln;
+
+			spatializer = Synth(\truc,
+			//spatializer = Synth(defName,
+				[
+					\radAzimElev, [
+						coordinates.spheVal.rho,
+						coordinates.spheVal.theta,
+						coordinates.spheVal.phi
+					],
+					\dopamnt, doppler.value,
+					\glev, globalAmount.value,
+					\amp, level.value.dbamp
+				] ++ synthArgs,
+				srcGrp.get()).onFree(
+				{
+					this.changed(false, spatType);
+					spatializer = nil;
+				}
+			);
 		};
-
-		this.changed(true, spatType);
 	}
 
 	setSynths { | param, value |
