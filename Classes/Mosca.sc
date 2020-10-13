@@ -18,8 +18,6 @@
 
 /*
 * TODO
-* defName and Synth args for sources
-* conveterNeeded methode
 * API
 * Multythread evrything
 * GUI
@@ -46,9 +44,12 @@ Mosca {
 	ctr { | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
 
-		var spat, multyThread = false; // Server.program.asString.endsWith("supernova");
+		var spat, multyThread;
 
 		if (server.isNil) { server = Server.local; };
+
+		multyThread = server.options.threads.notNil;
+		// Server.program.asString.endsWith("supernova");
 
 		renderer = MoscaRenderer(maxOrder);
 
@@ -132,7 +133,7 @@ Mosca {
 					};
 				});
 
-				if (isPlay.get) {
+				if (isPlay.get()) {
 					ossiaSeekBack = false;
 					ossiaTransport.v_(control.now);
 					ossiaSeekBack = true;
@@ -303,8 +304,6 @@ Mosca {
 		var newSynth, spatType;
 
 		#newSynth, spatType = loadArgs;
-
-		loadArgs.postln;
 
 		if (newSynth) { // evaluate before launching a new spatializer synth
 

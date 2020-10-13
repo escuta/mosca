@@ -93,6 +93,7 @@ MoscaSpatializer {
 		}];
 
 		effect.defs.do({ | effect, count |
+			var halfPi = MoscaUtils.halfPi, plim = MoscaUtils.plim;
 
 			spatInstances.do({ | spat, i |
 
@@ -116,10 +117,10 @@ MoscaSpatializer {
 						var rad = Lag.kr(radAzimElev[0]),
 						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						locallev, lrevRef = Ref(0),
-						az = radAzimElev[1] - MoscaUtils.halfPi,
+						az = radAzimElev[1] - halfPi,
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
+						revCut = rad.lincurve(1, plim, 1, 0),
 						cut = rad.linlin(0.75, 1, 1, 0);
 						rad = rad.max(0.01);
 
@@ -150,10 +151,10 @@ MoscaSpatializer {
 						var rad = Lag.kr(radAzimElev[0]),
 						globallev = (1 / rad.sqrt) - 1, //global reverberation
 						lrev1Ref = Ref(0), lrev2Ref = Ref(0),
-						az = Lag.kr(radAzimElev[1] - MoscaUtils.halfPi),
+						az = Lag.kr(radAzimElev[1] - halfPi),
 						p = Ref(0),
 						rd = rad * 340, // Doppler
-						revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
+						revCut = rad.lincurve(1, plim, 1, 0),
 						cut = rad.linlin(0.75, 1, 1, 0);
 						rad = rad.max(0.01);
 
@@ -169,9 +170,9 @@ MoscaSpatializer {
 
 						p = p * cut;
 
-						spat.spatFunc.value(lrev1Ref, p[0], rad, az - (angle * (1 - rad)),
+						spat.spatFunc.value(lrev1Ref, p[0], rad, az + (angle * (1 - rad)),
 							radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
-						spat.spatFunc.value(lrev2Ref, p[1], rad, az + (angle * (1 - rad)),
+						spat.spatFunc.value(lrev2Ref, p[1], rad, az - (angle * (1 - rad)),
 							radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(Mix.ar(p) * 0.5,
@@ -207,13 +208,13 @@ MoscaSpatializer {
 							pushang = 2 - (contr * 2),
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
-							az = radAzimElev[1] - MoscaUtils.halfPi,
+							az = radAzimElev[1] - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
+							revCut = rad.lincurve(1, plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
-							pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
+							pushang = rad.linlin(pushang - 1, pushang, 0, halfPi);
 							// degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
@@ -247,16 +248,16 @@ MoscaSpatializer {
 								pushang = 2 - (contr * 2),
 								globallev = (1 / rad.sqrt) - 1, //global reverberation
 								locallev, lrevRef = Ref(0),
-								az = radAzimElev[1] - MoscaUtils.halfPi,
+								az = radAzimElev[1] - halfPi,
 								p = Ref(0),
 								rd = rad * 340, // Doppler
-								revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
+								revCut = rad.lincurve(1, plim, 1, 0),
 								cut = rad.linlin(0.75, 1, 1, 0);
 								rad = rad.max(0.01);
-								pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
+								pushang = rad.linlin(pushang - 1, pushang, 0, halfPi);
 								// degree of sound field displacement
 
-								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
+								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
 								p = p * amp;
 								p = DelayC.ar(p, 0.2, rd/1640.0 * dopamnt);
 
@@ -295,10 +296,10 @@ MoscaSpatializer {
 							pushang = 2 - (contr * 2),
 							globallev = (1 / rad.sqrt) - 1, //global reverberation
 							locallev, lrevRef = Ref(0),
-							az = radAzimElev[1] - MoscaUtils.halfPi,
+							az = radAzimElev[1] - halfPi,
 							p = Ref(0),
 							rd = rad * 340, // Doppler
-							revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
+							revCut = rad.lincurve(1, plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
 							pushang = rad.linlin(pushang - 1, pushang, 0, 1);
@@ -335,10 +336,10 @@ MoscaSpatializer {
 								pushang = 2 - (contr * 2),
 								globallev = (1 / rad.sqrt) - 1, //global reverberation
 								locallev, lrevRef = Ref(0),
-								az = radAzimElev[1] - MoscaUtils.halfPi,
+								az = radAzimElev[1] - halfPi,
 								p = Ref(0),
 								rd = rad * 340, // Doppler
-								revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
+								revCut = rad.lincurve(1, plim, 1, 0),
 								cut = rad.linlin(0.75, 1, 1, 0);
 								rad = rad.max(0.01);
 								pushang = rad.linlin(pushang - 1, pushang, 0, 1);

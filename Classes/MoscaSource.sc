@@ -17,7 +17,7 @@
 */
 
 MoscaSource[] {
-	var index, server, srcGrp, defName, synthArgs, effect, chanNum, playType, spatType;
+	var index, server, srcGrp, defName, effect, chanNum, spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var scInBus, triggerFunc, stopFunc, synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -40,7 +40,7 @@ MoscaSource[] {
 
 		input = OSSIA_Node(src, "Input");
 
-		file = OssiaAutomationProxy(input, "File_path", String, critical: true);
+		file = OssiaAutomationProxy(input, "File_path", String, critical: true, repetition_filter: false);
 
 		file.node.description_("For loading or streaming sound files");
 
@@ -64,95 +64,91 @@ MoscaSource[] {
 		coordinates = OssiaAutomationCoordinates(src, allCritical, center, spatializer, synths);
 
 		library = OssiaAutomationProxy(src, "Library", String, [nil, nil, spatList],
-			"Ambitools", critical:true, repetition_filter:true);
+			"Ambitools", critical:true);
 
 		library.node.description_(spatList.asString);
 
 		spatType = \N3D;
 
-		play = OssiaAutomationProxy(src, "play", Boolean,
-			critical:true, repetition_filter:true);
+		play = OssiaAutomationProxy(src, "play", Boolean, critical:true);
 
 		firstTime = true;
 
-		loop = OssiaAutomationProxy(src, "Loop", Boolean,
-			critical:true, repetition_filter:true);
+		loop = OssiaAutomationProxy(src, "Loop", Boolean, critical:true);
 
 		level = OssiaAutomationProxy(src, "Level", Float, [-96, 12],
-			0, 'clip', critical:allCritical, repetition_filter:true);
+			0, 'clip', critical:allCritical);
 
 		level.node.unit_(OSSIA_gain.decibel);
 
 		contraction = OssiaAutomationProxy(src, "Contraction", Float,
-			[0, 1], 1.0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 1.0, 'clip', critical:allCritical);
 
 		doppler = OssiaAutomationProxy(src, "Doppler_amount", Float,
-			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0, 'clip', critical:allCritical);
 
 		globalAmount = OssiaAutomationProxy(src, "Global_amount", Float,
-			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0, 'clip', critical:allCritical);
 
 		globalAmount.node.unit_(OSSIA_gain.linear);
 
 		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
-			[nil, nil, effectList], "Clear", critical:true, repetition_filter:true);
+			[nil, nil, effectList], "Clear", critical:true);
 
 		effect = "Clear";
 
 		localEffect.node.description_(effectList.asString);
 
 		localAmount = OssiaAutomationProxy(localEffect.node, "Local_amount", Float,
-			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0, 'clip', critical:allCritical);
 
 		localAmount.node.unit_(OSSIA_gain.linear);
 
 		localDelay = OssiaAutomationProxy(localEffect.node, "Room_delay", Float,
-			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0.5, 'clip', critical:allCritical);
 
 		localDecay = OssiaAutomationProxy(localEffect.node, "Damp_decay", Float,
-			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0.5, 'clip', critical:allCritical);
 
 		angle = OssiaAutomationProxy(src, "Stereo_angle", Float,
-			[0, pi], 1.05, 'clip', critical:allCritical, repetition_filter:true);
+			[0, pi], 1.05, 'clip', critical:allCritical);
 
 		angle.node.unit_(OSSIA_angle.radian).description_("Stereo_only");
 
 		rotation = OssiaAutomationProxy(src, "B-Format_rotation", Float,
-			[-pi, pi], 0, 'wrap', critical:allCritical, repetition_filter:true);
+			[-pi, pi], 0, 'wrap', critical:allCritical);
 
 		rotation.node.unit_(OSSIA_angle.radian).description_("B-Format only");
 
 		atk = OSSIA_Node(src, "Atk");
 
 		directivity = OssiaAutomationProxy(atk, "Directivity", Float,
-			[0, pi * 0.5], 0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, pi * 0.5], 0, 'clip', critical:allCritical);
 
 		directivity.node.description_("ATK B-Format only");
 
-		spread = OssiaAutomationProxy(atk, "Spread", Boolean,
-			critical:true, repetition_filter:true);
+		spread = OssiaAutomationProxy(atk, "Spread", Boolean, critical:true);
 
 		spread.node.description_("ATK only");
 
-		diffuse = OssiaAutomationProxy(atk, "Diffuse", Boolean,
-			critical:true, repetition_filter:true);
+		diffuse = OssiaAutomationProxy(atk, "Diffuse", Boolean, critical:true);
 
 		diffuse.node.description_("ATK only");
 
 		josh = OSSIA_Node(src, "Josh");
 
 		rate = OssiaAutomationProxy(josh, "Grain_rate", Float,
-			[1, 60], 10, 'clip', critical:allCritical, repetition_filter:true);
+			[1, 60], 10, 'clip', critical:allCritical);
 
 		rate.node.unit_(OSSIA_time.frequency).description_("JoshGrain only");
 
 		window = OssiaAutomationProxy(josh, "Window_size", Float,
-			[0, 0.2], 0.1, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 0.2], 0.1, 'clip', critical:allCritical);
 
 		window.node.unit_(OSSIA_time.second).description_("JoshGrain only");
 
 		random = OssiaAutomationProxy(josh, "Randomize_window", Float,
-			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0, 'clip', critical:allCritical);
 
 		random.node.description_("JoshGrain only");
 
@@ -160,12 +156,12 @@ MoscaSource[] {
 
 		aux = Array.fill(5,
 			{ | i | OssiaAutomationProxy(auxiliary, "Aux_" ++ (i + 1), Float,
-			[0, 1], 0, 'clip', critical:allCritical, repetition_filter:true);
+			[0, 1], 0, 'clip', critical:allCritical);
 		});
 
 		check = Array.fill(5,
 			{ | i | OssiaAutomationProxy(auxiliary, "Ckeck_" ++ (i + 1),
-				Boolean, critical:allCritical, repetition_filter:true);
+				Boolean, critical:allCritical);
 		});
 	}
 
@@ -190,24 +186,17 @@ MoscaSource[] {
 					buffer = Buffer.read(server, path.value, action: { | buf |
 						"Loaded file".postln;
 					});
-
-					playType = "File";
 				} {
 					buffer = Buffer.cueSoundFile(
 						server, path.value, 0, nChan.value, 131072,
 						{("Creating buffer for source: " + (index + 1)).postln; });
-
-					playType = "Stream";
 				};
 
 				chanNum = sf.numChannels;
 				sf.close;
-				scSynths.value_(false);
-				external.value_(false);
-			} {
-				this.prSetDefName();
-				this.prSetSynthArgs();
 			};
+
+			this.prSetDefName();
 		});
 
 		stream.action_({ file.value_(file.value); });
@@ -215,21 +204,17 @@ MoscaSource[] {
 		external.action_({ | val |
 
 			if (val.value) {
-				playType = "EXBus";
-
 				scSynths.value_(false);
 				nChan.value_(nChan.value);
 			} {
 				this.prSetDefName();
-				this.prSetSynthArgs();
-			}
+			};
 		});
 
 		scSynths.action_({ | val |
 
 			if (val.value) {
 				external.value_(false);
-				playType = "SCBus";
 				nChan.value_(nChan.value);
 				scInBus = Bus.audio(server, chanNum);
 			} {
@@ -241,25 +226,10 @@ MoscaSource[] {
 				triggerFunc = nil;
 				stopFunc = nil;
 				synthRegistry.clear;
-
-				this.prSetDefName();
-				this.prSetSynthArgs();
 			};
 		});
 
-		nChan.action_({ | val |
-
-			if (scSynths.value || external.value) { chanNum = val.value; };
-
-			if (chanNum.value < 4) {
-				contraction.value_(1);
-			} {
-				contraction.value_(0.5);
-			};
-
-			this.prSetDefName();
-			this.prSetSynthArgs();
-		});
+		nChan.action_({ | val | this.prSetDefName(); });
 
 		library.action_({ | val |
 			var i = spatDefs.detectIndex({ | item | item.key == val.value });
@@ -267,7 +237,6 @@ MoscaSource[] {
 			spatType = spatDefs[i].format;
 
 			this.prSetDefName();
-			this.prSetSynthArgs();
 		});
 
 		play.action_({ | val | this.prCheck4Synth(val.value, playing); });
@@ -284,21 +253,10 @@ MoscaSource[] {
 
 		localEffect.action_({ | val |
 
-			if (val.value != "Clear") {
-				var i = localEffect.node.domain.values().detectIndex(
-					{ | item | item == val.value; });
+			var i = localEffect.node.domain.values().detectIndex(
+				{ | item | item == val.value; });
 
-				if (effectList[i].class == String) {
-					effect = val.value;
-					this.prSetSynthArgs();
-				} {
-					effect = "Conv";
-					this.prSetSynthArgs(effectList[i]);
-				};
-			} {
-				effect = "Clear";
-				this.prSetSynthArgs();
-			};
+			effect = effectList[i];
 
 			this.prSetDefName();
 		});
@@ -351,43 +309,48 @@ MoscaSource[] {
 	}
 
 	prSetDefName {
+		var fxType, playType, chans;
 
-		if ((file.value == "") && (scSynths.value || external.value).not) {
-
-			defName = nil;
+		if (effect.class == String) {
+			fxType = effect;
 		} {
-			defName = library.value ++ playType ++ chanNum ++ effect;
+			fxType = "Conv";
 		};
 
-		defName.postln;
-	}
+		if (external.value) {
+			playType = "EXBus";
+			chans = nChan.value;
+		};
 
-	prSetSynthArgs { | effect |
-		var args = [];
+		if (scSynths.value) {
+			playType = "SCBus";
+				chans = nChan.value;
+		};
 
 		if ((file.value != "") && (scSynths.value || external.value).not) {
 
-			args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInteger];
+			if (stream.value) {
+				playType = "Stream";
+			} {
+				playType = "File";
+			};
+
+			chans = chanNum;
 		};
 
-		switch (library.value,
-			"ATK", {
-				args ++ [\sp, spread.value.asInteger, \df, diffuse.value.asInteger];
-			}, "Josh", {
-				args ++ [\grainrate, rate.value, \winsize, window.value,
-					\winrand, random.value];
-		});
+		if (playType.isNil) {
+			defName = nil;
+		} {
+			if (chans < 4) {
+				contraction.value_(1);
+			} {
+				contraction.value_(0.5);
+			};
 
-		if (nChan.value >= 4) {
-
-			args ++ [\rotAngle, rotation.value];
-
-			if (library.value == "ATK") { args ++ [\directang, directivity.value]; };
+			defName = library.value ++ playType ++ chans ++ fxType;
 		};
 
-		synthArgs = args;
-
-		synthArgs.postln;
+		defName.postln;
 	}
 
 	prCheck4Synth { | bool, playing |
@@ -402,7 +365,7 @@ MoscaSource[] {
 				spatializer.free;
 				this.runStop();
 				firstTime = true;
-				("Source_" + index + " stopping!").postln;
+				("Source_" + (index + 1) + " stopping!").postln;
 			};
 		};
 	}
@@ -410,20 +373,72 @@ MoscaSource[] {
 	launchSynth { | force |
 
 		if (defName.notNil) {
+			var args = []; // prepare synth Arguments
 
-			this.changed(true, spatType);
+			switch (nChan.value,
+				{ 1 },
+				{
+					if (effect.class != String) {
+						args = args ++ effect.wSpecPar;
+					} {
+						if (effect != "Clear") {
+							args = args ++ [\room, localDelay.value, \damp, localDecay.value];
+						};
+					};
+				},
+				{ 2 },
+				{
+					if (effect.class != String) {
+						args = args ++ effect.zSpecPar;
+					} {
+						args = args ++ [\room, localDelay.value, \damp, localDecay.value];
+					};
+				},
+				{
+					if (effect.class != String) {
+						args = args ++ effect.wSpecPar;
+					} {
+						args = args ++ [\room, localDelay.value, \damp, localDecay.value];
+					};
 
-			spatializer = Synth(defName,
+					args = args ++ [\rotAngle, rotation.value];
+
+					if (library.value == "ATK") { args = args ++ [\directang, directivity.value]; };
+				};
+			);
+
+			if ((file.value != "") && (scSynths.value || external.value).not) {
+
+				args = args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInteger];
+			};
+
+			if (external.value) {
+
+				args = args ++ [\busini, scInBus];
+			};
+
+			switch (library.value,
+				"ATK", {
+					args = args ++ [\sp, spread.value.asInteger, \df, diffuse.value.asInteger];
+				}, "Josh", {
+					args = args ++ [\grainrate, rate.value, \winsize, window.value,
+						\winrand, random.value];
+			});
+
+			this.changed(true, spatType); // triggers Mosca's prCheckConversion method
+
+			spatializer = Synth(defName, // launch spatializer synth
 				[
 					\radAzimElev, [
 						coordinates.spheVal.rho,
 						coordinates.spheVal.theta,
 						coordinates.spheVal.phi
 					],
+					\contr, contraction.value,
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,
 					\amp, level.value.dbamp
-				] ++ synthArgs,
+				] ++ args,
 				srcGrp.get()).onFree(
 				{
 					this.changed(false, spatType);
@@ -471,5 +486,11 @@ MoscaSource[] {
 	}
 
 	runStop {
+
+		if(stopFunc.notNil) {
+			stopFunc.value;
+			synths = nil;
+			"RUNNING STOP".postln;
+		};
 	}
 }

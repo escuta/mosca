@@ -159,7 +159,7 @@ MoscaRenderer {
 
 			nonAmbiBus = Bus.audio(server, numOutputs);
 
-			SynthDef("virtualSetup", {
+			SynthDef(\virtualAmbi, {
 				var sig = In.ar(nonAmbiBus, numOutputs);
 				sig = FoaEncode.ar(sig,
 					FoaEncoderMatrix.newDirections(emulate_array.degrad));
