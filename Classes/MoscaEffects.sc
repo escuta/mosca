@@ -40,9 +40,6 @@ MoscaEffects {
 			effectList.removeAt(effectList.detectIndex({ | item |
 				item == ConvolutionDef.asClass; }));
 		};
-
-		defs.removeAt(defs.detectIndex({ | item |
-			item == ClearDef.asClass; }));
 	}
 
 	setup { | server, sourceGroup, multyThread, maxOrder, renderer, irBank |
@@ -59,7 +56,13 @@ MoscaEffects {
 		} {
 			if (maxOrder == 1) {
 
-				defs = defs.collect({ | item | item.new1stOrder() });
+				defs = defs.collect(
+					{ | item |
+						if (item != ClearDef.asClass)
+						{ item.new1stOrder(); }
+						{ item; }; // no need to instanciate ClearDef
+					};
+				);
 
 				decodeFunc = {
 					var sigf = In.ar(gBfBus, 4);
@@ -85,7 +88,13 @@ MoscaEffects {
 					};
 				};
 			} {
-				defs = defs.collect({ | item | item.new1stOrder(); });
+				defs = defs.collect(
+					{ | item |
+						if (item != ClearDef.asClass)
+						{ item.new2ndOrder(); }
+						{ item; }; // no need to instanciate ClearDef
+					};
+				);
 
 				decodeFunc = {
 					var sigf = In.ar(gBfBus, 9);
@@ -129,13 +138,16 @@ MoscaEffects {
 		} {
 			defs.do({ | item |
 
-				SynthDef(\globalFx ++ item.key, { | gate = 1, room = 0.5, damp = 0.5,
-					a0ir, a1ir, a2ir, a3ir, a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
-					var sig = decodeFunc.value();
-					sig = item.globalFunc.value(sig, room, damp, a0ir, a1ir, a2ir, a3ir, a4ir,
-						a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir);
-					encodeFunc.value(sig, gate);
-				}).send(server);
+				if (item != ClearDef.asClass) {
+
+					SynthDef(\globalFx ++ item.key, { | gate = 1, room = 0.5, damp = 0.5,
+						a0ir, a1ir, a2ir, a3ir, a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
+						var sig = decodeFunc.value();
+						sig = item.globalFunc.value(sig, room, damp, a0ir, a1ir, a2ir, a3ir, a4ir,
+							a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir);
+						encodeFunc.value(sig, gate);
+					}).send(server);
+				};
 			});
 		};
 	}

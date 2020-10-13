@@ -96,16 +96,16 @@ MoscaSpatializer {
 
 			spatInstances.do({ | spat, i |
 
-				case
-				{ spat.format == \N3D } { out_type = 0 }
-				{ spat.format == \FUMA } { out_type = 1 }
-				{ out_type = 2 };
+				switch (spat.format,
+					{ \N3D }, { out_type = 0 },
+					{ \FUMA }, { out_type = 1 },
+					{ out_type = 2 };
+				);
 
 				playList.do({ | play_type, j |
 					var mono, stereo;
 
-					mono = SynthDef(\truc, {
-					//mono = SynthDef(spat.key ++ play_type ++ 1 ++ effect.key, {
+					mono = SynthDef(spat.key ++ play_type ++ 1 ++ effect.key, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						radAzimElev = #[20, 0, 0], amp = 1,
 						dopamnt = 0, glev = 0, llev = 0,
@@ -213,8 +213,8 @@ MoscaSpatializer {
 							revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
-							pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi); // degree of sound field displacement
-
+							pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
+							// degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 							p = p * amp;
@@ -253,7 +253,8 @@ MoscaSpatializer {
 								revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 								cut = rad.linlin(0.75, 1, 1, 0);
 								rad = rad.max(0.01);
-								pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi); // degree of sound field displacement
+								pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
+								// degree of sound field displacement
 
 								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 								p = p * amp;
@@ -300,8 +301,8 @@ MoscaSpatializer {
 							revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 							cut = rad.linlin(0.75, 1, 1, 0);
 							rad = rad.max(0.01);
-							pushang = rad.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
-
+							pushang = rad.linlin(pushang - 1, pushang, 0, 1);
+							// degree of sound field displacement
 
 							playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 4);
 							p = p * amp * (1 + (contr * 3));
@@ -340,7 +341,8 @@ MoscaSpatializer {
 								revCut = rad.lincurve(1, MoscaUtils.plim, 1, 0),
 								cut = rad.linlin(0.75, 1, 1, 0);
 								rad = rad.max(0.01);
-								pushang = rad.linlin(pushang - 1, pushang, 0, 1); // degree of sound field displacement
+								pushang = rad.linlin(pushang - 1, pushang, 0, 1);
+								// degree of sound field displacement
 
 								playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, item);
 								p = p * amp * (1 + (contr * 3));

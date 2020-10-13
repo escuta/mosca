@@ -204,10 +204,13 @@ MoscaSource[] {
 				sf.close;
 				scSynths.value_(false);
 				external.value_(false);
+			} {
+				this.prSetDefName();
+				this.prSetSynthArgs();
 			};
-
-			this.prSetDefName();
 		});
+
+		stream.action_({ file.value_(file.value); });
 
 		external.action_({ | val |
 
@@ -218,6 +221,7 @@ MoscaSource[] {
 				nChan.value_(nChan.value);
 			} {
 				this.prSetDefName();
+				this.prSetSynthArgs();
 			}
 		});
 
@@ -225,7 +229,7 @@ MoscaSource[] {
 
 			if (val.value) {
 				external.value_(false);
-				playType = "SWBus";
+				playType = "SCBus";
 				nChan.value_(nChan.value);
 				scInBus = Bus.audio(server, chanNum);
 			} {
@@ -239,6 +243,7 @@ MoscaSource[] {
 				synthRegistry.clear;
 
 				this.prSetDefName();
+				this.prSetSynthArgs();
 			};
 		});
 
@@ -253,6 +258,7 @@ MoscaSource[] {
 			};
 
 			this.prSetDefName();
+			this.prSetSynthArgs();
 		});
 
 		library.action_({ | val |
@@ -407,10 +413,7 @@ MoscaSource[] {
 
 			this.changed(true, spatType);
 
-			srcGrp.get().postln;
-
-			spatializer = Synth(\truc,
-			//spatializer = Synth(defName,
+			spatializer = Synth(defName,
 				[
 					\radAzimElev, [
 						coordinates.spheVal.rho,

@@ -95,7 +95,7 @@ Mosca {
 		control = Automation(dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
 
-		isPlay = `false;
+		isPlay = Ref(false);
 
 		if (projDir.isNil) {
 			control.presetDir = "HOME".getenv ++ "/auto/";
