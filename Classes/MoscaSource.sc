@@ -169,33 +169,7 @@ MoscaSource[] {
 
 		file.action_({ | path |
 
-			if (buffer.notNil) {
-				buffer.freeMsg({
-					"Buffer freed".postln;
-					if (path == "") { buffer = nil; };
-				});
-			};
-
-			if (path != "") {
-				var sf = SoundFile.new;
-
-				sf.openRead(path);
-
-				if (stream.value.not) {
-
-					buffer = Buffer.read(server, path.value, action: { | buf |
-						"Loaded file".postln;
-					});
-				} {
-					buffer = Buffer.cueSoundFile(
-						server, path.value, 0, nChan.value, 131072,
-						{("Creating buffer for source: " + (index + 1)).postln; });
-				};
-
-				chanNum = sf.numChannels;
-				sf.close;
-			};
-
+			this.prFreeBuffer();
 			this.prSetDefName();
 		});
 
@@ -204,8 +178,14 @@ MoscaSource[] {
 		external.action_({ | val |
 
 			if (val.value) {
-				scSynths.value_(false);
-				nChan.value_(nChan.value);
+
+				if (scSynths.value) {
+					scSynths.value_(false);
+				} {
+					this.prSetDefName();
+				};
+
+				this.prFreeBuffer();
 			} {
 				this.prSetDefName();
 			};
@@ -214,18 +194,21 @@ MoscaSource[] {
 		scSynths.action_({ | val |
 
 			if (val.value) {
-				external.value_(false);
-				nChan.value_(nChan.value);
-				scInBus = Bus.audio(server, chanNum);
+
+				if (external.value) {
+					external.value_(false);
+				} {
+					this.prSetDefName();
+				};
+
+				this.prFreeBuffer();
 			} {
 				if (scInBus.notNil) {
 					scInBus.free;
 					scInBus = nil;
 				};
 
-				triggerFunc = nil;
-				stopFunc = nil;
-				synthRegistry.clear;
+				this.prSetDefName();
 			};
 		});
 
@@ -308,46 +291,65 @@ MoscaSource[] {
 		});
 	}
 
+	prFreeBuffer { // Always free the buffer before changing configuration
+
+		if (buffer.notNil) {
+			buffer.freeMsg({ "Buffer freed".postln; });
+			buffer = nil;
+		};
+	}
+
 	prSetDefName {
-		var fxType, playType, chans;
-
-		if (effect.class == String) {
-			fxType = effect;
-		} {
-			fxType = "Conv";
-		};
-
-		if (external.value) {
-			playType = "EXBus";
-			chans = nChan.value;
-		};
-
-		if (scSynths.value) {
-			playType = "SCBus";
-				chans = nChan.value;
-		};
+		var fxType, playType;
 
 		if ((file.value != "") && (scSynths.value || external.value).not) {
 
+			var sf = SoundFile.openRead(file.value);
+
+			if (sf.isNil) { ^Error("incorect file path").throw; };
+
+			chanNum = sf.numChannels;
+			sf.close;
+
 			if (stream.value) {
+
+				buffer = Buffer.cueSoundFile(
+					server, file.value, 0, chanNum, 131072,
+					{("Creating buffer for source " + (index + 1)).postln; });
+
 				playType = "Stream";
 			} {
+				buffer = Buffer.read(server, file.value, action: { | buf |
+					"Loaded file".postln;
+				});
+
 				playType = "File";
 			};
+		} {
 
-			chans = chanNum;
+			if (external.value) {
+				playType = "EXBus";
+				chanNum = nChan.value;
+			};
+
+			if (scSynths.value) {
+				playType = "SCBus";
+				chanNum = nChan.value;
+				scInBus = Bus.audio(server, chanNum);
+			};
 		};
 
 		if (playType.isNil) {
 			defName = nil;
 		} {
-			if (chans < 4) {
-				contraction.value_(1);
+
+			if (effect.class == String) {
+				fxType = effect;
 			} {
-				contraction.value_(0.5);
+				fxType = "Conv";
 			};
 
-			defName = library.value ++ playType ++ chans ++ fxType;
+			defName = library.value ++ playType ++ chanNum ++ fxType;
 		};
 
 		defName.postln;
@@ -365,7 +367,7 @@ MoscaSource[] {
 				spatializer.free;
 				this.runStop();
 				firstTime = true;
-				("Source_" + (index + 1) + " stopping!").postln;
+				("Source " + (index + 1) + " stopping!").postln;
 			};
 		};
 	}
