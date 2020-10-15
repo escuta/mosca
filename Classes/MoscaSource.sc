@@ -487,6 +487,48 @@ MoscaSource[] {
 		});
 	}
 
+	// These methods relate to control of synths when SW Input delected
+
+	// Set by user. Registerred functions called by Automation's play
+	setTriggerFunc { | function | triggerFunc = function; }
+
+	// Companion stop method
+	setStopFunc { |function | stopFunc = function; }
+
+	clearTriggerFunc { triggerFunc = nil; }
+
+	clearStopFunc { stopFunc = nil; }
+
+	embedSynth { | numChans = 1, triggerFunc, stopFunc, register |
+		this.getSCBus(numChans);
+		this.setTriggerFunc(triggerFunc);
+		this.setStopFunc(stopFunc);
+		this.registerSynth(register);
+	}
+
+	registerSynth { | synth | synthRegistry.add(synth); }
+
+	deregisterSynth { | synth |
+		if (synthRegistry.notNil) { synthRegistry.remove(synth); };
+	}
+
+	getSynthRegistry { ^synthRegistry; }
+
+	getSCBus { | numChans = 1 |
+
+		external.value_(true);
+		nChan.value_(numChans);
+		^scInBus.index;
+	}
+
+	runTrigger {
+
+		if(triggerFunc.notNil) {
+			triggerFunc.value;
+			"RUNNING TRIGGER".postln;
+		};
+	}
+
 	runStop {
 
 		if(stopFunc.notNil) {
