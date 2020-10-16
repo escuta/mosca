@@ -29,33 +29,36 @@
 		control.seek(control.now);
 	}
 
-/*
 	// These methods relate to control of synths when SW Input delected
+	// Set by user. Registerred functions called by "play"
 
-	// Set by user. Registerred functions called by Automation's play
-	setTriggerFunc { | function | triggerFunc = function; }
+	embedSynth { | sourceNum = 1, numChans = 1, triggerFunc, stopFunc, register |
 
-	// Companion stop method
-	setStopFunc { |function | stopFunc = function; }
+		var src = this.getSource(sourceNum);
 
-	clearTriggerFunc { triggerFunc = nil; }
-
-	clearStopFunc { stopFunc = nil; }
-
-	embedSynth { | numChans = 1, triggerFunc, stopFunc, register |
-
-		external.value_(true);
-		nChan.value_(numChans);
-		this.setTriggerFunc(triggerFunc);
-		this.setStopFunc(stopFunc);
-		this.registerSynth(register);
+		src.nChan.value_(numChans);
+		src.scSynths.value_(true);
+		src.triggerFunc = triggerFunc;
+		src.stopFunc = stopFunc;
+		src.synthRegistry.clear;
+		src.synthRegistry.add(register);
 	}
 
-	registerSynth { | synth | synthRegistry.add(synth); }
+	getSCBus { | sourceNum = 1, numChans = 1 |
 
-	deregisterSynth { | synth |
-		if (synthRegistry.notNil) { synthRegistry.remove(synth); };
+		var src = this.getSource(sourceNum);
+
+		src.nChan.value_(numChans);
+		src.scSynths.value_(true);
+		^src.scInBus.index;
 	}
 
-	getSynthRegistry { ^synthRegistry; }*/
+	getSource { | sourceNum = 1 |
+
+		if ((sourceNum < 1) || sourceNum >= sources.size) {
+			^Error("Wrong source index").throw;
+		} {
+			^sources[sourceNum -1];
+		}
+	}
 }

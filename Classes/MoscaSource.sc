@@ -19,7 +19,7 @@
 MoscaSource[] {
 	var index, server, srcGrp, defName, effect, chanNum, spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
-	var scInBus, triggerFunc, stopFunc, synthRegistry, <>firstTime; // sc synth specific
+	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
 	var src, <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
 	var input, <file, <stream, <scSynths, <external, <nChan; // inputs types
@@ -55,6 +55,8 @@ MoscaSource[] {
 		scSynths = OssiaAutomationProxy(input, "SCSynths", Boolean, critical: true);
 
 		scSynths.node.description_("Launch SC Synths");
+
+		synthRegistry = List[];
 
 		nChan = OssiaAutomationProxy(input, "Chanels", Integer,
 			[nil, nil, [1, 2, 4, 9, 16, 25]], 1, critical: true, repetition_filter: false);
@@ -169,6 +171,7 @@ MoscaSource[] {
 
 		file.action_({ | path |
 
+			this.prFreeBus();
 			this.prFreeBuffer();
 			this.prSetDefName();
 		});
@@ -185,6 +188,7 @@ MoscaSource[] {
 					this.prSetDefName();
 				};
 
+				this.prFreeBus();
 				this.prFreeBuffer();
 			} {
 				this.prSetDefName();
@@ -203,11 +207,7 @@ MoscaSource[] {
 
 				this.prFreeBuffer();
 			} {
-				if (scInBus.notNil) {
-					scInBus.free;
-					scInBus = nil;
-				};
-
+				this.prFreeBus();
 				this.prSetDefName();
 			};
 		});
@@ -291,12 +291,32 @@ MoscaSource[] {
 		});
 	}
 
-	prFreeBuffer { // Always free the buffer before changing configuration
 
-		if (buffer.notNil) {
-			buffer.freeMsg({ "Buffer freed".postln; });
-			buffer = nil;
-		};
+	dockTo { | automation |
+
+		coordinates.dockTo(automation, index);
+
+		automation.dock(level, "levelProxy_" ++ index);
+		automation.dock(doppler, "dopamtProxy_" ++ index);
+		automation.dock(globalAmount, "globaamtlProxy_" ++ index);
+		automation.dock(localEffect, "localProxy_" ++ index);
+		automation.dock(localDelay, "localDelayProxy_" ++ index);
+		automation.dock(localDecay, "localDecayProxy_" ++ index);
+		automation.dock(angle, "angleProxy_" ++ index);
+		automation.dock(rotation, "rotationProxy_" ++ index);
+		automation.dock(directivity, "directivityProxy_" ++ index);
+		automation.dock(contraction, "contractionProxy_" ++ index);
+		automation.dock(rate, "grainrateProxy_" ++ index);
+		automation.dock(window, "windowsizeProxy_" ++ index);
+		automation.dock(random, "randomwindowProxy_" ++ index);
+
+		aux.do({ | item, i | automation.dock(item,
+			"aux" ++ (i + 1) ++ "Proxy_" ++ index)
+		});
+
+		check.do({ | item, i | automation.dock(item,
+			"check" ++ (i + 1) ++ "Proxy_" ++ index)
+		});
 	}
 
 	prSetDefName {
@@ -335,7 +355,8 @@ MoscaSource[] {
 			if (scSynths.value) {
 				playType = "SCBus";
 				chanNum = nChan.value;
-				scInBus = Bus.audio(server, chanNum);
+				this.setSCBus();
+
 			};
 		};
 
@@ -429,6 +450,8 @@ MoscaSource[] {
 
 			this.changed(true, spatType); // triggers Mosca's prCheckConversion method
 
+			this.runTrigger();
+
 			spatializer = Synth(defName, // launch spatializer synth
 				[
 					\radAzimElev, [
@@ -459,31 +482,21 @@ MoscaSource[] {
 		};
 	}
 
-	dockTo { | automation |
+	prFreeBuffer { // Always free the buffer before changing configuration
 
-		coordinates.dockTo(automation, index);
+		if (buffer.notNil) {
+			buffer.freeMsg({ "Buffer freed".postln; });
+			buffer = nil;
+		};
+	}
 
-		automation.dock(level, "levelProxy_" ++ index);
-		automation.dock(doppler, "dopamtProxy_" ++ index);
-		automation.dock(globalAmount, "globaamtlProxy_" ++ index);
-		automation.dock(localEffect, "localProxy_" ++ index);
-		automation.dock(localDelay, "localDelayProxy_" ++ index);
-		automation.dock(localDecay, "localDecayProxy_" ++ index);
-		automation.dock(angle, "angleProxy_" ++ index);
-		automation.dock(rotation, "rotationProxy_" ++ index);
-		automation.dock(directivity, "directivityProxy_" ++ index);
-		automation.dock(contraction, "contractionProxy_" ++ index);
-		automation.dock(rate, "grainrateProxy_" ++ index);
-		automation.dock(window, "windowsizeProxy_" ++ index);
-		automation.dock(random, "randomwindowProxy_" ++ index);
+	prFreeBus { // Always free the buffer before changing configuration
 
-		aux.do({ | item, i | automation.dock(item,
-			"aux" ++ (i + 1) ++ "Proxy_" ++ index)
-		});
-
-		check.do({ | item, i | automation.dock(item,
-			"check" ++ (i + 1) ++ "Proxy_" ++ index)
-		});
+		if (scInBus.notNil) {
+			scInBus.free;
+			"SC input bus freed".postln;
+			scInBus = nil;
+		};
 	}
 
 	getSCBus { ^scInBus.index; }
@@ -502,6 +515,18 @@ MoscaSource[] {
 			stopFunc.value;
 			synths = nil;
 			"RUNNING STOP".postln;
+		};
+	}
+
+	setSCBus {
+
+		if (scInBus.notNil) {
+			if(scInBus.numChannels != chanNum) {
+				scInBus.free;
+				scInBus = Bus.audio(server, chanNum);
+			};
+		} {
+			scInBus = Bus.audio(server, chanNum);
 		};
 	}
 }
