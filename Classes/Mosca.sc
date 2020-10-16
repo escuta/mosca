@@ -127,7 +127,7 @@ Mosca {
 						if((isPlay.get() || item.play.value) && item.spatializer.isNil
 							&& item.firstTime) {
 							// could set the start point for file
-							item.launchSynth(true);
+							item.launchSynth();
 							item.firstTime = false;
 						};
 					};
@@ -357,32 +357,6 @@ Mosca {
 						convertor.free; // free converter if no longer needed
 					};
 				};
-			};
-		};
-	}
-
-	virtualAmbiNeeded { | i = 0 |
-
-		if (i == sources.size) {
-			^false.asBoolean;
-		} {
-			if (sources[i].toAmbi && sources[i].spatializer.notNil) {
-				^true.asBoolean;
-			} {
-				^this.nonAmbi2BfNeeded(i + 1);
-			};
-		};
-	}
-
-	converterNeeded { | i = 0 |
-
-		if (i == sources.size) {
-			^false.asBoolean;
-		} {
-			if (sources[i].toConvert && sources[i].spatializer.notNil) {
-				^true.asBoolean;
-			} {
-				^this.converterNeeded(i + 1);
 			};
 		};
 	}

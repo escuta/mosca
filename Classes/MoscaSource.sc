@@ -224,15 +224,15 @@ MoscaSource[] {
 
 		play.action_({ | val | this.prCheck4Synth(val.value, playing); });
 
-		loop.action_({ | val | this.setSynths(\lp, val.value.asInt); });
+		loop.action_({ | val | this.prSetSynths(\lp, val.value.asInt); });
 
-		level.action_({ | val | this.setSynths(\amp, val.value.dbamp); });
+		level.action_({ | val | this.prSetSynths(\amp, val.value.dbamp); });
 
-		contraction.action_({ | val | this.setSynths(\contr, val.value); });
+		contraction.action_({ | val | this.prSetSynths(\contr, val.value); });
 
-		doppler.action_({ | val | this.setSynths(\dopamnt, val.value); });
+		doppler.action_({ | val | this.prSetSynths(\dopamnt, val.value); });
 
-		globalAmount.action_({ | val | this.setSynths(\glev, val.value); });
+		globalAmount.action_({ | val | this.prSetSynths(\glev, val.value); });
 
 		localEffect.action_({ | val |
 
@@ -244,48 +244,48 @@ MoscaSource[] {
 			this.prSetDefName();
 		});
 
-		localAmount.action_({ | val | this.setSynths(\llev, val.value); });
+		localAmount.action_({ | val | this.prSetSynths(\llev, val.value); });
 
-		localDelay.action_({ | val | this.setSynths(\room, val.value); });
+		localDelay.action_({ | val | this.prSetSynths(\room, val.value); });
 
-		localDecay.action_({ | val | this.setSynths(\damp, val.value); });
+		localDecay.action_({ | val | this.prSetSynths(\damp, val.value); });
 
-		angle.action_({ | val | this.setSynths(\angle, val.value); });
+		angle.action_({ | val | this.prSetSynths(\angle, val.value); });
 
 		rotation.action_({ | val |
-			this.setSynths(\rotAngle, val.value  + center.heading.value);
+			this.prSetSynths(\rotAngle, val.value  + center.heading.value);
 		});
 
-		directivity.action_({ | val | this.setSynths(\directang, val.value); });
+		directivity.action_({ | val | this.prSetSynths(\directang, val.value); });
 
 		spread.action_({ | val |
-			this.setSynths(\sp, val.value.asInteger);
+			this.prSetSynths(\sp, val.value.asInteger);
 
 			if (val.value) { diffuse.value_(false) };
 		});
 
 		diffuse.action_({ | val |
-			this.setSynths(\df, val.value.asInteger);
+			this.prSetSynths(\df, val.value.asInteger);
 
 			if (val.value) { spread.value_(false) };
 		});
 
-		rate.action_({ | val | this.setSynths(\grainrate, val.value); });
+		rate.action_({ | val | this.prSetSynths(\grainrate, val.value); });
 
-		window.action_({ | val | this.setSynths(\winsize, val.value); });
+		window.action_({ | val | this.prSetSynths(\winsize, val.value); });
 
-		random.action_({ | val | this.setSynths(\winrand, val.value); });
+		random.action_({ | val | this.prSetSynths(\winrand, val.value); });
 
 		aux.do({ | item |
 			item.action_({
-				this.setSynths(\aux, [aux[0].value, aux[1].value,
+				this.prSetSynths(\aux, [aux[0].value, aux[1].value,
 					aux[2].value, aux[3].value, aux[4].value]);
 			});
 		});
 
 		check.do({ | item |
 			item.action_({
-				this.setSynths(\check, [check[0].value, check[1].value,
+				this.prSetSynths(\check, [check[0].value, check[1].value,
 					check[2].value, check[3].value, check[4].value]);
 			});
 		});
@@ -359,7 +359,7 @@ MoscaSource[] {
 
 		if(bool) {
 			if (playing.get.not && spatializer.isNil && (coordinates.spheVal.rho < MoscaUtils.plim())) {
-				this.launchSynth(true);
+				this.launchSynth();
 				firstTime = false;
 			};
 		} {
@@ -372,7 +372,7 @@ MoscaSource[] {
 		};
 	}
 
-	launchSynth { | force |
+	launchSynth {
 
 		if (defName.notNil) {
 			var args = []; // prepare synth Arguments
@@ -450,14 +450,13 @@ MoscaSource[] {
 		};
 	}
 
-	setSynths { | param, value |
+	prSetSynths { | param, value |
 
 		if (spatializer.notNil) { spatializer.set(param, value); };
 
 		if (synths.notNil) {
 			synths.do({ _.set(param, value); });
 		};
-
 	}
 
 	dockTo { | automation |
@@ -487,39 +486,7 @@ MoscaSource[] {
 		});
 	}
 
-	// These methods relate to control of synths when SW Input delected
-
-	// Set by user. Registerred functions called by Automation's play
-	setTriggerFunc { | function | triggerFunc = function; }
-
-	// Companion stop method
-	setStopFunc { |function | stopFunc = function; }
-
-	clearTriggerFunc { triggerFunc = nil; }
-
-	clearStopFunc { stopFunc = nil; }
-
-	embedSynth { | numChans = 1, triggerFunc, stopFunc, register |
-		this.getSCBus(numChans);
-		this.setTriggerFunc(triggerFunc);
-		this.setStopFunc(stopFunc);
-		this.registerSynth(register);
-	}
-
-	registerSynth { | synth | synthRegistry.add(synth); }
-
-	deregisterSynth { | synth |
-		if (synthRegistry.notNil) { synthRegistry.remove(synth); };
-	}
-
-	getSynthRegistry { ^synthRegistry; }
-
-	getSCBus { | numChans = 1 |
-
-		external.value_(true);
-		nChan.value_(numChans);
-		^scInBus.index;
-	}
+	getSCBus { ^scInBus.index; }
 
 	runTrigger {
 

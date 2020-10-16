@@ -18,8 +18,9 @@
 
 MoscaEffects {
 	var <defs, <effectList;
-	var <gBfBus, <gBxBus, <transformGrp, globalFx;
-	var encodeFunc, decodeFunc;
+	var <gBfBus, <gBxBus, afmtBus, <transformGrp;
+	var globalFx, b2Fx;
+	var encodeFunc, decodeFunc, busChans;
 	var <ossiaGlobal, <ossiaDelay, <ossiaDecay;
 
 	*new { ^super.new().ctr(); }
@@ -43,12 +44,14 @@ MoscaEffects {
 	}
 
 	setup { | server, sourceGroup, multyThread, maxOrder, renderer, irBank |
-		var busChans = MoscaUtils.fourOrNine(maxOrder);
+
+		busChans = MoscaUtils.fourOrNine(maxOrder);
 
 		if (irBank.notNil) { this.prLoadir(server, maxOrder, irBank); };
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
+		afmtBus = Bus.audio(server, busChans); // global a-format bus
 		transformGrp = ParGroup.after(sourceGroup);
 
 		if (multyThread) {
@@ -75,15 +78,13 @@ MoscaEffects {
 				if (renderer.format != \FUMA) {
 					var enc = MoscaUtils.foa_n3d_encoder();
 
-					encodeFunc = { | sig, gate |
+					encodeFunc = { | sig |
 						var convsig = sig * enc;
-						convsig = convsig * EnvGen.kr(Env.asr(1), gate, doneAction:2);
 						Out.ar(renderer.n3dBus, convsig);
 					};
 				} {
-					encodeFunc = { | sig, gate |
+					encodeFunc = { | sig |
 						var convsig = FoaEncode.ar(sig, MoscaUtils.a2b());
-						convsig = convsig * EnvGen.kr(Env.asr(1), gate, doneAction:2);
 						Out.ar(renderer.fumaBus, convsig);
 					};
 				};
@@ -107,16 +108,14 @@ MoscaEffects {
 				if (renderer.format != \FUMA) {
 					var enc = MoscaUtils.soa_n3d_encoder();
 
-					encodeFunc = { | sig, gate |
+					encodeFunc = { | sig |
 						var convsig = sig * enc;
-						convsig = convsig * EnvGen.kr(Env.asr(1), gate, doneAction:2);
 						Out.ar(renderer.n3dBus, convsig);
 					};
 				} {
-					encodeFunc = { | sig, gate |
+					encodeFunc = { | sig |
 						var convsig = AtkMatrixMix.ar(sig,
 							MoscaUtils.soa_a12_encoder_matrix());
-						convsig = convsig * EnvGen.kr(Env.asr(1), gate, doneAction:2);
 						Out.ar(renderer.fumaBus, convsig);
 					};
 				};
@@ -134,7 +133,13 @@ MoscaEffects {
 
 	sendFx { | multyThread, server |
 
+		SynthDef(\b2Fx, {
+			var sig = decodeFunc.value();
+			Out.ar(afmtBus, sig);
+		}).send(server);
+
 		if (multyThread) {
+
 		} {
 			defs.do({ | item |
 
@@ -142,7 +147,8 @@ MoscaEffects {
 
 					SynthDef(\globalFx ++ item.key, { | gate = 1, room = 0.5, damp = 0.5,
 						a0ir, a1ir, a2ir, a3ir, a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
-						var sig = decodeFunc.value();
+						var sig = In.ar(afmtBus, busChans);
+						sig = sig * EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						sig = item.globalFunc.value(sig, room, damp, a0ir, a1ir, a2ir, a3ir, a4ir,
 							a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir);
 						encodeFunc.value(sig, gate);
@@ -181,9 +187,19 @@ MoscaEffects {
 
 				if (effectList[i].class != String) { synthArgs = effectList[i].irSpecPar(); };
 
+				// deals with converting and encoding global fx busses
+				if (b2Fx.isNil) {
+					b2Fx = Synth(\b2Fx, target: transformGrp, addAction: \addBefore).onFree(
+						{ b2Fx = nil; });
+				};
+
 				globalFx = Synth(\globalFx ++ num.value,
 					[\gate, 1, \room, ossiaDelay.value, \damp, ossiaDecay.value] ++
-					synthArgs, transformGrp).register;
+					synthArgs, transformGrp).register.onFree(
+					{
+						if (globalFx.isPlaying.not) { b2Fx.free; };
+					}
+				);
 			};
 		});
 
