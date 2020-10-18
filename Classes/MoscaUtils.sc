@@ -1,5 +1,5 @@
 MoscaUtils { // virtual class holding constants for Mosca related classes
-	classvar cart = #[
+	classvar <palette, cart = #[
 		0.850650808352E+00,
 		0,
 		-0.525731112119E+00,
@@ -37,6 +37,28 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 		-0.525731112119E+00,
 		-0.850650808352E+00
 	];
+
+	*initClass {
+
+		palette = QPalette.auto(Color.fromHexString("#1d1c1a"), Color.new255( 200, 200, 200 ));
+
+		palette.setColor(Color.new255( 200, 200, 200 ), 'window');
+		palette.setColor(Color.fromHexString("#c0c0c0c0"), 'windowText');
+		palette.setColor(Color.fromHexString("#222222"), 'button');
+		palette.setColor(Color.fromHexString("#f0f0f0"), 'buttonText');
+		palette.setColor(Color.fromHexString("#161514"), 'base');
+		palette.setColor(Color.fromHexString("#1e1d1c"), 'alternateBase');
+		palette.setColor(Color.fromHexString("#161514"), 'toolTipBase');
+		palette.setColor(Color.fromHexString("#c0c0c0c0"), 'toolTipText');
+		palette.setColor(Color.fromHexString("#9062400a"), 'highlight');
+		palette.setColor(Color.fromHexString("#FDFDFD"), 'highlightText');
+
+		palette.setColor(Color.new255(179, 90, 209, 255), 'light'); // welow slider
+		palette.setColor(Color.new255(37, 41, 48, 40), 'midlight'); // brown contour
+		palette.setColor(Color.new255(0, 127, 229, 76), 'middark'); // widget background
+		palette.setColor(Color.fromHexString("#a7dd0d"), 'baseText'); // green param
+		palette.setColor(Color.fromHexString("#c58014"), 'brightText');
+	}
 
 	*plim { ^1.2; } // distance limit from origin where processes continue to run
 

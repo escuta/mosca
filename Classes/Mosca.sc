@@ -18,9 +18,9 @@
 
 /*
 * TODO
-* Multythread evrything
 * GUI
-* NHHall
+* Multythread evrything
+* cos distance
 */
 
 Mosca {
