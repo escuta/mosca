@@ -150,7 +150,8 @@ MoscaSpatializer {
 
 						var rad = Lag.kr(radAzimElev[0]),
 						globallev = (1 / rad.sqrt) - 1, //global reverberation
-						lrev1Ref = Ref(0), lrev2Ref = Ref(0),
+						lrev1Ref = Ref(0),
+						lrev2Ref = Ref(0),
 						az = Lag.kr(radAzimElev[1] - halfPi),
 						p = Ref(0),
 						rd = rad * 340, // Doppler
@@ -193,10 +194,10 @@ MoscaSpatializer {
 						};
 					};
 
-					if (spat.key == \ATK) {
+					if (spat.key == "ATK") {
 
 						// assume FuMa input
-						SynthDef(\ATKBFormat ++ play_type ++ 4 ++ effect.key, {
+						SynthDef("ATK" ++ play_type ++ 4 ++ effect.key, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							radAzimElev = #[20, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
@@ -236,7 +237,7 @@ MoscaSpatializer {
 							var ord = (item.sqrt) - 1,
 
 							// assume N3D input
-							hoaSynth = SynthDef(\ATKBFormat ++ play_type ++ item ++ effect.key, {
+							hoaSynth = SynthDef("ATK" ++ play_type ++ item ++ effect.key, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 								radAzimElev = #[20, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
@@ -281,10 +282,10 @@ MoscaSpatializer {
 						});
 					};
 
-					if (spat.key == \Ambitools) {
+					if (spat.key == "Ambitools") {
 
 						// assume FuMa input
-						SynthDef(\AmbitoolsBFormat ++ play_type ++ 4 ++ effect.key, {
+						SynthDef("Ambitools" ++ play_type ++ 4 ++ effect.key, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 							radAzimElev = #[20, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
@@ -324,7 +325,7 @@ MoscaSpatializer {
 							var ord = (item.sqrt) - 1,
 
 							// assume N3D input
-							hoaSynth = SynthDef(\AmbitoolsBFormat ++ play_type ++ item ++ effect.key, {
+							hoaSynth = SynthDef("Ambitools" ++ play_type ++ item ++ effect.key, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 								radAzimElev = #[20, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,

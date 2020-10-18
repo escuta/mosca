@@ -18,18 +18,16 @@
 
 /*
 * TODO
-* API
 * Multythread evrything
 * GUI
-* DBAP https://github.com/woolgathering/dbap
 * NHHall
 */
 
 Mosca {
 	var dur, autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
-	var renderer, effects, center, sources, srcGrp, convertor, virtualAmbi;
+	var renderer, effects, center, <sources, srcGrp, convertor, virtualAmbi;
 	var ossiaMasterPlay, ossiaMasterLib, dependant, needConvert, needVirtualAmbi;
-	var <control, watcher, ossiaAutomation, isPlay, // automation control
+	var control, watcher, ossiaAutomation, isPlay, // automation control
 	ossiaPlay, ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
 
 	*new { | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
@@ -69,7 +67,7 @@ Mosca {
 
 			spat.initSpat(maxOrder, renderer, server);
 
-			effects.setup(server, srcGrp.get, multyThread, maxOrder, renderer, irBank);
+			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer, irBank);
 
 			spat.makeSpatialisers(server, maxOrder, renderer, effects);
 

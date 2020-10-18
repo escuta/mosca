@@ -113,21 +113,21 @@ MoscaSource[] {
 			[0, 1], 0.5, 'clip', critical:allCritical);
 
 		angle = OssiaAutomationProxy(src, "Stereo_angle", Float,
-			[0, pi], 1.05, 'clip', critical:allCritical);
+			[0, 180], 60, 'clip', critical:allCritical);
 
-		angle.node.unit_(OSSIA_angle.radian).description_("Stereo_only");
+		angle.node.unit_(OSSIA_angle.degrees).description_("Stereo_only");
 
 		rotation = OssiaAutomationProxy(src, "B-Format_rotation", Float,
-			[-pi, pi], 0, 'wrap', critical:allCritical);
+			[-180, 180], 0, 'wrap', critical:allCritical);
 
-		rotation.node.unit_(OSSIA_angle.radian).description_("B-Format only");
+		rotation.node.unit_(OSSIA_angle.degrees).description_("B-Format only");
 
 		atk = OSSIA_Node(src, "Atk");
 
 		directivity = OssiaAutomationProxy(atk, "Directivity", Float,
-			[0, pi * 0.5], 0, 'clip', critical:allCritical);
+			[0, 90], 0, 'clip', critical:allCritical);
 
-		directivity.node.description_("ATK B-Format only");
+		directivity.node.unit_(OSSIA_angle.degrees).description_("ATK B-Format only");
 
 		spread = OssiaAutomationProxy(atk, "Spread", Boolean, critical:true);
 
@@ -250,13 +250,13 @@ MoscaSource[] {
 
 		localDecay.action_({ | val | this.prSetSynths(\damp, val.value); });
 
-		angle.action_({ | val | this.prSetSynths(\angle, val.value); });
+		angle.action_({ | val | this.prSetSynths(\angle, val.value.degrad); });
 
 		rotation.action_({ | val |
-			this.prSetSynths(\rotAngle, val.value  + center.heading.value);
+			this.prSetSynths(\rotAngle, val.value.degrad  + center.heading.value);
 		});
 
-		directivity.action_({ | val | this.prSetSynths(\directang, val.value); });
+		directivity.action_({ | val | this.prSetSynths(\directang, val.value.degrad); });
 
 		spread.action_({ | val |
 			this.prSetSynths(\sp, val.value.asInteger);
@@ -290,7 +290,6 @@ MoscaSource[] {
 			});
 		});
 	}
-
 
 	dockTo { | automation |
 
@@ -326,7 +325,7 @@ MoscaSource[] {
 
 			var sf = SoundFile.openRead(file.value);
 
-			if (sf.isNil) { ^Error("incorect file path").throw; };
+			if (sf.isNil) { ^Error("incorrect file path").throw; };
 
 			chanNum = sf.numChannels;
 			sf.close;
@@ -435,9 +434,10 @@ MoscaSource[] {
 				args = args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInteger];
 			};
 
-			if (external.value) {
+			if (scSynths.value) {
 
 				args = args ++ [\busini, scInBus];
+				this.runTrigger();
 			};
 
 			switch (library.value,
@@ -449,8 +449,6 @@ MoscaSource[] {
 			});
 
 			this.changed(true, spatType); // triggers Mosca's prCheckConversion method
-
-			this.runTrigger();
 
 			spatializer = Synth(defName, // launch spatializer synth
 				[
@@ -490,7 +488,7 @@ MoscaSource[] {
 		};
 	}
 
-	prFreeBus { // Always free the buffer before changing configuration
+	prFreeBus { // free Synth bus before changing configuration
 
 		if (scInBus.notNil) {
 			scInBus.free;

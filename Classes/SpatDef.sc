@@ -74,9 +74,11 @@ HOALibDef : SpatDef {
 			var sig = distFilter.value(input, distance);
 			// attenuate high freq with distance
 			sig = HOALibEnc3D.ar(maxOrder,
-				ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
+				ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75,
+					renderer.quarterRadius, renderer.twoAndaHalfRadius))),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
-			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
+			ref.value = (sig * contract) +
+			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
 
@@ -108,9 +110,11 @@ ADTDef : SpatDef {
 			var sig = distFilter.value(input, distance);
 			// attenuate high freq with distance
 			sig = HOAmbiPanner.ar(maxOrder,
-				ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
+				ref.value + (sig * (renderer.longestRadius /
+					distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
-			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
+			ref.value = (sig * contract) +
+			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
 
@@ -143,8 +147,10 @@ SCHOADef : SpatDef {
 			// attenuate high freq with distance
 			sig = HOASphericalHarmonics.coefN3D(maxOrder,
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation))
-			* (ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))));
-			ref.value = (sig * contract) + Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
+			* (ref.value + (sig * (renderer.longestRadius /
+				distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))));
+			ref.value = (sig * contract) +
+			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
 

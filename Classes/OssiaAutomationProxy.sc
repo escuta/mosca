@@ -178,7 +178,7 @@ OssiaAutomationCenter {
 
 				item.coordinates.cartBack_(false);
 
-				item.coordinates.spherical.v_([cart.rho,
+				item.coordinates.azElDist.v_([cart.rho,
 				(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
 
 				item.coordinates.cartBack_(true);
@@ -202,7 +202,7 @@ OssiaAutomationCenter {
 
 				item.coordinates.cartBack_(false);
 
-				item.coordinates.spherical.v_([euler.rho,
+				item.coordinates.azElDist.v_([euler.rho,
 					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
 
 				item.coordinates.cartBack_(true);
@@ -244,7 +244,7 @@ OssiaAutomationCenter {
 
 OssiaAutomationCoordinates {
 	// 3D value version for absolute and relative coordinatesiantes
-	var x, y, z, <cartesian, <spherical;
+	var x, y, z, <cartesian, <azElDist;
 	var <cartVal, <spheVal;
 	var <>cartBack = true, <spheBack = true;
 
@@ -268,11 +268,11 @@ OssiaAutomationCoordinates {
 		y = AutomationProxy(20.0);
 		z = AutomationProxy(0.0);
 
-		spherical = OSSIA_Parameter(parent_node, "Spherical", OSSIA_vec3f,
-			domain:[[0, -pi, halfPi.neg], [20, pi, halfPi]],
-		default_value:[20, 0, 0], critical:allCritical, repetition_filter:true);
+		azElDist = OSSIA_Parameter(parent_node, "AzElDist", OSSIA_vec3f,
+			domain:[[-180, -90, 0], [180, 90, 20]],default_value:[0, 0, 20],
+			critical:allCritical, repetition_filter:true);
 
-		spherical.unit_(OSSIA_position.spherical);
+		// azElDist.unit_(OSSIA_position.AzElDist);
 
 		this.setAction(center, spatializer, synth);
 	}
@@ -288,11 +288,11 @@ OssiaAutomationCoordinates {
 			.tilt(center.pitch.value.neg)
 			.tumble(center.roll.value.neg);
 
-			sphediff = [sphe.rho, (sphe.theta - halfPi).wrap(-pi, pi), sphe.phi];
+			sphediff = [(sphe.theta - halfPi).wrap(-pi, pi).raddeg, sphe.phi.raddeg, sphe.rho];
 
 			cartBack = false;
 
-			if (spheBack) { spherical.v_(sphediff); };
+			if (spheBack) { azElDist.v_(sphediff); };
 
 			if (x.value != num[0].value) { x.valueAction_(num[0].value); };
 
@@ -315,10 +315,10 @@ OssiaAutomationCoordinates {
 			if (cartBack) { cartesian.v_([x.value, y.value, num.value]); };
 		});
 
-		spherical.callback_({ | num |
-			spheVal.rho_(num.value[0] * center.scale.value);
-			spheVal.theta_(num.value[1].wrap(-pi, pi) + halfPi);
-			spheVal.phi_(num.value[2].fold(halfPi.neg, halfPi));
+		azElDist.callback_({ | num |
+			spheVal.rho_(num.value[2] * center.scale.value);
+			spheVal.theta_((num.value[0].wrap(-pi, pi) + halfPi).raddeg);
+			spheVal.phi_(num.value[1].clip(halfPi.neg, halfPi).raddeg);
 			spheBack = false;
 			if (cartBack) {
 				cartesian.v_(
