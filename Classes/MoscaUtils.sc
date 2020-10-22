@@ -56,7 +56,7 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 		palette.setColor(Color.new255(179, 90, 209, 255), 'light'); // welow slider
 		palette.setColor(Color.new255(37, 41, 48, 40), 'midlight'); // brown contour
 		palette.setColor(Color.new255(0, 127, 229, 76), 'middark'); // widget background
-		palette.setColor(Color.fromHexString("#a7dd0d"), 'baseText'); // green param
+		palette.setColor(Color.white, 'baseText'); // green param
 		palette.setColor(Color.fromHexString("#c58014"), 'brightText');
 	}
 

@@ -1,25 +1,33 @@
-+ Mosca {
++ Mosca
+{
+	saveData
+	{ | directory |
 
-	saveData { | directory |
-
-		if (directory.notNil) {
+		if (directory.notNil)
+		{
 			switch (directory.pathExists,
-				{ false }, {
+				false,
+				{
 					("mkdir -p" + directory).systemCmd;
 					control.presetDir = directory;
 				},
-				{ \file }, { ^Error(directory + "is a FILE, not a DIRECTORY").throw; });
+				\file,
+				{ ^Error(directory + "is a FILE, not a DIRECTORY").throw; });
 		};
 
 		control.save(control.presetDir);
 	}
 
-	loadData { | directory |
+	loadData
+	{ | directory |
 
-		if (directory.notNil) {
+		if (directory.notNil)
+		{
 			switch (directory.pathExists,
-				{ false }, { ^Error(directory + "does not exist").throw; },
-				{ \file }, { ^Error(directory + "is a FILE, not a DIRECTORY").throw; },
+				false,
+				{ ^Error(directory + "does not exist").throw; },
+				\file,
+				{ ^Error(directory + "is a FILE, not a DIRECTORY").throw; },
 				{ control.presetDir = directory; });
 		};
 
@@ -29,154 +37,204 @@
 		control.seek(control.now);
 	}
 
-	inputFile { | sourceNum = 1, path = "", stream = false |
+	inputFile
+	{ | sourceNum = 1, path = "", stream = false |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.file.value_(path);
 		src.stream.value_(stream);
 	}
 
-	inputExternal { | sourceNum = 1, numChanels = 1, boolean = false |
+	inputExternal
+	{ | sourceNum = 1, numChanels = 1, boolean = false |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.nChan.value_(numChanels);
 		src.external.value_(boolean);
 	}
 
-	inputScSynths { | sourceNum = 1, numChanels = 1, boolean = false |
+	inputScSynths
+	{ | sourceNum = 1, numChanels = 1, boolean = false |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.nChan.value_(numChanels);
 		src.scSynths.value_(boolean);
 	}
 
-	setCartesian { | sourceNum = 1, x = 0, y = 20, z = 0 |
+	setCartesian
+	{ | sourceNum = 1, x = 0, y = 20, z = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.coordinates.cartesian.value_([x, y, z]);
 	}
 
-	setAzElDist { | sourceNum = 1, azimuth = 0, elevation = 0, distance = 20 |
+	setAzElDist
+	{ | sourceNum = 1, azimuth = 0, elevation = 0, distance = 20 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.coordinates.azElDist.value_([azimuth, elevation, distance]);
 	}
 
-	setLibrary { | sourceNum = 1, library = "Ambitools" |
+	setLibrary
+	{ | sourceNum = 1, library = "Ambitools" |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.library.value_(library);
 	}
 
-	play { | sourceNum = 1, boolean = false |
+	play
+	{ | sourceNum = 1, boolean = false |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.play.value_(boolean);
 	}
 
-	setLoop { | sourceNum = 1, boolean = false |
+	setLoop
+	{ | sourceNum = 1, boolean = false |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.loop.value_(boolean);
 	}
 
-	setLevel { | sourceNum = 1, db = 0 |
+	setLevel
+	{ | sourceNum = 1, db = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.level.value_(db);
 	}
 
-	setContraction { | sourceNum = 1, contraction = 1 |
+	setContraction
+	{ | sourceNum = 1, contraction = 1 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.contraction.value_(contraction);
 	}
 
-	setDoppler { | sourceNum = 1, amount = 0 |
+	setDoppler
+	{ | sourceNum = 1, amount = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.doppler.value_(amount);
 	}
 
-	setGlobalAmount { | sourceNum = 1, amount = 0 |
+	setGlobalAmount
+	{ | sourceNum = 1, amount = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.globalAmount.value_(amount);
 	}
 
-	setLocalEffect { | sourceNum = 1, effect = "Clear" |
+	setLocalEffect
+	{ | sourceNum = 1, effect = "Clear" |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.localEffect.value_(effect);
 	}
 
-	setLocalAmount { | sourceNum = 1, amount = 0 |
+	setLocalAmount
+	{ | sourceNum = 1, amount = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.localAmount.value_(amount);
 	}
 
-	setLocalDelay { | sourceNum = 1, delay = 0.5 |
+	setLocalDelay
+	{ | sourceNum = 1, delay = 0.5 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.localDelay.value_(delay);
 	}
 
-	setLocalDecay { | sourceNum = 1, decay = 0.5 |
+	setLocalDecay
+	{ | sourceNum = 1, decay = 0.5 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.localDecay.value_(decay);
 	}
 
-	setStereoAngle { | sourceNum = 1, angle = 60 |
+	setStereoAngle
+	{ | sourceNum = 1, angle = 60 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.angle.value_(angle);
 	}
 
-	setBFormatRotation { | sourceNum = 1, rotation = 0 |
+	setBFormatRotation
+	{ | sourceNum = 1, rotation = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.rotation.value_(rotation);
 	}
 
-	setBFormatDirectivity { | sourceNum = 1, directivity = 0 |
+	setBFormatDirectivity
+	{ | sourceNum = 1, directivity = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.directivity.value_(directivity);
 	}
 
-	setAtkSpread { | sourceNum = 1, boolean = false |
+	setAtkSpread
+	{ | sourceNum = 1, boolean = false |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.spread.value_(false);
 	}
 
-	setAtkDiffuse { | sourceNum = 1, boolean = false |
+	setAtkDiffuse
+	{ | sourceNum = 1, boolean = false |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.diffuse.value_(false);
 	}
 
-	setJoshRate { | sourceNum = 1, rate = 10 |
+	setJoshRate
+	{ | sourceNum = 1, rate = 10 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.rate.value_(rate);
 	}
 
-	setJoshWindow { | sourceNum = 1, size = 0.1 |
+	setJoshWindow
+	{ | sourceNum = 1, size = 0.1 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.window.value_(size);
 	}
 
-	setJoshRAndom { | sourceNum = 1, randomize = 0 |
+	setJoshRAndom
+	{ | sourceNum = 1, randomize = 0 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.random.value_(randomize);
 	}
 
-	setAuxilary { | sourceNum = 1, auxNum = 1, value = 0 |
+	setAuxilary
+	{ | sourceNum = 1, auxNum = 1, value = 0 |
+
 		var i, src = this.prGetSource(sourceNum);
 
 		i = prGetAuxIndex(auxNum);
@@ -184,7 +242,9 @@
 		src.aux[i].value_(value);
 	}
 
-	setAuxCheck { | sourceNum = 1, auxNum = 1, boolean = false |
+	setAuxCheck
+	{ | sourceNum = 1, auxNum = 1, boolean = false |
+
 		var i, src = this.prGetSource(sourceNum);
 
 		i = prGetAuxIndex(auxNum);
@@ -192,18 +252,22 @@
 		src.check[i].value_(boolean);
 	}
 
-	prGetSource { | sourceNum |
+	prGetSource
+	{ | sourceNum |
 
-		if (sourceNum.isInteger) {
+		if (sourceNum.isInteger)
+		{
 			^Error("index must be an Integer").throw;
 		} {
 			^sources[(sourceNum.clip(1, sources.size)) - 1];
 		};
 	}
 
-	prGetAuxIndex { | auxNum |
+	prGetAuxIndex
+	{ | auxNum |
 
-		if (auxNum.isInteger) {
+		if (auxNum.isInteger)
+		{
 			^Error("index must be an Integer").throw;
 		} {
 			^(auxNum.clip(1, 5) - 1);
@@ -213,7 +277,9 @@
 	// These methods relate to control of synths when SW Input delected
 	// Set by user. Registerred functions called by "play"
 
-	embedSynth { | sourceNum = 1, numChans = 1, triggerFunc, stopFunc, register |
+	embedSynth
+	{ | sourceNum = 1, numChans = 1, triggerFunc, stopFunc, register |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.nChan.value_(numChans);
@@ -224,7 +290,9 @@
 		src.synthRegistry.add(register);
 	}
 
-	clearEmbededSynth { | sourceNum = 1 |
+	clearEmbededSynth
+	{ | sourceNum = 1 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.triggerFunc = nil;
@@ -232,11 +300,28 @@
 		src.synthRegistry.clear;
 	}
 
-	getSCBus { | sourceNum = 1, numChans = 1 |
+	getSCBus
+	{ | sourceNum = 1, numChans = 1 |
+
 		var src = this.prGetSource(sourceNum);
 
 		src.nChan.value_(numChans);
 		src.scSynths.value_(true);
 		^src.scInBus.index;
 	}
+
+	gui
+	{ | size = 800, lag = 0.05, palette = \ossia |
+
+		if (gui.isNil)
+		{
+			gui = MoscaGUI(size, sources, control, palette, ossiaPlay, lag);
+
+			gui.win.onClose({
+				gui.free;
+				gui = nil;
+			});
+		}
+	}
+
 }

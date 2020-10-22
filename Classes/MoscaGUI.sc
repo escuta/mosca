@@ -16,28 +16,32 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-MoscaGUI {
-	var sources, control, width, halfwidth, height, halfheight; // initial arguments
-	var win, zoom_factor = 1;
+MoscaGUI
+{
+	var sources, control, guiInt; // initial arguments
+	var width, halfWidth, height, halfheight; // size
+	var <win, zoomFactor = 1, currentSource = 0;
+	var drawEvent, lastGui = 0;
 
-	*initClass {
+	*initClass {}
 
-	}
+	*new
+	{ | size, sources, control, palette, isPlay, guiInt |
 
-	*new { | size = 800, sources, control, palette = \ossia, isPlay |
 		var p;
 
 		switch (palette,
-			{ \ossia },
-			{ p = OSSIA.palette; },
-			{ \original },
-			{ p = MoscaUtils.palette; }
+			\ossia,
+			{ p = OSSIA.palette },
+			\original,
+			{ p = MoscaUtils.palette }
 		);
 
-		^super.newCopyArgs(sources, control, size).ctr(p, isPlay);
+		^super.newCopyArgs(sources, control, guiInt).ctr(p, size, isPlay);
 	}
 
-	ctr { | palette, size, isPlay |
+	ctr
+	{ | palette, size, isPlay |
 
 		width = size;
 
@@ -45,65 +49,88 @@ MoscaGUI {
 			width = 600;
 		};
 
-		halfwidth = width * 0.5;
+		halfWidth = width * 0.5;
 		height = width; // on init
-		halfheight = halfwidth;
+		halfheight = halfWidth;
 
 		win = Window("Mosca", Rect(0, 0, width, height)).front;
-		win.background = palette.window;
+		win.background = palette.color('window', 'active');
 
 		win.drawFunc_({
 
-			Pen.fillColor = palette.middark; // OSSIA/score "Transparent1"
-			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor, 0, 2pi);
+			"redrawing".postln;
+
+			Pen.fillColor = palette.color('middark', 'active');
+			Pen.addArc(halfWidth@halfheight, halfheight * zoomFactor, 0, 2pi);
 			Pen.fill;
 
-			Pen.strokeColor = palette.midlight;
-			Pen.addArc(halfwidth@halfheight, halfheight * zoom_factor * 0.25, 0, 2pi);
+			Pen.strokeColor = palette.color('midlight', 'active');
+			Pen.addArc(halfWidth@halfheight, halfheight * zoomFactor * 0.25, 0, 2pi);
 			Pen.stroke;
 
-			sources.do { | item, i |
+			sources.do({ | item, i |
 				var x, y, numColor;
-				var topView = item.coordinates.spheval * zoom_factor;
+				var topView = item.coordinates.spheVal * zoomFactor;
 				var lev = topView.z;
 
-				x = halfwidth + (topView.x * halfheight);
+				x = halfWidth + (topView.x * halfheight);
 				y = halfheight - (topView.y * halfheight);
 
 				Pen.addArc(x@y, max(14 + (lev * halfheight * 0.02), 0), 0, 2pi);
 
-				if ((item.play || isPlay) && (lev.abs <= MoscaUtils.plim())) {
+				if ((item.play.value || isPlay.get()) && (lev.abs <= MoscaUtils.plim())) {
 
-					numColor = palette.light;
+					numColor = palette.color('window', 'active');
 
-					Pen.fillColor = palette.light.alpha_(55 + (item.contraction.value * 200));
+					Pen.fillColor = palette.color('light', 'active')
+					.alpha_(55 + (item.contraction.value * 200));
+
 					Pen.fill;
 				} {
-					numColor = palette.light;
+					numColor = palette.color('baseText', 'active');
 
-					Pen.strokeColor = palette.light;
+					Pen.strokeColor = palette.color('light', 'active');
 					Pen.stroke;
 				};
 
 				(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
 					Font.default, numColor);
-			};
+			});
 
-			Pen.fillColor = Color.new255(37, 41, 48, 40);
-			Pen.addArc(halfwidth@halfheight, 14, 0, 2pi);
+			Pen.fillColor = palette.color('middark', 'active');
+			Pen.addArc(halfWidth@halfheight, 14, 0, 2pi);
 			Pen.fill;
 		});
+
+		// triggers redrawing
+		drawEvent = { this.novoplot() };
+
+		sources.do({ | item |
+
+			item.play.param.addDependant(drawEvent);
+			item.coordinates.azElDist.addDependant(drawEvent);
+			item.contraction.param.addDependant(drawEvent);
+		});
+	}
+
+	novoplot
+	{
+		var period = Main.elapsedTime - lastGui;
+
+		if (period > guiInt)
+		{
+			lastGui = Main.elapsedTime;
+			{ win.refresh }.defer;
+		};
+	}
+
+	free
+	{
+		sources.do { | item |
+
+			item.play.param.removeDependant(drawEvent);
+			item.coordinates.azElDist.removeDependant(drawEvent);
+			item.contraction.param.removeDependant(drawEvent);
+		};
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-

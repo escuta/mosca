@@ -16,7 +16,8 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-MoscaSource[] {
+MoscaSource[]
+{
 	var index, server, srcGrp, defName, effect, chanNum, spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
@@ -29,12 +30,15 @@ MoscaSource[] {
 	var josh, <rate, <window, <random; // joshGrain specific parameters
 	var auxiliary, <aux, <check;
 
-	*new { | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, center |
+	*new
+	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, center |
+
 		^super.newCopyArgs(index, server, sourceGroup).ctr(
 			ossiaParent, allCritical, spatList, effectList, center);
 	}
 
-	ctr { | ossiaParent, allCritical, spatList, effectList, center |
+	ctr
+	{ | ossiaParent, allCritical, spatList, effectList, center |
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
 
@@ -115,19 +119,19 @@ MoscaSource[] {
 		angle = OssiaAutomationProxy(src, "Stereo_angle", Float,
 			[0, 180], 60, 'clip', critical:allCritical);
 
-		angle.node.unit_(OSSIA_angle.degrees).description_("Stereo_only");
+		angle.node.unit_(OSSIA_angle.degree).description_("Stereo_only");
 
 		rotation = OssiaAutomationProxy(src, "B-Format_rotation", Float,
 			[-180, 180], 0, 'wrap', critical:allCritical);
 
-		rotation.node.unit_(OSSIA_angle.degrees).description_("B-Format only");
+		rotation.node.unit_(OSSIA_angle.degree).description_("B-Format only");
 
 		atk = OSSIA_Node(src, "Atk");
 
 		directivity = OssiaAutomationProxy(atk, "Directivity", Float,
 			[0, 90], 0, 'clip', critical:allCritical);
 
-		directivity.node.unit_(OSSIA_angle.degrees).description_("ATK B-Format only");
+		directivity.node.unit_(OSSIA_angle.degree).description_("ATK B-Format only");
 
 		spread = OssiaAutomationProxy(atk, "Spread", Boolean, critical:true);
 
@@ -167,7 +171,8 @@ MoscaSource[] {
 		});
 	}
 
-	setAction { | effectList, spatDefs, center, playing |
+	setAction
+	{ | effectList, spatDefs, center, playing |
 
 		file.action_({ | path |
 
@@ -180,9 +185,10 @@ MoscaSource[] {
 
 		external.action_({ | val |
 
-			if (val.value) {
-
-				if (scSynths.value) {
+			if (val.value)
+			{
+				if (scSynths.value)
+				{
 					scSynths.value_(false);
 				} {
 					this.prSetDefName();
@@ -197,9 +203,10 @@ MoscaSource[] {
 
 		scSynths.action_({ | val |
 
-			if (val.value) {
-
-				if (external.value) {
+			if (val.value)
+			{
+				if (external.value)
+				{
 					external.value_(false);
 				} {
 					this.prSetDefName();
@@ -291,7 +298,8 @@ MoscaSource[] {
 		});
 	}
 
-	dockTo { | automation |
+	dockTo
+	{ | automation |
 
 		coordinates.dockTo(automation, index);
 
@@ -318,11 +326,12 @@ MoscaSource[] {
 		});
 	}
 
-	prSetDefName {
+	prSetDefName
+	{
 		var fxType, playType;
 
-		if ((file.value != "") && (scSynths.value || external.value).not) {
-
+		if ((file.value != "") && (scSynths.value || external.value).not)
+		{
 			var sf = SoundFile.openRead(file.value);
 
 			if (sf.isNil) { ^Error("incorrect file path").throw; };
@@ -330,8 +339,8 @@ MoscaSource[] {
 			chanNum = sf.numChannels;
 			sf.close;
 
-			if (stream.value) {
-
+			if (stream.value)
+			{
 				buffer = Buffer.cueSoundFile(
 					server, file.value, 0, chanNum, 131072,
 					{("Creating buffer for source " + (index + 1)).postln; });
@@ -345,25 +354,27 @@ MoscaSource[] {
 				playType = "File";
 			};
 		} {
-
-			if (external.value) {
+			if (external.value)
+			{
 				playType = "EXBus";
 				chanNum = nChan.value;
 			};
 
-			if (scSynths.value) {
+			if (scSynths.value)
+			{
 				playType = "SCBus";
 				chanNum = nChan.value;
 				this.setSCBus();
-
 			};
 		};
 
-		if (playType.isNil) {
+		if (playType.isNil)
+		{
 			defName = nil;
 		} {
 
-			if (effect.class == String) {
+			if (effect.class == String)
+			{
 				fxType = effect;
 			} {
 				fxType = "Conv";
@@ -375,15 +386,19 @@ MoscaSource[] {
 		defName.postln;
 	}
 
-	prCheck4Synth { | bool, playing |
+	prCheck4Synth
+	{ | bool, playing |
 
-		if(bool) {
-			if (playing.get.not && spatializer.isNil && (coordinates.spheVal.rho < MoscaUtils.plim())) {
+		if (bool)
+		{
+			if (playing.value.not && spatializer.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
+			{
 				this.launchSynth();
 				firstTime = false;
 			};
 		} {
-			if (playing.get.not && spatializer.notNil) {
+			if (playing.value.not && spatializer.notNil)
+			{
 				spatializer.free;
 				this.runStop();
 				firstTime = true;
@@ -392,32 +407,37 @@ MoscaSource[] {
 		};
 	}
 
-	launchSynth {
-
-		if (defName.notNil) {
+	launchSynth
+	{
+		if (defName.notNil)
+		{
 			var args = []; // prepare synth Arguments
 
 			switch (nChan.value,
-				{ 1 },
+				1,
 				{
-					if (effect.class != String) {
+					if (effect.class != String)
+					{
 						args = args ++ effect.wSpecPar;
 					} {
-						if (effect != "Clear") {
+						if (effect != "Clear")
+						{
 							args = args ++ [\room, localDelay.value, \damp, localDecay.value];
 						};
 					};
 				},
-				{ 2 },
+				2,
 				{
-					if (effect.class != String) {
+					if (effect.class != String)
+					{
 						args = args ++ effect.zSpecPar;
 					} {
 						args = args ++ [\room, localDelay.value, \damp, localDecay.value];
 					};
 				},
 				{
-					if (effect.class != String) {
+					if (effect.class != String)
+					{
 						args = args ++ effect.wSpecPar;
 					} {
 						args = args ++ [\room, localDelay.value, \damp, localDecay.value];
@@ -425,34 +445,35 @@ MoscaSource[] {
 
 					args = args ++ [\rotAngle, rotation.value];
 
-					if (library.value == "ATK") { args = args ++ [\directang, directivity.value]; };
+					if (library.value == "ATK") { args = args ++ [\directang, directivity.value] };
 				};
 			);
 
-			if ((file.value != "") && (scSynths.value || external.value).not) {
+			if ((file.value != "") && (scSynths.value || external.value).not)
+			{ args = args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInteger] };
 
-				args = args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInteger];
-			};
-
-			if (scSynths.value) {
-
+			if (scSynths.value)
+			{
 				args = args ++ [\busini, scInBus];
 				this.runTrigger();
 			};
 
 			switch (library.value,
-				"ATK", {
-					args = args ++ [\sp, spread.value.asInteger, \df, diffuse.value.asInteger];
-				}, "Josh", {
+				"ATK",
+				{ args = args ++ [\sp, spread.value.asInteger, \df, diffuse.value.asInteger] },
+				"Josh",
+				{
 					args = args ++ [\grainrate, rate.value, \winsize, window.value,
 						\winrand, random.value];
-			});
+				}
+			);
 
 			this.changed(true, spatType); // triggers Mosca's prCheckConversion method
 
 			spatializer = Synth(defName, // launch spatializer synth
 				[
-					\radAzimElev, [
+					\radAzimElev,
+					[
 						coordinates.spheVal.rho,
 						coordinates.spheVal.theta,
 						coordinates.spheVal.phi
@@ -462,64 +483,68 @@ MoscaSource[] {
 					\glev, globalAmount.value,
 					\amp, level.value.dbamp
 				] ++ args,
-				srcGrp.get()).onFree(
-				{
-					this.changed(false, spatType);
-					spatializer = nil;
-				}
-			);
+				srcGrp.get()
+			).onFree({
+				this.changed(false, spatType);
+				spatializer = nil;
+			});
 		};
 	}
 
-	prSetSynths { | param, value |
+	prSetSynths
+	{ | param, value |
 
-		if (spatializer.notNil) { spatializer.set(param, value); };
+		if (spatializer.notNil) { spatializer.set(param, value) };
 
-		if (synths.notNil) {
-			synths.do({ _.set(param, value); });
-		};
+		if (synths.notNil) { synths.do({ _.set(param, value) }) };
 	}
 
-	prFreeBuffer { // Always free the buffer before changing configuration
-
-		if (buffer.notNil) {
+	prFreeBuffer // Always free the buffer before changing configuration
+	{
+		if (buffer.notNil)
+		{
 			buffer.freeMsg({ "Buffer freed".postln; });
 			buffer = nil;
 		};
 	}
 
-	prFreeBus { // free Synth bus before changing configuration
-
-		if (scInBus.notNil) {
+	prFreeBus // free Synth bus before changing configuration
+	{
+		if (scInBus.notNil)
+		{
 			scInBus.free;
 			"SC input bus freed".postln;
 			scInBus = nil;
 		};
 	}
 
-	getSCBus { ^scInBus.index; }
+	getSCBus { ^scInBus.index }
 
-	runTrigger {
-
-		if(triggerFunc.notNil) {
+	runTrigger
+	{
+		if (triggerFunc.notNil)
+		{
 			triggerFunc.value;
 			"RUNNING TRIGGER".postln;
 		};
 	}
 
-	runStop {
-
-		if(stopFunc.notNil) {
+	runStop
+	{
+		if (stopFunc.notNil)
+		{
 			stopFunc.value;
 			synths = nil;
 			"RUNNING STOP".postln;
 		};
 	}
 
-	setSCBus {
-
-		if (scInBus.notNil) {
-			if(scInBus.numChannels != chanNum) {
+	setSCBus
+	{
+		if (scInBus.notNil)
+		{
+			if (scInBus.numChannels != chanNum)
+			{
 				scInBus.free;
 				scInBus = Bus.audio(server, chanNum);
 			};

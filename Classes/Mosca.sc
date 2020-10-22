@@ -23,14 +23,16 @@
 * cos distance
 */
 
-Mosca {
+Mosca
+{
 	var dur, autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
 	var renderer, effects, center, <sources, srcGrp, convertor, virtualAmbi;
 	var ossiaMasterPlay, ossiaMasterLib, dependant, needConvert, needVirtualAmbi;
-	var control, watcher, ossiaAutomation, isPlay, // automation control
-	ossiaPlay, ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
+	var control, watcher, ossiaAutomation, ossiaPlay, // automation control
+	ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
 
-	*new { | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
+	*new
+	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus, autoloop = false |
 
@@ -39,7 +41,8 @@ Mosca {
 			outbus, suboutbus, rawformat, rawoutbus);
 	}
 
-	ctr { | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
+	ctr
+	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
 
 		var spat, multyThread;
@@ -77,7 +80,8 @@ Mosca {
 		});
 
 		// setup ossia parameter tree
-		if (parentOssiaNode.isNil) {
+		if (parentOssiaNode.isNil)
+		{
 			ossiaParent = OSSIA_Device("Mosca");
 		} {
 			ossiaParent = OSSIA_Node(parentOssiaNode, "Mosca");
@@ -89,14 +93,15 @@ Mosca {
 
 		sources = Array.fill(nsources,
 			{ | i | MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
-				spat.spatList, effects.ossiaGlobal.node.domain.values(), center); });
+				spat.spatList, effects.ossiaGlobal.node.domain.values(), center);
+			}
+		);
 
 		control = Automation(dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
 
-		isPlay = Ref(false);
-
-		if (projDir.isNil) {
+		if (projDir.isNil)
+		{
 			control.presetDir = "HOME".getenv ++ "/auto/";
 		} {
 			control.presetDir = projDir;
@@ -114,24 +119,28 @@ Mosca {
 
 				sources.do({ | item |
 
-					if (item.coordinates.spheVal.rho >= plim) {
-						if(item.spatializer.notNil) {
+					if (item.coordinates.spheVal.rho >= plim)
+					{
+						if(item.spatializer.notNil)
+						{
 							item.runStop(); // to kill SC input synths
 							item.spatializer.free;
 						};
 
 						item.firstTime = true;
 					} {
-						if((isPlay.get() || item.play.value) && item.spatializer.isNil
-							&& item.firstTime) {
-							// could set the start point for file
-							item.launchSynth();
+						if ((ossiaPlay.value
+							|| item.play.value) && item.spatializer.isNil
+							&& item.firstTime)
+						{
+							item.launchSynth(); // could set the start point for file
 							item.firstTime = false;
 						};
 					};
 				});
 
-				if (isPlay.get()) {
+				if (ossiaPlay.value)
+				{
 					ossiaSeekBack = false;
 					ossiaTransport.v_(control.now);
 					ossiaSeekBack = true;
@@ -142,7 +151,8 @@ Mosca {
 		watcher.play;
 	}
 
-	prSetParam { | spatList, allCritical |
+	prSetParam
+	{ | spatList, allCritical |
 
 		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
 			critical:true);
@@ -173,7 +183,8 @@ Mosca {
 			critical:true, repetition_filter:true);
 	}
 
-	prSetAction { | spatDefs |
+	prSetAction
+	{ | spatDefs |
 
 		center.setAction(sources);
 
@@ -188,7 +199,7 @@ Mosca {
 		needVirtualAmbi = 0;
 
 		sources.do({ | item |
-			item.setAction(effects.effectList, spatDefs, center, isPlay);
+			item.setAction(effects.effectList, spatDefs, center, ossiaPlay);
 			item.addDependant(dependant);
 		});
 
@@ -197,28 +208,27 @@ Mosca {
 
 			"NOW PLAYING".postln;
 
-			if (ossiaLoop.v) {
-
-				sources.do_({ | item | item.firstTime = true; });
+			if (ossiaLoop.v)
+			{
+				sources.do_({ | item | item.firstTime = true });
 				ossiaLoop.v_(false);
 				"Was looping".postln;
 			};
 
-			if(control.now < 0) {
+			if(control.now < 0)
+			{
 				startTime = 0
 			} {
 				startTime = control.now
 			};
-
-			isPlay.set(true);
 
 			ossiaPlay.v_(true);
 		});
 
 		control.onStop_({
 
-			if (autoLoop.not || (control.now.round != dur)) {
-
+			if (autoLoop.not || (control.now.round != dur))
+			{
 				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++ control.now).postln;
 
 				sources.do({ | item |
@@ -232,7 +242,6 @@ Mosca {
 					item.firstTime = true;
 				});
 
-				isPlay.set(false);
 				ossiaLoop.v_(false);
 			} {
 				("Did not stop. dur = " ++ dur ++ " now = " ++ control.now).postln;
@@ -243,12 +252,14 @@ Mosca {
 			ossiaPlay.value_(false);
 		});
 
-		// if (gui.isNil) {
-		// 	// when there is no gui, Automation callback does not work,
+		// if (gui.isNil)
+		// { // when there is no gui, Automation callback does not work,
 		// 	// so here we monitor when the transport reaches end
 		//
-		// 	if (control.now > dur) {
-		// 		if (autoloopval) {
+		// if (control.now > dur)
+		// {
+		// 		if (autoloopval)
+		//      {
 		// 			control.seek; // note, onSeek not called
 		// 		} {
 		// 			this.blindControlStop; // stop everything
@@ -259,29 +270,27 @@ Mosca {
 		control.onEnd_({ control.seek(); });
 
 		ossiaPlay.callback_({ | bool |
-			if (bool) {
-				if (isPlay.get.not) {
-					control.play; };
+			if (bool)
+			{
+				control.play;
 			} {
-				if (isPlay.get) {
-					control.stop; };
+				control.stop;
 			};
 		});
 
 		ossiaLoop.callback_({ | val |
-			if (autoLoop.value != val.value) {
-				autoLoop.valueAction = val.value;
-			};
+			if (autoLoop.value != val.value)
+			{ autoLoop.valueAction = val.value };
 		});
 
 		ossiaTransport.callback_({ | num |
-			if (ossiaSeekBack) {
-				control.seek(num.value);
-			};
+			if (ossiaSeekBack)
+			{ control.seek(num.value) };
 		});
 
 		ossiaRec.callback_({ | bool |
-			if (bool.value) {
+			if (bool.value)
+			{
 				control.enableRecording;
 			} {
 				control.stopRecording;
@@ -289,8 +298,8 @@ Mosca {
 		});
 	}
 
-	prDockTo {
-
+	prDockTo
+	{
 		center.dockTo(control);
 		effects.dockTo(control);
 		renderer.dockTo(control);
@@ -298,21 +307,23 @@ Mosca {
 		sources.do({ | item | item.dockTo(control); });
 	}
 
-	prCheckConversion { | loadArgs |
+	prCheckConversion
+	{ | loadArgs |
+
 		var newSynth, spatType;
 
 		#newSynth, spatType = loadArgs;
 
-		if (newSynth) { // evaluate before launching a new spatializer synth
-
-			if (spatType == \NONAMBI) {
-
-				if (renderer.virtualSetup) {
-
+		if (newSynth)
+		{ // evaluate before launching a new spatializer synth
+			if (spatType == \NONAMBI)
+			{
+				if (renderer.virtualSetup)
+				{
 					needVirtualAmbi = needVirtualAmbi + 1;
 
-					if (virtualAmbi.isNil) { // launch virtualAmbi if needed
-
+					if (virtualAmbi.isNil)
+					{ // launch virtualAmbi if needed
 						virtualAmbi = Synth(\virtualAmbi,
 							target:effects.transformGrp).onFree({
 							virtualAmbi = nil;
@@ -320,12 +331,12 @@ Mosca {
 					};
 				};
 			} {
-				if (spatType != renderer.format) {
-
+				if (spatType != renderer.format)
+				{
 					needConvert = needConvert + 1;
 
-					if (convertor.isNil) { // launch converter if needed
-
+					if (convertor.isNil)
+					{ // launch converter if needed
 						convertor = Synth(\ambiConverter,
 							target:effects.transformGrp).onFree({
 							convertor = nil;
@@ -334,26 +345,22 @@ Mosca {
 				};
 			};
 		} {
-			if (spatType == \NONAMBI) {
-
-				if (renderer.virtualSetup) {
-
+			if (spatType == \NONAMBI)
+			{
+				if (renderer.virtualSetup)
+				{
 					needVirtualAmbi = needVirtualAmbi - 1;
 
-					if (virtualAmbi.notNil && (needVirtualAmbi == 0)) {
-
-						virtualAmbi.free; // free virtualAmbi if no longer needed
-					};
+					if (virtualAmbi.notNil && (needVirtualAmbi == 0))
+					{ virtualAmbi.free }; // free virtualAmbi if no longer needed
 				};
 			} {
-				if (spatType != renderer.format) {
-
+				if (spatType != renderer.format)
+				{
 					needConvert = needConvert - 1;
 
-					if (convertor.notNil && (needConvert == 0)) {
-
-						convertor.free; // free converter if no longer needed
-					};
+					if (convertor.notNil && (needConvert == 0))
+					{ convertor.free }; // free converter if no longer needed
 				};
 			};
 		};
