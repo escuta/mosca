@@ -315,7 +315,7 @@
 
 		if (gui.isNil)
 		{
-			gui = MoscaGUI(size, sources, control, palette, ossiaPlay, lag);
+			gui = MoscaGUI(size, sources, control, palette, ossiaParent, lag);
 
 			gui.win.onClose({
 				gui.free;

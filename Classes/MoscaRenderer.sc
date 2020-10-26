@@ -16,7 +16,8 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-MoscaRenderer {
+MoscaRenderer
+{
 	var <nonAmbiBus, <fumaBus, <n3dBus, <vbapBuffer; // buses & buffer
 	var <format, <virtualSetup; // conversion
 	var <longestRadius, <quarterRadius, <twoAndaHalfRadius, <lowestElevation, <highestElevation;
@@ -24,17 +25,12 @@ MoscaRenderer {
 	var renderFunc, renderer; // synth
 	var <ossiaMasterLevel;
 
-	*new { | maxOrder |
+	*new { | maxOrder | ^super.new.ctr(maxOrder) }
 
-		^super.new.ctr(maxOrder);
-	}
+	ctr { | maxOrder | bFormNumChan = (maxOrder + 1).squared }
 
-	ctr { | maxOrder |
-
-		bFormNumChan = (maxOrder + 1).squared;
-	}
-
-	setParam { | ossiaParent, allCritical |
+	setParam
+	{ | ossiaParent, allCritical |
 
 		ossiaMasterLevel = OssiaAutomationProxy(ossiaParent, "Master_level", Float,
 			[-96, 12],	0, 'clip', critical:allCritical);
@@ -42,18 +38,18 @@ MoscaRenderer {
 		ossiaMasterLevel.node.unit_(OSSIA_gain.decibel);
 	}
 
-	setAction {
+	setAction { ossiaMasterLevel.action_({ | num | renderer.set(\level, num.value.dbamp) }) }
 
-		ossiaMasterLevel.action_({ | num | renderer.set(\level, num.value.dbamp); });
-	}
+	setup
+	{ | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
 
-	setup { | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
 		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc;
 
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
 		n3dBus = Bus.audio(server, bFormNumChan); // global b-format ACN-N3D bus
 
-		if (speaker_array.notNil) {
+		if (speaker_array.notNil)
+		{
 			var max_func, min_func, dimention, vbap_setup, adjust;
 
 			numOutputs = speaker_array.size;
@@ -62,72 +58,73 @@ MoscaRenderer {
 
 			max_func = { |x| // extract the highest value from an array
 				var rep = 0;
-				x.do{ |item|
+				x.do({ |item|
 					if(item > rep,
 						{ rep = item };
 					)
-				};
+				});
+
 				rep };
 
-			case
-			{ speaker_array[0].size < 2 || speaker_array[0].size > 3 }
-			{ ^Error("bad speaker array").throw; }
-			{ speaker_array[0].size == 2 }
-			{
-				dimention = 2;
+			switch(speaker_array[0].size,
+				2,
+				{
+					dimention = 2;
 
-				radiusses = Array.newFrom(speaker_array).collect({ |val| val[1]; });
-				longestRadius = max_func.value(radiusses);
+					radiusses = Array.newFrom(speaker_array).collect({ |val| val[1]; });
+					longestRadius = max_func.value(radiusses);
 
-				adjust = Array.fill(numOutputs, { |i|
-					[(longestRadius - radiusses[i]) / 334, longestRadius/radiusses[i]];
-				});
+					adjust = Array.fill(numOutputs, { |i|
+						[(longestRadius - radiusses[i]) / 334, longestRadius/radiusses[i]];
+					});
 
-				lowestElevation = 0;
-				highestElevation = 0;
+					lowestElevation = 0;
+					highestElevation = 0;
 
-				speaker_array.collect({ |val| val.pop; });
+					speaker_array.collect({ |val| val.pop; });
 
-				azimuths = speaker_array.flat;
+					azimuths = speaker_array.flat;
 
-				vbap_setup = VBAPSpeakerArray(dimention, azimuths);
-			}
-			{ speaker_array[0].size == 3 }
-			{
-				dimention = 3;
+					vbap_setup = VBAPSpeakerArray(dimention, azimuths);
+				},
+				3,
+				{
+					dimention = 3;
 
-				radiusses = Array.newFrom(speaker_array).collect({ |val| val[2] });
-				longestRadius = max_func.value(radiusses);
+					radiusses = Array.newFrom(speaker_array).collect({ |val| val[2] });
+					longestRadius = max_func.value(radiusses);
 
-				adjust = Array.fill(numOutputs, { |i|
-					[(longestRadius - radiusses[i]) / 334, longestRadius/radiusses[i]];
-				});
+					adjust = Array.fill(numOutputs, { |i|
+						[(longestRadius - radiusses[i]) / 334, longestRadius/radiusses[i]];
+					});
 
-				min_func = { |x| // extract the lowest value from an array
-					var rep = 0;
-					x.do{ |item|
-						if (item < rep,
-							{ rep = item };
-					) };
-					rep };
+					min_func = { |x| // extract the lowest value from an array
+						var rep = 0;
+						x.do{ |item|
+							if (item < rep,
+								{ rep = item };
+						) };
+						rep };
 
-				elevations = Array.newFrom(speaker_array).collect({ |val| val[1] });
-				lowestElevation = min_func.value(elevations);
-				highestElevation = max_func.value(elevations);
+					elevations = Array.newFrom(speaker_array).collect({ |val| val[1] });
+					lowestElevation = min_func.value(elevations);
+					highestElevation = max_func.value(elevations);
 
-				speaker_array.collect({ |val| val.pop });
+					speaker_array.collect({ |val| val.pop });
 
-				vbap_setup = VBAPSpeakerArray(dimention, speaker_array);
+					vbap_setup = VBAPSpeakerArray(dimention, speaker_array);
 
-				speaker_array.collect({ |val| val.pop });
+					speaker_array.collect({ |val| val.pop });
 
-				azimuths = speaker_array.flat;
-			};
+					azimuths = speaker_array.flat;
+				},
+				{ ^Error("bad speaker array").throw }
+			);
 
 			vbapBuffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			perfectSphereFunc = { |sig|
-				sig = Array.fill(numOutputs, { |i| DelayN.ar(sig[i],
+			perfectSphereFunc = { | sig |
+				sig = Array.fill(numOutputs, { | i | DelayN.ar(sig[i],
 					delaytime:adjust[i][0], mul:adjust[i][1]) });
 			};
 
@@ -173,7 +170,8 @@ MoscaRenderer {
 		quarterRadius = longestRadius / 4;
 		twoAndaHalfRadius = longestRadius * 2.5;
 
-		if (subOutBus.notNil) {
+		if (subOutBus.notNil)
+		{
 			subOutFunc = { | signal, sublevel = 1 |
 				var subOut = Mix(signal) * sublevel * 0.5;
 				Out.ar(subOutBus, subOut);
@@ -182,10 +180,10 @@ MoscaRenderer {
 			subOutFunc = { | signal, sublevel | };
 		};
 
-		if (decoder.isNil) {
-
+		if (decoder.isNil)
+		{
 			switch (rawformat,
-				{ \FUMA },
+				\FUMA,
 				{
 					format = \FUMA;
 
@@ -207,7 +205,7 @@ MoscaRenderer {
 						Out.ar(outBus, nonambi);
 					};
 				},
-				{ \N3D },
+				\N3D,
 				{
 					format = \N3D;
 
@@ -232,7 +230,7 @@ MoscaRenderer {
 			);
 		} {
 			switch (maxOrder,
-				{ 1 },
+				1,
 				{
 					format = \FUMA;
 
@@ -287,7 +285,7 @@ MoscaRenderer {
 						}
 					}
 				},
-				{ 2 },
+				2,
 				{
 					if (decoder == "internal") {
 
@@ -341,7 +339,7 @@ MoscaRenderer {
 						};
 					};
 				},
-				{ 3 }, // assume ADT Decoder
+				3, // assume ADT Decoder
 				{
 					format = \N3D;
 
@@ -365,7 +363,7 @@ MoscaRenderer {
 						Out.ar(outBus, sig);
 					};
 				},
-				{ 4 }, // assume ADT Decoder
+				4, // assume ADT Decoder
 				{
 					format = \N3D;
 
@@ -391,7 +389,7 @@ MoscaRenderer {
 						Out.ar(outBus, sig);
 					};
 				},
-				{ 5 }, // assume ADT Decoder
+				5, // assume ADT Decoder
 				{
 					format = \N3D;
 
@@ -421,17 +419,19 @@ MoscaRenderer {
 						Out.ar(outBus, sig);
 					};
 				},
-				{ Error("Ambisonic order must be between 1 and 5").throw; };
+				{ Error("Ambisonic order must be between 1 and 5").throw }
 			);
 		};
 	}
 
-	launchRenderer { | server, target |
+	launchRenderer
+	{ | server, target |
 
 		renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
 	}
 
-	dockTo { | automation |
+	dockTo
+	{ | automation |
 
 		automation.dock(ossiaMasterLevel, "masterlevProxy");
 	}

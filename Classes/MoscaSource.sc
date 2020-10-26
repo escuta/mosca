@@ -18,7 +18,7 @@
 
 MoscaSource[]
 {
-	var index, server, srcGrp, defName, effect, chanNum, spatType;
+	var <index, server, srcGrp, defName, effect, chanNum, spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters

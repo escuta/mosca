@@ -17,14 +17,15 @@
 */
 
 
-AutomationGuiProxy : QView {
+AutomationGuiProxy : QView
+{
 	var <>val, <>function, <>action;
 
-	*new { | val |
-		^super.new.initAutomationProxy(val);
-	}
+	*new { | val | ^super.new.initAutomationProxy(val) }
 
-	initAutomationProxy { | ival |
+	initAutomationProxy
+	{ | ival |
+
 		this.val = ival;
 		this.bounds(Rect(0,0,0,0)); // set fake bounds to keep Automation happy!
 	}
@@ -33,46 +34,40 @@ AutomationGuiProxy : QView {
 
 	value_ { | value | this.val = value; }
 
-	mapToGlobal { | point |
+	mapToGlobal
+	{ | point |
 		_QWidget_MapToGlobal
 		^this.primitiveFailed;
 	}
 
-	absoluteBounds {
-		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ); );
-	}
+	absoluteBounds { ^this.bounds.moveToPoint(this.mapToGlobal( 0@0 )) }
 
-	bounds { ^this.getProperty(\geometry); }
+	bounds { ^this.getProperty(\geometry) }
 
-	bounds_ { | rect | this.setProperty(\geometry, rect.asRect); }
+	bounds_ { | rect | this.setProperty(\geometry, rect.asRect) }
 
-	doAction { this.action.value(this.val); }
+	doAction { this.action.value(this.val) }
 
-	valueAction_ { |val| this.value_(val).doAction; }
+	valueAction_ { | val | this.value_(val).doAction }
 }
 
 AutomationView : QView {
 	// holds basic GUI specifics to keep Automation happy!
-	*new {
-		^super.new.ctr();
-	}
+	*new { ^super.new.ctr() }
 
-	ctr {
-		this.bounds(Rect(0,0,0,0)); // set fake bounds
-	}
+	ctr { this.bounds(Rect(0,0,0,0)) } // set fake bounds
 
-	absoluteBounds {
-		^this.bounds.moveToPoint( this.mapToGlobal( 0@0 ); );
-	}
+	absoluteBounds { ^this.bounds.moveToPoint( this.mapToGlobal( 0@0 )) }
 
-	mapToGlobal { | point |
+	mapToGlobal
+	{ | point |
 		_QWidget_MapToGlobal
 		^this.primitiveFailed;
 	}
 
-	bounds { ^this.getProperty(\geometry); }
+	bounds { ^this.getProperty(\geometry) }
 
-	bounds_ { | rect | this.setProperty(\geometry, rect.asRect); }
+	bounds_ { | rect | this.setProperty(\geometry, rect.asRect);}
 }
 
 AutomationProxy //: AutomationView
@@ -80,17 +75,15 @@ AutomationProxy //: AutomationView
 {
 	var val, >action;
 
-	*new { | val |
-		^super.newCopyArgs(val);
-	}
+	*new { | val | ^super.newCopyArgs(val) }
 
-	value { ^val; }
+	value { ^val }
 
-	value_ { | value | val = value; }
+	value_ { | value | val = value }
 
-	doAction { action.value(val); }
+	doAction { action.value(val) }
 
-	valueAction_ { |val| this.value_(val).doAction; }
+	valueAction_ { | val | this.value_(val).doAction }
 }
 
 OssiaAutomationProxy //: AutomationView
@@ -100,21 +93,27 @@ OssiaAutomationProxy //: AutomationView
 	// single value version
 	var <node;
 
-	*new { | parent_node, name, type, domain, default_value, bounding_mode = 'free', critical = false, repetition_filter = true |
+	*new
+	{ | parent_node, name, type, domain, default_value, bounding_mode = 'free',
+		critical = false, repetition_filter = true |
+
 		^super.new.ctr(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
 	}
 
-	ctr { | parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter |
-		node = OSSIA_Parameter(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
+	ctr
+	{ | parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter |
+
+		node = OSSIA_Parameter(parent_node, name, type, domain, default_value,
+			bounding_mode, critical, repetition_filter);
 	}
 
-	value { ^node.v; }
+	value { ^node.v }
 
-	value_ { | value | node.v_(value); }
+	value_ { | value | node.v_(value) }
 
-	action { ^node.callback; }
+	action { ^node.callback }
 
-	action_ { | function | node.callback_(function); }
+	action_ { | function | node.callback_(function) }
 }
 
 
@@ -123,18 +122,18 @@ OssiaAutomationProxy //: AutomationView
 	//-------------------------------------------//
 
 
-OssiaAutomationCenter {
+OssiaAutomationCenter
+{
 	// defines the listenig point position and orientation
 	var <ossiaOrigine, <ossiaOrient;
 	var oX, oY, oZ;
 	var <heading, <pitch, <roll;
 	var <origine, <scale;
 
-	*new { | parent_node, allCritical |
-		^super.new.ctr(parent_node, allCritical);
-	}
+	*new { | parent_node, allCritical | ^super.new.ctr(parent_node, allCritical) }
 
-	ctr { | parent_node, allCritical, automation |
+	ctr
+	{ | parent_node, allCritical, automation |
 
 		origine = Cartesian();
 
@@ -162,7 +161,9 @@ OssiaAutomationCenter {
 			[0.01, 10],	1, 'clip', critical:allCritical);
 	}
 
-	setAction { | sources |
+	setAction
+	{ | sources |
+
 		var halfPi = MoscaUtils.halfPi();
 
 		ossiaOrigine.callback_({ | num |
@@ -184,11 +185,11 @@ OssiaAutomationCenter {
 				item.coordinates.cartBack_(true);
 			});
 
-			if (oX.value != num[0].value) { oX.valueAction = num[0].value; };
+			if (oX.value != num[0].value) { oX.valueAction = num[0].value };
 
-			if (oY.value != num[1].value) { oY.valueAction = num[1].value; };
+			if (oY.value != num[1].value) { oY.valueAction = num[1].value };
 
-			if (oZ.value != num[2].value) { oZ.valueAction = num[2].value; };
+			if (oZ.value != num[2].value) { oZ.valueAction = num[2].value };
 		});
 
 		ossiaOrient.callback_({ | num |
@@ -208,27 +209,28 @@ OssiaAutomationCenter {
 				item.coordinates.cartBack_(true);
 			});
 
-			if (heading.value != num[0].value) { heading.valueAction_(num[0].value); };
+			if (heading.value != num[0].value) { heading.valueAction_(num[0].value) };
 
-			if (pitch.value != num[1].value) { pitch.valueAction_(num[1].value); };
+			if (pitch.value != num[1].value) { pitch.valueAction_(num[1].value) };
 
-			if (roll.value != num[2].value) { roll.valueAction_(num[2].value); };
+			if (roll.value != num[2].value) { roll.valueAction_(num[2].value) };
 		});
 
-		oX.action_({ | num | ossiaOrigine.v_([num.value, oY.value, oZ.value]); });
+		oX.action_({ | num | ossiaOrigine.v_([num.value, oY.value, oZ.value]) });
 
-		oY.action_({ | num | ossiaOrigine.v_([oX.value, num.value, oZ.value]); });
+		oY.action_({ | num | ossiaOrigine.v_([oX.value, num.value, oZ.value]) });
 
-		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]); });
+		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]) });
 
-		heading.action_({ | num | ossiaOrient.v_([num.value, pitch.value, roll.value]); });
+		heading.action_({ | num | ossiaOrient.v_([num.value, pitch.value, roll.value]) });
 
-		pitch.action_({ | num | ossiaOrient.v_([heading.value, num.value, roll.value]); });
+		pitch.action_({ | num | ossiaOrient.v_([heading.value, num.value, roll.value]) });
 
-		roll.action_({ | num | ossiaOrient.v_([heading.value, pitch.value, num.value]); });
+		roll.action_({ | num | ossiaOrient.v_([heading.value, pitch.value, num.value]) });
 	}
 
-	dockTo { | automation |
+	dockTo
+	{ | automation |
 
 		automation.dock(oX, "oxProxy");
 		automation.dock(oY, "oyProxy");
@@ -242,17 +244,22 @@ OssiaAutomationCenter {
 	}
 }
 
-OssiaAutomationCoordinates {
+OssiaAutomationCoordinates
+{
 	// 3D value version for absolute and relative coordinatesiantes
-	var x, y, z, <cartesian, <azElDist;
+	var <x, <y, <z, <cartesian, <azElDist;
 	var <cartVal, <spheVal;
 	var <>cartBack = true, <spheBack = true;
 
-	*new { | parent_node, allCritical, center, spatializer, synth |
+	*new
+	{ | parent_node, allCritical, center, spatializer, synth |
+
 		^super.new.ctr(parent_node, allCritical, center, spatializer, synth);
 	}
 
-	ctr { | parent_node, allCritical, center, spatializer, synth |
+	ctr
+	{ | parent_node, allCritical, center, spatializer, synth |
+
 		var halfPi = MoscaUtils.halfPi();
 
 		cartesian = OSSIA_Parameter(parent_node, "Cartesian", OSSIA_vec3f,
@@ -277,7 +284,9 @@ OssiaAutomationCoordinates {
 		this.setAction(center, spatializer, synth);
 	}
 
-	setAction { | center, spatializer, synth |
+	setAction
+	{ | center, spatializer, synth |
+
 		var halfPi = MoscaUtils.halfPi();
 
 		cartesian.callback_({ | num |
@@ -292,35 +301,36 @@ OssiaAutomationCoordinates {
 
 			cartBack = false;
 
-			if (spheBack) { azElDist.v_(sphediff); };
+			if (spheBack) { azElDist.v_(sphediff) };
 
-			if (x.value != num[0].value) { x.valueAction_(num[0].value); };
+			if (x.value != num[0].value) { x.valueAction_(num[0].value) };
 
-			if (y.value != num[1].value) { y.valueAction_(num[1].value); };
+			if (y.value != num[1].value) { y.valueAction_(num[1].value) };
 
-			if (z.value != num[2].value) { z.valueAction_(num[2].value); };
+			if (z.value != num[2].value) { z.valueAction_(num[2].value) };
 
 			cartBack = true;
 		});
 
 		x.action_({ | num |
-			if (cartBack) { cartesian.v_([num.value, y.value, z.value]); };
+			if (cartBack) { cartesian.v_([num.value, y.value, z.value]) };
 		});
 
 		y.action_({ | num |
-			if (cartBack) { cartesian.v_([x.value, num.value, z.value]); };
+			if (cartBack) { cartesian.v_([x.value, num.value, z.value]) };
 		});
 
 		z.action_({ | num |
-			if (cartBack) { cartesian.v_([x.value, y.value, num.value]); };
+			if (cartBack) { cartesian.v_([x.value, y.value, num.value]) };
 		});
 
 		azElDist.callback_({ | num |
 			spheVal.rho_(num.value[2] * center.scale.value);
-			spheVal.theta_((num.value[0].wrap(-pi, pi) + halfPi).raddeg);
-			spheVal.phi_(num.value[1].clip(halfPi.neg, halfPi).raddeg);
+			spheVal.theta_((num.value[0].degrad.wrap(-pi, pi)) + halfPi);
+			spheVal.phi_(num.value[1].degrad.clip(halfPi.neg, halfPi));
 			spheBack = false;
-			if (cartBack) {
+			if (cartBack)
+			{
 				cartesian.v_(
 					((spheVal.tumble(center.roll.value)
 						.tilt(center.pitch.value)
@@ -328,11 +338,13 @@ OssiaAutomationCoordinates {
 						.asCartesian) + center.origine).asArray);
 			};
 
-			if(spatializer.notNil) {
+			if(spatializer.notNil)
+			{
 				spatializer.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]);
 			};
 
-			if (synth.notNil) {
+			if (synth.notNil)
+			{
 				synth.do({ _.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]); });
 			};
 
@@ -340,7 +352,8 @@ OssiaAutomationCoordinates {
 		});
 	}
 
-	dockTo { | automation, index |
+	dockTo
+	{ | automation, index |
 
 		automation.dock(x, "x_axisProxy_" ++ index);
 		automation.dock(y, "y_axisProxy_" ++ index);
