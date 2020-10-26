@@ -16,17 +16,17 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-IrDef[] {
+IrDef[]
+{
 	var <key, irSpectrum, bufsize;
 	var irWspectrum, irZspectrum;
 	// var irXspectrum, irYspectrum;
 
-	*new { | server, ir |
+	*new { | server, ir | ^super.new.ctr(server, ir) }
 
-		^super.new.ctr(server, ir);
-	}
+	ctr
+	{ | server, ir |
 
-	ctr { | server, ir |
 		var bufWXYZ, bufAformat;
 
 		key = ir.fileNameWithoutExtension;
@@ -41,7 +41,9 @@ IrDef[] {
 		this.prLoadGlobalIr(server, ir, bufWXYZ, bufAformat);
 	}
 
-	prLoadLocalIr { | server, ir |
+	prLoadLocalIr
+	{ | server, ir |
+
 		var irW, irX, irY, irZ;
 
 		irW = Buffer.readChannel(server, ir.fullPath, channels: [0]);
@@ -69,19 +71,23 @@ IrDef[] {
 		irZ.free;
 	}
 
-	prLoadGlobalIr { | server, ir, bufWXYZ, bufAformat |
+	prLoadGlobalIr
+	{ | server, ir, bufWXYZ, bufAformat |
+
 		var irA4, afmtDir = ir.pathOnly ++ $/ ++ key ++ "_Flu.wav";
 
-		if (File.exists(afmtDir).not) {
-
+		if (File.exists(afmtDir).not)
+		{
 			("writing " ++ key ++ "_Flu.wav file in" + ir.pathOnly).postln;
 
-			{BufWr.ar(FoaDecode.ar(PlayBuf.ar(4, bufWXYZ,
-				loop: 0, doneAction: 2), MoscaUtils.b2a()),
-			bufAformat, Phasor.ar(0,
-				BufRateScale.kr(bufAformat),
-				0, BufFrames.kr(bufAformat)));
-			Out.ar(0, Silent.ar);
+			{
+				BufWr.ar(FoaDecode.ar(
+					PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
+					MoscaUtils.b2a()),
+				bufAformat, Phasor.ar(0,
+					BufRateScale.kr(bufAformat),
+					0, BufFrames.kr(bufAformat)));
+				Out.ar(0, Silent.ar);
 			}.play(server);
 
 			(bufAformat.numFrames / server.sampleRate).wait;
@@ -108,18 +114,20 @@ IrDef[] {
 		});
 	}
 
-	wSpecPar { ^[\wir, irWspectrum]; }
+	wSpecPar { ^[\wir, irWspectrum] }
 
-	zSpecPar { ^[\zir, irZspectrum]; }
+	zSpecPar { ^[\zir, irZspectrum] }
 
-	wxyzSpecPar {
+	wxyzSpecPar
+	{
 		^[\wir, irWspectrum,
 			// \xir, irXspectrum,
 			// \yir, irYspectrum,
 			\zir, irZspectrum];
 	}
 
-	irSpecPar {
+	irSpecPar
+	{
 		^[\a0ir, irSpectrum[0],
 			\a1ir, irSpectrum[1],
 			\a2ir, irSpectrum[2],
@@ -127,24 +135,28 @@ IrDef[] {
 	}
 }
 
-Ir12chanDef : IrDef {
+Ir12chanDef : IrDef
+{
+	prLoadGlobalIr
+	{ | server, ir, bufWXYZ, bufAformat |
 
-	prLoadGlobalIr { | server, ir, bufWXYZ, bufAformat |
 		var bufAformat_soa_a12, irA12,
 		afmtDir = ir.pathOnly ++ $/ ++ key ++ "_SoaA12.wav";
 
-		if (File.exists(afmtDir).not) {
-
+		if (File.exists(afmtDir).not)
+		{
 			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12);
 
 			("writing " ++ key ++ "_SoaA12.wav file in " + ir.pathOnly).postln;
 
-			{BufWr.ar(AtkMatrixMix.ar(PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
-				MoscaUtils.foa_a12_decoder_matrix()),
+			{
+				BufWr.ar(AtkMatrixMix.ar(
+					PlayBuf.ar(4, bufWXYZ, loop: 0, doneAction: 2),
+					MoscaUtils.foa_a12_decoder_matrix()),
 				bufAformat_soa_a12,
 				Phasor.ar(0, BufRateScale.kr(bufAformat),
 					0, BufFrames.kr(bufAformat)));
-			Out.ar(0, Silent.ar);
+				Out.ar(0, Silent.ar);
 			}.play(server);
 
 			(bufAformat.numFrames / server.sampleRate).wait;
@@ -172,7 +184,8 @@ Ir12chanDef : IrDef {
 		});
 	}
 
-	irSpecPar {
+	irSpecPar
+	{
 		^[\a0ir, irSpectrum[0],
 			\a1ir, irSpectrum[1],
 			\a2ir, irSpectrum[2],

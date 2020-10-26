@@ -20,8 +20,9 @@ MoscaGUI
 {
 	var sources, control, guiInt; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
-	var <win, wdados, waux, dialView, autoView, masterView, originView;
-	var zoomFactor = 1, currentSource = 0, sourceName;
+	var <win, wdados, waux, dialView, masterView, originView;
+	var autoBut;
+	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var isPlay, origine, orientation, scale;
 	var zAxis, zSlider, zNumBox, zEvent;
 	var drawEvent, lastGui = 0;
@@ -31,6 +32,7 @@ MoscaGUI
 
 	*initClass
 	{
+		Class.initClassTree(MoscaUtils);
 		halfPi = MoscaUtils.halfPi;
 	}
 
@@ -44,7 +46,7 @@ MoscaGUI
 			{ p = OSSIA.palette },
 			\original,
 			{ p = MoscaUtils.palette },
-			{ p = QtGUI.palette };
+			{ p = QtGUI.palette }
 		);
 
 		^super.newCopyArgs(sources, control, guiInt).ctr(p, ossiaParent, size);
@@ -61,9 +63,7 @@ MoscaGUI
 
 		width = size;
 
-		if (width < 600) {
-			width = 600;
-		};
+		if (width < 600) { width = 600 };
 
 		halfWidth = width * 0.5;
 		height = width; // on init
@@ -73,11 +73,13 @@ MoscaGUI
 		win.view.palette = palette;
 
 		StaticText(win, Rect(6, 6, 50, 20)).string_("Source");
-		sourceName = StaticText(win, Rect(50, 6, 20, 20)).string_("1");
+		sourceNum = StaticText(win, Rect(50, 6, 30, 20)).string_("1");
 
 		zAxis = StaticText(win);
 		zAxis.string = "Z-Axis";
 		zNumBox = NumberBox(win)
+		.background_(palette.color('base', 'active'))
+		.normalColor_(palette.color('windowText', 'active'))
 		.decimals_(2)
 		.step_(0.01)
 		.scroll_step_(0.01)
@@ -87,10 +89,9 @@ MoscaGUI
 				zSlider.value = (num.value * 0.5) + 0.5;
 
 				if (orientation.value == [0, 0, 0])
-				{
+				{ // exeption to record z mouvements after XY automation
 					sources[currentSource].coordinates.z
 					.valueAction_(num.value + origine.value[2]);
-					// exeption to record z mouvements after XY automation
 				} {
 					var sphe = sources[currentSource].coordinates.spheVal
 					.asCartesian.z_(num.value).asSpherical;
@@ -113,16 +114,41 @@ MoscaGUI
 
 		dialView = UserView(win); // extra options view
 
-		masterView = UserView(win, Rect(0, height - 95, 325, 92));
+		masterView = UserView(win, Rect(0, height - 120, 325, 116));
 		masterView.addFlowLayout();
+
+		autoBut = Button(masterView, Rect(0, height - 95, 319, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Automation Control",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Close Automation Control",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({
+
+			if (control.gui.notNil)
+			{
+				if (control.gui.win.isClosed)
+				{
+					this.automationControl()
+				} {
+					control.gui.win.close
+				}
+			} {
+				this.automationControl()
+			}
+		});
 
 		ossiaParent.find("Master_level").gui(masterView);
 		scale.gui(masterView);
-
-		autoView = UserView(win);
-		autoView.palette_(QPalette.light);
-
-		// control.front(autoView, Rect(0, 26, 316, 20));
 
 		win.view.mouseDownAction_(
 			{ | view, mx, my, modifiers, buttonNumber, clickCount |
@@ -230,9 +256,7 @@ MoscaGUI
 
 			dialView.bounds_(Rect(width - 100, 10, 180, 150));
 
-			masterView.bounds_(Rect(0, height - 150, 325, 92));
-
-			autoView.bounds_(Rect(6, height - 50, 325, 64));
+			masterView.bounds_(Rect(0, height - 120, 325, 116));
 
 			drawEvent.value;
 		});
@@ -310,8 +334,19 @@ MoscaGUI
 	sourceSelect
 	{ | item |
 
+		var src, topview;
+
 		currentSource = item.value;
-		sourceName.string = (item.value + 1).asString;
+
+		src = sources[currentSource];
+
+		sourceNum.string_(item.value + 1).asString;
+
+		topview = src.coordinates.spheVal * zoomFactor;
+
+		zNumBox.value_(topview.z);
+		zSlider.value_((zNumBox.value * 0.5) + 0.5);
+
 /*		updateGuiCtl.value(\chan);
 
 		loopcheck.value = lpcheckProxy[currentSource].value;
@@ -330,9 +365,6 @@ MoscaGUI
 		winCtl[1][2].value = cboxProxy[currentSource].value;
 		winCtl[0][3].value = ossiaclsam[currentSource].v;
 		winCtl[1][3].value = ossiaclsam[currentSource].v;
-
-		zslider.value = (zlev[currentSource] + 1) * 0.5;
-		zNumBox.value = zlev[currentSource];
 
 		auxslider1.value = a1boxProxy[currentSource].value;
 		aux1numbox.value = a1boxProxy[currentSource].value;
@@ -381,6 +413,15 @@ MoscaGUI
 					sphe.phi.raddeg,
 					sphe.rho]);
 		};
+	}
+
+	automationControl
+	{
+		var canv;
+
+		control.front();
+		canv = control.gui.win;
+		canv.bounds.height_(canv.bounds.height + 26);
 	}
 
 	free
