@@ -16,29 +16,31 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-HeadTracker {
+HeadTracker
+{
 	const baudRate = 115200;
 
-	var moscaInstance, serport, <headingOffset,
+	var moscaCenter, switch, serport, <headingOffset,
 	troutine, kroutine,
 	trackarr, trackarr2, tracki, trackPort;
 
-	*new { | aMosca, serialPort, offsetheading |
+	*new
+	{ | center, flag, serialPort, offsetheading |
 
-		^super.newCopyArgs(aMosca, serialPort, offsetheading).headTrackerCtr();
+		^super.newCopyArgs(center, flag, serialPort, offsetheading).headTrackerCtr();
 	}
 
-	headTrackerCtr {
-
+	headTrackerCtr
+	{
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, baudRate, crtscts: true);
 
-		trackPort.doneAction = {
+		trackPort.doneAction_({
 			"Serial port down".postln;
 			troutine.stop;
 			troutine.reset;
-		};
+		});
 
 		this.setTracker();
 
@@ -46,15 +48,16 @@ HeadTracker {
 		tracki = 0;
 
 		troutine = Routine.new({
-			inf.do{
-				if (moscaInstance.ossiaremotectl.v) {
-					this.matchByte(trackPort.read);
-				};
-			};
+			inf.do({
+
+				if (switch.v)
+				{ this.matchByte(trackPort.read) };
+			});
 		});
 
 		kroutine = Routine.new({
-			inf.do{
+			inf.do({
+
 				if (trackPort.isOpen.not) // if serial port is closed
 				{
 					"Trying to reopen serial port!".postln;
@@ -69,21 +72,23 @@ HeadTracker {
 						troutine.play; // start tracker routine again
 					}
 				};
+
 				1.wait;
-			};
+			});
 		});
 
 		troutine.play;
 		kroutine.play;
 	}
 
-
-	setTracker { //protocol
-
+	setTracker // protocol
+	{
 		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
 	}
 
-	procGyro  { |heading, roll, pitch|
+	procGyro
+	{ | heading, roll, pitch |
+
 		var h, r, p;
 
 		h = (heading / 100) - pi;
@@ -100,20 +105,19 @@ HeadTracker {
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 
-		moscaInstance.pitchnumboxProxy.valueAction = p;
-		moscaInstance.rollnumboxProxy.valueAction = r;
-		moscaInstance.headingnumboxProxy.valueAction = h * -1;
+		moscaCenter.ossiaOrient.v_([(-1 * h), p, r]);
 	}
 
-	matchByte { |byte|  // match incoming headtracker data
+	matchByte
+	{ | byte |  // match incoming headtracker data
 
-		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
-
+		if (trackarr[tracki].isNil or:{ trackarr[tracki] == byte })
+		{
 			trackarr2[tracki] = byte;
 			tracki = tracki + 1;
 
-			if (tracki >= trackarr.size, {
-
+			if (tracki >= trackarr.size)
+			{
 				this.procGyro(
 					(trackarr2[5]<<8) + trackarr2[4],
 					(trackarr2[7]<<8) + trackarr2[6],
@@ -121,10 +125,10 @@ HeadTracker {
 				);
 
 				tracki = 0;
-			});
-		}, {
+			};
+		} {
 			tracki = 0;
-		});
+		};
 	}
 
 	offsetHeading { | angle | // give offset to reset North
@@ -132,39 +136,44 @@ HeadTracker {
 		headingOffset = angle;
 	}
 
-	free {
-
+	free
+	{
 		troutine.stop;
 		kroutine.stop;
 		trackPort.close;
+		^super.free;
 	}
 }
 
-HeadTrackerGPS : HeadTracker {
+HeadTrackerGPS : HeadTracker
+{
 	var previousLat, previusLon, previusAlt;
 
-	setTracker { //protocol
-
+	setTracker //protocol
+	{
 		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
 	}
 
-	procGps { |lat, lon, alt|
+	procGps
+	{ | lat, lon, alt |
 
 		postln( "latitude " + lat);
 		postln( "longitude " + lon);
 		postln( "altitude " + alt);
 	}
 
-	matchByte { |byte| // match incoming headtracker data
+	matchByte
+	{
+		| byte | // match incoming headtracker data
 
-		if(trackarr[tracki].isNil or:{ trackarr[tracki] == byte }, {
-
+		if (trackarr[tracki].isNil or:{ trackarr[tracki] == byte })
+		{
 			trackarr2[tracki] = byte;
 			tracki= tracki + 1;
 
-			if (tracki >= trackarr.size, {
-
+			if (tracki >= trackarr.size)
+			{
 				this.procGyro(
 					(trackarr2[5]<<8) + trackarr2[4],
 					(trackarr2[7]<<8) + trackarr2[6],
@@ -172,15 +181,62 @@ HeadTrackerGPS : HeadTracker {
 				);
 
 				this.procGps(
-					(trackarr2[13]<<24) + (trackarr2[12]<<16) + (trackarr2[11]<<8) + trackarr2[10],
-					(trackarr2[17]<<24) + (trackarr2[16]<<16) + (trackarr2[15]<<8) + trackarr2[14],
-					(trackarr2[21]<<24) + (trackarr2[20]<<16) + (trackarr2[19]<<8) + trackarr2[18]
+					(trackarr2[13]<<24) + (trackarr2[12]<<16) +
+					(trackarr2[11]<<8) + trackarr2[10],
+					(trackarr2[17]<<24) + (trackarr2[16]<<16) +
+					(trackarr2[15]<<8) + trackarr2[14],
+					(trackarr2[21]<<24) + (trackarr2[20]<<16) +
+					(trackarr2[19]<<8) + trackarr2[18]
 				);
 
 				tracki = 0;
-			});
-		}, {
+			};
+		} {
 			tracki = 0;
-		});
+		};
 	}
 }
+
+PozyxOSC
+{
+	var func;
+
+	*new
+	{ | center, flag, port = 8888 |
+
+		^super.new.ctr(center, flag, port);
+	}
+
+	ctr
+	{ | center, flag, osc_port |
+
+		func = OSCFunc(
+			{ | msg |
+
+				if (flag.v)
+				{
+					var angles = [msg[1], msg[3], msg[3]] / 16;
+
+					center.ossiaOrient.v_(
+						[
+							(-1 * angles[1]).degrad,
+							angles[2].degrad,
+							angles[3].degrad,
+						]
+					);
+
+					center.ossiaOrigine.v_(
+						[msg[4], msg[5], msg[6]] / 1000
+					);
+				}
+			},
+			"/position", recvPort: osc_port);
+	}
+
+	free
+	{
+		func.free;
+		^super.free;
+	}
+}
+	

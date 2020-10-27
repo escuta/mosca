@@ -23,15 +23,8 @@
 * cos distance
 */
 
-Mosca
+Mosca : MoscaBase
 {
-	var dur, <autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
-	var renderer, effects, center, sources, srcGrp;
-	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
-	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
-	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
-	ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack, watcher;
-
 	*new
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,

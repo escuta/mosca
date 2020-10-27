@@ -1,5 +1,12 @@
-+ Mosca
+MoscaBase // acts as the public interface
 {
+	var dur, <autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
+	var renderer, effects, center, sources, srcGrp;
+	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
+	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
+	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
+	ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack, watcher;
+
 	saveData
 	{ | directory |
 
@@ -347,7 +354,34 @@
 		}
 	}
 
-	track { | enable = true |
+	headTracker
+	{ | port = "/dev/ttyUSB0", offsetheading = 0, type = \orient |
+
+		if (tracker.isNil)
+		{
+			switch (type,
+				\orient,
+				{ tracker = HeadTrackerGPS(center, ossiaTrack, port, offsetheading) },
+				\gps,
+				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
+				\pozyxOSC,
+				{ tracker = PozyxOSC(center, ossiaTrack, port) }
+			);
+		}
+	}
+
+	freeHeadTracker
+	{
+		if (tracker.notNil)
+		{
+			tracker.free();
+			tracker = nil;
+		};
+	}
+
+	track
+	{ | enable = true |
+
 		if (ossiaTrack.value != enable) { ossiaTrack.value = enable };
 	}
 }
