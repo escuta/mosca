@@ -21,7 +21,7 @@ MoscaGUI
 	var sources, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wdados, waux, dialView, masterView, originView;
-	var autoBut, <>ctlWidth = 370, loadBut, origineBut;
+	var autoBut, <>ctlWidth = 370, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var isPlay, origine, orientation, scale;
 	var zAxis, zSlider, zNumBox, zEvent;
@@ -116,7 +116,7 @@ MoscaGUI
 		});
 
 		// sub view for grouping global transforamtion widgets (effects, rotations, mouvements)
-		originView = UserView(win, Rect(width - 88, height - 85, 88, 100));
+		originView = UserView(win, Rect(width - 88, height - 128, 88, 124));
 		originView.addFlowLayout();
 
 		aMosca.ossiaParent.find("Track_Center").gui(originView);
@@ -136,7 +136,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({
+		).action_({ | butt |
 
 			var widget = aMosca.ossiaParent.find("Orientation");
 
@@ -148,6 +148,7 @@ MoscaGUI
 					aMosca.ossiaParent.find("Origine")
 					.gui(widget.window);
 					scale.gui(widget.window);
+					widget.window.onClose_({ butt.value_(0) })
 				} {
 					widget.window.close
 				}
@@ -156,22 +157,16 @@ MoscaGUI
 				aMosca.ossiaParent.find("Origine")
 				.gui(widget.window);
 				scale.gui(widget.window);
+				widget.window.onClose_({ butt.value_(0) })
 			}
 		});
 
-
-		dialView = UserView(win); // extra options view
-
-		// sub view for automation control, master volume, scale factor
-		masterView = UserView(win, Rect(0, height - 120, 325, 116));
-		masterView.addFlowLayout();
-
-		loadBut = Button(masterView, Rect(0, height - 95, 156, 20))
+		loadBut = Button(originView, Rect(0, 0, 82, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
 				[
-					"Load Automation",
+					"Load Auto",
 					palette.color('light', 'active'),
 					palette.color('middark', 'active')
 				]
@@ -196,12 +191,12 @@ MoscaGUI
 			dwin.front;
 		});
 
-		autoBut = Button(masterView, Rect(0, height - 95, 157, 20))
+		autoBut = Button(originView, Rect(0, 0, 82, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
 				[
-					"Automation Control",
+					"Control Auto",
 					palette.color('light', 'active'),
 					palette.color('middark', 'active')
 				],
@@ -223,6 +218,47 @@ MoscaGUI
 				}
 			} {
 				this.automationControl(aMosca)
+			}
+		});
+
+
+		dialView = UserView(win); // extra options view
+
+		// sub view for automation control, master volume, scale factor
+		masterView = UserView(win, Rect(0, height - 72, 325, 72));
+		masterView.addFlowLayout();
+
+		fxBut = Button(masterView, Rect(0, height - 95, 320, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Global Effect",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Close Effect",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({ | butt |
+
+			var widget = aMosca.ossiaParent.find("Global_effect");
+
+			if (widget.window.notNil)
+			{
+				if (widget.window.isClosed)
+				{
+					widget.gui(childrenDepth: 2);
+					widget.window.onClose_({ butt.value_(0)})
+				} {
+					widget.window.close
+				}
+			} {
+				widget.gui(childrenDepth: 2);
+				widget.window.onClose_({ butt.value_(0) })
 			}
 		});
 
@@ -312,8 +348,6 @@ MoscaGUI
 
 		win.view.onResize_({ | view |
 
-			var zSliderHeight;
-
 			width = view.bounds.width;
 			halfWidth = width * 0.5;
 			height = view.bounds.height;
@@ -322,20 +356,21 @@ MoscaGUI
 			// set initial furthest source as 20 times the apparent radius
 			furthest = halfHeight * 20;
 
-			zSliderHeight = height * 2 / 3;
-			zSlider.bounds_(Rect(width - 35, ((height - zSliderHeight) * 0.5),
-				20, zSliderHeight));
-			zNumBox.bounds_(Rect(width - 45, ((height - zSliderHeight) * 0.5)
-				+ zSliderHeight, 40, 20));
+			zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5),
+				20, halfHeight));
+
+			zNumBox.bounds_(Rect(width - 45, (halfHeight * 0.5) + halfHeight,
+				40, 20));
+
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
-			originView.bounds_(Rect(width - 88, height - 85, 88, 100));
+			originView.bounds_(Rect(width - 88, height - 128, 88, 124));
 
 			// hdtrkcheck.bounds_(Rect(width - 105, height - 105, 265, 20));
 
 			dialView.bounds_(Rect(width - 100, 10, 180, 150));
 
-			masterView.bounds_(Rect(0, height - 120, 325, 116));
+			masterView.bounds_(Rect(0, height - 72, 325, 72));
 
 			drawEvent.value;
 		});
