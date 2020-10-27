@@ -20,11 +20,12 @@
 //                  ALLPASS                  //
 //-------------------------------------------//
 
-AllPassDef : EffectDef {
+AllPassDef : EffectDef
+{
 	classvar <localMonoFunc, <localStereoFunc, <key;
 
-	*initClass {
-
+	*initClass
+	{
 		key = "AllPass";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
@@ -49,8 +50,8 @@ AllPassDef : EffectDef {
 		};
 	}
 
-	prFourChanGlobal {
-
+	prFourChanGlobal
+	{
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(4) +
@@ -59,8 +60,8 @@ AllPassDef : EffectDef {
 		};
 	}
 
-	prTwelveChanGlobal {
-
+	prTwelveChanGlobal
+	{
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			16.do({ sig = AllpassC.ar(sig, 0.08, room * { Rand(0, 0.08) }.dup(12) +
@@ -69,22 +70,23 @@ AllPassDef : EffectDef {
 		};
 	}
 
-	key { ^key; }
+	key { ^key }
 
-	localMonoFunc { ^localMonoFunc; }
+	localMonoFunc { ^localMonoFunc }
 
-	localStereoFunc { ^localStereoFunc; }
+	localStereoFunc { ^localStereoFunc }
 }
 
 //-------------------------------------------//
 //                 FREEVERB                  //
 //-------------------------------------------//
 
-FreeVerbDef : EffectDef {
+FreeVerbDef : EffectDef
+{
 	classvar <localMonoFunc, <localStereoFunc, <key;
 
-	*initClass {
-
+	*initClass
+	{
 		key = "FreeVerb";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
@@ -100,8 +102,8 @@ FreeVerbDef : EffectDef {
 		};
 	}
 
-	prFourChanGlobal {
-
+	prFourChanGlobal
+	{
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			[
@@ -113,8 +115,8 @@ FreeVerbDef : EffectDef {
 		};
 	}
 
-	prTwelveChanGlobal {
-
+	prTwelveChanGlobal
+	{
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			[
@@ -128,22 +130,23 @@ FreeVerbDef : EffectDef {
 		};
 	}
 
-	key { ^key; }
+	key { ^key }
 
-	localMonoFunc { ^localMonoFunc; }
+	localMonoFunc { ^localMonoFunc }
 
-	localStereoFunc { ^localStereoFunc; }
+	localStereoFunc { ^localStereoFunc }
 }
 
 //-------------------------------------------//
 //               CONVOLUTION                 //
 //-------------------------------------------//
 
-ConvolutionDef : EffectDef {
+ConvolutionDef : EffectDef
+{
 	classvar <localMonoFunc, <localStereoFunc, <key;
 
-	*initClass {
-
+	*initClass
+	{
 		key = "Conv";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp |
@@ -160,8 +163,8 @@ ConvolutionDef : EffectDef {
 		};
 	}
 
-	prFourChanGlobal {
-
+	prFourChanGlobal
+	{
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			[
@@ -173,8 +176,8 @@ ConvolutionDef : EffectDef {
 		};
 	}
 
-	prTwelveChanGlobal {
-
+	prTwelveChanGlobal
+	{
 		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
@@ -194,22 +197,23 @@ ConvolutionDef : EffectDef {
 		};
 	}
 
-	key { ^key; }
+	key { ^key }
 
-	localMonoFunc { ^localMonoFunc; }
+	localMonoFunc { ^localMonoFunc }
 
-	localStereoFunc { ^localStereoFunc; }
+	localStereoFunc { ^localStereoFunc }
 }
 
 //-------------------------------------------//
 //                 NOREVERB                  //
 //-------------------------------------------//
 
-ClearDef : EffectDef {
+ClearDef : EffectDef
+{
 	classvar <localMonoFunc, <localStereoFunc, <key;
 
-	*initClass {
-
+	*initClass
+	{
 		key = "Clear";
 
 		localMonoFunc = { | lrevRef, p, rirWspectrum, locallev, room, damp| };
@@ -224,16 +228,17 @@ ClearDef : EffectDef {
 //               Base Classe                 //
 //-------------------------------------------//
 
-EffectDef {
+EffectDef
+{
 	var <globalFunc;
 
-	*initClass { Class.initClassTree(MoscaUtils); }
+	*initClass { Class.initClassTree(MoscaUtils) }
 
-	*new1stOrder { ^super.new.ctr1stOrder(); }
+	*new1stOrder { ^super.new.ctr1stOrder() }
 
-	*new2ndOrder { ^super.new.ctr2ndOrder(); }
+	*new2ndOrder { ^super.new.ctr2ndOrder() }
 
-	ctr1stOrder { this.prFourChanGlobal(); }
+	ctr1stOrder { this.prFourChanGlobal() }
 
-	ctr2ndOrder { this.prTwelveChanGlobal(); }
+	ctr2ndOrder { this.prTwelveChanGlobal() }
 }

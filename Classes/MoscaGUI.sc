@@ -18,10 +18,10 @@
 
 MoscaGUI
 {
-	var sources, control, guiInt; // initial arguments
+	var sources, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wdados, waux, dialView, masterView, originView;
-	var autoBut;
+	var autoBut, <>ctlWidth = 370, loadBut, origineBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var isPlay, origine, orientation, scale;
 	var zAxis, zSlider, zNumBox, zEvent;
@@ -37,7 +37,7 @@ MoscaGUI
 	}
 
 	*new
-	{ | size, sources, control, palette, ossiaParent, guiInt |
+	{ | aMosca, sources, size, palette, guiInt |
 
 		var p;
 
@@ -49,18 +49,20 @@ MoscaGUI
 			{ p = QtGUI.palette }
 		);
 
-		^super.newCopyArgs(sources, control, guiInt).ctr(p, ossiaParent, size);
+		^super.newCopyArgs(sources, aMosca.control, guiInt, p).ctr(aMosca, size);
 	}
 
 	ctr
-	{ | palette, ossiaParent, size |
+	{ | aMosca, size |
 
-		isPlay = ossiaParent.find("Automation/Play");
+		// get ossia parameters
+		isPlay = aMosca.ossiaParent.find("Automation/Play");
 
-		origine = ossiaParent.find("Origine");
-		orientation = ossiaParent.find("Orientation");
-		scale = ossiaParent.find("Scale_factor");
+		origine = aMosca.ossiaParent.find("Origine");
+		orientation = aMosca.ossiaParent.find("Orientation");
+		scale = aMosca.ossiaParent.find("Scale_factor");
 
+		// set initial size values
 		width = size;
 
 		if (width < 600) { width = 600 };
@@ -69,12 +71,15 @@ MoscaGUI
 		height = width; // on init
 		halfHeight = halfWidth;
 
+		// main window
 		win = Window("Mosca", Rect(0, 0, width, height)).front; // main indow
 		win.view.palette = palette;
 
+		// source index
 		StaticText(win, Rect(6, 6, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 6, 30, 20)).string_("1");
 
+		// z Axis widgets
 		zAxis = StaticText(win);
 		zAxis.string = "Z-Axis";
 		zNumBox = NumberBox(win)
@@ -110,14 +115,88 @@ MoscaGUI
 			{ zNumBox.valueAction = num.value - 0.5 * 2; }.defer;
 		});
 
-		originView = UserView(win);
+		// sub view for grouping global transforamtion widgets (effects, rotations, mouvements)
+		originView = UserView(win, Rect(width - 88, height - 85, 88, 100));
+		originView.addFlowLayout();
+
+		aMosca.ossiaParent.find("Track_Center").gui(originView);
+
+		origineBut = Button(originView, Rect(0, 0, 82, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Position",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Close Position",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({
+
+			var widget = aMosca.ossiaParent.find("Orientation");
+
+			if (widget.window.notNil)
+			{
+				if (widget.window.isClosed)
+				{
+					widget.gui();
+					aMosca.ossiaParent.find("Origine")
+					.gui(widget.window);
+					scale.gui(widget.window);
+				} {
+					widget.window.close
+				}
+			} {
+				widget.gui();
+				aMosca.ossiaParent.find("Origine")
+				.gui(widget.window);
+				scale.gui(widget.window);
+			}
+		});
+
 
 		dialView = UserView(win); // extra options view
 
+		// sub view for automation control, master volume, scale factor
 		masterView = UserView(win, Rect(0, height - 120, 325, 116));
 		masterView.addFlowLayout();
 
-		autoBut = Button(masterView, Rect(0, height - 95, 319, 20))
+		loadBut = Button(masterView, Rect(0, height - 95, 156, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Load Automation",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({
+
+			var bounds, dwin, textField, success = false;
+
+			bounds = Rect(100,300,300,30);
+
+			dwin = Window("Load: select automation directory", bounds)
+			.onClose_({ if (success.not) { "Aborted load!".postln } });
+
+			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
+			.value_(control.presetDir)
+			.action_({ | tf |
+				success = true;
+				dwin.close;
+				aMosca.loadData(tf.value);
+			});
+
+			dwin.front;
+		});
+
+		autoBut = Button(masterView, Rect(0, height - 95, 157, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -127,7 +206,7 @@ MoscaGUI
 					palette.color('middark', 'active')
 				],
 				[
-					"Close Automation Control",
+					"Close Control",
 					palette.color('middark', 'active'),
 					palette.color('light', 'active')
 				]
@@ -138,18 +217,18 @@ MoscaGUI
 			{
 				if (control.gui.win.isClosed)
 				{
-					this.automationControl()
+					this.automationControl(aMosca)
 				} {
 					control.gui.win.close
 				}
 			} {
-				this.automationControl()
+				this.automationControl(aMosca)
 			}
 		});
 
-		ossiaParent.find("Master_level").gui(masterView);
-		scale.gui(masterView);
+		aMosca.ossiaParent.find("Master_level").gui(masterView);
 
+		// main mouse interaction for selecting and mooving sources
 		win.view.mouseDownAction_(
 			{ | view, mx, my, modifiers, buttonNumber, clickCount |
 
@@ -250,7 +329,7 @@ MoscaGUI
 				+ zSliderHeight, 40, 20));
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
-			originView.bounds_(Rect(width - 255, height - 85, 250, 100));
+			originView.bounds_(Rect(width - 88, height - 85, 88, 100));
 
 			// hdtrkcheck.bounds_(Rect(width - 105, height - 105, 265, 20));
 
@@ -416,12 +495,65 @@ MoscaGUI
 	}
 
 	automationControl
-	{
-		var canv;
+	{ | instance |
 
-		control.front();
-		canv = control.gui.win;
-		canv.bounds.height_(canv.bounds.height + 26);
+		var ossiaLoop, loopEvent, loopCheck;
+		var canv = Window.new("Automation Control", Rect(0, 0, ctlWidth, 43)).front;
+
+		// canv.background_(palette.color('base', 'active'));
+
+		control.front(canv, Rect(0, 0, ctlWidth, 20));
+		canv.onClose_({ autoBut.value_(0) });
+
+		Button(canv, Rect(0, 23, 200, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Save Automation",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({
+
+			var bounds, dwin, textField, success = false;
+
+			bounds = Rect(100,300,300,30);
+
+			dwin = Window("Save: select automation dir", bounds)
+			.onClose_({ if (success.not) { "Aborted save".postln } });
+
+			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
+			.value_(control.presetDir)
+			.action_({ | tf |
+				success = true;
+				dwin.close;
+				instance.saveData(tf.value);
+			});
+
+			dwin.front;
+		});
+
+		CheckBox(canv, Rect(206, 23, 200, 20), "Slave to MMC")
+		.focusColor_(palette.color('midlight', 'active'))
+		.action_({ | check | instance.slaveToMMC(check.value) });
+
+		ossiaLoop = instance.ossiaParent.find("/Automation/Loop");
+
+		loopEvent = { | param |
+			{
+				if (param.value != loopCheck.value)
+				{ loopCheck.value_(param.value) };
+			}.defer;
+		};
+
+		ossiaLoop.addDependant(loopEvent);
+
+		loopCheck = CheckBox(canv, Rect(316, 23, 200, 20), "Loop")
+		.focusColor_(palette.color('midlight', 'active'))
+		.action_({ | check | ossiaLoop.v_(check.value) })
+		.onClose_({ ossiaLoop.removeDependant(loopEvent) });
 	}
 
 	free

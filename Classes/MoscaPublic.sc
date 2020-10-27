@@ -37,6 +37,29 @@
 		control.seek(control.now);
 	}
 
+	slaveToMMC
+	{ | enable = false |
+
+		if (enable)
+		{
+			if (slaved.not)
+			{
+				"Slaving transport to MMC".postln;
+				MIDIIn.addFuncTo(\sysex, sysex);
+			};
+
+			slaved = true;
+		} {
+			if (slaved)
+			{
+				"MIDI input closed".postln;
+				MIDIIn.removeFuncFrom(\sysex, sysex);
+			};
+
+			slaved = false;
+		};
+	}
+
 	inputFile
 	{ | sourceNum = 1, path = "", stream = false |
 
@@ -315,7 +338,7 @@
 
 		if (gui.isNil)
 		{
-			gui = MoscaGUI(size, sources, control, palette, ossiaParent, lag);
+			gui = MoscaGUI(this, sources, size, palette, lag);
 
 			gui.win.onClose({
 				gui.free;
@@ -324,4 +347,7 @@
 		}
 	}
 
+	track { | enable = true |
+		if (ossiaTrack.value != enable) { ossiaTrack.value = enable };
+	}
 }

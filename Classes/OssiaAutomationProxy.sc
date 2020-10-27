@@ -73,7 +73,9 @@ AutomationView : QView {
 AutomationProxy //: AutomationView
 // is the QView inheritence needed ?
 {
-	var val, >action;
+	var val, <>action;
+
+	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
 
 	*new { | val | ^super.newCopyArgs(val) }
 
@@ -92,6 +94,8 @@ OssiaAutomationProxy //: AutomationView
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// single value version
 	var <node;
+
+	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
 
 	*new
 	{ | parent_node, name, type, domain, default_value, bounding_mode = 'free',
@@ -125,7 +129,7 @@ OssiaAutomationProxy //: AutomationView
 OssiaAutomationCenter
 {
 	// defines the listenig point position and orientation
-	var <ossiaOrigine, <ossiaOrient;
+	var <ossiaOrient, <ossiaOrigine;
 	var oX, oY, oZ;
 	var <heading, <pitch, <roll;
 	var <origine, <scale;
@@ -134,6 +138,16 @@ OssiaAutomationCenter
 
 	ctr
 	{ | parent_node, allCritical, automation |
+
+		ossiaOrient = OSSIA_Parameter(parent_node, "Orientation", OSSIA_vec3f,
+			domain:[[-pi, -pi, -pi], [pi, pi, pi]], default_value:[0, 0, 0],
+			bounding_mode:'wrap', critical:allCritical, repetition_filter:true);
+
+		ossiaOrient.unit_(OSSIA_orientation.euler);
+
+		heading = AutomationProxy(0.0);
+		pitch = AutomationProxy(0.0);
+		roll = AutomationProxy(0.0);
 
 		origine = Cartesian();
 
@@ -147,16 +161,6 @@ OssiaAutomationCenter
 		oY = AutomationProxy(0.0);
 		oZ = AutomationProxy(0.0);
 
-		ossiaOrient = OSSIA_Parameter(parent_node, "Orientation", OSSIA_vec3f,
-			domain:[[-pi, -pi, -pi], [pi, pi, pi]], default_value:[0, 0, 0],
-			bounding_mode:'wrap', critical:allCritical, repetition_filter:true);
-
-		ossiaOrient.unit_(OSSIA_orientation.euler);
-
-		heading = AutomationProxy(0.0);
-		pitch = AutomationProxy(0.0);
-		roll = AutomationProxy(0.0);
-
 		scale = OssiaAutomationProxy(parent_node, "Scale_factor", Float,
 			[0.01, 10],	1, 'clip', critical:allCritical);
 	}
@@ -165,32 +169,6 @@ OssiaAutomationCenter
 	{ | sources |
 
 		var halfPi = MoscaUtils.halfPi();
-
-		ossiaOrigine.callback_({ | num |
-
-			origine.set(num[0].value, num[1].value, num[2].value);
-
-			sources.do({ | item |
-				var cart = (item.coordinates.cartVal - origine)
-				.rotate(heading.value.neg)
-				.tilt(pitch.value.neg)
-				.tumble(roll.value.neg)
-				/ scale.value;
-
-				item.coordinates.cartBack_(false);
-
-				item.coordinates.azElDist.v_([cart.rho,
-				(cart.theta - halfPi).wrap(-pi, pi), cart.phi]);
-
-				item.coordinates.cartBack_(true);
-			});
-
-			if (oX.value != num[0].value) { oX.valueAction = num[0].value };
-
-			if (oY.value != num[1].value) { oY.valueAction = num[1].value };
-
-			if (oZ.value != num[2].value) { oZ.valueAction = num[2].value };
-		});
 
 		ossiaOrient.callback_({ | num |
 
@@ -203,8 +181,8 @@ OssiaAutomationCenter
 
 				item.coordinates.cartBack_(false);
 
-				item.coordinates.azElDist.v_([euler.rho,
-					(euler.theta - halfPi).wrap(-pi, pi), euler.phi]);
+				item.coordinates.azElDist.v_([(euler.theta - halfPi).wrap(-pi, pi).raddeg,
+					euler.phi.raddeg, euler.rho]);
 
 				item.coordinates.cartBack_(true);
 			});
@@ -216,17 +194,44 @@ OssiaAutomationCenter
 			if (roll.value != num[2].value) { roll.valueAction_(num[2].value) };
 		});
 
-		oX.action_({ | num | ossiaOrigine.v_([num.value, oY.value, oZ.value]) });
-
-		oY.action_({ | num | ossiaOrigine.v_([oX.value, num.value, oZ.value]) });
-
-		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]) });
-
 		heading.action_({ | num | ossiaOrient.v_([num.value, pitch.value, roll.value]) });
 
 		pitch.action_({ | num | ossiaOrient.v_([heading.value, num.value, roll.value]) });
 
 		roll.action_({ | num | ossiaOrient.v_([heading.value, pitch.value, num.value]) });
+
+		ossiaOrigine.callback_({ | num |
+
+			origine.set(num[0].value, num[1].value, num[2].value);
+
+			sources.do({ | item |
+
+				var cart = (item.coordinates.cartVal - origine)
+				.rotate(heading.value.neg)
+				.tilt(pitch.value.neg)
+				.tumble(roll.value.neg)
+				/ scale.value;
+
+				item.coordinates.cartBack_(false);
+
+				item.coordinates.azElDist.v_([(cart.theta - halfPi).wrap(-pi, pi).raddeg,
+					cart.phi.raddeg, cart.rho]);
+
+				item.coordinates.cartBack_(true);
+			});
+
+			if (oX.value != num[0].value) { oX.valueAction = num[0].value };
+
+			if (oY.value != num[1].value) { oY.valueAction = num[1].value };
+
+			if (oZ.value != num[2].value) { oZ.valueAction = num[2].value };
+		});
+
+		oX.action_({ | num | ossiaOrigine.v_([num.value, oY.value, oZ.value]) });
+
+		oY.action_({ | num | ossiaOrigine.v_([oX.value, num.value, oZ.value]) });
+
+		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]) });
 	}
 
 	dockTo

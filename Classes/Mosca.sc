@@ -25,11 +25,12 @@
 
 Mosca
 {
-	var dur, autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
-	var renderer, effects, center, <sources, srcGrp, convertor, virtualAmbi;
-	var ossiaMasterPlay, ossiaMasterLib, dependant, needConvert, needVirtualAmbi;
-	var control, watcher, ossiaAutomation, ossiaPlay, // automation control
-	ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack;
+	var dur, <autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
+	var renderer, effects, center, sources, srcGrp;
+	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
+	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
+	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
+	ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack, watcher;
 
 	*new
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
@@ -92,7 +93,9 @@ Mosca
 		center = OssiaAutomationCenter(ossiaParent, allCritical);
 
 		sources = Array.fill(nsources,
-			{ | i | MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
+			{ | i |
+
+				MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
 				spat.spatList, effects.ossiaGlobal.node.domain.values(), center);
 			}
 		);
@@ -109,6 +112,8 @@ Mosca
 		};
 
 		this.prSetAction(spat.defs);
+		this.prDockTo();
+		this.prSetSysex();
 
 		// setup and run underlying synth routine
 		watcher = Routine.new({
@@ -181,6 +186,8 @@ Mosca
 
 		ossiaRec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,
 			critical:true, repetition_filter:true);
+
+		ossiaTrack = OSSIA_Parameter(ossiaParent, "Track_Center", Boolean, default_value:true);
 	}
 
 	prSetAction
@@ -192,11 +199,7 @@ Mosca
 
 		effects.setAction();
 
-		dependant = { | obj ... loadArgs | this.prCheckConversion(loadArgs); };
-
-		needConvert = 0;
-
-		needVirtualAmbi = 0;
+		dependant = { | obj ... loadArgs | this.prCheckConversion(loadArgs) };
 
 		sources.do({ | item |
 			item.setAction(effects.effectList, spatDefs, center, ossiaPlay);
@@ -279,8 +282,8 @@ Mosca
 		});
 
 		ossiaLoop.callback_({ | val |
-			if (autoLoop.value != val.value)
-			{ autoLoop.valueAction = val.value };
+			if (autoLoop != val.value)
+			{ autoLoop = val.value };
 		});
 
 		ossiaTransport.callback_({ | num |
@@ -296,6 +299,23 @@ Mosca
 				control.stopRecording;
 			};
 		});
+
+		ossiaTrack.callback_({ | v |
+			var orientation = center.ossiaOrient;
+			var origine = center.ossiaOrigine;
+
+			if (v)
+			{
+				orientation.access_mode_(\bi);
+				origine.access_mode_(\bi);
+			} {
+				orientation.access_mode_(\set);
+				origine.access_mode_(\set);
+
+				orientation.value_([0, 0, 0]);
+				origine.value_([0, 0, 0]);
+			};
+		});
 	}
 
 	prDockTo
@@ -305,6 +325,9 @@ Mosca
 		renderer.dockTo(control);
 
 		sources.do({ | item | item.dockTo(control); });
+
+		control.snapshot; // necessary to call at least once before saving automation
+		// otherwise will get not understood errors on load
 	}
 
 	prCheckConversion
@@ -362,6 +385,46 @@ Mosca
 					if (convertor.notNil && (needConvert == 0))
 					{ convertor.free }; // free converter if no longer needed
 				};
+			};
+		};
+	}
+
+	prSetSysex
+	{
+		sysex  = { | src, sysex |
+			// This should be more elaborate - other things might trigger it...fix this!
+			if (sysex[3] == 6)
+			{
+				("We have : " ++ sysex[4] ++ " type action").postln;
+
+				switch (sysex[4],
+					1,
+					{
+						"Stop".postln;
+						control.stop;
+					},
+					2,
+					{
+						"Play".postln;
+						control.play;
+					},
+					3,
+					{
+						"Deffered Play".postln;
+						control.play;
+					},
+					68,
+					{
+						var goto;
+
+						("Go to event: " ++ sysex[7] ++ "hr " ++ sysex[8] ++ "min "
+							++ sysex[9] ++ "sec and " ++ sysex[10] ++ "frames").postln;
+
+						goto =  (sysex[7] * 3600) + (sysex[8] * 60) + sysex[9] +
+						(sysex[10] / 30);
+
+						control.seek(goto);
+				});
 			};
 		};
 	}

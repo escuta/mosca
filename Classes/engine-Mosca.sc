@@ -85,34 +85,6 @@ GUI Parameters usable in SynthDefs
 		};
 	}
 
-	remoteCtl { |bool|
-		if (bool) {
-
-			ossiaorient.access_mode_(\bi);
-			ossiaorigine.access_mode_(\bi);
-		} {
-			headingnumboxProxy.valueAction = 0;
-			pitchnumboxProxy.valueAction = 0;
-			rollnumboxProxy.valueAction = 0;
-			oxnumboxProxy.valueAction = 0;
-			oynumboxProxy.valueAction = 0;
-			oznumboxProxy.valueAction = 0;
-
-			ossiaorient.access_mode_(\set);
-			ossiaorigine.access_mode_(\set);
-		};
-
-		if (ossiaremotectl.value != bool) {
-			ossiaremotectl.value = bool;
-		};
-
-		if (guiflag) {
-			if (hdtrkcheck.value != bool.asInteger) {
-				{ hdtrkcheck.value = bool.asInteger; }.defer;
-			};
-		};
-	}
-
 	blips {
 		Routine.new({
 			4.do{
