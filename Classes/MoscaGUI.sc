@@ -90,30 +90,27 @@ MoscaGUI
 		.scroll_step_(0.01)
 		.align_(\center)
 		.action_({ | num |
-			{
-				zSlider.value = (num.value * 0.5) + 0.5;
 
-				if (orientation.value == [0, 0, 0])
-				{ // exeption to record z mouvements after XY automation
-					sources[currentSource].coordinates.z
-					.valueAction_(num.value + origine.value[2]);
-				} {
-					var sphe = sources[currentSource].coordinates.spheVal
-					.asCartesian.z_(num.value).asSpherical;
+			zSlider.value_((num.value * 0.5) + 0.5);
 
-					sources[currentSource].coordinates.azElDist.value_(
-						[(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
-							sphe.phi.raddeg,
-							sphe.rho]);
-				};
-			}.defer;
+			if (orientation.value == [0, 0, 0])
+			{ // exeption to record z mouvements after XY automation
+				sources[currentSource].coordinates.z
+				.valueAction_(num.value + origine.value[2]);
+			} {
+				var sphe = sources[currentSource].coordinates.spheVal
+				.asCartesian.z_(num.value).asSpherical;
+
+				sources[currentSource].coordinates.azElDist.value_(
+					[(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
+						sphe.phi.raddeg,
+						sphe.rho]);
+			};
 		});
 
 		zSlider = Slider(win).focusColor_(palette.color('midlight', 'active'))
 		.background_(palette.color('middark', 'active'))
-		.action_({ | num |
-			{ zNumBox.valueAction = num.value - 0.5 * 2; }.defer;
-		});
+		.action_({ | num | zNumBox.valueAction_((num.value - 0.5) * 2) });
 
 		// sub view for grouping global transforamtion widgets (effects, rotations, mouvements)
 		originView = UserView(win, Rect(width - 88, height - 128, 88, 124));
@@ -389,19 +386,21 @@ MoscaGUI
 
 			sources.do({ | item, i |
 				var x, y, numColor;
-				var topView = item.coordinates.spheVal * zoomFactor;
+				var topView = item.coordinates.spheVal;
 				var lev = topView.z;
+
+				// z set NumBox and Slider
+				if (i == currentSource) { zNumBox.valueAction_(lev) };
+
+				topView = topView * zoomFactor;
 
 				x = halfWidth + (topView.x * halfHeight);
 				y = halfHeight - (topView.y * halfHeight);
 
-				if (i == currentSource) { zNumBox.valueAction_(lev) };
-				// z set NumBox and Slider
+				Pen.addArc(x@y, max((14 * zoomFactor) + (lev * halfHeight * 0.02), 0), 0, 2pi);
 
-				Pen.addArc(x@y, max(14 + (lev * halfHeight * 0.02), 0), 0, 2pi);
-
-				if ((item.play.value || isPlay.value) && (lev.abs <= plim)) {
-
+				if ((item.play.value || isPlay.value) && ((lev * zoomFactor) <= plim))
+				{
 					numColor = palette.color('window', 'active');
 
 					Pen.fillColor = palette.color('light', 'active')

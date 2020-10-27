@@ -215,11 +215,11 @@ PozyxOSC
 
 				if (flag.v)
 				{
-					var angles = [msg[1], msg[3], msg[3]] / 16;
+					var angles = [msg[1], msg[2], msg[3]] / 16;
 
 					center.ossiaOrient.v_(
 						[
-							(-1 * angles[1]).degrad,
+							(-1 * angles[1]).degrad.wrap(-pi, pi),
 							angles[2].degrad,
 							angles[3].degrad,
 						]
