@@ -192,7 +192,11 @@ Mosca : MoscaBase
 
 		effects.setAction();
 
-		dependant = { | obj ... loadArgs | this.prCheckConversion(loadArgs) };
+		dependant = { | obj ... loadArgs |
+
+			if (loadArgs.removeAt(0) == \audio)
+			{ this.prCheckConversion(loadArgs) }
+		};
 
 		sources.do({ | item |
 			item.setAction(effects.effectList, spatDefs, center, ossiaPlay);

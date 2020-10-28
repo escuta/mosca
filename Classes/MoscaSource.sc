@@ -22,7 +22,7 @@ MoscaSource[]
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
-	var src, <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
+	var <src, <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
 	var input, <file, <stream, <scSynths, <external, <nChan; // inputs types
 	var <globalAmount, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <angle, <rotation, <directivity; // input specific parameters
@@ -52,6 +52,8 @@ MoscaSource[]
 
 		stream.node.description_("Prefer loading smaler files and streaming when they excid 6 minutes");
 
+		loop = OssiaAutomationProxy(input, "Loop", Boolean, critical:true);
+
 		external = OssiaAutomationProxy(input, "External", Boolean, critical: true);
 
 		external.node.description_("External input, harware or software");
@@ -79,8 +81,6 @@ MoscaSource[]
 		play = OssiaAutomationProxy(src, "play", Boolean, critical:true);
 
 		firstTime = true;
-
-		loop = OssiaAutomationProxy(src, "Loop", Boolean, critical:true);
 
 		level = OssiaAutomationProxy(src, "Level", Float, [-96, 12],
 			0, 'clip', critical:allCritical);
@@ -383,6 +383,8 @@ MoscaSource[]
 			defName = library.value ++ playType ++ chanNum ++ fxType;
 		};
 
+		this.changed(\ctl);
+
 		defName.postln;
 	}
 
@@ -468,7 +470,7 @@ MoscaSource[]
 				}
 			);
 
-			this.changed(true, spatType); // triggers Mosca's prCheckConversion method
+			this.changed(\audio, true, spatType); // triggers Mosca's prCheckConversion method
 
 			spatializer = Synth(defName, // launch spatializer synth
 				[
@@ -485,7 +487,7 @@ MoscaSource[]
 				] ++ args,
 				srcGrp.get()
 			).onFree({
-				this.changed(false, spatType);
+				this.changed(\audio, false, spatType);
 				spatializer = nil;
 			});
 		};

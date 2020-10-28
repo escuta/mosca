@@ -20,12 +20,14 @@ MoscaGUI
 {
 	var sources, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
-	var <win, wdados, waux, dialView, masterView, originView;
+	var <win, wdados, waux;
+	var localView, ctlView, masterView, dialView, originView;
 	var autoBut, <>ctlWidth = 370, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
+	var exInCheck, scInCheck, loopCheck;
 	var isPlay, origine, orientation, scale;
 	var zAxis, zSlider, zNumBox, zEvent;
-	var drawEvent, lastGui = 0;
+	var drawEvent, dependant, lastGui = 0;
 	var mouseButton, furthest, sourceList;
 
 	classvar halfPi;
@@ -76,8 +78,103 @@ MoscaGUI
 		win.view.palette = palette;
 
 		// source index
-		StaticText(win, Rect(6, 6, 50, 20)).string_("Source");
-		sourceNum = StaticText(win, Rect(50, 6, 30, 20)).string_("1");
+		StaticText(win, Rect(3, 3, 50, 20)).string_("Source");
+		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");
+
+		exInCheck = Button(win, Rect(3, 30, 74, 20), "EX-in")
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"EX-in",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"EX-in",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({ | butt | sources[currentSource].external.value_(butt.value) });
+
+		scInCheck = Button( win, Rect(78, 30, 74, 20), "SC-in")
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"SC-in",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"SC-in",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({ | butt | sources[currentSource].scSynths.value_(butt.value) });
+
+		loopCheck = Button( win, Rect(3, 70, 150, 20), "Loop")
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Loop",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Loop",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({ | butt | sources[currentSource].loop.value_(butt.value) });
+
+		// sub view containing local effect parameter
+		localView = UserView(win, Rect(0, height - 262, 156, 20));
+		localView.addFlowLayout();
+
+		// sub view for automation control, master volume, scale factor
+		masterView = UserView(win, Rect(0, height - 76, 325, 72));
+		masterView.addFlowLayout();
+
+		fxBut = Button(masterView, Rect(0, height - 95, 320, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Global Effect",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Close Effect",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({ | butt |
+
+			var widget = aMosca.ossiaParent.find("Global_effect");
+
+			if (widget.window.notNil)
+			{
+				if (widget.window.isClosed)
+				{
+					widget.gui(childrenDepth: 2);
+					widget.window.onClose_({ butt.value_(0)})
+				} {
+					widget.window.close
+				}
+			} {
+				widget.gui(childrenDepth: 2);
+				widget.window.onClose_({ butt.value_(0) })
+			}
+		});
+
+		aMosca.ossiaParent.find("Master_level").gui(masterView);
 
 		// z Axis widgets
 		zAxis = StaticText(win);
@@ -218,48 +315,19 @@ MoscaGUI
 			}
 		});
 
-
 		dialView = UserView(win); // extra options view
 
-		// sub view for automation control, master volume, scale factor
-		masterView = UserView(win, Rect(0, height - 72, 325, 72));
-		masterView.addFlowLayout();
+		// sub view containing the controls of the selected source
+		ctlView = UserView(win, Rect(0, 90, 156, 20));
+		ctlView.addFlowLayout();
 
-		fxBut = Button(masterView, Rect(0, height - 95, 320, 20))
-		.focusColor_(palette.color('midlight', 'active'))
-		.states_(
-			[
-				[
-					"Global Effect",
-					palette.color('light', 'active'),
-					palette.color('middark', 'active')
-				],
-				[
-					"Close Effect",
-					palette.color('middark', 'active'),
-					palette.color('light', 'active')
-				]
-			]
-		).action_({ | butt |
+		dependant = { | obj ... loadArgs |
 
-			var widget = aMosca.ossiaParent.find("Global_effect");
+			if (loadArgs[0] == \ctl)
+			{ this.prUpdateCtl(obj) }
+		};
 
-			if (widget.window.notNil)
-			{
-				if (widget.window.isClosed)
-				{
-					widget.gui(childrenDepth: 2);
-					widget.window.onClose_({ butt.value_(0)})
-				} {
-					widget.window.close
-				}
-			} {
-				widget.gui(childrenDepth: 2);
-				widget.window.onClose_({ butt.value_(0) })
-			}
-		});
-
-		aMosca.ossiaParent.find("Master_level").gui(masterView);
+		this.prSourceSelect(currentSource); // initialize with the first source
 
 		// main mouse interaction for selecting and mooving sources
 		win.view.mouseDownAction_(
@@ -287,26 +355,32 @@ MoscaGUI
 								+ (y - item.coordinates.spheVal.y).squared).sqrt;
 
 							// claculate distance from click
-							if(dis < closest[1].value) {
+							if (dis < closest[1])
+							{
 								closest[1] = dis;
 								closest[0] = i;
 							};
 						});
 
-						this.sourceSelect(closest[0].value);
-						this.moveSource(mx, my);
+						if (closest[0] != currentSource)
+						{ this.prSourceSelect(closest[0]) };
+
+						this.prMoveSource(mx, my);
 					},
 					1,
 					{
-						sourceList = ListView(win,
-							Rect(mx,my,90,70))
+						sourceList = ListView(win, Rect(mx,my,90,70))
 						.items_(sources.collect(
-								{ | s | "Source " ++ (s.index + 1).asString }
+							{ | s | "Source " ++ (s.index + 1).asString }
 						))
 						.value_(-1) // to avoid the deffault to 1
 						.action_({ | sel |
-							this.sourceSelect(sel.value);
-							this.moveSource(mx + 45, my + 35);
+
+							if (sel.value != currentSource)
+							{ this.prSourceSelect(sel.value) };
+
+							this.prMoveSource(mx + 45, my + 35);
+
 							sourceList.close;
 							sourceList = nil;
 						});
@@ -324,8 +398,8 @@ MoscaGUI
 
 		win.view.mouseMoveAction_({ | view, mx, my, modifiers |
 
-			if (mouseButton == 0) { this.moveSource(mx, my) };
 			// left button
+			if (mouseButton == 0) { this.prMoveSource(mx, my) };
 		});
 
 		win.view.mouseWheelAction_({ | view, mx, my, modifiers, dx, dy |
@@ -363,11 +437,11 @@ MoscaGUI
 
 			originView.bounds_(Rect(width - 88, height - 128, 88, 124));
 
-			// hdtrkcheck.bounds_(Rect(width - 105, height - 105, 265, 20));
+			// dialView.bounds_(Rect(width - 100, 10, 180, 150));
 
-			dialView.bounds_(Rect(width - 100, 10, 180, 150));
+			localView.bounds_(localView.bounds.top_(height - 262));
 
-			masterView.bounds_(Rect(0, height - 72, 325, 72));
+			masterView.bounds_(masterView.bounds.top_(height - 76));
 
 			drawEvent.value;
 		});
@@ -444,31 +518,46 @@ MoscaGUI
 		});
 	}
 
-	sourceSelect
-	{ | item |
+	prSourceSelect
+	{ | index |
 
-		var src, topview;
+		var source, topview;
 
-		currentSource = item.value;
+		source = sources[index];
 
-		src = sources[currentSource];
+		sources[currentSource].removeDependant(dependant);
+		source.addDependant(dependant);
 
-		sourceNum.string_(item.value + 1).asString;
+		currentSource = index;
 
-		topview = src.coordinates.spheVal * zoomFactor;
+		sourceNum.string_(currentSource + 1).asString;
+
+		topview = source.coordinates.spheVal * zoomFactor;
 
 		zNumBox.value_(topview.z);
 		zSlider.value_((zNumBox.value * 0.5) + 0.5);
 
-/*		updateGuiCtl.value(\chan);
+		ctlView.close;
+
+		// initialize with the first source
+		source.library.node.gui(ctlView);
+		source.play.node.gui(ctlView);
+		source.level.node.gui(ctlView);
+		source.contraction.node.gui(ctlView);
+		source.doppler.node.gui(ctlView);
+		source.globalAmount.node.gui(ctlView);
+
+		//source.localEffect.node.gui(localView, 0);
+
+/*		prUpdateCtl.value(\chan);
 
 		loopcheck.value = lpcheckProxy[currentSource].value;
 
-		updateGuiCtl.value(\lib, libboxProxy[currentSource].value);
+		prUpdateCtl.value(\lib, libboxProxy[currentSource].value);
 
-		updateGuiCtl.value(\dstrv, dstrvboxProxy[currentSource].value);
+		prUpdateCtl.value(\dstrv, dstrvboxProxy[currentSource].value);
 
-		updateGuiCtl.value(\src);
+		prUpdateCtl.value(\src);
 
 		winCtl[0][0].value = vboxProxy[currentSource].value;
 		winCtl[1][0].value = vboxProxy[currentSource].value.curvelin(inMin:-96, inMax:12, curve:-3);
@@ -503,7 +592,7 @@ MoscaGUI
 		};*/
 	}
 
-	moveSource
+	prMoveSource
 	{ |x, y|
 
 		var point = Cartesian(
@@ -531,7 +620,7 @@ MoscaGUI
 	automationControl
 	{ | instance |
 
-		var ossiaLoop, loopEvent, loopCheck;
+		var ossiaLoop, loopEvent, loop;
 		var canv = Window.new("Automation Control", Rect(0, 0, ctlWidth, 43)).front;
 
 		// canv.background_(palette.color('base', 'active'));
@@ -577,17 +666,218 @@ MoscaGUI
 
 		loopEvent = { | param |
 			{
-				if (param.value != loopCheck.value)
-				{ loopCheck.value_(param.value) };
+				if (param.value != loop.value)
+				{ loop.value_(param.value) };
 			}.defer;
 		};
 
 		ossiaLoop.addDependant(loopEvent);
 
-		loopCheck = CheckBox(canv, Rect(316, 23, 200, 20), "Loop")
+		loop = CheckBox(canv, Rect(316, 23, 200, 20), "Loop")
 		.focusColor_(palette.color('midlight', 'active'))
 		.action_({ | check | ossiaLoop.v_(check.value) })
 		.onClose_({ ossiaLoop.removeDependant(loopEvent) });
+	}
+
+	prUpdateCtl
+	{ | src |
+
+		switch (src.chanNum,
+			1,
+			{
+				src.angle.node.closeGui();
+				src.rotation.node.closeGui();
+			},
+			2,
+			{
+				src.angle.node.gui(ctlView);
+				src.rotation.node.closeGui();
+			},
+			{
+				src.angle.node.closeGui();
+				src.rotation.node.gui(ctlView);
+
+				if (src.library.value == "ATK")
+				{ src.directivity.node.gui(ctlView) }
+			}
+		);
+
+		switch (src.library.value,
+			"ATK",
+			{
+				src.spread.node.gui(ctlView);
+				src.diffuse.node.gui(ctlView);
+
+				src.josh.node.closeGui(1);
+			},
+			"Josh",
+			{
+				src.atk.node.closeGui(1);
+				src.josh.node.gui(ctlView, 1);
+			},
+			{
+				src.atk.node.closeGui(1);
+				src.josh.node.closeGui(1);
+			}
+		);
+
+		if (src.localEffect.value == "Clear")
+		{
+			src.localDelay.closeGui();
+			src.localDecay.closeGui();
+		} {
+			src.localDelay.gui(localView);
+			src.localDecay.gui(localView);
+		};
+
+/*			\dstrv,
+			{ dstReverbox.value = num.value;
+				case
+				{dstrvboxProxy[currentsource].value == 0}
+				{
+					winCtl[2][4].visible = false;
+					winCtl[1][4].visible = false;
+					winCtl[0][4].visible = false;
+					winCtl[2][5].visible = false;
+					winCtl[1][5].visible = false;
+					winCtl[0][5].visible = false;
+					winCtl[2][6].visible = false;
+					winCtl[1][6].visible = false;
+					winCtl[0][6].visible = false;
+				}
+				{(dstrvboxProxy[currentsource].value >= 0)
+					&& (dstrvboxProxy[currentsource].value < 3)}
+				{
+					winCtl[2][4].visible = true;
+					winCtl[1][4].visible = true;
+					winCtl[0][4].visible = true;
+					winCtl[2][5].visible = true;
+					winCtl[1][5].visible = true;
+					winCtl[0][5].visible = true;
+					winCtl[2][6].visible = true;
+					winCtl[1][6].visible = true;
+					winCtl[0][6].visible = true;
+					winCtl[0][4].value = ossiadstam[currentsource].v;
+					winCtl[1][4].value = ossiadstam[currentsource].v;
+					winCtl[0][5].value = ossiadstdec[currentsource].v;
+					winCtl[1][5].value = ossiadstdec[currentsource].v;
+					winCtl[0][6].value = ossiadstdec[currentsource].v;
+					winCtl[1][6].value = ossiadstdec[currentsource].v;
+				}
+				{dstrvboxProxy[currentsource].value >= 3}
+				{
+					winCtl[2][4].visible = true;
+					winCtl[1][4].visible = true;
+					winCtl[0][4].visible = true;
+					winCtl[2][5].visible = false;
+					winCtl[1][5].visible = false;
+					winCtl[0][5].visible = false;
+					winCtl[2][6].visible = false;
+					winCtl[1][6].visible = false;
+					winCtl[0][6].visible = false;
+					winCtl[0][4].value = ossiadstam[currentsource].v;
+					winCtl[1][4].value = ossiadstam[currentsource].v;
+				};
+			},
+			\clsrv,
+			{ clsReverbox.value = num.value;
+				case
+				{clsrvboxProxy.value == 0}
+				{
+					winCtl[0][3].visible = false;
+					winCtl[1][3].visible = false;
+					winCtl[2][3].visible = false;
+
+					originCtl[0][0].visible = false;
+					originCtl[1][0].visible = false;
+					originCtl[0][1].visible = false;
+					originCtl[1][1].visible = false;
+				}
+				{(clsrvboxProxy.value >= 0)
+					&& (clsrvboxProxy.value < 3)}
+				{
+					winCtl[0][3].visible = true;
+					winCtl[1][3].visible = true;
+					winCtl[2][3].visible = true;
+
+					originCtl[0][0].visible = true;
+					originCtl[1][0].visible = true;
+					originCtl[0][1].visible = true;
+					originCtl[1][1].visible = true;
+				}
+				{clsrvboxProxy.value >= 3}
+				{
+					winCtl[0][3].visible = true;
+					winCtl[1][3].visible = true;
+					winCtl[2][3].visible = true;
+
+					originCtl[0][0].visible = false;
+					originCtl[1][0].visible = false;
+					originCtl[0][1].visible = false;
+					originCtl[1][1].visible = false;
+				};
+			},
+			\src,
+			{case
+				{hwn[currentsource] == scn[currentsource]}
+				{
+					hwInCheck.value = false;
+					scInCheck.value = false;
+					hwCtl[0][0].visible = false;
+					hwCtl[1][0].visible = false;
+					hwCtl[0][1].visible = false;
+					hwCtl[1][1].visible = false;
+					bload.visible = true;
+					bstream.visible = true;
+					loopcheck.visible = true;
+					{ bstream.value = streamdisk[currentsource].value; }.defer;
+					{ loopcheck.value = ossialoop[currentsource].v; }.defer;
+				}
+				{hwn[currentsource]}
+				{
+					hwInCheck.value = true;
+					scInCheck.value = false;
+					bload.visible = false;
+					bstream.visible = false;
+					loopcheck.visible = false;
+					hwCtl[0][0].visible = true;
+					hwCtl[1][0].visible = true;
+					hwCtl[0][1].visible = true;
+					hwCtl[1][1].visible = true;
+					hwCtl[0][0].value =
+					switch(ncan[currentsource],
+						1, { 0 },
+						2, { 1 },
+						4, { 2 },
+						9, { 3 },
+						16, { 4 },
+						25, { 5 },
+						36, { 6 });
+					hwCtl[0][1].value = busini[currentsource];
+				}
+				{scn[currentsource]}
+				{
+					scInCheck.value = true;
+					hwInCheck.value = false;
+					bload.visible = false;
+					bstream.visible = false;
+					loopcheck.visible = false;
+					hwCtl[0][0].visible = true;
+					hwCtl[1][0].visible = true;
+					hwCtl[0][1].visible = false;
+					hwCtl[1][1].visible = false;
+					hwCtl[0][0].value =
+					switch(ncan[currentsource],
+						1, { 0 },
+						2, { 1 },
+						4, { 2 },
+						9, { 3 },
+						16, { 4 },
+						25, { 5 },
+						36, { 6 });
+				};
+			};
+		);*/
 	}
 
 	free
