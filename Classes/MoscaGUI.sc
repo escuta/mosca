@@ -327,7 +327,7 @@ MoscaGUI
 			{ this.prUpdateCtl(obj) }
 		};
 
-		this.prSourceSelect(currentSource); // initialize with the first source
+		this.prSourceSelect(currentSource);
 
 		// main mouse interaction for selecting and mooving sources
 		win.view.mouseDownAction_(
@@ -537,15 +537,14 @@ MoscaGUI
 		zNumBox.value_(topview.z);
 		zSlider.value_((zNumBox.value * 0.5) + 0.5);
 
-		ctlView.close;
+		ctlView.removeAll;
+		ctlView.decorator.reset;
 
-		// initialize with the first source
 		source.library.node.gui(ctlView);
 		source.play.node.gui(ctlView);
 		source.level.node.gui(ctlView);
 		source.contraction.node.gui(ctlView);
 		source.doppler.node.gui(ctlView);
-		source.globalAmount.node.gui(ctlView);
 
 		//source.localEffect.node.gui(localView, 0);
 
