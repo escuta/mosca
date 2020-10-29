@@ -232,6 +232,13 @@ OssiaAutomationCenter
 		oY.action_({ | num | ossiaOrigine.v_([oX.value, num.value, oZ.value]) });
 
 		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]) });
+
+		scale.node.callback_({ | v |
+
+			sources.do({ | item |
+
+			})
+		})
 	}
 
 	dockTo
@@ -343,14 +350,14 @@ OssiaAutomationCoordinates
 						.asCartesian) + center.origine).asArray);
 			};
 
-			if(spatializer.notNil)
+			if(spatializer.get.notNil)
 			{
-				spatializer.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]);
+				spatializer.get.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]);
 			};
 
-			if (synth.notNil)
+			if (synth.get.notNil)
 			{
-				synth.do({ _.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]); });
+				synth.get.do({ _.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]); });
 			};
 
 			spheBack = true;

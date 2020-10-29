@@ -355,7 +355,7 @@ MoscaBase // acts as the public interface
 	}
 
 	headTracker
-	{ | port = "/dev/ttyUSB0", offsetheading = 0, type = \orient |
+	{ | port = "/dev/ttyUSB0", offsetheading = 0, type = \orient, extraArgs |
 
 		if (tracker.isNil)
 		{
@@ -365,7 +365,7 @@ MoscaBase // acts as the public interface
 				\gps,
 				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
 				\pozyxOSC,
-				{ tracker = PozyxOSC(center, ossiaTrack, port) }
+				{ tracker = PozyxOSC(center, ossiaTrack, port, extraArgs) }
 			);
 		}
 	}

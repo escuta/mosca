@@ -18,16 +18,16 @@
 
 MoscaSource[]
 {
-	var <index, server, srcGrp, defName, effect, chanNum, spatType;
+	var <index, server, srcGrp, defName, effect, <chanNum = 1, spatType;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
-	var <src, <coordinates, <play, <loop, <library, <level, <contraction ,<doppler;
 	var input, <file, <stream, <scSynths, <external, <nChan; // inputs types
-	var <globalAmount, <localEffect, <localAmount, <localDelay, <localDecay;
+	var src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
+	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <directivity; // input specific parameters
-	var atk, <spread, <diffuse; // atk specific parameters
-	var josh, <rate, <window, <random; // joshGrain specific parameters
+	var <atk, <spread, <diffuse; // atk specific parameters
+	var <josh, <rate, <window, <random; // joshGrain specific parameters
 	var auxiliary, <aux, <check;
 
 	*new
@@ -69,7 +69,7 @@ MoscaSource[]
 
 		nChan.node.description_("number of channels for SC or External inputs");
 
-		coordinates = OssiaAutomationCoordinates(src, allCritical, center, spatializer, synths);
+		coordinates = OssiaAutomationCoordinates(src, allCritical);
 
 		library = OssiaAutomationProxy(src, "Library", String, [nil, nil, spatList],
 			"Ambitools", critical:true);
@@ -77,6 +77,24 @@ MoscaSource[]
 		library.node.description_(spatList.asString);
 
 		spatType = \N3D;
+
+		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
+			[nil, nil, effectList], "Clear", critical:true);
+
+		effect = "Clear";
+
+		localEffect.node.description_(effectList.asString);
+
+		localAmount = OssiaAutomationProxy(localEffect.node, "Local_amount", Float,
+			[0, 1], 0, 'clip', critical:allCritical);
+
+		localAmount.node.unit_(OSSIA_gain.linear);
+
+		localDelay = OssiaAutomationProxy(localEffect.node, "Room_delay", Float,
+			[0, 1], 0.5, 'clip', critical:allCritical);
+
+		localDecay = OssiaAutomationProxy(localEffect.node, "Damp_decay", Float,
+			[0, 1], 0.5, 'clip', critical:allCritical);
 
 		play = OssiaAutomationProxy(src, "play", Boolean, critical:true);
 
@@ -97,24 +115,6 @@ MoscaSource[]
 			[0, 1], 0, 'clip', critical:allCritical);
 
 		globalAmount.node.unit_(OSSIA_gain.linear);
-
-		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
-			[nil, nil, effectList], "Clear", critical:true);
-
-		effect = "Clear";
-
-		localEffect.node.description_(effectList.asString);
-
-		localAmount = OssiaAutomationProxy(localEffect.node, "Local_amount", Float,
-			[0, 1], 0, 'clip', critical:allCritical);
-
-		localAmount.node.unit_(OSSIA_gain.linear);
-
-		localDelay = OssiaAutomationProxy(localEffect.node, "Room_delay", Float,
-			[0, 1], 0.5, 'clip', critical:allCritical);
-
-		localDecay = OssiaAutomationProxy(localEffect.node, "Damp_decay", Float,
-			[0, 1], 0.5, 'clip', critical:allCritical);
 
 		angle = OssiaAutomationProxy(src, "Stereo_angle", Float,
 			[0, 180], 60, 'clip', critical:allCritical);
@@ -221,6 +221,11 @@ MoscaSource[]
 
 		nChan.action_({ | val | this.prSetDefName(); });
 
+		spatializer = Ref();
+		synths = Ref();
+
+		coordinates.setAction(center, spatializer, synths);
+
 		library.action_({ | val |
 			var i = spatDefs.detectIndex({ | item | item.key == val.value });
 
@@ -229,17 +234,17 @@ MoscaSource[]
 			this.prSetDefName();
 		});
 
-		play.action_({ | val | this.prCheck4Synth(val.value, playing); });
+		play.action_({ | val | this.prCheck4Synth(val.value, playing) });
 
-		loop.action_({ | val | this.prSetSynths(\lp, val.value.asInt); });
+		loop.action_({ | val | this.prSetSynths(\lp, val.value.asInteger) });
 
-		level.action_({ | val | this.prSetSynths(\amp, val.value.dbamp); });
+		level.action_({ | val | this.prSetSynths(\amp, val.value.dbamp) });
 
-		contraction.action_({ | val | this.prSetSynths(\contr, val.value); });
+		contraction.action_({ | val | this.prSetSynths(\contr, val.value) });
 
-		doppler.action_({ | val | this.prSetSynths(\dopamnt, val.value); });
+		doppler.action_({ | val | this.prSetSynths(\dopamnt, val.value) });
 
-		globalAmount.action_({ | val | this.prSetSynths(\glev, val.value); });
+		globalAmount.action_({ | val | this.prSetSynths(\glev, val.value) });
 
 		localEffect.action_({ | val |
 
@@ -251,19 +256,19 @@ MoscaSource[]
 			this.prSetDefName();
 		});
 
-		localAmount.action_({ | val | this.prSetSynths(\llev, val.value); });
+		localAmount.action_({ | val | this.prSetSynths(\llev, val.value) });
 
-		localDelay.action_({ | val | this.prSetSynths(\room, val.value); });
+		localDelay.action_({ | val | this.prSetSynths(\room, val.value) });
 
-		localDecay.action_({ | val | this.prSetSynths(\damp, val.value); });
+		localDecay.action_({ | val | this.prSetSynths(\damp, val.value) });
 
-		angle.action_({ | val | this.prSetSynths(\angle, val.value.degrad); });
+		angle.action_({ | val | this.prSetSynths(\angle, val.value.degrad) });
 
 		rotation.action_({ | val |
 			this.prSetSynths(\rotAngle, val.value.degrad  + center.heading.value);
 		});
 
-		directivity.action_({ | val | this.prSetSynths(\directang, val.value.degrad); });
+		directivity.action_({ | val | this.prSetSynths(\directang, val.value.degrad) });
 
 		spread.action_({ | val |
 			this.prSetSynths(\sp, val.value.asInteger);
@@ -277,11 +282,11 @@ MoscaSource[]
 			if (val.value) { spread.value_(false) };
 		});
 
-		rate.action_({ | val | this.prSetSynths(\grainrate, val.value); });
+		rate.action_({ | val | this.prSetSynths(\grainrate, val.value) });
 
-		window.action_({ | val | this.prSetSynths(\winsize, val.value); });
+		window.action_({ | val | this.prSetSynths(\winsize, val.value) });
 
-		random.action_({ | val | this.prSetSynths(\winrand, val.value); });
+		random.action_({ | val | this.prSetSynths(\winrand, val.value) });
 
 		aux.do({ | item |
 			item.action_({
@@ -393,15 +398,15 @@ MoscaSource[]
 
 		if (bool)
 		{
-			if (playing.value.not && spatializer.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
+			if (playing.value.not && spatializer.get.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
 			{
 				this.launchSynth();
 				firstTime = false;
 			};
 		} {
-			if (playing.value.not && spatializer.notNil)
+			if (playing.value.not && spatializer.get.notNil)
 			{
-				spatializer.free;
+				spatializer.get.free;
 				this.runStop();
 				firstTime = true;
 				("Source " + (index + 1) + " stopping!").postln;
@@ -472,7 +477,7 @@ MoscaSource[]
 
 			this.changed(\audio, true, spatType); // triggers Mosca's prCheckConversion method
 
-			spatializer = Synth(defName, // launch spatializer synth
+			spatializer.set(Synth(defName, // launch spatializer synth
 				[
 					\radAzimElev,
 					[
@@ -488,17 +493,18 @@ MoscaSource[]
 				srcGrp.get()
 			).onFree({
 				this.changed(\audio, false, spatType);
-				spatializer = nil;
+				spatializer.set(nil);
 			});
+			);
 		};
 	}
 
 	prSetSynths
 	{ | param, value |
 
-		if (spatializer.notNil) { spatializer.set(param, value) };
+		if (spatializer.get.notNil) { spatializer.get.set(param, value) };
 
-		if (synths.notNil) { synths.do({ _.set(param, value) }) };
+		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
 	}
 
 	prFreeBuffer // Always free the buffer before changing configuration
@@ -536,7 +542,7 @@ MoscaSource[]
 		if (stopFunc.notNil)
 		{
 			stopFunc.value;
-			synths = nil;
+			synths.set(nil);
 			"RUNNING STOP".postln;
 		};
 	}

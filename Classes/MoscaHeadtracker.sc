@@ -202,13 +202,16 @@ PozyxOSC
 	var func;
 
 	*new
-	{ | center, flag, port = 8888 |
+	{ | center, flag, port = 8888, setup |
 
-		^super.new.ctr(center, flag, port);
+		^super.new.ctr(center, flag, port, setup);
 	}
 
 	ctr
-	{ | center, flag, osc_port |
+	{ | center, flag, osc_port, setup |
+
+		var readings = [];
+		var avreageBy = 5;
 
 		func = OSCFunc(
 			{ | msg |
@@ -219,15 +222,24 @@ PozyxOSC
 
 					center.ossiaOrient.v_(
 						[
-							(-1 * angles[1]).degrad.wrap(-pi, pi),
-							angles[2].degrad,
-							angles[3].degrad,
+							(-1 * angles[0]).degrad.wrap(-pi, pi),
+							(angles[1]).degrad,
+							(angles[2]).degrad,
 						]
 					);
 
-					center.ossiaOrigine.v_(
-						[msg[4], msg[5], msg[6]] / 1000
-					);
+					readings = readings ++ [ 2 * ([msg[4], msg[5], msg[6]] / setup) - 1 ];
+
+					readings.postln;
+
+					if (readings.size == avreageBy)
+					{
+						center.ossiaOrigine.v_(
+							readings.sum / readings.size
+						);
+
+						readings = [];
+					};
 				}
 			},
 			"/position", recvPort: osc_port);

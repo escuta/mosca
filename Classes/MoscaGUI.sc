@@ -96,7 +96,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources[currentSource].external.value_(butt.value) });
+		).action_({ | butt | sources[currentSource].external.value_(butt.value.asBoolean) });
 
 		scInCheck = Button( win, Rect(78, 30, 74, 20), "SC-in")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -113,7 +113,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources[currentSource].scSynths.value_(butt.value) });
+		).action_({ | butt | sources[currentSource].scSynths.value_(butt.value.asBoolean) });
 
 		loopCheck = Button( win, Rect(3, 70, 150, 20), "Loop")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -125,12 +125,12 @@ MoscaGUI
 					palette.color('middark', 'active')
 				],
 				[
-					"Loop",
+					"Don't Loop",
 					palette.color('middark', 'active'),
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources[currentSource].loop.value_(butt.value) });
+		).action_({ | butt | sources[currentSource].loop.value_(butt.value.asBoolean) });
 
 		// sub view containing local effect parameter
 		localView = UserView(win, Rect(0, height - 262, 156, 20));
@@ -546,11 +546,9 @@ MoscaGUI
 		source.contraction.node.gui(ctlView);
 		source.doppler.node.gui(ctlView);
 
-		//source.localEffect.node.gui(localView, 0);
+		this.prUpdateCtl(source);
 
-/*		prUpdateCtl.value(\chan);
-
-		loopcheck.value = lpcheckProxy[currentSource].value;
+/*		loopcheck.value = lpcheckProxy[currentSource].value;
 
 		prUpdateCtl.value(\lib, libboxProxy[currentSource].value);
 
@@ -707,118 +705,39 @@ MoscaGUI
 				src.spread.node.gui(ctlView);
 				src.diffuse.node.gui(ctlView);
 
-				src.josh.node.closeGui(1);
+				src.josh.closeGui(1);
 			},
 			"Josh",
 			{
-				src.atk.node.closeGui(1);
-				src.josh.node.gui(ctlView, 1);
+				src.spread.node.closeGui();
+				src.diffuse.node.closeGui();
+
+				src.josh.gui(ctlView, 1);
 			},
 			{
-				src.atk.node.closeGui(1);
-				src.josh.node.closeGui(1);
+				src.spread.node.closeGui();
+				src.diffuse.node.closeGui();
+
+				src.josh.closeGui(1);
 			}
 		);
 
 		if (src.localEffect.value == "Clear")
 		{
-			src.localDelay.closeGui();
-			src.localDecay.closeGui();
+			src.localAmount.node.gui(localView);
+			src.localDelay.node.closeGui();
+			src.localDecay.node.closeGui();
 		} {
-			src.localDelay.gui(localView);
-			src.localDecay.gui(localView);
+			src.localAmount.node.gui(localView);
+			src.localDelay.node.gui(localView);
+			src.localDecay.node.gui(localView);
 		};
 
-/*			\dstrv,
-			{ dstReverbox.value = num.value;
-				case
-				{dstrvboxProxy[currentsource].value == 0}
-				{
-					winCtl[2][4].visible = false;
-					winCtl[1][4].visible = false;
-					winCtl[0][4].visible = false;
-					winCtl[2][5].visible = false;
-					winCtl[1][5].visible = false;
-					winCtl[0][5].visible = false;
-					winCtl[2][6].visible = false;
-					winCtl[1][6].visible = false;
-					winCtl[0][6].visible = false;
-				}
-				{(dstrvboxProxy[currentsource].value >= 0)
-					&& (dstrvboxProxy[currentsource].value < 3)}
-				{
-					winCtl[2][4].visible = true;
-					winCtl[1][4].visible = true;
-					winCtl[0][4].visible = true;
-					winCtl[2][5].visible = true;
-					winCtl[1][5].visible = true;
-					winCtl[0][5].visible = true;
-					winCtl[2][6].visible = true;
-					winCtl[1][6].visible = true;
-					winCtl[0][6].visible = true;
-					winCtl[0][4].value = ossiadstam[currentsource].v;
-					winCtl[1][4].value = ossiadstam[currentsource].v;
-					winCtl[0][5].value = ossiadstdec[currentsource].v;
-					winCtl[1][5].value = ossiadstdec[currentsource].v;
-					winCtl[0][6].value = ossiadstdec[currentsource].v;
-					winCtl[1][6].value = ossiadstdec[currentsource].v;
-				}
-				{dstrvboxProxy[currentsource].value >= 3}
-				{
-					winCtl[2][4].visible = true;
-					winCtl[1][4].visible = true;
-					winCtl[0][4].visible = true;
-					winCtl[2][5].visible = false;
-					winCtl[1][5].visible = false;
-					winCtl[0][5].visible = false;
-					winCtl[2][6].visible = false;
-					winCtl[1][6].visible = false;
-					winCtl[0][6].visible = false;
-					winCtl[0][4].value = ossiadstam[currentsource].v;
-					winCtl[1][4].value = ossiadstam[currentsource].v;
-				};
-			},
-			\clsrv,
-			{ clsReverbox.value = num.value;
-				case
-				{clsrvboxProxy.value == 0}
-				{
-					winCtl[0][3].visible = false;
-					winCtl[1][3].visible = false;
-					winCtl[2][3].visible = false;
 
-					originCtl[0][0].visible = false;
-					originCtl[1][0].visible = false;
-					originCtl[0][1].visible = false;
-					originCtl[1][1].visible = false;
-				}
-				{(clsrvboxProxy.value >= 0)
-					&& (clsrvboxProxy.value < 3)}
-				{
-					winCtl[0][3].visible = true;
-					winCtl[1][3].visible = true;
-					winCtl[2][3].visible = true;
-
-					originCtl[0][0].visible = true;
-					originCtl[1][0].visible = true;
-					originCtl[0][1].visible = true;
-					originCtl[1][1].visible = true;
-				}
-				{clsrvboxProxy.value >= 3}
-				{
-					winCtl[0][3].visible = true;
-					winCtl[1][3].visible = true;
-					winCtl[2][3].visible = true;
-
-					originCtl[0][0].visible = false;
-					originCtl[1][0].visible = false;
-					originCtl[0][1].visible = false;
-					originCtl[1][1].visible = false;
-				};
-			},
-			\src,
-			{case
-				{hwn[currentsource] == scn[currentsource]}
+		if (src.external.value)
+		{
+		};
+/*				{hwn[currentsource] == scn[currentsource]}
 				{
 					hwInCheck.value = false;
 					scInCheck.value = false;
@@ -876,8 +795,8 @@ MoscaGUI
 						36, { 6 });
 				};
 			};
-		);*/
-	}
+		);
+	*/}
 
 	free
 	{
