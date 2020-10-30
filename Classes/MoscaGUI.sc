@@ -125,7 +125,7 @@ MoscaGUI
 					palette.color('middark', 'active')
 				],
 				[
-					"Don't Loop",
+					"Loop",
 					palette.color('middark', 'active'),
 					palette.color('light', 'active')
 				]
@@ -315,7 +315,7 @@ MoscaGUI
 			}
 		});
 
-		dialView = UserView(win); // extra options view
+		// dialView = UserView(win); // extra options view
 
 		// sub view containing the controls of the selected source
 		ctlView = UserView(win, Rect(0, 90, 156, 20));

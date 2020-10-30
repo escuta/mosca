@@ -210,8 +210,9 @@ PozyxOSC
 	ctr
 	{ | center, flag, osc_port, setup |
 
-		var readings = [];
-		var avreageBy = 5;
+		var readings, avreageBy = 10;
+
+		readings = Array.fill(avreageBy, { center.ossiaOrigine.v });
 
 		func = OSCFunc(
 			{ | msg |
@@ -228,18 +229,13 @@ PozyxOSC
 						]
 					);
 
+					readings.removeAt(0);
+
 					readings = readings ++ [ 2 * ([msg[4], msg[5], msg[6]] / setup) - 1 ];
 
-					readings.postln;
+					readings.size.postln;
 
-					if (readings.size == avreageBy)
-					{
-						center.ossiaOrigine.v_(
-							readings.sum / readings.size
-						);
-
-						readings = [];
-					};
+						center.ossiaOrigine.v_(readings.sum / avreageBy);
 				}
 			},
 			"/position", recvPort: osc_port);

@@ -71,13 +71,6 @@ MoscaSource[]
 
 		coordinates = OssiaAutomationCoordinates(src, allCritical);
 
-		library = OssiaAutomationProxy(src, "Library", String, [nil, nil, spatList],
-			"Ambitools", critical:true);
-
-		library.node.description_(spatList.asString);
-
-		spatType = \N3D;
-
 		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
 			[nil, nil, effectList], "Clear", critical:true);
 
@@ -95,6 +88,13 @@ MoscaSource[]
 
 		localDecay = OssiaAutomationProxy(localEffect.node, "Damp_decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical);
+
+		library = OssiaAutomationProxy(src, "Library", String, [nil, nil, spatList],
+			"Ambitools", critical:true);
+
+		library.node.description_(spatList.asString);
+
+		spatType = \N3D;
 
 		play = OssiaAutomationProxy(src, "play", Boolean, critical:true);
 
@@ -226,6 +226,22 @@ MoscaSource[]
 
 		coordinates.setAction(center, spatializer, synths);
 
+		localEffect.action_({ | val |
+
+			var i = localEffect.node.domain.values().detectIndex(
+				{ | item | item == val.value; });
+
+			effect = effectList[i];
+
+			this.prSetDefName();
+		});
+
+		localAmount.action_({ | val | this.prSetSynths(\llev, val.value) });
+
+		localDelay.action_({ | val | this.prSetSynths(\room, val.value) });
+
+		localDecay.action_({ | val | this.prSetSynths(\damp, val.value) });
+
 		library.action_({ | val |
 			var i = spatDefs.detectIndex({ | item | item.key == val.value });
 
@@ -245,22 +261,6 @@ MoscaSource[]
 		doppler.action_({ | val | this.prSetSynths(\dopamnt, val.value) });
 
 		globalAmount.action_({ | val | this.prSetSynths(\glev, val.value) });
-
-		localEffect.action_({ | val |
-
-			var i = localEffect.node.domain.values().detectIndex(
-				{ | item | item == val.value; });
-
-			effect = effectList[i];
-
-			this.prSetDefName();
-		});
-
-		localAmount.action_({ | val | this.prSetSynths(\llev, val.value) });
-
-		localDelay.action_({ | val | this.prSetSynths(\room, val.value) });
-
-		localDecay.action_({ | val | this.prSetSynths(\damp, val.value) });
 
 		angle.action_({ | val | this.prSetSynths(\angle, val.value.degrad) });
 
