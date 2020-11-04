@@ -233,7 +233,7 @@ MoscaSpatializer {
 							outPutFuncs[1].value(p, p, globallev.clip(0, 1) * glev);
 						}).send(server);
 
-						[9, 16, 25].do({ | item, count |
+						MoscaUtils.hoaChanns.do({ | item, count |
 							var ord = (item.sqrt) - 1,
 
 							// assume N3D input
@@ -321,7 +321,7 @@ MoscaSpatializer {
 								globallev.clip(0, 1) * glev);
 						}).send(server);
 
-						[9, 16, 25].do({ | item, count |
+						MoscaUtils.hoaChanns.do({ | item, count |
 							var ord = (item.sqrt) - 1,
 
 							// assume N3D input

@@ -23,47 +23,49 @@ MoscaEffects {
 	var encodeFunc, decodeFunc, busChans;
 	var <ossiaGlobal, <ossiaDelay, <ossiaDecay;
 
-	*new { ^super.new().ctr(); }
+	*new { ^super.new().ctr() }
 
-	ctr { | irBank |
+	ctr
+	{ | irBank |
 
 		defs = Array.newFrom(EffectDef.subclasses);
 
-		if (irBank.isNil) {
-
+		if (irBank.isNil)
+		{
 			defs.removeAt(defs.detectIndex({ | item |
-				item == ConvolutionDef.asClass; }));
+				item == ConvolutionDef.asClass }));
 
-			effectList = defs.collect({ | item | item.key; });
+			effectList = defs.collect({ | item | item.key });
 		} {
 			effectList = defs;
 
 			effectList.removeAt(effectList.detectIndex({ | item |
-				item == ConvolutionDef.asClass; }));
+				item == ConvolutionDef.asClass }));
 		};
 	}
 
-	setup { | server, sourceGroup, multyThread, maxOrder, renderer, irBank |
+	setup
+	{ | server, sourceGroup, multyThread, maxOrder, renderer, irBank |
 
 		busChans = MoscaUtils.fourOrNine(maxOrder);
 
-		if (irBank.notNil) { this.prLoadir(server, maxOrder, irBank); };
+		if (irBank.notNil) { this.prLoadir(server, maxOrder, irBank) };
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
 		afmtBus = Bus.audio(server, busChans); // global a-format bus
 		transformGrp = ParGroup.after(sourceGroup);
 
-		if (multyThread) {
-
+		if (multyThread)
+		{
 		} {
-			if (maxOrder == 1) {
-
+			if (maxOrder == 1)
+			{
 				defs = defs.collect(
 					{ | item |
 						if (item != ClearDef.asClass)
-						{ item.new1stOrder(); }
-						{ item; }; // no need to instanciate ClearDef
+						{ item.new1stOrder() }
+						{ item }; // no need to instanciate ClearDef
 					};
 				);
 
@@ -75,7 +77,8 @@ MoscaEffects {
 					FoaDecode.ar(sigf, MoscaUtils.b2a());
 				};
 
-				if (renderer.format != \FUMA) {
+				if (renderer.format != \FUMA)
+				{
 					var enc = MoscaUtils.foa_n3d_encoder();
 
 					encodeFunc = { | sig |
@@ -92,8 +95,8 @@ MoscaEffects {
 				defs = defs.collect(
 					{ | item |
 						if (item != ClearDef.asClass)
-						{ item.new2ndOrder(); }
-						{ item; }; // no need to instanciate ClearDef
+						{ item.new2ndOrder() }
+						{ item }; // no need to instanciate ClearDef
 					};
 				);
 
@@ -105,7 +108,8 @@ MoscaEffects {
 					AtkMatrixMix.ar(sigf, MoscaUtils.soa_a12_decoder_matrix());
 				};
 
-				if (renderer.format != \FUMA) {
+				if (renderer.format != \FUMA)
+				{
 					var enc = MoscaUtils.soa_n3d_encoder();
 
 					encodeFunc = { | sig |
@@ -123,15 +127,18 @@ MoscaEffects {
 		};
 	}
 
-	prLoadIr { | server, maxOrder, irBank | // prepare list of impulse responses for local and global reverb
+	prLoadIr
+	{ | server, maxOrder, irBank | // prepare list of impulse responses for local and global reverb
+
 		var def;
 
-		if (maxOrder == 1) { def = IrDef; } { def = Ir12chanDef; };
+		if (maxOrder == 1) { def = IrDef } { def = Ir12chanDef };
 
-		PathName(irBank).entries.do({ | ir | effectList.add(def(server, ir)); });
+		PathName(irBank).entries.do({ | ir | effectList.add(def(server, ir)) });
 	}
 
-	sendFx { | multyThread, server |
+	sendFx
+	{ | multyThread, server |
 
 		SynthDef(\b2Fx, {
 			var sig = decodeFunc.value();
@@ -143,8 +150,8 @@ MoscaEffects {
 		} {
 			defs.do({ | item |
 
-				if (item != ClearDef.asClass) {
-
+				if (item != ClearDef.asClass)
+				{
 					SynthDef(\globalFx ++ item.key, { | gate = 1, room = 0.5, damp = 0.5,
 						a0ir, a1ir, a2ir, a3ir, a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 						var sig = In.ar(afmtBus, busChans);
@@ -158,12 +165,12 @@ MoscaEffects {
 		};
 	}
 
-	setParam { | ossiaParent, allCritical |
+	setParam
+	{ | ossiaParent, allCritical |
 
 		ossiaGlobal = OssiaAutomationProxy(ossiaParent, "Global_effect", String,
-			[nil, nil,
-				effectList.collect({ | item |
-					if (item.class == String) { item; } { item.key; };
+			[nil, nil, effectList.collect({ | item |
+					if (item.class == String) { item } { item.key };
 				};
 		)], "Clear", critical:true, repetition_filter:true);
 
@@ -176,39 +183,48 @@ MoscaEffects {
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 	}
 
-	setAction {
-
+	setAction
+	{
 		ossiaGlobal.action_({ | num |
+
+			this.changed(\ctl);
 
 			if (globalFx.isPlaying) { globalFx.set(\gate, 0) };
 
-			if (num.value != "Clear") {
-				var synthArgs, i = ossiaGlobal.node.domain.values().detectIndex({ | item | item == num.value });
+			if (num.value != "Clear")
+			{
+				var synthArgs, i = ossiaGlobal.node.domain.values().detectIndex(
+					{ | item | item == num.value }
+				);
 
-				if (effectList[i].class != String) { synthArgs = effectList[i].irSpecPar(); };
+				if (effectList[i].class != String) { synthArgs = effectList[i].irSpecPar() };
 
 				// deals with converting and encoding global fx busses
-				if (b2Fx.isNil) {
-					b2Fx = Synth(\b2Fx, target: transformGrp, addAction: \addBefore).onFree(
-						{ b2Fx = nil; });
+				if (b2Fx.isNil)
+				{
+					b2Fx = Synth(\b2Fx, target: transformGrp, addAction: \addBefore)
+					.onFree({ b2Fx = nil });
 				};
 
 				globalFx = Synth(\globalFx ++ num.value,
 					[\gate, 1, \room, ossiaDelay.value, \damp, ossiaDecay.value] ++
 					synthArgs, transformGrp).register.onFree(
 					{
-						if (globalFx.isPlaying.not) { b2Fx.free; };
+						if (globalFx.isPlaying.not) { b2Fx.free };
 					}
 				);
 			};
 		});
 
-		ossiaDelay.action_({ | num | if (globalFx.isPlaying) { globalFx.set(\room, num.value); }; });
+		ossiaDelay.action_({ | num |
+			if (globalFx.isPlaying) { globalFx.set(\room, num.value) };
+		});
 
-		ossiaDecay.action_({ | num | if (globalFx.isPlaying) { globalFx.set(\damp, num.value); }; });
+		ossiaDecay.action_({ | num | if (globalFx.isPlaying) { globalFx.set(\damp, num.value) } });
 	}
 
-	dockTo { | automation |
+	dockTo
+	{ | automation |
 
 		automation.dock(ossiaGlobal, "globProxy");
 		automation.dock(ossiaDelay, "globDelProxy");

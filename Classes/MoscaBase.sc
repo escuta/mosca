@@ -345,7 +345,7 @@ MoscaBase // acts as the public interface
 
 		if (gui.isNil)
 		{
-			gui = MoscaGUI(this, sources, size, palette, lag);
+			gui = MoscaGUI(this, sources, effects, size, palette, lag);
 
 			gui.win.onClose({
 				gui.free;

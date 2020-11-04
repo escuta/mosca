@@ -22,7 +22,7 @@ MoscaSource[]
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
-	var input, <file, <stream, <scSynths, <external, <nChan; // inputs types
+	var input, <file, <stream, <scSynths, <external, <nChan, <busInd; // inputs types
 	var src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <directivity; // input specific parameters
@@ -65,9 +65,14 @@ MoscaSource[]
 		synthRegistry = List[];
 
 		nChan = OssiaAutomationProxy(input, "Chanels", Integer,
-			[nil, nil, [1, 2, 4, 9, 16, 25]], 1, critical: true, repetition_filter: false);
+			[ nil, nil, MoscaUtils.channels() ], 1, critical: true, repetition_filter: false);
 
 		nChan.node.description_("number of channels for SC or External inputs");
+
+		busInd = OssiaAutomationProxy(input, "Bus_index", Integer,
+			[ 0, nil ], 0, "low", true, false);
+
+		busInd.node.description_("Index of the external input bus");
 
 		coordinates = OssiaAutomationCoordinates(src, allCritical);
 
@@ -121,7 +126,7 @@ MoscaSource[]
 
 		angle.node.unit_(OSSIA_angle.degree).description_("Stereo_only");
 
-		rotation = OssiaAutomationProxy(src, "B-Format_rotation", Float,
+		rotation = OssiaAutomationProxy(src, "B-Fmt_rotation", Float,
 			[-180, 180], 0, 'wrap', critical:allCritical);
 
 		rotation.node.unit_(OSSIA_angle.degree).description_("B-Format only");
@@ -153,7 +158,7 @@ MoscaSource[]
 
 		window.node.unit_(OSSIA_time.second).description_("JoshGrain only");
 
-		random = OssiaAutomationProxy(josh, "Randomize_window", Float,
+		random = OssiaAutomationProxy(josh, "Random_size", Float,
 			[0, 1], 0, 'clip', critical:allCritical);
 
 		random.node.description_("JoshGrain only");
@@ -464,6 +469,8 @@ MoscaSource[]
 				args = args ++ [\busini, scInBus];
 				this.runTrigger();
 			};
+
+			if (external.value) { args = args ++ [\busini, busInd.value] };
 
 			switch (library.value,
 				"ATK",

@@ -1,4 +1,5 @@
-MoscaUtils { // virtual class holding constants for Mosca related classes
+MoscaUtils // virtual class holding constants for Mosca related classes
+{
 	classvar <palette, cart = #[
 		0.850650808352E+00,
 		0,
@@ -38,8 +39,8 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 		-0.850650808352E+00
 	];
 
-	*initClass {
-
+	*initClass
+	{
 		palette = QPalette.auto(Color.fromHexString("#1d1c1a"), Color.new255( 200, 200, 200 ));
 
 		palette.setColor(Color.new255( 200, 200, 200 ), 'window');
@@ -60,41 +61,34 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 		palette.setColor(Color.fromHexString("#c58014"), 'brightText');
 	}
 
-	*plim { ^1.2; } // distance limit from origin where processes continue to run
+	*plim { ^1.2 } // distance limit from origin where processes continue to run
 
-	*halfPi { ^1.5707963267949; }
+	*halfPi { ^1.5707963267949 }
 
-	*rad2deg { ^57.295779513082; }
+	*rad2deg { ^57.295779513082 }
 
-	*fftSize { ^2048; }
+	*hoaChanns { ^[9, 16, 25] }
 
-	*n2f { | sig | ^FoaEncoderMatrix.newHoa1(); }
+	*channels { ^[1, 2, 4] ++ this.hoaChanns() }
 
-	*b2a { | sig | ^FoaDecoderMatrix.newBtoA(); }
+	*fftSize { ^2048 }
 
-	*a2b { | sig | ^FoaEncoderMatrix.newAtoB(); }
+	*n2f { | sig | ^FoaEncoderMatrix.newHoa1() }
 
-	*f2n { | sig | ^FoaDecoderMatrix.newHoa1(); }
+	*b2a { | sig | ^FoaDecoderMatrix.newBtoA() }
 
-	*fourOrNine { | order |
-		if (order > 1) {
-			^9;
-		} {
-			^4;
-		};
-	}
+	*a2b { | sig | ^FoaEncoderMatrix.newAtoB() }
 
-	*bfOrFmh { | order |
-		if (order > 1) {
-			^FMHEncode1;
-		} {
-			^BFEncode1;
-		};
-	}
+	*f2n { | sig | ^FoaDecoderMatrix.newHoa1() }
+
+	*fourOrNine { | order | if (order > 1) { ^9 } { ^4 } }
+
+	*bfOrFmh { | order | if (order > 1) { ^FMHEncode1 } { ^BFEncode1 } }
 
 	// a-12 decoder matrix
 
-	*soa_a12_decoder_matrix {
+	*soa_a12_decoder_matrix
+	{
 		^Matrix.with([
 			[ 0.11785113, 0.212662702, 0, -0.131432778, -0.0355875819, -0.279508497, 0,
 				0.226127124, 0 ],
@@ -125,7 +119,8 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 
 	// a-12 encoder matrix
 
-	*soa_a12_encoder_matrix {
+	*soa_a12_encoder_matrix
+	{
 		^Matrix.with([
 			[ 0.707106781, 0.707106781, 0.707106781, 0.707106781, 0.707106781,
 				0.707106781,0.707106781,
@@ -157,7 +152,8 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 
 	// 1st-order FuMa-MaxN A-format decoder
 
-	*foa_a12_decoder_matrix {
+	*foa_a12_decoder_matrix
+	{
 		var spher;
 
 		// convert to angles -- use these directions
@@ -170,8 +166,8 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 
 	// 1st-order FuMa-MaxN A-format decoder
 
-	*foa_n3d_encoder {
-
+	*foa_n3d_encoder
+	{
 		^4.collect({ | i |
 			var sphe = cart.clump(3)[i].asCartesian.asSpherical;
 			HOASphericalHarmonics.coefN3D(1, sphe.theta(), sphe.phi());
@@ -180,8 +176,8 @@ MoscaUtils { // virtual class holding constants for Mosca related classes
 
 	// 1st-order FuMa-MaxN A-format decoder
 
-	*soa_n3d_encoder {
-
+	*soa_n3d_encoder
+	{
 		^cart.clump(3).collect({ | cart |
 			var sphe = cart.asCartesian.asSpherical;
 			HOASphericalHarmonics.coefN3D(1, sphe.theta(), sphe.phi());

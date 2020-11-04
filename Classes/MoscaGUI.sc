@@ -18,16 +18,16 @@
 
 MoscaGUI
 {
-	var sources, control, guiInt, palette; // initial arguments
+	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wdados, waux;
 	var localView, ctlView, masterView, dialView, originView;
 	var autoBut, <>ctlWidth = 370, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
-	var exInCheck, scInCheck, loopCheck;
+	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream;
 	var isPlay, origine, orientation, scale;
 	var zAxis, zSlider, zNumBox, zEvent;
-	var drawEvent, dependant, lastGui = 0;
+	var drawEvent, ctlEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
 
 	classvar halfPi;
@@ -39,7 +39,7 @@ MoscaGUI
 	}
 
 	*new
-	{ | aMosca, sources, size, palette, guiInt |
+	{ | aMosca, sources, global, size, palette, guiInt |
 
 		var p;
 
@@ -51,7 +51,7 @@ MoscaGUI
 			{ p = QtGUI.palette }
 		);
 
-		^super.newCopyArgs(sources, aMosca.control, guiInt, p).ctr(aMosca, size);
+		^super.newCopyArgs(sources, global, aMosca.control, guiInt, p).ctr(aMosca, size);
 	}
 
 	ctr
@@ -59,7 +59,6 @@ MoscaGUI
 
 		// get ossia parameters
 		isPlay = aMosca.ossiaParent.find("Automation/Play");
-
 		origine = aMosca.ossiaParent.find("Origine");
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
@@ -81,7 +80,7 @@ MoscaGUI
 		StaticText(win, Rect(3, 3, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");
 
-		exInCheck = Button(win, Rect(3, 30, 74, 20), "EX-in")
+		exInCheck = Button(win, Rect(3, 30, 78, 20), "EX-in")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -98,7 +97,7 @@ MoscaGUI
 			]
 		).action_({ | butt | sources[currentSource].external.value_(butt.value.asBoolean) });
 
-		scInCheck = Button( win, Rect(78, 30, 74, 20), "SC-in")
+		scInCheck = Button( win, Rect(82, 30, 79, 20), "SC-in")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -115,7 +114,75 @@ MoscaGUI
 			]
 		).action_({ | butt | sources[currentSource].scSynths.value_(butt.value.asBoolean) });
 
-		loopCheck = Button( win, Rect(3, 70, 150, 20), "Loop")
+		bLoad = Button(win, Rect(3, 50, 79, 20), "Load")
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Load",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({
+
+			sources[currentSource].stream.value_(false);
+			this.prFileDialog(sources[currentSource].file);
+		});
+
+		bLoad.visible_(false);
+
+		bStream = Button( win, Rect(82, 50, 79, 20), "Stream")
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Stream",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({
+
+			sources[currentSource].stream.value_(true);
+			this.prFileDialog(sources[currentSource].file);
+		});
+
+		bStream.visible_(false);
+
+		chanPopUp = EZPopUpMenu(
+			parentView: win,
+			bounds: Rect(3, 50, 158, 20),
+			label: "No. chans",
+			items: MoscaUtils.channels(),
+			globalAction: { | obj | sources[currentSource].nChan.value_(obj.item) },
+			gap: 0@0
+		).setColors(
+			stringColor: palette.color('baseText', 'active'),
+			menuStringColor: palette.color('light', 'active')
+		);
+
+		chanPopUp.labelView.align_(\left);
+		chanPopUp.visible_(false);
+
+		busNumBox = EZNumber(
+			parent: win,
+			bounds: Rect(3, 70, 158, 20),
+			label: "Bus index",
+			numberWidth: 78,
+			action: { | obj | sources[currentSource].busInd.value_(obj.value) },
+			gap: 0@0
+		).setColors(
+			stringColor: palette.color('baseText', 'active'),
+			numNormalColor: palette.color('windowText', 'active')
+		);
+
+		busNumBox.labelView.align_(\left);
+		busNumBox.numberView.maxDecimals_(0).step_(1).scroll_step_(1);
+		busNumBox.controlSpec.maxval_(inf);
+		busNumBox.visible_(false);
+
+		loopCheck = Button( win, Rect(3, 70, 158, 20), "Loop")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -132,9 +199,7 @@ MoscaGUI
 			]
 		).action_({ | butt | sources[currentSource].loop.value_(butt.value.asBoolean) });
 
-		// sub view containing local effect parameter
-		localView = UserView(win, Rect(0, height - 262, 156, 20));
-		localView.addFlowLayout();
+		loopCheck.visible_(false);
 
 		// sub view for automation control, master volume, scale factor
 		masterView = UserView(win, Rect(0, height - 76, 325, 72));
@@ -157,20 +222,18 @@ MoscaGUI
 			]
 		).action_({ | butt |
 
-			var widget = aMosca.ossiaParent.find("Global_effect");
-
-			if (widget.window.notNil)
+			if (global.ossiaGlobal.node.window.notNil)
 			{
-				if (widget.window.isClosed)
+				if (global.ossiaGlobal.node.window.isClosed)
 				{
-					widget.gui(childrenDepth: 2);
-					widget.window.onClose_({ butt.value_(0)})
+					global.ossiaGlobal.node.gui(childrenDepth: 2);
+					global.ossiaGlobal.node.window.onClose_({ butt.value_(0)})
 				} {
-					widget.window.close
+					global.ossiaGlobal.node.window.close
 				}
 			} {
-				widget.gui(childrenDepth: 2);
-				widget.window.onClose_({ butt.value_(0) })
+				global.ossiaGlobal.node.gui(childrenDepth: 2);
+				global.ossiaGlobal.node.window.onClose_({ butt.value_(0) })
 			}
 		});
 
@@ -210,12 +273,12 @@ MoscaGUI
 		.action_({ | num | zNumBox.valueAction_((num.value - 0.5) * 2) });
 
 		// sub view for grouping global transforamtion widgets (effects, rotations, mouvements)
-		originView = UserView(win, Rect(width - 88, height - 128, 88, 124));
+		originView = UserView(win, Rect(width - 94, height - 128, 94, 124));
 		originView.addFlowLayout();
 
 		aMosca.ossiaParent.find("Track_Center").gui(originView);
 
-		origineBut = Button(originView, Rect(0, 0, 82, 20))
+		origineBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -232,30 +295,26 @@ MoscaGUI
 			]
 		).action_({ | butt |
 
-			var widget = aMosca.ossiaParent.find("Orientation");
-
-			if (widget.window.notNil)
+			if (orientation.window.notNil)
 			{
-				if (widget.window.isClosed)
+				if (orientation.window.isClosed)
 				{
-					widget.gui();
-					aMosca.ossiaParent.find("Origine")
-					.gui(widget.window);
-					scale.gui(widget.window);
-					widget.window.onClose_({ butt.value_(0) })
+					orientation.gui();
+					origine.gui(orientation.window);
+					scale.gui(orientation.window);
+					orientation.window.onClose_({ butt.value_(0) })
 				} {
-					widget.window.close
+					orientation.window.close
 				}
 			} {
-				widget.gui();
-				aMosca.ossiaParent.find("Origine")
-				.gui(widget.window);
-				scale.gui(widget.window);
-				widget.window.onClose_({ butt.value_(0) })
+				orientation.gui();
+				origine.gui(orientation.window);
+				scale.gui(orientation.window);
+				orientation.window.onClose_({ butt.value_(0) })
 			}
 		});
 
-		loadBut = Button(originView, Rect(0, 0, 82, 20))
+		loadBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -285,7 +344,7 @@ MoscaGUI
 			dwin.front;
 		});
 
-		autoBut = Button(originView, Rect(0, 0, 82, 20))
+		autoBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -318,14 +377,16 @@ MoscaGUI
 		// dialView = UserView(win); // extra options view
 
 		// sub view containing the controls of the selected source
-		ctlView = UserView(win, Rect(0, 90, 156, 20));
+		ctlView = UserView(win, Rect(0, 90, 164, 20));
 		ctlView.addFlowLayout();
 
-		dependant = { | obj ... loadArgs |
+		ctlEvent = { | obj ... loadArgs |
 
 			if (loadArgs[0] == \ctl)
-			{ this.prUpdateCtl(obj) }
+			{ this.prUpdateCtl(sources[currentSource]) }
 		};
+
+		global.addDependant(ctlEvent);
 
 		this.prSourceSelect(currentSource);
 
@@ -435,11 +496,11 @@ MoscaGUI
 
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
-			originView.bounds_(Rect(width - 88, height - 128, 88, 124));
+			originView.bounds_(Rect(width - 94, height - 128, 94, 124));
 
 			// dialView.bounds_(Rect(width - 100, 10, 180, 150));
 
-			localView.bounds_(localView.bounds.top_(height - 262));
+			//localView.bounds_(localView.bounds.top_(height - 262));
 
 			masterView.bounds_(masterView.bounds.top_(height - 76));
 
@@ -518,6 +579,15 @@ MoscaGUI
 		});
 	}
 
+	prFileDialog
+	{ | aFileNOde |
+
+		Dialog.openPanel({ | path |
+
+			aFileNOde.value_(path);
+		});
+	}
+
 	prSourceSelect
 	{ | index |
 
@@ -525,8 +595,8 @@ MoscaGUI
 
 		source = sources[index];
 
-		sources[currentSource].removeDependant(dependant);
-		source.addDependant(dependant);
+		sources[currentSource].removeDependant(ctlEvent);
+		source.addDependant(ctlEvent);
 
 		currentSource = index;
 
@@ -540,6 +610,13 @@ MoscaGUI
 		ctlView.removeAll;
 		ctlView.decorator.reset;
 
+		// sub view containing local effect parameter
+		// localView = UserView(win, Rect(0, height - 262, 156, 20));
+		localView = UserView(ctlView, Rect(0, 0, 164, 40));
+		localView.addFlowLayout(0@0);
+
+		source.localEffect.node.gui(localView);
+
 		source.library.node.gui(ctlView);
 		source.play.node.gui(ctlView);
 		source.level.node.gui(ctlView);
@@ -547,47 +624,164 @@ MoscaGUI
 		source.doppler.node.gui(ctlView);
 
 		this.prUpdateCtl(source);
-
-/*		loopcheck.value = lpcheckProxy[currentSource].value;
-
-		prUpdateCtl.value(\lib, libboxProxy[currentSource].value);
-
-		prUpdateCtl.value(\dstrv, dstrvboxProxy[currentSource].value);
-
-		prUpdateCtl.value(\src);
-
-		winCtl[0][0].value = vboxProxy[currentSource].value;
-		winCtl[1][0].value = vboxProxy[currentSource].value.curvelin(inMin:-96, inMax:12, curve:-3);
-		winCtl[0][1].value = dpboxProxy[currentSource].value;
-		winCtl[1][1].value = dpboxProxy[currentSource].value;
-		winCtl[1][2].value = cboxProxy[currentSource].value;
-		winCtl[1][2].value = cboxProxy[currentSource].value;
-		winCtl[0][3].value = ossiaclsam[currentSource].v;
-		winCtl[1][3].value = ossiaclsam[currentSource].v;
-
-		auxslider1.value = a1boxProxy[currentSource].value;
-		aux1numbox.value = a1boxProxy[currentSource].value;
-		auxslider2.value = a2boxProxy[currentSource].value;
-		aux2numbox.value = a2boxProxy[currentSource].value;
-		auxslider3.value = a3boxProxy[currentSource].value;
-		aux3numbox.value = a3boxProxy[currentSource].value;
-		auxslider4.value = a4boxProxy[currentSource].value;
-		aux4numbox.value = a4boxProxy[currentSource].value;
-		auxslider5.value = a5boxProxy[currentSource].value;
-		aux5numbox.value = a5boxProxy[currentSource].value;
-
-		if(audit[currentSource]) {
-			// don't change button if we are playing via automation
-			// only if it is being played/streamed manually
-			//	if (synt[currentSource] == nil){
-			//		baudi.value = 0;
-			//	} {
-			baudi.value = 1;
-			//	};
-		} {
-			baudi.value = 0;
-		};*/
 	}
+
+	prUpdateCtl
+	{ | src |
+
+		switch (src.chanNum,
+			1,
+			{
+				src.angle.node.closeGui();
+				src.rotation.node.closeGui();
+			},
+			2,
+			{
+				src.angle.node.gui(ctlView);
+				src.rotation.node.closeGui();
+			},
+			{
+				src.angle.node.closeGui();
+				src.rotation.node.gui(ctlView);
+
+				if (src.library.value == "ATK")
+				{ src.directivity.node.gui(ctlView) }
+			}
+		);
+
+		switch (src.library.value,
+			"ATK",
+			{
+				src.spread.node.gui(ctlView);
+				src.diffuse.node.gui(ctlView);
+
+				src.josh.closeGui(1);
+			},
+			"Josh",
+			{
+				src.spread.node.closeGui();
+				src.diffuse.node.closeGui();
+
+				src.josh.gui(ctlView, 1);
+			},
+			{
+				src.spread.node.closeGui();
+				src.diffuse.node.closeGui();
+
+				src.josh.closeGui(1);
+			}
+		);
+
+		if (src.localEffect.value == "Clear")
+		{
+			src.localAmount.node.closeGui();
+			src.localDelay.node.closeGui();
+			src.localDecay.node.closeGui();
+		} {
+			src.localAmount.node.gui(localView);
+			src.localDelay.node.gui(localView);
+			src.localDecay.node.gui(localView);
+		};
+
+		if (global.ossiaGlobal.value == "Clear")
+		{
+			src.globalAmount.node.closeGui();
+		} {
+			src.globalAmount.node.gui(ctlView);
+		};
+
+		ctlView.asView.decorator.reFlow(ctlView.asView);
+		// use the resize function of any OSSIA_Parameter
+		src.globalAmount.node.resizeLayout(ctlView);
+
+		if (src.external.value || src.scSynths.value)
+		{
+			var i = MoscaUtils.channels.detectIndex({ | item | item == src.nChan.value });
+
+			chanPopUp.visible_(true);
+			chanPopUp.value_(i);
+
+			if (src.scSynths.value)
+			{
+				exInCheck.value_(false);
+				busNumBox.visible_(true);
+				busNumBox.value_(src.busInd.value);
+			} {
+				scInCheck.value_(false);
+				busNumBox.visible_(false);
+			};
+
+			bLoad.visible_(false);
+			bStream.visible_(false);
+			loopCheck.visible_(false);
+		} {
+			busNumBox.visible_(false);
+			chanPopUp.visible_(false);
+
+			bLoad.visible_(true);
+			bStream.visible_(true);
+			loopCheck.visible_(true);
+		};
+/*				{hwn[currentsource] == scn[currentsource]}
+				{
+					hwInCheck.value = false;
+					scInCheck.value = false;
+					hwCtl[0][0].visible = false;
+					hwCtl[1][0].visible = false;
+					hwCtl[0][1].visible = false;
+					hwCtl[1][1].visible = false;
+					bload.visible = true;
+					bstream.visible = true;
+					loopcheck.visible = true;
+					{ bstream.value = streamdisk[currentsource].value; }.defer;
+					{ loopcheck.value = ossialoop[currentsource].v; }.defer;
+				}
+				{hwn[currentsource]}
+				{
+					hwInCheck.value = true;
+					scInCheck.value = false;
+					bload.visible = false;
+					bstream.visible = false;
+					loopcheck.visible = false;
+					hwCtl[0][0].visible = true;
+					hwCtl[1][0].visible = true;
+					hwCtl[0][1].visible = true;
+					hwCtl[1][1].visible = true;
+					hwCtl[0][0].value =
+					switch(ncan[currentsource],
+						1, { 0 },
+						2, { 1 },
+						4, { 2 },
+						9, { 3 },
+						16, { 4 },
+						25, { 5 },
+						36, { 6 });
+					hwCtl[0][1].value = busini[currentsource];
+				}
+				{scn[currentsource]}
+				{
+					scInCheck.value = true;
+					hwInCheck.value = false;
+					bload.visible = false;
+					bstream.visible = false;
+					loopcheck.visible = false;
+					hwCtl[0][0].visible = true;
+					hwCtl[1][0].visible = true;
+					hwCtl[0][1].visible = false;
+					hwCtl[1][1].visible = false;
+					hwCtl[0][0].value =
+					switch(ncan[currentsource],
+						1, { 0 },
+						2, { 1 },
+						4, { 2 },
+						9, { 3 },
+						16, { 4 },
+						25, { 5 },
+						36, { 6 });
+				};
+			};
+		);
+	*/}
 
 	prMoveSource
 	{ |x, y|
@@ -676,131 +870,11 @@ MoscaGUI
 		.onClose_({ ossiaLoop.removeDependant(loopEvent) });
 	}
 
-	prUpdateCtl
-	{ | src |
-
-		switch (src.chanNum,
-			1,
-			{
-				src.angle.node.closeGui();
-				src.rotation.node.closeGui();
-			},
-			2,
-			{
-				src.angle.node.gui(ctlView);
-				src.rotation.node.closeGui();
-			},
-			{
-				src.angle.node.closeGui();
-				src.rotation.node.gui(ctlView);
-
-				if (src.library.value == "ATK")
-				{ src.directivity.node.gui(ctlView) }
-			}
-		);
-
-		switch (src.library.value,
-			"ATK",
-			{
-				src.spread.node.gui(ctlView);
-				src.diffuse.node.gui(ctlView);
-
-				src.josh.closeGui(1);
-			},
-			"Josh",
-			{
-				src.spread.node.closeGui();
-				src.diffuse.node.closeGui();
-
-				src.josh.gui(ctlView, 1);
-			},
-			{
-				src.spread.node.closeGui();
-				src.diffuse.node.closeGui();
-
-				src.josh.closeGui(1);
-			}
-		);
-
-		if (src.localEffect.value == "Clear")
-		{
-			src.localAmount.node.gui(localView);
-			src.localDelay.node.closeGui();
-			src.localDecay.node.closeGui();
-		} {
-			src.localAmount.node.gui(localView);
-			src.localDelay.node.gui(localView);
-			src.localDecay.node.gui(localView);
-		};
-
-
-		if (src.external.value)
-		{
-		};
-/*				{hwn[currentsource] == scn[currentsource]}
-				{
-					hwInCheck.value = false;
-					scInCheck.value = false;
-					hwCtl[0][0].visible = false;
-					hwCtl[1][0].visible = false;
-					hwCtl[0][1].visible = false;
-					hwCtl[1][1].visible = false;
-					bload.visible = true;
-					bstream.visible = true;
-					loopcheck.visible = true;
-					{ bstream.value = streamdisk[currentsource].value; }.defer;
-					{ loopcheck.value = ossialoop[currentsource].v; }.defer;
-				}
-				{hwn[currentsource]}
-				{
-					hwInCheck.value = true;
-					scInCheck.value = false;
-					bload.visible = false;
-					bstream.visible = false;
-					loopcheck.visible = false;
-					hwCtl[0][0].visible = true;
-					hwCtl[1][0].visible = true;
-					hwCtl[0][1].visible = true;
-					hwCtl[1][1].visible = true;
-					hwCtl[0][0].value =
-					switch(ncan[currentsource],
-						1, { 0 },
-						2, { 1 },
-						4, { 2 },
-						9, { 3 },
-						16, { 4 },
-						25, { 5 },
-						36, { 6 });
-					hwCtl[0][1].value = busini[currentsource];
-				}
-				{scn[currentsource]}
-				{
-					scInCheck.value = true;
-					hwInCheck.value = false;
-					bload.visible = false;
-					bstream.visible = false;
-					loopcheck.visible = false;
-					hwCtl[0][0].visible = true;
-					hwCtl[1][0].visible = true;
-					hwCtl[0][1].visible = false;
-					hwCtl[1][1].visible = false;
-					hwCtl[0][0].value =
-					switch(ncan[currentsource],
-						1, { 0 },
-						2, { 1 },
-						4, { 2 },
-						9, { 3 },
-						16, { 4 },
-						25, { 5 },
-						36, { 6 });
-				};
-			};
-		);
-	*/}
-
 	free
 	{
 		isPlay.removeDependant(drawEvent);
+
+		global.removeDependant(ctlEvent);
 
 		sources.do { | item |
 
