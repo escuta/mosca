@@ -22,9 +22,10 @@ MoscaGUI
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wdados, waux;
 	var localView, ctlView, masterView, dialView, originView;
-	var autoBut, <>ctlWidth = 370, loadBut, origineBut, fxBut;
+	var autoBut, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
-	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream;
+	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
+	var bNodes, bMeters, bData, recNumBox, bBlip, bRecAudio;
 	var isPlay, origine, orientation, scale;
 	var zAxis, zSlider, zNumBox, zEvent;
 	var drawEvent, ctlEvent, lastGui = 0;
@@ -39,7 +40,7 @@ MoscaGUI
 	}
 
 	*new
-	{ | aMosca, sources, global, size, palette, guiInt |
+	{ | aMosca, size, palette, guiInt |
 
 		var p;
 
@@ -51,7 +52,7 @@ MoscaGUI
 			{ p = QtGUI.palette }
 		);
 
-		^super.newCopyArgs(sources, global, aMosca.control, guiInt, p).ctr(aMosca, size);
+		^super.newCopyArgs(aMosca.sources, aMosca.effects, aMosca.control, guiInt, p).ctr(aMosca, size);
 	}
 
 	ctr
@@ -374,7 +375,102 @@ MoscaGUI
 			}
 		});
 
-		// dialView = UserView(win); // extra options view
+		dialView = UserView(win, Rect(width - 94, 0, 94, 150)); // extra options view
+		dialView.addFlowLayout();
+
+		bData = Button(dialView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Data",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Close Date",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({ });
+
+		bNodes = Button(dialView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Show Nodes",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({ aMosca.server.plotTree });
+
+		bMeters = Button(dialView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Show Meters",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({ aMosca.server.meter });
+
+		recNumBox = EZNumber(
+			parent: dialView,
+			numberWidth: 20,
+			bounds: Rect(0, 0, 88, 20),
+			label: "Rec chans",
+			gap: 0@0
+		).setColors(
+			stringColor: palette.color('baseText', 'active'),
+			numNormalColor: palette.color('windowText', 'active')
+		);
+
+		recNumBox.labelView.align_(\left);
+		recNumBox.numberView.maxDecimals_(0).step_(1).scroll_step_(1);
+		recNumBox.controlSpec.maxval_(inf);
+		recNumBox.value_(2);
+
+		bBlip = Button(dialView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Bilps",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Bilps",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		);
+
+		bRecAudio = Button(dialView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Record Audio",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Stop Rec.",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({
+			aMosca.recordAudio(bBlip.value.asBoolean,
+				recNumBox.value);
+		});
 
 		// sub view containing the controls of the selected source
 		ctlView = UserView(win, Rect(0, 90, 164, 20));
@@ -498,9 +594,7 @@ MoscaGUI
 
 			originView.bounds_(Rect(width - 94, height - 128, 94, 124));
 
-			// dialView.bounds_(Rect(width - 100, 10, 180, 150));
-
-			//localView.bounds_(localView.bounds.top_(height - 262));
+			dialView.bounds_(Rect(width - 94, 3, 94, 150));
 
 			masterView.bounds_(masterView.bounds.top_(height - 76));
 
@@ -580,11 +674,11 @@ MoscaGUI
 	}
 
 	prFileDialog
-	{ | aFileNOde |
+	{ | aFileNode |
 
 		Dialog.openPanel({ | path |
 
-			aFileNOde.value_(path);
+			aFileNode.value_(path);
 		});
 	}
 
@@ -594,6 +688,38 @@ MoscaGUI
 		var source, topview;
 
 		source = sources[index];
+		//
+		// bAux = Button(ctlView, Rect(0, 0, 88, 20))
+		// .focusColor_(palette.color('midlight', 'active'))
+		// .states_(
+		// 	[
+		// 		[
+		// 			"Aux",
+		// 			palette.color('light', 'active'),
+		// 			palette.color('middark', 'active')
+		// 		],
+		// 		[
+		// 			"Close Aux",
+		// 			palette.color('middark', 'active'),
+		// 			palette.color('light', 'active')
+		// 		]
+		// 	]
+		// ).action_({ | butt |
+		//
+		// 	if (sources[currentSource].auxiliary.node.window.notNil)
+		// 	{
+		// 		if (sources[currentSource].auxiliary.node.window.isClosed)
+		// 		{
+		// 			sources[currentSource].auxiliary.node.gui(childrenDepth: 2);
+		// 			sources[currentSource].auxiliary.node.window.onClose_({ butt.value_(0)})
+		// 		} {
+		// 			sources[currentSource].auxiliary.node.window.close
+		// 		}
+		// 	} {
+		// 		sources[currentSource].auxiliary.node.gui(childrenDepth: 2);
+		// 		sources[currentSource].auxiliary.node.window.onClose_({ butt.value_(0) })
+		// 	}
+		// });
 
 		sources[currentSource].removeDependant(ctlEvent);
 		source.addDependant(ctlEvent);
@@ -611,7 +737,6 @@ MoscaGUI
 		ctlView.decorator.reset;
 
 		// sub view containing local effect parameter
-		// localView = UserView(win, Rect(0, height - 262, 156, 20));
 		localView = UserView(ctlView, Rect(0, 0, 164, 40));
 		localView.addFlowLayout(0@0);
 
@@ -722,66 +847,7 @@ MoscaGUI
 			bStream.visible_(true);
 			loopCheck.visible_(true);
 		};
-/*				{hwn[currentsource] == scn[currentsource]}
-				{
-					hwInCheck.value = false;
-					scInCheck.value = false;
-					hwCtl[0][0].visible = false;
-					hwCtl[1][0].visible = false;
-					hwCtl[0][1].visible = false;
-					hwCtl[1][1].visible = false;
-					bload.visible = true;
-					bstream.visible = true;
-					loopcheck.visible = true;
-					{ bstream.value = streamdisk[currentsource].value; }.defer;
-					{ loopcheck.value = ossialoop[currentsource].v; }.defer;
-				}
-				{hwn[currentsource]}
-				{
-					hwInCheck.value = true;
-					scInCheck.value = false;
-					bload.visible = false;
-					bstream.visible = false;
-					loopcheck.visible = false;
-					hwCtl[0][0].visible = true;
-					hwCtl[1][0].visible = true;
-					hwCtl[0][1].visible = true;
-					hwCtl[1][1].visible = true;
-					hwCtl[0][0].value =
-					switch(ncan[currentsource],
-						1, { 0 },
-						2, { 1 },
-						4, { 2 },
-						9, { 3 },
-						16, { 4 },
-						25, { 5 },
-						36, { 6 });
-					hwCtl[0][1].value = busini[currentsource];
-				}
-				{scn[currentsource]}
-				{
-					scInCheck.value = true;
-					hwInCheck.value = false;
-					bload.visible = false;
-					bstream.visible = false;
-					loopcheck.visible = false;
-					hwCtl[0][0].visible = true;
-					hwCtl[1][0].visible = true;
-					hwCtl[0][1].visible = false;
-					hwCtl[1][1].visible = false;
-					hwCtl[0][0].value =
-					switch(ncan[currentsource],
-						1, { 0 },
-						2, { 1 },
-						4, { 2 },
-						9, { 3 },
-						16, { 4 },
-						25, { 5 },
-						36, { 6 });
-				};
-			};
-		);
-	*/}
+	}
 
 	prMoveSource
 	{ |x, y|
@@ -812,11 +878,11 @@ MoscaGUI
 	{ | instance |
 
 		var ossiaLoop, loopEvent, loop;
-		var canv = Window.new("Automation Control", Rect(0, 0, ctlWidth, 43)).front;
+		var canv = Window.new("Automation Control", Rect(0, 0, width, 43)).front;
 
 		// canv.background_(palette.color('base', 'active'));
 
-		control.front(canv, Rect(0, 0, ctlWidth, 20));
+		control.front(canv, Rect(0, 0, width, 20));
 		canv.onClose_({ autoBut.value_(0) });
 
 		Button(canv, Rect(0, 23, 200, 20))

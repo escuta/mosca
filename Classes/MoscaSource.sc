@@ -165,14 +165,17 @@ MoscaSource[]
 
 		auxiliary = OSSIA_Node(src, "Auxiliary");
 
-		aux = Array.fill(5,
-			{ | i | OssiaAutomationProxy(auxiliary, "Aux_" ++ (i + 1), Float,
-			[0, 1], 0, 'clip', critical:allCritical);
-		});
+		aux = [];
 
-		check = Array.fill(5,
-			{ | i | OssiaAutomationProxy(auxiliary, "Ckeck_" ++ (i + 1),
-				Boolean, critical:allCritical);
+		check = [];
+
+		5.do({ | i |
+
+			aux = aux.add(OssiaAutomationProxy(auxiliary, "Aux_" ++ (i + 1), Float,
+				[0, 1], 0, 'clip', critical:allCritical));
+
+			check = check.add(OssiaAutomationProxy(auxiliary, "Ckeck_" ++ (i + 1),
+				Boolean, critical:allCritical));
 		});
 	}
 
@@ -311,14 +314,24 @@ MoscaSource[]
 	dockTo
 	{ | automation |
 
+		automation.dock(file, "fileProxy_" ++ index);
+		automation.dock(stream, "streamProxy_" ++ index);
+		automation.dock(scSynths, "scSynthsProxy_" ++ index);
+		automation.dock(external, "externalProxy_" ++ index);
+		automation.dock(nChan, "nChanProxy_" ++ index);
+		automation.dock(busInd, "busIndProxy_" ++ index);
+		automation.dock(loop, "loopProxy_" ++ index);
+
 		coordinates.dockTo(automation, index);
 
+		automation.dock(library, "libraryProxy_" ++ index);
 		automation.dock(level, "levelProxy_" ++ index);
 		automation.dock(doppler, "dopamtProxy_" ++ index);
 		automation.dock(globalAmount, "globaamtlProxy_" ++ index);
 		automation.dock(localEffect, "localProxy_" ++ index);
 		automation.dock(localDelay, "localDelayProxy_" ++ index);
 		automation.dock(localDecay, "localDecayProxy_" ++ index);
+
 		automation.dock(angle, "angleProxy_" ++ index);
 		automation.dock(rotation, "rotationProxy_" ++ index);
 		automation.dock(directivity, "directivityProxy_" ++ index);

@@ -22,7 +22,7 @@ MoscaRenderer
 	var <format, <virtualSetup; // conversion
 	var <longestRadius, <quarterRadius, <twoAndaHalfRadius, <lowestElevation, <highestElevation;
 	var <bFormNumChan, <numOutputs; // utils
-	var renderFunc, renderer; // synth
+	var renderFunc, <renderSynth; // synth
 	var <ossiaMasterLevel;
 
 	*new { | maxOrder | ^super.new.ctr(maxOrder) }
@@ -38,7 +38,7 @@ MoscaRenderer
 		ossiaMasterLevel.node.unit_(OSSIA_gain.decibel);
 	}
 
-	setAction { ossiaMasterLevel.action_({ | num | renderer.set(\level, num.value.dbamp) }) }
+	setAction { ossiaMasterLevel.action_({ | num | renderSynth.set(\level, num.value.dbamp) }) }
 
 	setup
 	{ | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
@@ -427,7 +427,7 @@ MoscaRenderer
 	launchRenderer
 	{ | server, target |
 
-		renderer = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
+		renderSynth = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
 	}
 
 	dockTo

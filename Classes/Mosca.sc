@@ -62,6 +62,13 @@ Mosca : MoscaBase
 			renderer.setup(server, speaker_array, maxOrder, decoder,
 				outBus, subOutBus, rawOutBus, rawFormat);
 
+			// recording blip synth for synchronisation
+			SynthDef(\blip, {
+				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
+				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
+				Out.ar(renderer.fumaBus, blip);
+			}).send(server);
+
 			spat.initSpat(maxOrder, renderer, server);
 
 			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer, irBank);
@@ -424,5 +431,19 @@ Mosca : MoscaBase
 				});
 			};
 		};
+	}
+
+	prBlips
+	{
+		Routine.new({
+
+			4.do({
+				Synth(\blip);
+				1.wait;
+			});
+
+			yieldAndReset(true);
+
+		}).play;
 	}
 }

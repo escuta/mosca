@@ -16,41 +16,6 @@
  * may be downloaded here: http://escuta.org/mosca
 */
 
-
-AutomationGuiProxy : QView
-{
-	var <>val, <>function, <>action;
-
-	*new { | val | ^super.new.initAutomationProxy(val) }
-
-	initAutomationProxy
-	{ | ival |
-
-		this.val = ival;
-		this.bounds(Rect(0,0,0,0)); // set fake bounds to keep Automation happy!
-	}
-
-	value { ^this.val; }
-
-	value_ { | value | this.val = value; }
-
-	mapToGlobal
-	{ | point |
-		_QWidget_MapToGlobal
-		^this.primitiveFailed;
-	}
-
-	absoluteBounds { ^this.bounds.moveToPoint(this.mapToGlobal( 0@0 )) }
-
-	bounds { ^this.getProperty(\geometry) }
-
-	bounds_ { | rect | this.setProperty(\geometry, rect.asRect) }
-
-	doAction { this.action.value(this.val) }
-
-	valueAction_ { | val | this.value_(val).doAction }
-}
-
 AutomationView : QView {
 	// holds basic GUI specifics to keep Automation happy!
 	*new { ^super.new.ctr() }
@@ -73,17 +38,13 @@ AutomationView : QView {
 AutomationProxy //: AutomationView
 // is the QView inheritence needed ?
 {
-	var val, <>action;
+	var <>value, <>action;
 
 	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
 
 	*new { | val | ^super.newCopyArgs(val) }
 
-	value { ^val }
-
-	value_ { | value | val = value }
-
-	doAction { action.value(val) }
+	doAction { action.value(value) }
 
 	valueAction_ { | val | this.value_(val).doAction }
 }
@@ -292,8 +253,6 @@ OssiaAutomationCoordinates
 			critical:allCritical, repetition_filter:true);
 
 		// azElDist.unit_(OSSIA_position.AzElDist);
-
-		this.setAction(center, spatializer, synth);
 	}
 
 	setAction

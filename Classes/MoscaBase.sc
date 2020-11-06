@@ -1,7 +1,7 @@
 MoscaBase // acts as the public interface
 {
-	var dur, <autoLoop, server, <ossiaParent, gui, tracker; // initial rguments
-	var renderer, effects, center, sources, srcGrp;
+	var dur, <autoLoop, <server, <ossiaParent, gui, tracker; // initial rguments
+	var renderer, <effects, center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
@@ -65,6 +65,22 @@ MoscaBase // acts as the public interface
 
 			slaved = false;
 		};
+	}
+
+	recordAudio
+	{ | blips = false, recChannels = 2 |
+
+		if (blips) { this.prBlips };
+
+		server.record((control.presetDir ++ "/MoscaOut.wav").standardizePath,
+			numChannels: recChannels,
+			node:renderer.renderSynth);
+	}
+
+	stopRecording
+	{
+		server.stopRecording;
+		"Recording stopped".postln;
 	}
 
 	inputFile
@@ -341,11 +357,11 @@ MoscaBase // acts as the public interface
 	}
 
 	gui
-	{ | size = 800, lag = 0.05, palette = \ossia |
+	{ | size = 800, palette = \ossia, lag = 0.05 |
 
 		if (gui.isNil)
 		{
-			gui = MoscaGUI(this, sources, effects, size, palette, lag);
+			gui = MoscaGUI(this, size, palette, lag);
 
 			gui.win.onClose({
 				gui.free;
