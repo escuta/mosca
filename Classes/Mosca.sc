@@ -18,9 +18,13 @@
 
 /*
 * TODO
-* GUI
-* Multythread evrything
+* show Map
 * cos distance
+* add source
+* GPS
+* Write SynthDef Once
+* Multythread evrything
+* Higher order binaural
 */
 
 Mosca : MoscaBase

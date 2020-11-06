@@ -20,8 +20,7 @@ MoscaGUI
 {
 	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
-	var <win, wdados, waux;
-	var localView, ctlView, masterView, dialView, originView;
+	var <win, wData, dataView, localView, ctlView, masterView, dialView, originView;
 	var autoBut, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
@@ -78,10 +77,10 @@ MoscaGUI
 		win.view.palette = palette;
 
 		// source index
-		StaticText(win, Rect(3, 3, 50, 20)).string_("Source");
+		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");
 
-		exInCheck = Button(win, Rect(3, 30, 78, 20), "EX-in")
+		exInCheck = Button(win, Rect(4, 30, 79, 20), "EX-in")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -98,7 +97,7 @@ MoscaGUI
 			]
 		).action_({ | butt | sources[currentSource].external.value_(butt.value.asBoolean) });
 
-		scInCheck = Button( win, Rect(82, 30, 79, 20), "SC-in")
+		scInCheck = Button( win, Rect(83, 30, 79, 20), "SC-in")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -115,7 +114,7 @@ MoscaGUI
 			]
 		).action_({ | butt | sources[currentSource].scSynths.value_(butt.value.asBoolean) });
 
-		bLoad = Button(win, Rect(3, 50, 79, 20), "Load")
+		bLoad = Button(win, Rect(4, 50, 79, 20), "Load")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -133,7 +132,7 @@ MoscaGUI
 
 		bLoad.visible_(false);
 
-		bStream = Button( win, Rect(82, 50, 79, 20), "Stream")
+		bStream = Button( win, Rect(83, 50, 79, 20), "Stream")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -153,7 +152,7 @@ MoscaGUI
 
 		chanPopUp = EZPopUpMenu(
 			parentView: win,
-			bounds: Rect(3, 50, 158, 20),
+			bounds: Rect(4, 50, 158, 20),
 			label: "No. chans",
 			items: MoscaUtils.channels(),
 			globalAction: { | obj | sources[currentSource].nChan.value_(obj.item) },
@@ -168,7 +167,7 @@ MoscaGUI
 
 		busNumBox = EZNumber(
 			parent: win,
-			bounds: Rect(3, 70, 158, 20),
+			bounds: Rect(4, 70, 158, 20),
 			label: "Bus index",
 			numberWidth: 78,
 			action: { | obj | sources[currentSource].busInd.value_(obj.value) },
@@ -183,7 +182,7 @@ MoscaGUI
 		busNumBox.controlSpec.maxval_(inf);
 		busNumBox.visible_(false);
 
-		loopCheck = Button( win, Rect(3, 70, 158, 20), "Loop")
+		loopCheck = Button(win, Rect(4, 70, 158, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -201,6 +200,38 @@ MoscaGUI
 		).action_({ | butt | sources[currentSource].loop.value_(butt.value.asBoolean) });
 
 		loopCheck.visible_(false);
+
+		bAux = Button(win, Rect(4, 70, 158, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Aux",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Close Aux",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({ | butt |
+
+			if (sources[currentSource].auxiliary.window.notNil)
+			{
+				if (sources[currentSource].auxiliary.window.isClosed)
+				{
+					sources[currentSource].auxiliary.gui(childrenDepth: 2);
+					sources[currentSource].auxiliary.window.onClose_({ butt.value_(0) })
+				} {
+					sources[currentSource].auxiliary.window.close
+				}
+			} {
+				sources[currentSource].auxiliary.gui(childrenDepth: 2);
+				sources[currentSource].auxiliary.window.onClose_({ butt.value_(0) })
+			}
+		});
 
 		// sub view for automation control, master volume, scale factor
 		masterView = UserView(win, Rect(0, height - 76, 325, 72));
@@ -366,12 +397,12 @@ MoscaGUI
 			{
 				if (control.gui.win.isClosed)
 				{
-					this.automationControl(aMosca)
+					this.prAutoControl(aMosca)
 				} {
 					control.gui.win.close
 				}
 			} {
-				this.automationControl(aMosca)
+				this.prAutoControl(aMosca)
 			}
 		});
 
@@ -393,7 +424,15 @@ MoscaGUI
 					palette.color('middark', 'active')
 				]
 			]
-		).action_({ });
+		).action_({
+
+			if (wData.notNil)
+			{
+				wData.close
+			} {
+				this.prDataWindow(aMosca)
+			}
+		});
 
 		bNodes = Button(dialView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
@@ -632,12 +671,12 @@ MoscaGUI
 				{
 					numColor = palette.color('window', 'active');
 
-					Pen.fillColor = palette.color('light', 'active')
-					.alpha_(55 + (item.contraction.value * 200));
+					Pen.fillColor = palette.color('baseText', 'active')	// light
+					.alpha_(0.2 + (item.contraction.value * 0.8));
 
 					Pen.fill;
 				} {
-					numColor = palette.color('windowText', 'active');
+					numColor = palette.color('alternateBase', 'active'); // windowText
 
 					Pen.strokeColor = numColor;
 					Pen.stroke;
@@ -688,41 +727,11 @@ MoscaGUI
 		var source, topview;
 
 		source = sources[index];
-		//
-		// bAux = Button(ctlView, Rect(0, 0, 88, 20))
-		// .focusColor_(palette.color('midlight', 'active'))
-		// .states_(
-		// 	[
-		// 		[
-		// 			"Aux",
-		// 			palette.color('light', 'active'),
-		// 			palette.color('middark', 'active')
-		// 		],
-		// 		[
-		// 			"Close Aux",
-		// 			palette.color('middark', 'active'),
-		// 			palette.color('light', 'active')
-		// 		]
-		// 	]
-		// ).action_({ | butt |
-		//
-		// 	if (sources[currentSource].auxiliary.node.window.notNil)
-		// 	{
-		// 		if (sources[currentSource].auxiliary.node.window.isClosed)
-		// 		{
-		// 			sources[currentSource].auxiliary.node.gui(childrenDepth: 2);
-		// 			sources[currentSource].auxiliary.node.window.onClose_({ butt.value_(0)})
-		// 		} {
-		// 			sources[currentSource].auxiliary.node.window.close
-		// 		}
-		// 	} {
-		// 		sources[currentSource].auxiliary.node.gui(childrenDepth: 2);
-		// 		sources[currentSource].auxiliary.node.window.onClose_({ butt.value_(0) })
-		// 	}
-		// });
 
 		sources[currentSource].removeDependant(ctlEvent);
 		source.addDependant(ctlEvent);
+
+		if (bAux.value == 1) { bAux.valueAction_(0) };
 
 		currentSource = index;
 
@@ -847,6 +856,8 @@ MoscaGUI
 			bStream.visible_(true);
 			loopCheck.visible_(true);
 		};
+
+		bAux.bounds_(bAux.bounds.top_(ctlView.bounds.top + ctlView.bounds.height));
 	}
 
 	prMoveSource
@@ -874,7 +885,7 @@ MoscaGUI
 		};
 	}
 
-	automationControl
+	prAutoControl
 	{ | instance |
 
 		var ossiaLoop, loopEvent, loop;
@@ -934,6 +945,35 @@ MoscaGUI
 		.focusColor_(palette.color('midlight', 'active'))
 		.action_({ | check | ossiaLoop.v_(check.value) })
 		.onClose_({ ossiaLoop.removeDependant(loopEvent) });
+	}
+
+	prDataWindow
+	{ | aMosca |
+
+		var lefts, strings;
+
+		wData = Window("Data", Rect(width, 0, 960, (sources.size * 20) + 60),
+			scroll: true);
+
+		// lefts = [ 20, 45, 70, 85, 100, 115, 130, 145, 170, 208, 241, 274, 300,
+		// 	325, 350, 375, 400, 425, 450, 475, 500, 525, 550, 575, 600, 625,
+		// 650, 675, 700, 725, 750, 765, 780, 795, 810, 825, 925 ];
+		//
+		// strings = [ "Lib", "Rv", "Lp", "Ex", "Sc"
+		// ];
+
+		dataView = UserView(wData, Rect(0, 200, 960, (sources.size * 20) + 40));
+		dataView.addFlowLayout;
+	}
+
+	prAddData
+	{ | aSource |
+
+	}
+
+	prRemoveData
+	{ | aSource |
+
 	}
 
 	free

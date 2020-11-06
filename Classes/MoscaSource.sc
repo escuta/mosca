@@ -28,7 +28,7 @@ MoscaSource[]
 	var <angle, <rotation, <directivity; // input specific parameters
 	var <atk, <spread, <diffuse; // atk specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
-	var auxiliary, <aux, <check;
+	var <auxiliary, <aux, <check;
 
 	*new
 	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, center |
