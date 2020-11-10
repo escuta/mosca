@@ -19,6 +19,7 @@
 /*
 * TODO
 * show Map
+* scale
 * cos distance
 * add source
 * GPS

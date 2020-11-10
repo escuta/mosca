@@ -26,8 +26,8 @@ MoscaGUI
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, recNumBox, bBlip, bRecAudio;
 	var isPlay, origine, orientation, scale;
-	var zAxis, zSlider, zNumBox, zEvent;
-	var drawEvent, ctlEvent, lastGui = 0;
+	var zAxis, zSlider, zNumBox;
+	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
 
 	classvar halfPi;
@@ -197,7 +197,16 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources[currentSource].loop.value_(butt.value.asBoolean) });
+		).action_({ | butt | sources[currentSource].loop.value_(butt.value) });
+
+		loopEvent = { | param |
+				{
+					if (param.value != loopCheck.value)
+					{ loopCheck.value_(param.value) };
+				}.defer;
+			};
+
+		sources[currentSource].loop.node.addDependant(loopEvent);
 
 		loopCheck.visible_(false);
 
@@ -218,18 +227,12 @@ MoscaGUI
 			]
 		).action_({ | butt |
 
-			if (sources[currentSource].auxiliary.window.notNil)
+			if (butt.value == 1)
 			{
-				if (sources[currentSource].auxiliary.window.isClosed)
-				{
-					sources[currentSource].auxiliary.gui(childrenDepth: 2);
-					sources[currentSource].auxiliary.window.onClose_({ butt.value_(0) })
-				} {
-					sources[currentSource].auxiliary.window.close
-				}
+				var window = sources[currentSource].auxiliary.gui(childrenDepth: 2);
+				window.onClose_({ butt.value_(0) })
 			} {
-				sources[currentSource].auxiliary.gui(childrenDepth: 2);
-				sources[currentSource].auxiliary.window.onClose_({ butt.value_(0) })
+				sources[currentSource].auxiliary.closeGui();
 			}
 		});
 
@@ -254,18 +257,12 @@ MoscaGUI
 			]
 		).action_({ | butt |
 
-			if (global.ossiaGlobal.node.window.notNil)
+			if (butt.value == 1)
 			{
-				if (global.ossiaGlobal.node.window.isClosed)
-				{
-					global.ossiaGlobal.node.gui(childrenDepth: 2);
-					global.ossiaGlobal.node.window.onClose_({ butt.value_(0)})
-				} {
-					global.ossiaGlobal.node.window.close
-				}
+				var window = global.ossiaGlobal.node.gui(childrenDepth: 2);
+				window.onClose_({ butt.value_(0) })
 			} {
-				global.ossiaGlobal.node.gui(childrenDepth: 2);
-				global.ossiaGlobal.node.window.onClose_({ butt.value_(0) })
+				global.ossiaGlobal.node.closeGui();
 			}
 		});
 
@@ -327,22 +324,16 @@ MoscaGUI
 			]
 		).action_({ | butt |
 
-			if (orientation.window.notNil)
+			if (butt.value == 1)
 			{
-				if (orientation.window.isClosed)
-				{
-					orientation.gui();
-					origine.gui(orientation.window);
-					scale.gui(orientation.window);
-					orientation.window.onClose_({ butt.value_(0) })
-				} {
-					orientation.window.close
-				}
+				var window = orientation.gui();
+				origine.gui(window);
+				scale.gui(window);
+				window.onClose_({ butt.value_(0) })
 			} {
-				orientation.gui();
-				origine.gui(orientation.window);
-				scale.gui(orientation.window);
-				orientation.window.onClose_({ butt.value_(0) })
+				orientation.closeGui();
+				origine.closeGui();
+				scale.closeGui();
 			}
 		});
 
@@ -731,6 +722,9 @@ MoscaGUI
 		sources[currentSource].removeDependant(ctlEvent);
 		source.addDependant(ctlEvent);
 
+		sources[currentSource].loop.node.removeDependant(loopEvent);
+		source.loop.node.addDependant(loopEvent);
+
 		if (bAux.value == 1) { bAux.valueAction_(0) };
 
 		currentSource = index;
@@ -949,24 +943,39 @@ MoscaGUI
 
 	prDataGui
 	{
-		var strings;
+		var strings, lefts;
 
 		wData = Window("Data", Rect(width, 0, 1962, (sources.size * 20) + 60),
 			scroll: true).front;
 
 		wData.onClose_({ bData.value_(0) }).view.palette_(palette);
 
-		// lefts = [ 20, 45, 70, 85, 100, 115, 130, 145, 170, 208, 241, 274, 300,
-		// 	325, 350, 375, 400, 425, 450, 475, 500, 525, 550, 575, 600, 625,
-		// 650, 675, 700, 725, 750, 765, 780, 795, 810, 825, 925 ];
-		//
-		// strings = [ "Lib", "Rv", "Lp", "Ex", "Sc"
-		// ];
+		// left positions of the txt indicators
+		lefts = [
+			28, 132, 156, 180, 204, 228, 332, 381, 430, 479, 528, 577, 626,
+			675, 779, 828, 877, 926, 1030, 1054, 1103, 1152, 1201, 1250, 1299,
+			1348, 1397, 1421, 1445, 1494, 1543, 1592, 1641, 1665, 1714, 1738,
+			1787, 1811, 1860, 1884, 1933 ];
 
-		dataView = UserView(wData, Rect(0, 20, 1962, (sources.size * 20) + 40));
+		// txt indicators
+		strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
+			" X", " Y", " Z", "Azimuth", "Elevation", "Distance", "Local Fx",
+			"Loc. amt.", "Delay", "Decay", "Library", "Play", "Level", "Contract.",
+			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Sp", "Df",
+			"Gr. Rate", "Win. size", "Rnd. size", "Aux 1", "C1", "Aux 2", "C2",
+			"Aux 3", "C3", "Aux 4", "C4", "Aux 5", "C5" ];
+
+		dataView = UserView(wData, Rect(0, 24, 1962, (sources.size * 20) + 40));
 		dataView.addFlowLayout;
 
-		sources.do({ | item | this.prAddData(item); });
+		sources.do({ | item | this.prAddData(item) });
+
+		strings.do({ | item, i |
+
+			StaticText(wData, Rect(lefts[i], 4, 50, 20))
+			.font_(Font(Font.defaultSansFace, 9))
+			.string_(item);
+		});
 	}
 
 	prAddData
@@ -981,6 +990,9 @@ MoscaGUI
 
 	prRemoveData
 	{ | source |
+
+		source.src.closeGui(dataView, 2);
+		dataView.children.last.remove;
 	}
 
 	free
