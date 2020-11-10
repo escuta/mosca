@@ -23,7 +23,7 @@ MoscaSource[]
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
 	var input, <file, <stream, <scSynths, <external, <nChan, <busInd; // inputs types
-	var src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
+	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <directivity; // input specific parameters
 	var <atk, <spread, <diffuse; // atk specific parameters

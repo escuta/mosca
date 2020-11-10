@@ -73,8 +73,8 @@ MoscaGUI
 		halfHeight = halfWidth;
 
 		// main window
-		win = Window("Mosca", Rect(0, 0, width, height)).front; // main indow
-		win.view.palette = palette;
+		win = Window("Mosca", (width)@(height)).front; // main indow
+		win.view.palette_(palette);
 
 		// source index
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
@@ -419,18 +419,18 @@ MoscaGUI
 					palette.color('middark', 'active')
 				],
 				[
-					"Close Date",
-					palette.color('light', 'active'),
-					palette.color('middark', 'active')
+					"Close Data",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
 				]
 			]
-		).action_({
+		).action_({ | butt |
 
-			if (wData.notNil)
+			if (butt.value == 1)
 			{
-				wData.close
+				this.prDataGui();
 			} {
-				this.prDataWindow(aMosca)
+				wData.close;
 			}
 		});
 
@@ -947,13 +947,14 @@ MoscaGUI
 		.onClose_({ ossiaLoop.removeDependant(loopEvent) });
 	}
 
-	prDataWindow
-	{ | aMosca |
+	prDataGui
+	{
+		var strings;
 
-		var lefts, strings;
+		wData = Window("Data", Rect(width, 0, 1962, (sources.size * 20) + 60),
+			scroll: true).front;
 
-		wData = Window("Data", Rect(width, 0, 960, (sources.size * 20) + 60),
-			scroll: true);
+		wData.onClose_({ bData.value_(0) }).view.palette_(palette);
 
 		// lefts = [ 20, 45, 70, 85, 100, 115, 130, 145, 170, 208, 241, 274, 300,
 		// 	325, 350, 375, 400, 425, 450, 475, 500, 525, 550, 575, 600, 625,
@@ -962,18 +963,24 @@ MoscaGUI
 		// strings = [ "Lib", "Rv", "Lp", "Ex", "Sc"
 		// ];
 
-		dataView = UserView(wData, Rect(0, 200, 960, (sources.size * 20) + 40));
+		dataView = UserView(wData, Rect(0, 20, 1962, (sources.size * 20) + 40));
 		dataView.addFlowLayout;
+
+		sources.do({ | item | this.prAddData(item); });
 	}
 
 	prAddData
-	{ | aSource |
+	{ | source |
 
+		StaticText(dataView, 20@20)
+		.font_(Font(Font.defaultSansFace, 9))
+		.string_((source.index + 1).asString);
+
+		source.src.gui(dataView, 2, \minimal);
 	}
 
 	prRemoveData
-	{ | aSource |
-
+	{ | source |
 	}
 
 	free
