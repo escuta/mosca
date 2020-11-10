@@ -70,7 +70,7 @@ MoscaSource[]
 		nChan.node.description_("number of channels for SC or External inputs");
 
 		busInd = OssiaAutomationProxy(input, "Bus_index", Integer,
-			[ 0, nil ], 0, "low", true, false);
+			[ 0, inf ], 0, "low", true, false);
 
 		busInd.node.description_("Index of the external input bus");
 

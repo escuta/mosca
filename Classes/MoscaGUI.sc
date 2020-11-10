@@ -20,7 +20,7 @@ MoscaGUI
 {
 	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
-	var <win, wData, dataView, localView, ctlView, masterView, dialView, originView;
+	var <win, wData, dataView, ctlView, localView, masterView, dialView, originView;
 	var autoBut, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
@@ -766,16 +766,16 @@ MoscaGUI
 		switch (src.chanNum,
 			1,
 			{
-				src.angle.node.closeGui();
-				src.rotation.node.closeGui();
+				src.angle.node.closeGui(ctlView);
+				src.rotation.node.closeGui(ctlView);
 			},
 			2,
 			{
 				src.angle.node.gui(ctlView);
-				src.rotation.node.closeGui();
+				src.rotation.node.closeGui(ctlView);
 			},
 			{
-				src.angle.node.closeGui();
+				src.angle.node.closeGui(ctlView);
 				src.rotation.node.gui(ctlView);
 
 				if (src.library.value == "ATK")
@@ -789,28 +789,28 @@ MoscaGUI
 				src.spread.node.gui(ctlView);
 				src.diffuse.node.gui(ctlView);
 
-				src.josh.closeGui(1);
+				src.josh.closeGui(ctlView);
 			},
 			"Josh",
 			{
-				src.spread.node.closeGui();
-				src.diffuse.node.closeGui();
+				src.spread.node.closeGui(ctlView);
+				src.diffuse.node.closeGui(ctlView);
 
-				src.josh.gui(ctlView, 1);
+				src.josh.gui(ctlView);
 			},
 			{
-				src.spread.node.closeGui();
-				src.diffuse.node.closeGui();
+				src.spread.node.closeGui(ctlView);
+				src.diffuse.node.closeGui(ctlView);
 
-				src.josh.closeGui(1);
+				src.josh.closeGui(ctlView);
 			}
 		);
 
 		if (src.localEffect.value == "Clear")
 		{
-			src.localAmount.node.closeGui();
-			src.localDelay.node.closeGui();
-			src.localDecay.node.closeGui();
+			src.localAmount.node.closeGui(localView);
+			src.localDelay.node.closeGui(localView);
+			src.localDecay.node.closeGui(localView);
 		} {
 			src.localAmount.node.gui(localView);
 			src.localDelay.node.gui(localView);
@@ -819,7 +819,7 @@ MoscaGUI
 
 		if (global.ossiaGlobal.value == "Clear")
 		{
-			src.globalAmount.node.closeGui();
+			src.globalAmount.node.closeGui(ctlView);
 		} {
 			src.globalAmount.node.gui(ctlView);
 		};
