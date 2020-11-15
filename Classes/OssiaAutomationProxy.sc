@@ -16,27 +16,32 @@
  * may be downloaded here: http://escuta.org/mosca
 */
 
-AutomationView : QView {
-	// holds basic GUI specifics to keep Automation happy!
-	*new { ^super.new.ctr() }
+AutomationBase
+{
+	var auto;
 
-	ctr { this.bounds(Rect(0,0,0,0)) } // set fake bounds
+	dockTo
+	{ | automation, name |
 
-	absoluteBounds { ^this.bounds.moveToPoint( this.mapToGlobal( 0@0 )) }
-
-	mapToGlobal
-	{ | point |
-		_QWidget_MapToGlobal
-		^this.primitiveFailed;
+		auto = automation;
+		automation.dock(this, name);
 	}
 
-	bounds { ^this.getProperty(\geometry) }
+	free
+	{
+		if (auto.notNil)
+		{
+			auto.clients.reverseDo({ | client |
 
-	bounds_ { | rect | this.setProperty(\geometry, rect.asRect);}
+				if (client === this) { client.remove }
+			})
+		};
+
+		super.free;
+	}
 }
 
-AutomationProxy //: AutomationView
-// is the QView inheritence needed ?
+AutomationProxy : AutomationBase
 {
 	var <>value, <>action;
 
@@ -49,8 +54,7 @@ AutomationProxy //: AutomationView
 	valueAction_ { | val | this.value_(val).doAction }
 }
 
-OssiaAutomationProxy //: AutomationView
-// is the QView inheritence needed ?
+OssiaAutomationProxy : AutomationBase
 {
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// single value version
@@ -113,7 +117,7 @@ OssiaAutomationCenter
 		origine = Cartesian();
 
 		ossiaOrigine = OSSIA_Parameter(parent_node, "Origine", OSSIA_vec3f,
-			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 0, 0],
+			domain:[[-10, -10, -10], [10, 10, 10]], default_value:[0, 0, 0],
 			critical:allCritical, repetition_filter:true);
 
 		ossiaOrigine.unit_(OSSIA_position.cart3D);
@@ -133,7 +137,7 @@ OssiaAutomationCenter
 
 		ossiaOrient.callback_({ | num |
 
-			sources.do({ | item |
+			sources.get.do({ | item |
 				var euler = (item.coordinates.cartVal - origine)
 				.rotate(num.value[0].neg)
 				.tilt(num.value[1].neg)
@@ -165,7 +169,7 @@ OssiaAutomationCenter
 
 			origine.set(num[0].value, num[1].value, num[2].value);
 
-			sources.do({ | item |
+			sources.get.do({ | item |
 
 				var cart = (item.coordinates.cartVal - origine)
 				.rotate(heading.value.neg)
@@ -196,7 +200,7 @@ OssiaAutomationCenter
 
 		scale.node.callback_({ | v |
 
-			sources.do({ | item |
+			sources.get.do({ | item |
 
 			})
 		})
@@ -205,15 +209,33 @@ OssiaAutomationCenter
 	dockTo
 	{ | automation |
 
-		automation.dock(oX, "oxProxy");
-		automation.dock(oY, "oyProxy");
-		automation.dock(oZ, "ozProxy");
+		oX.dockTo(automation, "oxProxy");
+		oY.dockTo(automation, "oyProxy");
+		oZ.dockTo(automation, "ozProxy");
 
-		automation.dock(heading, "headingProxy");
-		automation.dock(pitch, "pitchProxy");
-		automation.dock(roll, "rollProxy");
+		heading.dockTo(automation, "headingProxy");
+		pitch.dockTo(automation, "pitchProxy");
+		roll.dockTo(automation, "rollProxy");
 
-		automation.dock(scale, "scaleProxy");
+		scale.dockTo(automation, "scaleProxy");
+	}
+
+	free
+	{
+		oX.free;
+		oY.free;
+		oZ.free;
+
+		heading.free;
+		pitch.free;
+		roll.free;
+
+		ossiaOrient.free;
+		ossiaOrigine.free;
+
+		scale.free;
+
+		super.free;
 	}
 }
 
@@ -236,7 +258,7 @@ OssiaAutomationCoordinates
 		var halfPi = MoscaUtils.halfPi();
 
 		cartesian = OSSIA_Parameter(parent_node, "Cartesian", OSSIA_vec3f,
-			domain:[[-20, -20, -20], [20, 20, 20]], default_value:[0, 20, 0],
+			domain:[[-10, -10, -10], [10, 10, 10]], default_value:[0, 10, 0],
 		critical:allCritical, repetition_filter:true);
 
 		cartesian.unit_(OSSIA_position.cart3D);
@@ -249,7 +271,7 @@ OssiaAutomationCoordinates
 		z = AutomationProxy(0.0);
 
 		azElDist = OSSIA_Parameter(parent_node, "AzElDist", OSSIA_vec3f,
-			domain:[[-180, -90, 0], [180, 90, 20]],default_value:[0, 0, 20],
+			domain:[[-180, -90, 0], [180, 90, 20]], default_value:[0, 0, 10],
 			critical:allCritical, repetition_filter:true);
 
 		// azElDist.unit_(OSSIA_position.AzElDist);
@@ -326,8 +348,20 @@ OssiaAutomationCoordinates
 	dockTo
 	{ | automation, index |
 
-		automation.dock(x, "x_axisProxy_" ++ index);
-		automation.dock(y, "y_axisProxy_" ++ index);
-		automation.dock(z, "z_axisProxy_" ++ index);
+		x.dockTo(automation, "x_axisProxy_" ++ index);
+		y.dockTo(automation, "y_axisProxy_" ++ index);
+		z.dockTo(automation, "z_axisProxy_" ++ index);
+	}
+
+	free
+	{
+		x.free;
+		y.free;
+		z.free;
+
+		cartesian.free;
+		azElDist.free;
+
+		super.free
 	}
 }

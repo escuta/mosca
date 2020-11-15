@@ -314,122 +314,113 @@ MoscaSource[]
 	dockTo
 	{ | automation |
 
-		automation.dock(file, "fileProxy_" ++ index);
-		automation.dock(stream, "streamProxy_" ++ index);
-		automation.dock(scSynths, "scSynthsProxy_" ++ index);
-		automation.dock(external, "externalProxy_" ++ index);
-		automation.dock(nChan, "nChanProxy_" ++ index);
-		automation.dock(busInd, "busIndProxy_" ++ index);
-		automation.dock(loop, "loopProxy_" ++ index);
+		file.dockTo(automation, "fileProxy_" ++ index);
+		stream.dockTo(automation, "streamProxy_" ++ index);
+		scSynths.dockTo(automation, "scSynthsProxy_" ++ index);
+		external.dockTo(automation, "externalProxy_" ++ index);
+		nChan.dockTo(automation, "nChanProxy_" ++ index);
+		busInd.dockTo(automation, "busIndProxy_" ++ index);
+		loop.dockTo(automation, "loopProxy_" ++ index);
 
 		coordinates.dockTo(automation, index);
 
-		automation.dock(library, "libraryProxy_" ++ index);
-		automation.dock(level, "levelProxy_" ++ index);
-		automation.dock(doppler, "dopamtProxy_" ++ index);
-		automation.dock(globalAmount, "globaamtlProxy_" ++ index);
-		automation.dock(localEffect, "localProxy_" ++ index);
-		automation.dock(localDelay, "localDelayProxy_" ++ index);
-		automation.dock(localDecay, "localDecayProxy_" ++ index);
+		library.dockTo(automation, "libraryProxy_" ++ index);
+		level.dockTo(automation, "levelProxy_" ++ index);
+		doppler.dockTo(automation, "dopamtProxy_" ++ index);
+		globalAmount.dockTo(automation, "globaamtlProxy_" ++ index);
+		localEffect.dockTo(automation, "localProxy_" ++ index);
+		localDelay.dockTo(automation, "localDelayProxy_" ++ index);
+		localDecay.dockTo(automation, "localDecayProxy_" ++ index);
 
-		automation.dock(angle, "angleProxy_" ++ index);
-		automation.dock(rotation, "rotationProxy_" ++ index);
-		automation.dock(directivity, "directivityProxy_" ++ index);
-		automation.dock(contraction, "contractionProxy_" ++ index);
-		automation.dock(rate, "grainrateProxy_" ++ index);
-		automation.dock(window, "windowsizeProxy_" ++ index);
-		automation.dock(random, "randomwindowProxy_" ++ index);
+		angle.dockTo(automation, "angleProxy_" ++ index);
+		rotation.dockTo(automation, "rotationProxy_" ++ index);
+		directivity.dockTo(automation, "directivityProxy_" ++ index);
+		contraction.dockTo(automation, "contractionProxy_" ++ index);
+		rate.dockTo(automation, "grainrateProxy_" ++ index);
+		window.dockTo(automation, "windowsizeProxy_" ++ index);
+		random.dockTo(automation, "randomwindowProxy_" ++ index);
 
-		aux.do({ | item, i | automation.dock(item,
+		aux.do({ | item, i | item.dockTo(automation,
 			"aux" ++ (i + 1) ++ "Proxy_" ++ index)
 		});
 
-		check.do({ | item, i | automation.dock(item,
+		check.do({ | item, i | item.dockTo(automation,
 			"check" ++ (i + 1) ++ "Proxy_" ++ index)
 		});
 	}
 
-	prSetDefName
+	getSCBus { ^scInBus.index }
+
+	runTrigger
 	{
-		var fxType, playType;
-
-		if ((file.value != "") && (scSynths.value || external.value).not)
+		if (triggerFunc.notNil)
 		{
-			var sf = SoundFile.openRead(file.value);
-
-			if (sf.isNil) { ^Error("incorrect file path").throw; };
-
-			chanNum = sf.numChannels;
-			sf.close;
-
-			if (stream.value)
-			{
-				buffer = Buffer.cueSoundFile(
-					server, file.value, 0, chanNum, 131072,
-					{("Creating buffer for source " + (index + 1)).postln; });
-
-				playType = "Stream";
-			} {
-				buffer = Buffer.read(server, file.value, action: { | buf |
-					"Loaded file".postln;
-				});
-
-				playType = "File";
-			};
-		} {
-			if (external.value)
-			{
-				playType = "EXBus";
-				chanNum = nChan.value;
-			};
-
-			if (scSynths.value)
-			{
-				playType = "SCBus";
-				chanNum = nChan.value;
-				this.setSCBus();
-			};
+			triggerFunc.value;
+			"RUNNING TRIGGER".postln;
 		};
-
-		if (playType.isNil)
-		{
-			defName = nil;
-		} {
-
-			if (effect.class == String)
-			{
-				fxType = effect;
-			} {
-				fxType = "Conv";
-			};
-
-			defName = library.value ++ playType ++ chanNum ++ fxType;
-		};
-
-		this.changed(\ctl);
-
-		defName.postln;
 	}
 
-	prCheck4Synth
-	{ | bool, playing |
-
-		if (bool)
+	runStop
+	{
+		if (stopFunc.notNil)
 		{
-			if (playing.value.not && spatializer.get.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
+			stopFunc.value;
+			synths.set(nil);
+			"RUNNING STOP".postln;
+		};
+	}
+
+	setSCBus
+	{
+		if (scInBus.notNil)
+		{
+			if (scInBus.numChannels != chanNum)
 			{
-				this.launchSynth();
-				firstTime = false;
+				scInBus.free;
+				scInBus = Bus.audio(server, chanNum);
 			};
 		} {
-			if (playing.value.not && spatializer.get.notNil)
-			{
-				spatializer.get.free;
-				this.runStop();
-				firstTime = true;
-				("Source " + (index + 1) + " stopping!").postln;
-			};
+			scInBus = Bus.audio(server, chanNum);
 		};
+	}
+
+	free
+	{
+		this.prFreeBuffer();
+		this.prFreeBus();
+
+		file.free;
+		stream.free;
+		scSynths.free;
+		external.free;
+		nChan.free;
+		busInd.free;
+		loop.free;
+
+		coordinates.free;
+
+		library.free;
+		level.free;
+		doppler.free;
+		globalAmount.free;
+		localEffect.free;
+		localDelay.free;
+		localDecay.free;
+
+		angle.free;
+		rotation.free;
+		directivity.free;
+		contraction.free;
+		rate.free;
+		window.free;
+		random.free;
+
+		aux.do({ | item, i | item.free });
+
+		check.do({ | item, i | item.free });
+
+		src.free;
+		super.free;
 	}
 
 	launchSynth
@@ -519,6 +510,94 @@ MoscaSource[]
 		};
 	}
 
+
+	//-------------------------------------------//
+	//              private methods              //
+	//-------------------------------------------//
+
+	prSetDefName
+	{
+		var fxType, playType;
+
+		if ((file.value != "") && (scSynths.value || external.value).not)
+		{
+			var sf = SoundFile.openRead(file.value);
+
+			if (sf.isNil) { ^Error("incorrect file path").throw; };
+
+			chanNum = sf.numChannels;
+			sf.close;
+
+			if (stream.value)
+			{
+				buffer = Buffer.cueSoundFile(
+					server, file.value, 0, chanNum, 131072,
+					{("Creating buffer for source " + (index + 1)).postln; });
+
+				playType = "Stream";
+			} {
+				buffer = Buffer.read(server, file.value, action: { | buf |
+					"Loaded file".postln;
+				});
+
+				playType = "File";
+			};
+		} {
+			if (external.value)
+			{
+				playType = "EXBus";
+				chanNum = nChan.value;
+			};
+
+			if (scSynths.value)
+			{
+				playType = "SCBus";
+				chanNum = nChan.value;
+				this.setSCBus();
+			};
+		};
+
+		if (playType.isNil)
+		{
+			defName = nil;
+		} {
+
+			if (effect.class == String)
+			{
+				fxType = effect;
+			} {
+				fxType = "Conv";
+			};
+
+			defName = library.value ++ playType ++ chanNum ++ fxType;
+		};
+
+		this.changed(\ctl);
+
+		defName.postln;
+	}
+
+	prCheck4Synth
+	{ | bool, playing |
+
+		if (bool)
+		{
+			if (playing.value.not && spatializer.get.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
+			{
+				this.launchSynth();
+				firstTime = false;
+			};
+		} {
+			if (playing.value.not && spatializer.get.notNil)
+			{
+				spatializer.get.free;
+				this.runStop();
+				firstTime = true;
+				("Source " + (index + 1) + " stopping!").postln;
+			};
+		};
+	}
+
 	prSetSynths
 	{ | param, value |
 
@@ -543,41 +622,6 @@ MoscaSource[]
 			scInBus.free;
 			"SC input bus freed".postln;
 			scInBus = nil;
-		};
-	}
-
-	getSCBus { ^scInBus.index }
-
-	runTrigger
-	{
-		if (triggerFunc.notNil)
-		{
-			triggerFunc.value;
-			"RUNNING TRIGGER".postln;
-		};
-	}
-
-	runStop
-	{
-		if (stopFunc.notNil)
-		{
-			stopFunc.value;
-			synths.set(nil);
-			"RUNNING STOP".postln;
-		};
-	}
-
-	setSCBus
-	{
-		if (scInBus.notNil)
-		{
-			if (scInBus.numChannels != chanNum)
-			{
-				scInBus.free;
-				scInBus = Bus.audio(server, chanNum);
-			};
-		} {
-			scInBus = Bus.audio(server, chanNum);
 		};
 	}
 }

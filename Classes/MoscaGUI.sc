@@ -95,7 +95,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources[currentSource].external.value_(butt.value.asBoolean) });
+		).action_({ | butt | sources.get[currentSource].external.value_(butt.value.asBoolean) });
 
 		scInCheck = Button( win, Rect(83, 30, 79, 20), "SC-in")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -112,7 +112,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources[currentSource].scSynths.value_(butt.value.asBoolean) });
+		).action_({ | butt | sources.get[currentSource].scSynths.value_(butt.value.asBoolean) });
 
 		bLoad = Button(win, Rect(4, 50, 79, 20), "Load")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -126,8 +126,8 @@ MoscaGUI
 			]
 		).action_({
 
-			sources[currentSource].stream.value_(false);
-			this.prFileDialog(sources[currentSource].file);
+			sources.get[currentSource].stream.value_(false);
+			this.prFileDialog(sources.get[currentSource].file);
 		});
 
 		bLoad.visible_(false);
@@ -144,8 +144,8 @@ MoscaGUI
 			]
 		).action_({
 
-			sources[currentSource].stream.value_(true);
-			this.prFileDialog(sources[currentSource].file);
+			sources.get[currentSource].stream.value_(true);
+			this.prFileDialog(sources.get[currentSource].file);
 		});
 
 		bStream.visible_(false);
@@ -155,7 +155,7 @@ MoscaGUI
 			bounds: Rect(4, 50, 158, 20),
 			label: "No. chans",
 			items: MoscaUtils.channels(),
-			globalAction: { | obj | sources[currentSource].nChan.value_(obj.item) },
+			globalAction: { | obj | sources.get[currentSource].nChan.value_(obj.item) },
 			gap: 0@0
 		).setColors(
 			stringColor: palette.color('baseText', 'active'),
@@ -170,7 +170,7 @@ MoscaGUI
 			bounds: Rect(4, 70, 158, 20),
 			label: "Bus index",
 			numberWidth: 78,
-			action: { | obj | sources[currentSource].busInd.value_(obj.value) },
+			action: { | obj | sources.get[currentSource].busInd.value_(obj.value) },
 			gap: 0@0
 		).setColors(
 			stringColor: palette.color('baseText', 'active'),
@@ -197,7 +197,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources[currentSource].loop.value_(butt.value) });
+		).action_({ | butt | sources.get[currentSource].loop.value_(butt.value) });
 
 		loopEvent = { | param |
 				{
@@ -206,7 +206,7 @@ MoscaGUI
 				}.defer;
 			};
 
-		sources[currentSource].loop.node.addDependant(loopEvent);
+		sources.get[currentSource].loop.node.addDependant(loopEvent);
 
 		loopCheck.visible_(false);
 
@@ -229,10 +229,10 @@ MoscaGUI
 
 			if (butt.value == 1)
 			{
-				var window = sources[currentSource].auxiliary.gui(childrenDepth: 2);
+				var window = sources.get[currentSource].auxiliary.gui(childrenDepth: 2);
 				window.onClose_({ butt.value_(0) })
 			} {
-				sources[currentSource].auxiliary.closeGui();
+				sources.get[currentSource].auxiliary.closeGui();
 			}
 		});
 
@@ -262,7 +262,7 @@ MoscaGUI
 				var window = global.ossiaGlobal.node.gui(childrenDepth: 2);
 				window.onClose_({ butt.value_(0) })
 			} {
-				global.ossiaGlobal.node.closeGui();
+				global.ossiaGlobal.node.closeGui(childrenDepth: 1);
 			}
 		});
 
@@ -284,13 +284,13 @@ MoscaGUI
 
 			if (orientation.value == [0, 0, 0])
 			{ // exeption to record z mouvements after XY automation
-				sources[currentSource].coordinates.z
+				sources.get[currentSource].coordinates.z
 				.valueAction_(num.value + origine.value[2]);
 			} {
-				var sphe = sources[currentSource].coordinates.spheVal
+				var sphe = sources.get[currentSource].coordinates.spheVal
 				.asCartesian.z_(num.value).asSpherical;
 
-				sources[currentSource].coordinates.azElDist.value_(
+				sources.get[currentSource].coordinates.azElDist.value_(
 					[(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
 						sphe.phi.raddeg,
 						sphe.rho]);
@@ -382,18 +382,13 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({
+		).action_({ | butt |
 
-			if (control.gui.notNil)
+			if (butt.value == 1)
 			{
-				if (control.gui.win.isClosed)
-				{
-					this.prAutoControl(aMosca)
-				} {
-					control.gui.win.close
-				}
-			} {
 				this.prAutoControl(aMosca)
+			} {
+				control.gui.win.close
 			}
 		});
 
@@ -509,7 +504,7 @@ MoscaGUI
 		ctlEvent = { | obj ... loadArgs |
 
 			if (loadArgs[0] == \ctl)
-			{ this.prUpdateCtl(sources[currentSource]) }
+			{ this.prUpdateCtl(sources.get[currentSource]) }
 		};
 
 		global.addDependant(ctlEvent);
@@ -537,7 +532,7 @@ MoscaGUI
 						// save sources index and distance from click
 						// initialize at the furthest point
 
-						sources.do({ | item, i |
+						sources.get.do({ | item, i |
 							var dis = ((x - item.coordinates.spheVal.x).squared
 								+ (y - item.coordinates.spheVal.y).squared).sqrt;
 
@@ -557,24 +552,30 @@ MoscaGUI
 					1,
 					{
 						sourceList = ListView(win, Rect(mx,my,90,70))
-						.items_(sources.collect(
-							{ | s | "Source " ++ (s.index + 1).asString }
-						))
+						.items_(this.prSetSrcList())
 						.value_(-1) // to avoid the deffault to 1
 						.action_({ | sel |
 
 							if (sel.value != currentSource)
-							{ this.prSourceSelect(sel.value) };
-
-							this.prMoveSource(mx + 45, my + 35);
-
-							sourceList.close;
-							sourceList = nil;
+							{
+								switch(sel.value,
+									sources.get.size,
+									{ aMosca.addSource() },
+									sources.get.size + 1,
+									{ aMosca.removeSource() },
+									{
+										this.prSourceSelect(sel.value);
+										this.prMoveSource(mx + 45, my + 35);
+										sourceList.close;
+										sourceList = nil;
+									}
+								)
+							}
 						});
 					},
 					2,
 					{
-						sources.do { | item, i |
+						sources.get.do { | item, i |
 							("" ++ i ++ " " ++ item.cartVal.asArgsArray).postln;
 							("" ++ i ++ " " ++ item.spheVal.asArray).postln;
 						};
@@ -643,7 +644,7 @@ MoscaGUI
 			Pen.addArc(halfWidth@halfHeight, halfHeight * zoomFactor * 0.25, 0, 2pi);
 			Pen.stroke;
 
-			sources.do({ | item, i |
+/*			sources.get.do({ | item, i |
 				var x, y, numColor;
 				var topView = item.coordinates.spheVal;
 				var lev = topView.z;
@@ -675,7 +676,7 @@ MoscaGUI
 
 				(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
 					Font.default, numColor);
-			});
+			});*/
 
 			Pen.fillColor = palette.color('midlight', 'active');
 			Pen.addArc(halfWidth@halfHeight, 7, 0, 2pi);
@@ -695,12 +696,41 @@ MoscaGUI
 
 		isPlay.addDependant(drawEvent);
 
-		sources.do({ | item |
+		sources.get.do({ | item | this.addSource(item) });
+	}
 
-			item.play.node.addDependant(drawEvent);
-			item.coordinates.azElDist.addDependant(drawEvent);
-			item.contraction.node.addDependant(drawEvent);
-		});
+	addSource
+	{ | aSource |
+
+		aSource.play.node.addDependant(drawEvent);
+		aSource.coordinates.azElDist.addDependant(drawEvent);
+		aSource.contraction.node.addDependant(drawEvent);
+		this.prAddData(aSource)
+	}
+
+	removeSource
+	{ | aSource |
+
+		aSource.play.node.removeDependant(drawEvent);
+		aSource.coordinates.azElDist.removeDependant(drawEvent);
+		aSource.contraction.node.removeDependant(drawEvent);
+		this.prRemoveData(aSource)
+	}
+
+	free
+	{
+		isPlay.removeDependant(drawEvent);
+
+		global.removeDependant(ctlEvent);
+
+		sources.get.do { | item | this.removeSource(item) };
+	}
+
+	prSetSrcList
+	{
+		^sources.get.collect(
+			{ | s | "Source " ++ (s.index + 1).asString }
+		) ++ '+ Source' ++ ' - Source';
 	}
 
 	prFileDialog
@@ -717,12 +747,12 @@ MoscaGUI
 
 		var source, topview;
 
-		source = sources[index];
+		source = sources.get[index];
 
-		sources[currentSource].removeDependant(ctlEvent);
+		sources.get[currentSource].removeDependant(ctlEvent);
 		source.addDependant(ctlEvent);
 
-		sources[currentSource].loop.node.removeDependant(loopEvent);
+		sources.get[currentSource].loop.node.removeDependant(loopEvent);
 		source.loop.node.addDependant(loopEvent);
 
 		if (bAux.value == 1) { bAux.valueAction_(0) };
@@ -736,6 +766,12 @@ MoscaGUI
 		zNumBox.value_(topview.z);
 		zSlider.value_((zNumBox.value * 0.5) + 0.5);
 
+		this.prUpdateCtl(source);
+	}
+
+	prUpdateCtl
+	{ | src |
+
 		ctlView.removeAll;
 		ctlView.decorator.reset;
 
@@ -743,19 +779,13 @@ MoscaGUI
 		localView = UserView(ctlView, Rect(0, 0, 164, 40));
 		localView.addFlowLayout(0@0);
 
-		source.localEffect.node.gui(localView);
+		src.localEffect.node.gui(localView);
 
-		source.library.node.gui(ctlView);
-		source.play.node.gui(ctlView);
-		source.level.node.gui(ctlView);
-		source.contraction.node.gui(ctlView);
-		source.doppler.node.gui(ctlView);
-
-		this.prUpdateCtl(source);
-	}
-
-	prUpdateCtl
-	{ | src |
+		src.library.node.gui(ctlView);
+		src.play.node.gui(ctlView);
+		src.level.node.gui(ctlView);
+		src.contraction.node.gui(ctlView);
+		src.doppler.node.gui(ctlView);
 
 		switch (src.chanNum,
 			1,
@@ -864,15 +894,15 @@ MoscaGUI
 
 		if (orientation.value == [0, 0, 0])
 		{
-			sources[currentSource].coordinates.x.valueAction_(point.x + origine.value[0]);
+			sources.get[currentSource].coordinates.x.valueAction_(point.x + origine.value[0]);
 			// exeption to record XY mouvements after Z automation
-			sources[currentSource].coordinates.y.valueAction_(point.y + origine.value[1]);
+			sources.get[currentSource].coordinates.y.valueAction_(point.y + origine.value[1]);
 		} {
 			var sphe = point.asSpherical;
 
 			sphe.theta.postln;
 
-			sources[currentSource].coordinates.azElDist.value_(
+			sources.get[currentSource].coordinates.azElDist.value_(
 				[(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
 					sphe.phi.raddeg,
 					sphe.rho]);
@@ -885,12 +915,10 @@ MoscaGUI
 		var ossiaLoop, loopEvent, loop;
 		var canv = Window.new("Automation Control", Rect(0, 0, width, 43)).front;
 
-		// canv.background_(palette.color('base', 'active'));
-
 		control.front(canv, Rect(0, 0, width, 20));
 		canv.onClose_({ autoBut.value_(0) });
 
-		Button(canv, Rect(0, 23, 200, 20))
+		Button(canv, Rect(0, 23, 150, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -920,7 +948,7 @@ MoscaGUI
 			dwin.front;
 		});
 
-		CheckBox(canv, Rect(206, 23, 200, 20), "Slave to MMC")
+		CheckBox(canv, Rect(156, 23, 200, 20), "Slave to MMC")
 		.focusColor_(palette.color('midlight', 'active'))
 		.action_({ | check | instance.slaveToMMC(check.value) });
 
@@ -935,7 +963,7 @@ MoscaGUI
 
 		ossiaLoop.addDependant(loopEvent);
 
-		loop = CheckBox(canv, Rect(316, 23, 200, 20), "Loop")
+		loop = CheckBox(canv, Rect(266, 23, 200, 20), "Loop")
 		.focusColor_(palette.color('midlight', 'active'))
 		.action_({ | check | ossiaLoop.v_(check.value) })
 		.onClose_({ ossiaLoop.removeDependant(loopEvent) });
@@ -945,17 +973,19 @@ MoscaGUI
 	{
 		var strings, lefts;
 
-		wData = Window("Data", Rect(width, 0, 1962, (sources.size * 20) + 60),
+		wData = Window("Data", Rect(width, 0, 1962, (sources.get.size * 20) + 60),
 			scroll: true).front;
 
-		wData.onClose_({ bData.value_(0) }).view.palette_(palette);
+		wData.onClose_({
+			wData = nil;
+			bData.value_(0);
+		}).view.palette_(palette);
 
 		// left positions of the txt indicators
-		lefts = [
-			28, 132, 156, 180, 204, 228, 332, 381, 430, 479, 528, 577, 626,
-			675, 779, 828, 877, 926, 1030, 1054, 1103, 1152, 1201, 1250, 1299,
-			1348, 1397, 1421, 1445, 1494, 1543, 1592, 1641, 1665, 1714, 1738,
-			1787, 1811, 1860, 1884, 1933 ];
+		lefts = [ 28, 132, 156, 180, 204, 228, 332, 381, 430, 479, 528, 577,
+			626, 675, 779, 828, 877, 926, 1030, 1054, 1103, 1152, 1201, 1250,
+			1299, 1348, 1397, 1421, 1445, 1494, 1543, 1592, 1641, 1665, 1714,
+			1738, 1787, 1811, 1860, 1884, 1933 ];
 
 		// txt indicators
 		strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
@@ -965,10 +995,10 @@ MoscaGUI
 			"Gr. Rate", "Win. size", "Rnd. size", "Aux 1", "C1", "Aux 2", "C2",
 			"Aux 3", "C3", "Aux 4", "C4", "Aux 5", "C5" ];
 
-		dataView = UserView(wData, Rect(0, 24, 1962, (sources.size * 20) + 40));
+		dataView = UserView(wData, Rect(0, 24, 1962, (sources.get.size * 20) + 40));
 		dataView.addFlowLayout;
 
-		sources.do({ | item | this.prAddData(item) });
+		sources.get.do({ | item | this.prAddData(item) });
 
 		strings.do({ | item, i |
 
@@ -981,31 +1011,29 @@ MoscaGUI
 	prAddData
 	{ | source |
 
-		StaticText(dataView, 20@20)
-		.font_(Font(Font.defaultSansFace, 9))
-		.string_((source.index + 1).asString);
+		if (wData.notNil) {
 
-		source.src.gui(dataView, 2, \minimal);
+			StaticText(dataView, 20@20)
+			.font_(Font(Font.defaultSansFace, 9))
+			.string_((source.index + 1).asString);
+
+			source.src.gui(dataView, 2, \minimal);
+		};
+
+		if (sourceList.notNil)
+		{ sourceList.items_(this.prSetSrcList()) }
 	}
 
 	prRemoveData
 	{ | source |
 
-		source.src.closeGui(dataView, 2);
-		dataView.children.last.remove;
-	}
+		if (wData.notNil) {
 
-	free
-	{
-		isPlay.removeDependant(drawEvent);
-
-		global.removeDependant(ctlEvent);
-
-		sources.do { | item |
-
-			item.play.node.removeDependant(drawEvent);
-			item.coordinates.azElDist.removeDependant(drawEvent);
-			item.contraction.node.removeDependant(drawEvent);
+			source.src.closeGui(dataView, 2);
+			dataView.children.last.remove;
 		};
+
+		if (sourceList.notNil)
+		{ sourceList.items_(this.prSetSrcList()) }
 	}
 }

@@ -21,7 +21,6 @@
 * show Map
 * scale
 * cos distance
-* add source
 * GPS
 * Write SynthDef Once
 * Multythread evrything
@@ -97,12 +96,13 @@ Mosca : MoscaBase
 
 		center = OssiaAutomationCenter(ossiaParent, allCritical);
 
-		sources = Array.fill(nsources,
-			{ | i |
-
-				MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
-				spat.spatList, effects.ossiaGlobal.node.domain.values(), center);
-			}
+		sources = Ref(
+			Array.fill(nsources,
+				{ | i |
+					MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
+						spat.spatList, effects.ossiaGlobal.node.domain.values(), center);
+				}
+			)
 		);
 
 		control = Automation(dur, showLoadSave: false, showSnapshot: true,
@@ -127,7 +127,7 @@ Mosca : MoscaBase
 			inf.do({
 				0.1.wait;
 
-				sources.do({ | item |
+				sources.get.do({ | item |
 
 					if (item.coordinates.spheVal.rho >= plim)
 					{
@@ -210,7 +210,7 @@ Mosca : MoscaBase
 			{ this.prCheckConversion(loadArgs) }
 		};
 
-		sources.do({ | item |
+		sources.get.do({ | item |
 			item.setAction(effects.effectList, spatDefs, center, ossiaPlay);
 			item.addDependant(dependant);
 		});
@@ -222,7 +222,7 @@ Mosca : MoscaBase
 
 			if (ossiaLoop.v)
 			{
-				sources.do_({ | item | item.firstTime = true });
+				sources.get.do_({ | item | item.firstTime = true });
 				ossiaLoop.v_(false);
 				"Was looping".postln;
 			};
@@ -243,7 +243,7 @@ Mosca : MoscaBase
 			{
 				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++ control.now).postln;
 
-				sources.do({ | item |
+				sources.get.do({ | item |
 					// don't switch off sources playing individally
 					// leave that for user
 					if (item.play.value == false) {
@@ -333,7 +333,7 @@ Mosca : MoscaBase
 		effects.dockTo(control);
 		renderer.dockTo(control);
 
-		sources.do({ | item | item.dockTo(control); });
+		sources.get.do({ | item | item.dockTo(control); });
 
 		control.snapshot; // necessary to call at least once before saving automation
 		// otherwise will get not understood errors on load

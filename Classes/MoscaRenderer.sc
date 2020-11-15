@@ -433,6 +433,6 @@ MoscaRenderer
 	dockTo
 	{ | automation |
 
-		automation.dock(ossiaMasterLevel, "masterlevProxy");
+		ossiaMasterLevel.dockTo(automation, "masterlevProxy");
 	}
 }

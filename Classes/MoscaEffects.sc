@@ -226,8 +226,8 @@ MoscaEffects {
 	dockTo
 	{ | automation |
 
-		automation.dock(ossiaGlobal, "globProxy");
-		automation.dock(ossiaDelay, "globDelProxy");
-		automation.dock(ossiaDecay, "globDecProxy");
+		ossiaGlobal.dockTo(automation, "globProxy");
+		ossiaDelay.dockTo(automation, "globDelProxy");
+		ossiaDecay.dockTo(automation, "globDecProxy");
 	}
 }

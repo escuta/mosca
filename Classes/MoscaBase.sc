@@ -7,6 +7,46 @@ MoscaBase // acts as the public interface
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaRec, ossiaSeekBack, watcher;
 
+	addSource
+	{ | addN = 1 |
+
+		addN.do({
+			var newSource, spatList, previousSource = sources.get.last;
+
+			spatList = previousSource.library.node.domain.values; // get spatlist
+
+			newSource = MoscaSource(previousSource.index + 1, server, srcGrp, ossiaParent,
+				previousSource.localAmount.node.critical, // get "allCritical" argument
+				spatList, effects.ossiaGlobal.node.domain.values(), center);
+
+			newSource.setAction(effects.effectList, spatList, center, ossiaPlay);
+
+			newSource.addDependant(dependant);
+
+			newSource.dockTo(control);
+
+			if (gui.notNil) { gui.addSource(newSource) };
+
+			sources.set(sources.get.add(newSource));
+		})
+	}
+
+	removeSource
+	{ | removeN = 1 |
+
+		removeN.do({
+
+			if (sources.get.size > 1)
+			{
+				var srcs;
+
+				if (gui.notNil) { gui.removeSource(sources.get.last) };
+
+				sources.get.removeAt(sources.get.size - 1).free;
+			}
+		})
+	}
+
 	saveData
 	{ | directory |
 
@@ -305,7 +345,7 @@ MoscaBase // acts as the public interface
 		{
 			^Error("index must be an Integer").throw;
 		} {
-			^sources[(sourceNum.clip(1, sources.size)) - 1];
+			^sources.get[(sourceNum.clip(1, sources.get.size)) - 1];
 		};
 	}
 
