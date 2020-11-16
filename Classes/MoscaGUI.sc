@@ -644,7 +644,7 @@ MoscaGUI
 			Pen.addArc(halfWidth@halfHeight, halfHeight * zoomFactor * 0.25, 0, 2pi);
 			Pen.stroke;
 
-/*			sources.get.do({ | item, i |
+			sources.get.do({ | item, i |
 				var x, y, numColor;
 				var topView = item.coordinates.spheVal;
 				var lev = topView.z;
@@ -676,7 +676,7 @@ MoscaGUI
 
 				(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
 					Font.default, numColor);
-			});*/
+			});
 
 			Pen.fillColor = palette.color('midlight', 'active');
 			Pen.addArc(halfWidth@halfHeight, 7, 0, 2pi);
@@ -705,7 +705,13 @@ MoscaGUI
 		aSource.play.node.addDependant(drawEvent);
 		aSource.coordinates.azElDist.addDependant(drawEvent);
 		aSource.contraction.node.addDependant(drawEvent);
-		this.prAddData(aSource)
+		this.prAddData(aSource);
+
+		if (sourceList.notNil)
+		{
+			sourceList.items_(this.prSetSrcList());
+			sourceList.value_(aSource.index + 3);
+		}
 	}
 
 	removeSource
@@ -714,7 +720,13 @@ MoscaGUI
 		aSource.play.node.removeDependant(drawEvent);
 		aSource.coordinates.azElDist.removeDependant(drawEvent);
 		aSource.contraction.node.removeDependant(drawEvent);
-		this.prRemoveData(aSource)
+		this.prRemoveData(aSource);
+
+		if (sourceList.notNil)
+		{
+			sourceList.items_(this.prSetSrcList());
+			sourceList.value_(aSource.index + 3);
+		}
 	}
 
 	free
@@ -730,7 +742,7 @@ MoscaGUI
 	{
 		^sources.get.collect(
 			{ | s | "Source " ++ (s.index + 1).asString }
-		) ++ '+ Source' ++ ' - Source';
+		) ++ '+ Source' ++ ' - Source' ++ '';
 	}
 
 	prFileDialog
@@ -1019,9 +1031,6 @@ MoscaGUI
 
 			source.src.gui(dataView, 2, \minimal);
 		};
-
-		if (sourceList.notNil)
-		{ sourceList.items_(this.prSetSrcList()) }
 	}
 
 	prRemoveData
@@ -1032,8 +1041,5 @@ MoscaGUI
 			source.src.closeGui(dataView, 2);
 			dataView.children.last.remove;
 		};
-
-		if (sourceList.notNil)
-		{ sourceList.items_(this.prSetSrcList()) }
 	}
 }

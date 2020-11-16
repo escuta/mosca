@@ -47,7 +47,9 @@ AutomationProxy : AutomationBase
 
 	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
 
-	*new { | val | ^super.newCopyArgs(val) }
+	*new { | val | ^super.new.ctr(val) }
+
+	ctr { | val | value = val }
 
 	doAction { action.value(value) }
 

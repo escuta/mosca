@@ -25,9 +25,9 @@ MoscaBase // acts as the public interface
 
 			newSource.dockTo(control);
 
-			if (gui.notNil) { gui.addSource(newSource) };
-
 			sources.set(sources.get.add(newSource));
+
+			if (gui.notNil) { gui.addSource(sources.get.last) };
 		})
 	}
 
