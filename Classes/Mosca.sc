@@ -20,11 +20,11 @@
 * TODO
 * show Map
 * scale
-* cos distance
-* GPS
 * Write SynthDef Once
+* cos distance
 * Multythread evrything
 * Higher order binaural
+* GPS
 */
 
 Mosca : MoscaBase

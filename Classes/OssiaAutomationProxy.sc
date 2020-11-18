@@ -18,12 +18,13 @@
 
 AutomationBase
 {
-	var auto;
+	var auto, docking_name;
 
 	dockTo
 	{ | automation, name |
 
 		auto = automation;
+		docking_name = name;
 		automation.dock(this, name);
 	}
 
@@ -31,10 +32,12 @@ AutomationBase
 	{
 		if (auto.notNil)
 		{
-			auto.clients.reverseDo({ | client |
+			var index = auto.clients.detectIndex(
+				{ | client | client.name == docking_name }
+			);
 
-				if (client === this) { client.remove }
-			})
+			auto.clients.removeAt(index).free;
+			postln(docking_name ++ "automation client removed");
 		};
 
 		super.free;

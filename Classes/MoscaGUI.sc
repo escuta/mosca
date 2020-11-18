@@ -20,7 +20,7 @@ MoscaGUI
 {
 	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
-	var <win, wData, dataView, ctlView, localView, masterView, dialView, originView;
+	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
 	var autoBut, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
@@ -229,10 +229,10 @@ MoscaGUI
 
 			if (butt.value == 1)
 			{
-				var window = sources.get[currentSource].auxiliary.gui(childrenDepth: 2);
-				window.onClose_({ butt.value_(0) })
+				auxView = sources.get[currentSource].auxiliary.gui(childrenDepth: 2);
+				auxView.onClose_({ butt.value_(0) })
 			} {
-				sources.get[currentSource].auxiliary.closeGui();
+				sources.get[currentSource].auxiliary.closeGui(auxView);
 			}
 		});
 

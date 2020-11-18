@@ -38,8 +38,6 @@ MoscaBase // acts as the public interface
 
 			if (sources.get.size > 1)
 			{
-				var srcs;
-
 				if (gui.notNil) { gui.removeSource(sources.get.last) };
 
 				sources.get.removeAt(sources.get.size - 1).free;
