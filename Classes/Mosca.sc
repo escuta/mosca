@@ -198,6 +198,20 @@ Mosca : MoscaBase
 	prSetAction
 	{ | spatDefs |
 
+		ossiaMasterPlay.callback_({ | v |
+
+			sources.get.do({ | item |
+				item.play.value_(v);
+			})
+		});
+
+		ossiaMasterLib.callback_({ | v |
+
+			sources.get.do({ | item |
+				item.library.value_(v);
+			})
+		});
+
 		center.setAction(sources);
 
 		renderer.setAction();

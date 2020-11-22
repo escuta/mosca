@@ -27,38 +27,32 @@ MoscaBase // acts as the public interface
 
 			sources.set(sources.get.add(newSource));
 
-			if (gui.notNil) { gui.addSource(sources.get.last) };
+			if (gui.notNil) { { gui.addSource(sources.get.last) }.defer };
 		})
 	}
 
 	removeSource
 	{ | removeN = 1 |
 
-		removeN.do({
+		if (sources.get.size > 1)
+		{
+			removeN.do({
+				var i, src = sources.get.removeAt(sources.get.size - 1);
 
-			if (sources.get.size > 1)
-			{
-				if (gui.notNil) { gui.removeSource(sources.get.last) };
+				i = src.index;
 
-				sources.get.removeAt(sources.get.size - 1).free;
-			}
-		})
+				src.free;
+
+				if (gui.notNil) { { gui.removeSource(i) }.defer };
+			})
+		}
 	}
 
 	saveData
 	{ | directory |
 
-		if (directory.notNil)
-		{
-			switch (directory.pathExists,
-				false,
-				{
-					("mkdir -p" + directory).systemCmd;
-					control.presetDir = directory;
-				},
-				\file,
-				{ ^Error(directory + "is a FILE, not a DIRECTORY").throw; });
-		};
+		if (directory.notNil && (directory != control.presetDir))
+		{ control.presetDir = directory };
 
 		control.save(control.presetDir);
 	}
@@ -66,15 +60,8 @@ MoscaBase // acts as the public interface
 	loadData
 	{ | directory |
 
-		if (directory.notNil)
-		{
-			switch (directory.pathExists,
-				false,
-				{ ^Error(directory + "does not exist").throw; },
-				\file,
-				{ ^Error(directory + "is a FILE, not a DIRECTORY").throw; },
-				{ control.presetDir = directory; });
-		};
+		if (directory.notNil && (directory != control.presetDir))
+		{ control.presetDir = directory };
 
 		control.load(control.presetDir);
 

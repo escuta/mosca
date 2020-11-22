@@ -101,7 +101,7 @@ MoscaSource[]
 
 		spatType = \N3D;
 
-		play = OssiaAutomationProxy(src, "play", Boolean, critical:true);
+		play = OssiaAutomationProxy(src, "Play", Boolean, critical:true);
 
 		firstTime = true;
 

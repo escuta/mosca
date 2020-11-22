@@ -504,7 +504,7 @@ MoscaGUI
 		ctlEvent = { | obj ... loadArgs |
 
 			if (loadArgs[0] == \ctl)
-			{ this.prUpdateCtl(sources.get[currentSource]) }
+			{ { this.prUpdateCtl(sources.get[currentSource]) }.defer }
 		};
 
 		global.addDependant(ctlEvent);
@@ -612,8 +612,8 @@ MoscaGUI
 			height = view.bounds.height;
 			halfHeight = height * 0.5;
 
-			// set initial furthest source as 20 times the apparent radius
-			furthest = halfHeight * 20;
+			// set initial furthest source as 10 times the apparent radius
+			furthest = halfHeight * 10;
 
 			zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5),
 				20, halfHeight));
@@ -715,17 +715,22 @@ MoscaGUI
 	}
 
 	removeSource
-	{ | aSource |
+	{ | aSourceIndex |
 
-		aSource.play.node.removeDependant(drawEvent);
-		aSource.coordinates.azElDist.removeDependant(drawEvent);
-		aSource.contraction.node.removeDependant(drawEvent);
-		this.prRemoveData(aSource);
+		if (aSourceIndex == currentSource)
+		{
+			// reset source selection completly
+			currentSource = 0;
+			this.prSourceSelect(currentSource);
+
+			// redraw as a point should desapear
+			win.refresh;
+		};
 
 		if (sourceList.notNil)
 		{
 			sourceList.items_(this.prSetSrcList());
-			sourceList.value_(aSource.index + 3);
+			sourceList.value_(sourceList.items.size - 1);
 		}
 	}
 
