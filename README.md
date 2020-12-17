@@ -83,21 +83,21 @@ their assistance and valuable suggestions.
 18º Encontro Internacional de Arte e Tecnologia / #18.Art Da admirável ordem das coisas: arte emoção e tecnologia, 
 Portugal: October 2019](https://www.researchgate.net/publication/336983923_Three-dimensional_sound_design_with_Mosca)
 
-* Celerier, Jean-Michaël. Authoring interactive media : a logical & temporal
+* [Celerier, Jean-Michaël. Authoring interactive media : a logical & temporal
 approach.
 Ph. D dissertations, University of Bordeaux,
-France: 2018.
+France: 2018](https://www.researchgate.net/publication/329503488_Authoring_interactive_media_a_logical_temporal_approach)
 
-* Grond, Florian & Lecompte, Pierre. Higher Order Ambisonics for
+* [Grond, Florian & Lecompte, Pierre. Higher Order Ambisonics for
 SuperCollider.
 Linux Audio Conference, Jean MONNET University. Saint-Etienne
-France: 2017.
+France: 2017](https://musinf.univ-st-etienne.fr/lac2017/pdfs/13_C_D_141345N.pdf)
 
-* Anderson, Joseph. Authoring complex Ambisonic soundfields:
+* [Anderson, Joseph. Authoring complex Ambisonic soundfields:
 An artist's tips & tricks.
 DIGITAL HYBRIDITY AND SOUNDS IN SPACE JOINT SYMPOSIUM. University of Derby,
-UK: 2011.
+UK: 2011](https://www.researchgate.net/publication/273944382_Authoring_complex_Ambisonic_soundfields_An_artist's_tips_tricks)
 
-* Chowning, John M. The Simulation of Moving Sound Sources.
+* [Chowning, John M. The Simulation of Moving Sound Sources.
 Computer Music Journal, v. 1,
-n. 3, p. 48-52, 1977.
+n. 3, p. 48-52, 1977](https://www.aes.org/e-lib/browse.cfm?elib=2220)
