@@ -180,7 +180,7 @@ MoscaSource[]
 	}
 
 	setAction
-	{ | effectList, spatDefs, center, playing |
+	{ | effectList, spatDefs, center |
 
 		file.action_({ | path |
 
@@ -258,7 +258,7 @@ MoscaSource[]
 			this.prSetDefName();
 		});
 
-		play.action_({ | val | this.prCheck4Synth(val.value, playing) });
+		play.action_({ | val | this.prCheck4Synth(val.value) });
 
 		loop.action_({ | val | this.prSetSynths(\lp, val.value.asInteger) });
 
@@ -578,17 +578,17 @@ MoscaSource[]
 	}
 
 	prCheck4Synth
-	{ | bool, playing |
+	{ | bool |
 
 		if (bool)
 		{
-			if (playing.value.not && spatializer.get.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
+			if (spatializer.get.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
 			{
 				this.launchSynth();
 				firstTime = false;
 			};
 		} {
-			if (playing.value.not && spatializer.get.notNil)
+			if (spatializer.get.notNil)
 			{
 				spatializer.get.free;
 				this.runStop();

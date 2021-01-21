@@ -25,7 +25,7 @@ MoscaGUI
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, recNumBox, bBlip, bRecAudio;
-	var isPlay, origine, orientation, scale;
+	var origine, orientation, scale;
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
@@ -58,7 +58,6 @@ MoscaGUI
 	{ | aMosca, size |
 
 		// get ossia parameters
-		isPlay = aMosca.ossiaParent.find("Automation/Play");
 		origine = aMosca.ossiaParent.find("Origine");
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
@@ -659,7 +658,7 @@ MoscaGUI
 
 				Pen.addArc(x@y, max((14 * zoomFactor) + (lev * halfHeight * 0.02), 0), 0, 2pi);
 
-				if ((item.play.value || isPlay.value) && ((lev * zoomFactor) <= plim))
+				if (item.play.value && ((lev * zoomFactor) <= plim))
 				{
 					numColor = palette.color('window', 'active');
 
@@ -693,8 +692,6 @@ MoscaGUI
 				{ win.refresh }.defer;
 			};
 		};
-
-		isPlay.addDependant(drawEvent);
 
 		sources.get.do({ | item | this.addSource(item) });
 	}
@@ -736,8 +733,6 @@ MoscaGUI
 
 	free
 	{
-		isPlay.removeDependant(drawEvent);
-
 		global.removeDependant(ctlEvent);
 
 		sources.get.do { | item | this.removeSource(item) };
@@ -879,11 +874,11 @@ MoscaGUI
 			if (src.scSynths.value)
 			{
 				exInCheck.value_(false);
-				busNumBox.visible_(true);
-				busNumBox.value_(src.busInd.value);
+				busNumBox.visible_(false);
 			} {
 				scInCheck.value_(false);
-				busNumBox.visible_(false);
+				busNumBox.visible_(true);
+				busNumBox.value_(src.busInd.value);
 			};
 
 			bLoad.visible_(false);

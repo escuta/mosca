@@ -268,11 +268,11 @@ OssiaAutomationCoordinates
 
 		cartesian.unit_(OSSIA_position.cart3D);
 
-		cartVal = Cartesian(0, 20, 0);
+		cartVal = Cartesian(0, 10, 0);
 		spheVal = cartVal.asSpherical;
 
 		x = AutomationProxy(0.0);
-		y = AutomationProxy(20.0);
+		y = AutomationProxy(10.0);
 		z = AutomationProxy(0.0);
 
 		azElDist = OSSIA_Parameter(parent_node, "AzElDist", OSSIA_vec3f,

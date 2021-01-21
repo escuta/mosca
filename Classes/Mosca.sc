@@ -139,8 +139,7 @@ Mosca : MoscaBase
 
 						item.firstTime = true;
 					} {
-						if ((ossiaPlay.value
-							|| item.play.value) && item.spatializer.isNil
+						if (item.play.value && item.spatializer.isNil
 							&& item.firstTime)
 						{
 							item.launchSynth(); // could set the start point for file
@@ -225,12 +224,14 @@ Mosca : MoscaBase
 		};
 
 		sources.get.do({ | item |
-			item.setAction(effects.effectList, spatDefs, center, ossiaPlay);
+			item.setAction(effects.effectList, spatDefs, center);
 			item.addDependant(dependant);
 		});
 
 		control.onPlay_({
 			var startTime;
+
+			ossiaMasterPlay.v_(true);
 
 			"NOW PLAYING".postln;
 
@@ -252,6 +253,8 @@ Mosca : MoscaBase
 		});
 
 		control.onStop_({
+
+			ossiaMasterPlay.v_(false);
 
 			if (autoLoop.not || (control.now.round != dur))
 			{
