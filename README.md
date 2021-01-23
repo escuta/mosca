@@ -49,13 +49,60 @@ disrupting the encoded spatial characteristics. Please see the
 Additionally, Mosca v0.2 implements headtracking with the Arduino 9-axes Motion Shield
 and an appropriate Arduino board such as an Uno. 
 
-<img src = "arduinoHeadTrack/simplerVersion.jpg"
+<img src = "headTracker/simplerVersion.jpg"
      alt = "Simple Arduino Headtracker"
      style = "float: center" 
      with = "500" height = "500" />
 
 Mosca may also run GUI-free and has a
 mechanism for coded control of the interface (Setup example in the [guide](HelpSource/Guide/guide-Mosca).
+
+## Begginer tips to install from scratch
+
+If you are a linux user on a debian like distro, this [script](https://github.com/scrime-u-bordeaux/scrimpt) can help you build supercollider and adn it's plugins from source, and install atk kernels and matrices, among many other things.
+
+For Mac or PC, first install [git](https://git-scm.com/downloads) with a binary installer if you are not confortable with the comand line. 
+
+Secondly, install [supercollider](https://supercollider.github.io/download).
+
+Start supercollider (scide), open the "Language" tab and click on "Quarks"
+
+Find the "Mosca" quark in the list and select it, this is where you can find ou if git was installed corectly:
+Check Supercollider's "Post window" for errors.
+If evrything installs correctly, great ! continue on.
+If the post window displayes error messages, continue on and apply the **_Workaround_**.
+
+Enter the folowing line in supercerlodier and evaluate it to open the extension folder.
+```
+Platform.userExtensionDir.openOS
+```
+
+Download [sc3-Plugins](https://github.com/supercollider/sc3-plugins/releases/latest) and decompress them in the extension folder previously opened.
+
+**_workaround (only if error occured with quarks and git isn't properly installed)  
+Return to the extension folder previously open to decompress the sc3-Plugins.
+Download the folowing repositoryes with these links:  
+[Mosca](https://github.com/escuta/mosca/archive/master.zip)  
+[MathLib](https://github.com/supercollider-quarks/MathLib/archive/master.zip)  
+[Automation](https://github.com/neeels/Automation/archive/master.zip)  
+[atk-sc3](https://github.com/ambisonictoolkit/atk-sc3/archive/master.zip)  
+[SC-HOA](https://github.com/florian-grond/SC-HOA/archive/master.zip)  
+[OSSIA](https://github.com/ossia/ossia-sclang/archive/master.zip)  
+Decompress all of these in the same extension directoy as the sc3-Plugins_**
+
+Next, in the code editor of supercollider, recompile the Class Library wih the shortcut Ctl+Maj+L (on Mac use Command instead of Ctl)
+This is a very useful shortcut that alows you to kill evryting and reinitialize you session, I recomend remebering it ! 
+
+Finaly, evaluate the folowing lines to open the ATK support Directory.
+```
+(
+Atk.createUserSupportDir;
+Atk.openUserSupportDir;
+) 
+```
+Download ATK [Matrices](https://github.com/ambisonictoolkit/atk-kernels/releases/latest)  
+and ATK [Kernels](https://github.com/ambisonictoolkit/atk-matrices/releases/latest)  
+and decompress both repositories in the ATK support Directory. 
 
 ## Acknowledgments
 
