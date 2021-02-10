@@ -113,8 +113,8 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.file.value_(path);
-		src.stream.value_(stream);
+		src.file.valueAction_(path);
+		src.stream.valueAction_(stream);
 	}
 
 	inputExternal
@@ -122,8 +122,8 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.nChan.value_(numChanels);
-		src.external.value_(boolean);
+		src.nChan.valueAction_(numChanels);
+		src.external.valueAction_(boolean);
 	}
 
 	inputScSynths
@@ -131,8 +131,8 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.nChan.value_(numChanels);
-		src.scSynths.value_(boolean);
+		src.nChan.valueAction_(numChanels);
+		src.scSynths.valueAction_(boolean);
 	}
 
 	setCartesian
@@ -156,7 +156,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.library.value_(library);
+		src.library.valueAction_(library);
 	}
 
 	play
@@ -172,7 +172,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.loop.value_(boolean);
+		src.loop.valueAction_(boolean);
 	}
 
 	setLevel
@@ -180,7 +180,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.level.value_(db);
+		src.level.valueAction_(db);
 	}
 
 	setContraction
@@ -188,7 +188,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.contraction.value_(contraction);
+		src.contraction.valueAction_(contraction);
 	}
 
 	setDoppler
@@ -196,7 +196,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.doppler.value_(amount);
+		src.doppler.valueAction_(amount);
 	}
 
 	setGlobalAmount
@@ -204,7 +204,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.globalAmount.value_(amount);
+		src.globalAmount.valueAction_(amount);
 	}
 
 	setLocalEffect
@@ -212,7 +212,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.localEffect.value_(effect);
+		src.localEffect.valueAction_(effect);
 	}
 
 	setLocalAmount
@@ -220,7 +220,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.localAmount.value_(amount);
+		src.localAmount.valueAction_(amount);
 	}
 
 	setLocalDelay
@@ -228,7 +228,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.localDelay.value_(delay);
+		src.localDelay.valueAction_(delay);
 	}
 
 	setLocalDecay
@@ -236,7 +236,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.localDecay.value_(decay);
+		src.localDecay.valueAction_(decay);
 	}
 
 	setStereoAngle
@@ -244,7 +244,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.angle.value_(angle);
+		src.angle.valueAction_(angle);
 	}
 
 	setBFormatRotation
@@ -252,7 +252,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.rotation.value_(rotation);
+		src.rotation.valueAction_(rotation);
 	}
 
 	setBFormatDirectivity
@@ -260,7 +260,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.directivity.value_(directivity);
+		src.directivity.valueAction_(directivity);
 	}
 
 	setAtkSpread
@@ -268,7 +268,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.spread.value_(false);
+		src.spread.valueAction_(false);
 	}
 
 	setAtkDiffuse
@@ -276,7 +276,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.diffuse.value_(false);
+		src.diffuse.valueAction_(false);
 	}
 
 	setJoshRate
@@ -284,7 +284,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.rate.value_(rate);
+		src.rate.valueAction_(rate);
 	}
 
 	setJoshWindow
@@ -292,7 +292,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.window.value_(size);
+		src.window.valueAction_(size);
 	}
 
 	setJoshRAndom
@@ -300,7 +300,7 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.random.value_(randomize);
+		src.random.valueAction_(randomize);
 	}
 
 	setAuxilary
@@ -310,7 +310,7 @@ MoscaBase // acts as the public interface
 
 		i = prGetAuxIndex(auxNum);
 
-		src.aux[i].value_(value);
+		src.aux[i].valueAction_(value);
 	}
 
 	setAuxCheck
@@ -320,7 +320,7 @@ MoscaBase // acts as the public interface
 
 		i = prGetAuxIndex(auxNum);
 
-		src.check[i].value_(boolean);
+		src.check[i].valueAction_(boolean);
 	}
 
 	prGetSource
@@ -353,8 +353,8 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.nChan.value_(numChans);
-		src.scSynths.value_(true);
+		src.nChan.valueAction_(numChans);
+		src.scSynths.valueAction_(true);
 		src.triggerFunc = triggerFunc;
 		src.stopFunc = stopFunc;
 		src.synthRegistry.clear;
@@ -376,8 +376,8 @@ MoscaBase // acts as the public interface
 
 		var src = this.prGetSource(sourceNum);
 
-		src.nChan.value_(numChans);
-		src.scSynths.value_(true);
+		src.nChan.valueAction_(numChans);
+		src.scSynths.valueAction_(true);
 		^src.scInBus.index;
 	}
 

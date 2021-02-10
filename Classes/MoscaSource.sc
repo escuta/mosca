@@ -189,7 +189,7 @@ MoscaSource[]
 			this.prSetDefName();
 		});
 
-		stream.action_({ file.value_(file.value); });
+		stream.action_({ file.valueAction_(file.value); });
 
 		external.action_({ | val |
 
@@ -197,7 +197,7 @@ MoscaSource[]
 			{
 				if (scSynths.value)
 				{
-					scSynths.value_(false);
+					scSynths.valueAction_(false);
 				} {
 					this.prSetDefName();
 				};
@@ -215,7 +215,7 @@ MoscaSource[]
 			{
 				if (external.value)
 				{
-					external.value_(false);
+					external.valueAction_(false);
 				} {
 					this.prSetDefName();
 				};
@@ -281,13 +281,13 @@ MoscaSource[]
 		spread.action_({ | val |
 			this.prSetSynths(\sp, val.value.asInteger);
 
-			if (val.value) { diffuse.value_(false) };
+			if (val.value) { diffuse.valueAction_(false) };
 		});
 
 		diffuse.action_({ | val |
 			this.prSetSynths(\df, val.value.asInteger);
 
-			if (val.value) { spread.value_(false) };
+			if (val.value) { spread.valueAction_(false) };
 		});
 
 		rate.action_({ | val | this.prSetSynths(\grainrate, val.value) });

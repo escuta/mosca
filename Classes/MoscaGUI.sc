@@ -94,7 +94,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources.get[currentSource].external.value_(butt.value.asBoolean) });
+		).action_({ | butt | sources.get[currentSource].external.valueAction_(butt.value.asBoolean) });
 
 		scInCheck = Button( win, Rect(83, 30, 79, 20), "SC-in")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -111,7 +111,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources.get[currentSource].scSynths.value_(butt.value.asBoolean) });
+		).action_({ | butt | sources.get[currentSource].scSynths.valueAction_(butt.value.asBoolean) });
 
 		bLoad = Button(win, Rect(4, 50, 79, 20), "Load")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -125,7 +125,7 @@ MoscaGUI
 			]
 		).action_({
 
-			sources.get[currentSource].stream.value_(false);
+			sources.get[currentSource].stream.valueAction_(false);
 			this.prFileDialog(sources.get[currentSource].file);
 		});
 
@@ -143,7 +143,7 @@ MoscaGUI
 			]
 		).action_({
 
-			sources.get[currentSource].stream.value_(true);
+			sources.get[currentSource].stream.valueAction_(true);
 			this.prFileDialog(sources.get[currentSource].file);
 		});
 
@@ -154,7 +154,7 @@ MoscaGUI
 			bounds: Rect(4, 50, 158, 20),
 			label: "No. chans",
 			items: MoscaUtils.channels(),
-			globalAction: { | obj | sources.get[currentSource].nChan.value_(obj.item) },
+			globalAction: { | obj | sources.get[currentSource].nChan.valueAction_(obj.item) },
 			gap: 0@0
 		).setColors(
 			stringColor: palette.color('baseText', 'active'),
@@ -169,7 +169,7 @@ MoscaGUI
 			bounds: Rect(4, 70, 158, 20),
 			label: "Bus index",
 			numberWidth: 78,
-			action: { | obj | sources.get[currentSource].busInd.value_(obj.value) },
+			action: { | obj | sources.get[currentSource].busInd.valueAction_(obj.value) },
 			gap: 0@0
 		).setColors(
 			stringColor: palette.color('baseText', 'active'),
@@ -196,7 +196,7 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({ | butt | sources.get[currentSource].loop.value_(butt.value) });
+		).action_({ | butt | sources.get[currentSource].loop.valueAction_(butt.value) });
 
 		loopEvent = { | param |
 				{
@@ -575,8 +575,8 @@ MoscaGUI
 					2,
 					{
 						sources.get.do { | item, i |
-							("" ++ i ++ " " ++ item.cartVal.asArgsArray).postln;
-							("" ++ i ++ " " ++ item.spheVal.asArray).postln;
+							("" ++ i ++ " " ++ item.coordinates.cartVal.asArray).postln;
+							("" ++ i ++ " " ++ item.coordinates.spheVal.asArray).postln;
 						};
 					}
 				)
@@ -873,12 +873,12 @@ MoscaGUI
 
 			if (src.scSynths.value)
 			{
-				exInCheck.value_(false);
+				exInCheck.valueAction_(false);
 				busNumBox.visible_(false);
 			} {
-				scInCheck.value_(false);
+				scInCheck.valueAction_(false);
 				busNumBox.visible_(true);
-				busNumBox.value_(src.busInd.value);
+				busNumBox.valueAction_(src.busInd.value);
 			};
 
 			bLoad.visible_(false);

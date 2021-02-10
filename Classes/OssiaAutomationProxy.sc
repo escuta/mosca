@@ -20,6 +20,8 @@ AutomationBase
 {
 	var auto, docking_name;
 
+	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
+
 	dockTo
 	{ | automation, name |
 
@@ -48,8 +50,6 @@ AutomationProxy : AutomationBase
 {
 	var <>value, <>action;
 
-	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
-
 	*new { | val | ^super.new.ctr(val) }
 
 	ctr { | val | value = val }
@@ -64,8 +64,6 @@ OssiaAutomationProxy : AutomationBase
 	// embed an OSSIA_Parameter in a View to be used with Automation
 	// single value version
 	var <node;
-
-	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
 
 	*new
 	{ | parent_node, name, type, domain, default_value, bounding_mode = 'free',
@@ -83,11 +81,15 @@ OssiaAutomationProxy : AutomationBase
 
 	value { ^node.v }
 
-	value_ { | value | node.v_(value) }
+	value_ { | val | node.set_(val) }
+
+	valueAction_ { | val | node.value_(val) }
 
 	action { ^node.callback }
 
 	action_ { | function | node.callback_(function) }
+
+	doAction { node.callback.value(node.v) }
 }
 
 
@@ -305,7 +307,7 @@ OssiaAutomationCoordinates
 
 			if (y.value != num[1].value) { y.valueAction_(num[1].value) };
 
-			if (z.value != num[2].value) { z.valueAction_(num[2].value) };
+			if (z.value.trunc != num[2].value) { z.valueAction_(num[2].value) };
 
 			cartBack = true;
 		});

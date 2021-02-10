@@ -207,7 +207,7 @@ Mosca : MoscaBase
 		ossiaMasterLib.callback_({ | v |
 
 			sources.get.do({ | item |
-				item.library.value_(v);
+				item.library.valueAction_(v);
 			})
 		});
 
