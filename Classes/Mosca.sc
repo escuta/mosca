@@ -249,7 +249,7 @@ Mosca : MoscaBase
 				startTime = control.now
 			};
 
-			ossiaPlay.v_(true);
+			ossiaPlay.set_(true);
 		});
 
 		control.onStop_({
@@ -260,16 +260,16 @@ Mosca : MoscaBase
 			{
 				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++ control.now).postln;
 
-				sources.get.do({ | item |
-					// don't switch off sources playing individally
-					// leave that for user
-					if (item.play.value == false) {
-						item.runStop(); // to kill SC input synths
-						item.spatializer.free;
-					};
-
-					item.firstTime = true;
-				});
+				// sources.get.do({ | item |
+				// 	// don't switch off sources playing individally
+				// 	// leave that for user
+				// 	if (item.play.value == false) {
+				// 		item.runStop(); // to kill SC input synths
+				// 		item.spatializer.free;
+				// 	};
+				//
+				// 	item.firstTime = true;
+				// });
 
 				ossiaLoop.v_(false);
 			} {
@@ -278,7 +278,7 @@ Mosca : MoscaBase
 				control.play;
 			};
 
-			ossiaPlay.value_(false);
+			ossiaPlay.set_(false);
 		});
 
 		// if (gui.isNil)

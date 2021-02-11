@@ -649,7 +649,10 @@ MoscaGUI
 				var lev = topView.z;
 
 				// z set NumBox and Slider
-				if (i == currentSource) { zNumBox.valueAction_(lev) };
+				if (i == currentSource) {
+					zNumBox.value_(lev);
+					zSlider.value_((lev * 0.5) + 0.5);
+				};
 
 				topView = topView * zoomFactor;
 

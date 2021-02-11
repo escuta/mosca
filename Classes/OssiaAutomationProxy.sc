@@ -271,7 +271,7 @@ OssiaAutomationCoordinates
 		cartesian.unit_(OSSIA_position.cart3D);
 
 		cartVal = Cartesian(0, 10, 0);
-		spheVal = cartVal.asSpherical;
+		spheVal = Spherical(10, 0, 0);
 
 		x = AutomationProxy(0.0);
 		y = AutomationProxy(10.0);
@@ -307,7 +307,7 @@ OssiaAutomationCoordinates
 
 			if (y.value != num[1].value) { y.valueAction_(num[1].value) };
 
-			if (z.value.trunc != num[2].value) { z.valueAction_(num[2].value) };
+			if (z.value != num[2].value) { z.valueAction_(num[2].value) };
 
 			cartBack = true;
 		});
