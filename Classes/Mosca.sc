@@ -200,7 +200,7 @@ Mosca : MoscaBase
 		ossiaMasterPlay.callback_({ | v |
 
 			sources.get.do({ | item |
-				item.play.value_(v);
+				item.play.valueAction_(v);
 			})
 		});
 
