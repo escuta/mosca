@@ -702,7 +702,7 @@ MoscaGUI
 	addSource
 	{ | aSource |
 
-		aSource.play.node.addDependant(drawEvent);
+		aSource.play.addDependant(drawEvent);
 		aSource.coordinates.azElDist.addDependant(drawEvent);
 		aSource.contraction.node.addDependant(drawEvent);
 		this.prAddData(aSource);
@@ -797,7 +797,7 @@ MoscaGUI
 		src.localEffect.node.gui(localView);
 
 		src.library.node.gui(ctlView);
-		src.play.node.gui(ctlView);
+		src.play.gui(ctlView);
 		src.level.node.gui(ctlView);
 		src.contraction.node.gui(ctlView);
 		src.doppler.node.gui(ctlView);

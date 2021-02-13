@@ -18,7 +18,7 @@
 
 MoscaSource[]
 {
-	var <index, server, srcGrp, defName, effect, <chanNum = 1, spatType;
+	var <index, server, srcGrp, defName, effect, <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -101,7 +101,7 @@ MoscaSource[]
 
 		spatType = \N3D;
 
-		play = OssiaAutomationProxy(src, "Play", Boolean, critical:true);
+		play = OSSIA_Parameter(src, "Play", Boolean, critical:true, repetition_filter:true);
 
 		firstTime = true;
 
@@ -258,7 +258,7 @@ MoscaSource[]
 			this.prSetDefName();
 		});
 
-		play.action_({ | val | this.prCheck4Synth(val.value) });
+		play.callback_({ | val | this.prCheck4Synth(val) }); // not an automation
 
 		loop.action_({ | val | this.prSetSynths(\lp, val.value.asInteger) });
 
@@ -486,7 +486,9 @@ MoscaSource[]
 				}
 			);
 
-			this.changed(\audio, true, spatType); // triggers Mosca's prCheckConversion method
+			curentSpat = spatType;
+
+			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
 
 			spatializer.set(Synth(defName, // launch spatializer synth
 				[
@@ -503,7 +505,7 @@ MoscaSource[]
 				] ++ args,
 				srcGrp.get()
 			).onFree({
-				this.changed(\audio, false, spatType);
+				this.changed(\audio, false, curentSpat);
 				spatializer.set(nil);
 			});
 			);

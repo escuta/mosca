@@ -131,15 +131,15 @@ Mosca : MoscaBase
 
 					if (item.coordinates.spheVal.rho >= plim)
 					{
-						if(item.spatializer.notNil)
+						if(item.spatializer.get.notNil)
 						{
 							item.runStop(); // to kill SC input synths
-							item.spatializer.free;
+							item.spatializer.get.free;
 						};
 
 						item.firstTime = true;
 					} {
-						if (item.play.value && item.spatializer.isNil
+						if (item.play.value && item.spatializer.get.isNil
 							&& item.firstTime)
 						{
 							item.launchSynth(); // could set the start point for file
@@ -200,7 +200,7 @@ Mosca : MoscaBase
 		ossiaMasterPlay.callback_({ | v |
 
 			sources.get.do({ | item |
-				item.play.valueAction_(v);
+				item.play.v_(v); // not an automation
 			})
 		});
 
@@ -259,18 +259,6 @@ Mosca : MoscaBase
 			if (autoLoop.not || (control.now.round != dur))
 			{
 				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++ control.now).postln;
-
-				// sources.get.do({ | item |
-				// 	// don't switch off sources playing individally
-				// 	// leave that for user
-				// 	if (item.play.value == false) {
-				// 		item.runStop(); // to kill SC input synths
-				// 		item.spatializer.free;
-				// 	};
-				//
-				// 	item.firstTime = true;
-				// });
-
 				ossiaLoop.v_(false);
 			} {
 				("Did not stop. dur = " ++ dur ++ " now = " ++ control.now).postln;
@@ -281,20 +269,20 @@ Mosca : MoscaBase
 			ossiaPlay.set_(false);
 		});
 
-		// if (gui.isNil)
-		// { // when there is no gui, Automation callback does not work,
-		// 	// so here we monitor when the transport reaches end
-		//
-		// if (control.now > dur)
-		// {
-		// 		if (autoloopval)
-		//      {
-		// 			control.seek; // note, onSeek not called
-		// 		} {
-		// 			this.blindControlStop; // stop everything
-		// 		};
-		// 	};
-		// };
+		if (gui.isNil)
+		{ // when there is no gui, Automation callback does not work,
+			// so here we monitor when the transport reaches end
+
+			if (control.now > dur)
+			{
+				if (autoLoop)
+				{
+					control.seek; // note, onSeek not called
+				} {
+					control.stop; // stop everything
+				};
+			};
+		};
 
 		control.onEnd_({ control.seek(); });
 
@@ -359,13 +347,13 @@ Mosca : MoscaBase
 	prCheckConversion
 	{ | loadArgs |
 
-		var newSynth, spatType;
+		var newSynth, curentSpat;
 
-		#newSynth, spatType = loadArgs;
+		#newSynth, curentSpat = loadArgs;
 
 		if (newSynth)
 		{ // evaluate before launching a new spatializer synth
-			if (spatType == \NONAMBI)
+			if (curentSpat == \NONAMBI)
 			{
 				if (renderer.virtualSetup)
 				{
@@ -380,7 +368,7 @@ Mosca : MoscaBase
 					};
 				};
 			} {
-				if (spatType != renderer.format)
+				if (curentSpat != renderer.format)
 				{
 					needConvert = needConvert + 1;
 
@@ -394,7 +382,7 @@ Mosca : MoscaBase
 				};
 			};
 		} {
-			if (spatType == \NONAMBI)
+			if (curentSpat == \NONAMBI)
 			{
 				if (renderer.virtualSetup)
 				{
@@ -404,7 +392,7 @@ Mosca : MoscaBase
 					{ virtualAmbi.free }; // free virtualAmbi if no longer needed
 				};
 			} {
-				if (spatType != renderer.format)
+				if (curentSpat != renderer.format)
 				{
 					needConvert = needConvert - 1;
 
