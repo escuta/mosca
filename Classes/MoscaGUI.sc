@@ -927,7 +927,7 @@ MoscaGUI
 	prAutoControl
 	{ | instance |
 
-		var ossiaLoop, loopEvent, loop;
+		var ossiaLoop, loopEvent, loop, ossiaSync, syncEvent, sync;
 		var canv = Window.new("Automation Control", Rect(0, 0, width, 43)).front;
 
 		control.front(canv, Rect(0, 0, width, 20));
@@ -965,7 +965,8 @@ MoscaGUI
 
 		CheckBox(canv, Rect(156, 23, 200, 20), "Slave to MMC")
 		.focusColor_(palette.color('midlight', 'active'))
-		.action_({ | check | instance.slaveToMMC(check.value) });
+		.action_({ | check | instance.slaveToMMC(check.value) })
+		.value_(instance.slaved);
 
 		ossiaLoop = instance.ossiaParent.find("/Automation/Loop");
 
@@ -981,7 +982,25 @@ MoscaGUI
 		loop = CheckBox(canv, Rect(266, 23, 200, 20), "Loop")
 		.focusColor_(palette.color('midlight', 'active'))
 		.action_({ | check | ossiaLoop.v_(check.value) })
-		.onClose_({ ossiaLoop.removeDependant(loopEvent) });
+		.onClose_({ ossiaLoop.removeDependant(loopEvent) })
+		.value_(ossiaLoop.v);
+
+		ossiaSync = instance.ossiaParent.find("/Automation/Sync_files");
+
+		syncEvent = { | param |
+			{
+				if (param.value != sync.value)
+				{ sync.value_(param.value) };
+			}.defer;
+		};
+
+		ossiaSync.addDependant(syncEvent);
+
+		sync = CheckBox(canv, Rect(326, 23, 200, 20), "Sync_files")
+		.focusColor_(palette.color('midlight', 'active'))
+		.action_({ | check | ossiaSync.v_(check.value) })
+		.onClose_({ ossiaSync.removeDependant(syncEvent) })
+		.value_(ossiaSync.v);
 	}
 
 	prDataGui

@@ -22,7 +22,7 @@ MoscaSource[]
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
-	var input, <file, <stream, <scSynths, <external, <nChan, <busInd; // inputs types
+	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos; // inputs types
 	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <directivity; // input specific parameters
@@ -465,9 +465,6 @@ MoscaSource[]
 				};
 			);
 
-			if ((file.value != "") && (scSynths.value || external.value).not)
-			{ args = args ++ [\bufnum, buffer.bufnum, \lp, loop.value.asInteger] };
-
 			if (scSynths.value)
 			{
 				args = args ++ [\busini, scInBus];
@@ -485,6 +482,26 @@ MoscaSource[]
 						\winrand, random.value];
 				}
 			);
+
+			if ((file.value != "") && (scSynths.value || external.value).not)
+			{
+				var startFrame;
+
+				this.changed(\tpos); // fetch mosca's time for syncing files
+
+				startFrame = sRate * tpos;
+
+				buffer = Buffer.cueSoundFile(
+					server, file.value, startFrame, chanNum, 131072,
+					{("Creating buffer for source " + (index + 1)).postln; });
+
+				args = args ++ [
+					\bufnum, buffer.bufnum,
+					\lp, loop.value.asInteger,
+					\tpos, tpos
+				]
+				// WARNING is evrything syncked ?
+			};
 
 			curentSpat = spatType;
 
@@ -528,14 +545,12 @@ MoscaSource[]
 			if (sf.isNil) { ^Error("incorrect file path").throw; };
 
 			chanNum = sf.numChannels;
+			sRate = sf.sampleRate;
 			sf.close;
 
 			if (stream.value)
 			{
-				buffer = Buffer.cueSoundFile(
-					server, file.value, 0, chanNum, 131072,
-					{("Creating buffer for source " + (index + 1)).postln; });
-
+				// leave streaming buffer allocation to launher
 				playType = "Stream";
 			} {
 				buffer = Buffer.read(server, file.value, action: { | buf |

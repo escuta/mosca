@@ -35,9 +35,8 @@ MoscaSpatializer {
 		playInFunc = [ // one for File, Stream & Input;
 			// for File-in SynthDefs
 			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-				var spos = tpos * BufSampleRate.kr(bufnum),
-				scaledRate = rate * BufRateScale.kr(bufnum);
-				playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: spos,
+				var scaledRate = rate * BufRateScale.kr(bufnum);
+				playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: tpos,
 					loop: lp, doneAction:2);
 			},
 			// for Stream-in SynthDefs

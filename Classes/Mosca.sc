@@ -191,6 +191,9 @@ Mosca : MoscaBase
 		ossiaRec = OSSIA_Parameter(ossiaAutomation, "Record", Boolean,
 			critical:true, repetition_filter:true);
 
+		ossiaSync = OSSIA_Parameter(ossiaAutomation, "Sync_files", Boolean,
+			critical:true, repetition_filter:true);
+
 		ossiaTrack = OSSIA_Parameter(ossiaParent, "Track_Center", Boolean, default_value:true);
 	}
 
@@ -219,8 +222,15 @@ Mosca : MoscaBase
 
 		dependant = { | obj ... loadArgs |
 
+			if ((loadArgs.removeAt(0) == \tpos) && ossiaSync.v)
+			{
+				obj.tpos_(control.now);
+			};
+
 			if (loadArgs.removeAt(0) == \audio)
-			{ this.prCheckConversion(loadArgs) }
+			{
+				this.prCheckConversion(loadArgs);
+			};
 		};
 
 		sources.get.do({ | item |
