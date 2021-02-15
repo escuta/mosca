@@ -753,7 +753,7 @@ MoscaGUI
 
 		Dialog.openPanel({ | path |
 
-			aFileNode.value_(path);
+			aFileNode.valueAction_(path);
 		});
 	}
 

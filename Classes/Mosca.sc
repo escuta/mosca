@@ -222,7 +222,7 @@ Mosca : MoscaBase
 
 		dependant = { | obj ... loadArgs |
 
-			if ((loadArgs.removeAt(0) == \tpos) && ossiaSync.v)
+			if ((loadArgs[0] == \tpos) && ossiaSync.v)
 			{
 				obj.tpos_(control.now);
 			};

@@ -22,7 +22,7 @@ MoscaSource[]
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
-	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos; // inputs types
+	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
 	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <directivity; // input specific parameters
@@ -491,9 +491,14 @@ MoscaSource[]
 
 				startFrame = sRate * tpos;
 
-				buffer = Buffer.cueSoundFile(
+				if (stream.value)
+				{
+					this.prFreeBuffer();
+
+					buffer = Buffer.cueSoundFile(
 					server, file.value, startFrame, chanNum, 131072,
 					{("Creating buffer for source " + (index + 1)).postln; });
+				};
 
 				args = args ++ [
 					\bufnum, buffer.bufnum,
