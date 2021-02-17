@@ -83,6 +83,8 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 
 	*fourOrNine { | order | if (order > 1) { ^9 } { ^4 } }
 
+	*fourOrTwelve { | order | if (order > 1) { ^12 } { ^4 } }
+
 	*bfOrFmh { | order | if (order > 1) { ^FMHEncode1 } { ^BFEncode1 } }
 
 	// a-12 decoder matrix
