@@ -115,6 +115,7 @@ MoscaEffects {
 
 					encodeFunc = { | sig |
 						var convsig = sig * enc;
+						convsig.postln;
 						Out.ar(renderer.n3dBus, convsig);
 					};
 				} {
@@ -159,7 +160,7 @@ MoscaEffects {
 						sig = sig * EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 						sig = item.globalFunc.value(sig, room, damp, a0ir, a1ir, a2ir, a3ir, a4ir,
 							a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir);
-						encodeFunc.value(sig, gate);
+						encodeFunc.value(sig);
 					}).load(server);
 				};
 			});
