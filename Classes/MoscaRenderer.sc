@@ -18,7 +18,7 @@
 
 MoscaRenderer
 {
-	var <nonAmbiBus, <fumaBus, <n3dBus, <vbapBuffer; // buses & buffer
+	var <nonAmbiBus, <fumaBus, <n3dBus, <vbapBuffer, <recBus; // buses & buffer
 	var <format, <virtualSetup; // conversion
 	var <longestRadius, <quarterRadius, <twoAndaHalfRadius, <lowestElevation, <highestElevation;
 	var <bFormNumChan, <numOutputs; // utils
@@ -170,12 +170,17 @@ MoscaRenderer
 		quarterRadius = longestRadius / 4;
 		twoAndaHalfRadius = longestRadius * 2.5;
 
+		recBus = outBus; // initialize recbus befor checking other otputs come before
+
 		if (subOutBus.notNil)
 		{
 			subOutFunc = { | signal, sublevel = 1 |
 				var subOut = Mix(signal) * sublevel * 0.5;
 				Out.ar(subOutBus, subOut);
 			};
+
+			// make sure recbus is equal to Mosca's first ouput
+			if (subOutBus < recBus) { recBus = subOutBus; }
 		} {
 			subOutFunc = { | signal, sublevel | };
 		};
@@ -228,6 +233,9 @@ MoscaRenderer
 				},
 				{ Error("Unknown raw format").throw; };
 			);
+
+			// make sure recbus is equal to Mosca's first ouput
+			if (rawOutBus < recBus) { recBus = rawOutBus; }
 		} {
 			switch (maxOrder,
 				1,

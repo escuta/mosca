@@ -24,7 +24,7 @@ MoscaGUI
 	var autoBut, loadBut, origineBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
-	var bNodes, bMeters, bData, recNumBox, bBlip, bRecAudio;
+	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
 	var origine, orientation, scale;
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
@@ -491,9 +491,15 @@ MoscaGUI
 					palette.color('light', 'active')
 				]
 			]
-		).action_({
-			aMosca.recordAudio(bBlip.value.asBoolean,
-				recNumBox.value);
+		).action_({ | butt |
+
+			if (butt.value ==  1)
+			{
+				aMosca.recordAudio(bBlip.value.asBoolean,
+				recNumBox.value.asInteger);
+			} {
+				aMosca.stopRecording();
+			}
 		});
 
 		// sub view containing the controls of the selected source

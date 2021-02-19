@@ -95,13 +95,14 @@ MoscaBase // acts as the public interface
 	syncFiles { | boolean = false | ossiaSync(boolean) }
 
 	recordAudio
-	{ | blips = false, recChannels = 2 |
+	{ | blips = false, channels = 2, bus |
 
 		if (blips) { this.prBlips };
 
-		server.record((control.presetDir ++ "/MoscaOut.wav").standardizePath,
-			numChannels: recChannels,
-			node:renderer.renderSynth);
+		if (bus.isNil) { bus = renderer.recBus };
+
+		server.record((PathName(control.presetDir).parentPath
+			++ "MoscaOut.wav").standardizePath, bus, channels);
 	}
 
 	stopRecording

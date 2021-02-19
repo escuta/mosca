@@ -1,7 +1,7 @@
 title::Mosca
 summary::GUI-assisted authoring of sound fields
 categories::Libraries>Ambisonic Toolkit, Libraries>HOA
-related::Guide/guide-Mosca, Guides/Intro-to-the-ATK, Guides/HOAguide, Tutorials/AutomationIntro, Guides/OssiaReference
+related::Guide/guide-Mosca, Tutorials/ABCs-of-the-ATK, Guides/HOAguide, Tutorials/AutomationIntro, Guides/OssiaReference
 
 note::
 Installing the ATK
@@ -15,7 +15,7 @@ link:: https://github.com/scrime-u-bordeaux/sc3-pluginsHOA##HOA fork::
 ::
 
 DESCRIPTION::
-Mosca is a SuperCollider class for GUI-assisted production of sound fields with simulated moving or stationary sound sources. Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from hardware inputs (physical or from other applications via Jack) or from SuperCollider's own synths. In the case of synth input, each is associated by the user with a particular source in the GUI and registered in a synth registry. This way, they are spatialised by the GUI and also receive data from the GUI pertaining to the source (eg. x, y and z coordinates or auxiliary fader data). Ambisonic Sound fields may be decoded using a variety of built-in decoders (including binaural), Faust Ugens created with the AmbiDecodertoolbox (see link::Tutorials/Exercise_15_HOA_ADT_DecoderHelper##HOA decoding::) or with external decoders such as Ambdec. Mosca has its own transport provided by the link::Tutorials/AutomationIntro##Automation quark:: for recording and playback of source data. This can be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack. The integration of link::Guides/OssiaReference##ossia-sclang:: also allows Mosca's individual parameters to be controled with the interactive sequencer link::https://ossia.io##Ossia/score:: as well as any other application featuring OSCQuerry or plain OSC communication.
+Mosca is a SuperCollider class for GUI-assisted production of sound fields with simulated moving or stationary sound sources. Input sources may be any combination of mono, stereo or B-format material and the signals may originate from file, from external inputs (physical or from other applications via Jack) or from SuperCollider's own synths. In the case of synth input, each is associated by the user with a particular source and registered in a synth registry. This way, they are spatialised and also receive data from the source control (eg. x, y and z coordinates or auxiliary fader data). Ambisonic Sound fields may be decoded using a variety of built-in decoders (including binaural), Faust Ugens created with the AmbiDecodertoolbox (see link::Tutorials/Exercise_15_HOA_ADT_DecoderHelper##HOA decoding::) or with external decoders such as Ambdec. Mosca has its own transport provided by the link::Tutorials/AutomationIntro##Automation quark:: for recording and playback of source data. This can be used independently or may be synchronised to a DAW using Midi Machine Control (MMC) messages. This function has been tested to work with Ardour and Jack. The integration of link::Guides/OssiaReference##ossia-sclang:: also allows Mosca's individual parameters to be controled with the interactive sequencer link::https://ossia.io##Ossia/score:: as well as any other application featuring OSCQuerry or plain OSC communication.
 
 subsection::Sources
 Mono and stereo sources may be spatialized with ugens from a selection of libraries (Ambitools, HoaLib, ADT, ATK, BF-FMH, Josh & VBAP) set indiviualy for each source. For B-format input signals, which are already ambisonically encoded, the available options for transformation the ATK and Abitools. The ATK is used to implement push transformations to manipulate the angular location of sources as well as to perform rotations of the source sound field and to manipulate its directivity. Ambitools is used to implement a beam formation technique. All sources are subject to high frequency attenuation with distance. For a better sensation of nearness, ATK implements a proximity effect, adding a bass boost to proximal sources among other phase effects to simulate wave curvature. To that same effect, the Ambitools encoder makes use of "Near Field Compensation". Generally, the differences between libraries can be summarised as follows:
@@ -80,7 +80,6 @@ link::https://github.com/pchdev##Pierre Cochard::,
 link::https://github.com/jcelerier##Jean-Michaël Celerier:: and the
 link::https://github.com/OSSIA##OSSIA Team::.
 
-
 Many thanks to Joseph Anderson, Neels Hofmeyr and members of the SuperCollider list for
 their assistance and valuable suggestions.
 
@@ -121,7 +120,7 @@ The number of sources to be spatialised.
 ARGUMENT:: dur
 Duration in seconds of automation transport.
 
-ARGUMENT:: rirBank
+ARGUMENT:: irBank
 Path to B-Format ambisonic room impulse responses folder. Ensure that it has
 the same sample rate as your system.
 
@@ -135,7 +134,7 @@ note::If parentOssiaNode is left blank, an OSSIA_Device named "SC" is created an
 with the .parentOssiaNode method
 ::
 
-ARGUMENT:: allCrtitical
+ARGUMENT:: allCritical
 Set all OSSIA_Parameter to "critical" for websocket communication exclusively.
 (necessary when used outside of a local network). Only relevant when exposing an
 OSCQuerry server
@@ -178,23 +177,15 @@ Starting bus for raw first ambisonic output.
 ARGUMENT:: rawoutbus
 Starting bus for raw first order ambisonic output.
 
-ARGUMENT:: recchans
-Number of channels for recording audio output to disk. Default is 2.
-
-ARGUMENT:: recbus
-Starting bus for recording audio output to disk. Default is 0. Note: this argument may
-only be set in SC 3.9.
-
 ARGUMENT:: autoloop
 If set true, transport will always loop.
 
 returns:: New instance.
 
 METHOD:: printSynthParams
-Print GUI Parameters usable in SynthDefs.
+Print Parameters usable in SynthDefs.
 
 returns:: A string.
-
 
 INSTANCEMETHODS::
 
