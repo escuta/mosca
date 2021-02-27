@@ -192,19 +192,22 @@ INSTANCEMETHODS::
 METHOD:: gui
 Create the graphical interface.
 
-ARGUMENT:: width
+ARGUMENT:: size
 Pixel width and height of GUI window. Minimum of 550 pixels.
 
-ARGUMENT:: guiint
-Maximum interval in seconds to refresh GUI. Default is 0.07.
+ARGUMENT:: palette
+Color palette of the gui.
 
+ARGUMENT:: lag
+Maximum interval in seconds to refresh GUI. Default is 0.07.
 
 METHOD:: headTracker
 Connect to the head traker module (Arduino) through the serial port.
 
-ARGUMENT:: serport
-Name of serial port to receive headtracking data. Eg. "/dev/ttyACM0". For use with a
-binaural decoder. Default is nil.
+ARGUMENT:: port
+Name of serial port to receive headtracking data. Eg. "/dev/ttyACM0",
+or the udp port to connect to pozyx.py,
+for use with a binaural decoder. Default is nil.
 
 ARGUMENT:: offsetheading
 Value in degrees radians to offset heading value of the connected Arduino 9-axes Motion
@@ -217,6 +220,18 @@ monitor and the offsetheading is set to the default 0, you see a heading value (
 right of window) of 2.6, set the value to -2.6. The heading value will now be set to
 zero when you face the monitor.
 
+ARGUMENT:: type
+list::
+##\orient allows the use of a BNO05 chip snding serial data through Arduino to control the orientation parameter.
+See Mosca/headTracker/headTrackGPS.ino
+##\gps adds gps tracking to control the position parameter.
+##\pozyx0SC allows the use of a pozyx tag sending serial data through the pozyx python API
+to control orientation and position parameters with OSC.
+See Mosca/headTracker/pozyx.py
+::
+
+ARGUMENT:: extraArgs
+Extra arguments for postioning. With \pozyx type, extra Args reprensent the dimensions off the room in centy meters [with, length, height]
 
 private:: clearStopFunc
 private:: clearTriggerFunc
@@ -758,83 +773,30 @@ private:: reverb = value
 private:: rir
 private:: rir = value
 
-METHOD:: registerSynth
-Registers synth instance for a given source so that it may be spatialised and receive
-control data from GUI.
-
-ARGUMENT:: source
-The number of the source (starting with 1).
-
-ARGUMENT:: synth
-Synth instance.
-
-METHOD:: deregisterSynth
-Deregisters synth instance for a given source.
-
-ARGUMENT:: source
-The number of the source (starting with 1).
-
-ARGUMENT:: synth
-Synth instance.
-
 METHOD:: getSCBus
 Create the bus associated with synth registrant.
 
-ARGUMENT:: source
+ARGUMENT:: sourceNum
 The number of the source (starting with 1).
 
 ARGUMENT:: numChans
 The number of channels (starting with 1).
 
-METHOD:: setTriggerFunc
-Designate a function to be triggered when selecting play in the transport or auditioning
-a sound in SC-in mode. See code examples below.
-
-ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
-
-ARGUMENT:: function
-Function name. See code example below.
-
-METHOD:: setStopFunc
-Companion method to setTriggerFunc. Designate the name of a function to be called when a
-particular source stops auditioning or playing. See code examples below.
-
-ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
-
-ARGUMENT:: function
-Function name. See code example below.
-
-METHOD:: getInsertOut
-Create an insert for a source spatialised in the GUI. Return the bus number of the A-
-format bus channeling signal from the spatialiser. See code example below.
-
-ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
-
-METHOD:: getInsertIn
-Create an insert for a source spatialised in the GUI. Return the bus number of the A-
-format bus channeling the return signal to the spatialiser. See code example below.
-
-ARGUMENT:: source
-The number of the source (starting with 1). See code example below.
-
 METHOD:: playAutomation
 Non-gui method for playing automation data. Useful for playing data immediately after a
-Mosca instance is created. If called after loadAutomation (see above), may require a
+Mosca instance is created. If called after loadData (see below), may require a
 prior "wait" message to allow all data to load.
 
 METHOD:: playAutomationLooped
 Same as playAutomation but run in looped mode.
 
-METHOD:: loadNonAutomationData
+METHOD:: loadData
 Loads saved data not recorded directly by Automation. These include GUI checkbox values
 (with the exception of auxiliary checkboxes) and file names. It is used for loading data
 immediately after a Mosca instance is created and when running Mosca without a GUI. See
 code examples below.
 
-ARGUMENT:: path
+ARGUMENT:: directory
 Path to automation directory.
 
 

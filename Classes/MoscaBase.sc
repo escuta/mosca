@@ -7,6 +7,26 @@ MoscaBase // acts as the public interface
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
 
+	*printSynthParams
+	{
+		("Parameters usable in SynthDefs
+			\\amp | amplitude [0, 4]
+			\\dopamnt | Doppler ammount [0, 1]
+			\\angle | Stereo angle | default 1.05 (60 degrees) [0, pi]
+			\\glev | Global effect level [0, 1]
+			\\llev | Local effect level [0, 1]
+			\\room | Local reverb room/delay [0, 1]
+			\\damp | Local reverb damp/decay [0, 1]
+			\\radAzimElev | radius, azimuth and elevation array in radiants [[0,20],[-pi,pi],[-hafPi,halfPi]]
+			\\rotAngle | B-format rotation angle [-pi, pi]
+			\\directang | B-format directivity [0, pi/2]
+			\\contr | Contraction of the soundfiled, from omnidirectional to punctual [0, 1]
+			\\aux | aray of 5 Auxiliary parameter values [[0, 1],[0, 1],[0, 1],[0, 1],[0, 1]]
+			\\check | array of 5 Auxiliary Boolean values [[false,true],[false,true],[false,true],[false,true],[false,true]]
+		").postln;
+
+	}
+
 	addSource
 	{ | addN = 1 |
 
@@ -46,6 +66,16 @@ MoscaBase // acts as the public interface
 				if (gui.notNil) { { gui.removeSource(i) }.defer };
 			})
 		}
+	}
+
+	playAutomation
+	{
+		control.play();
+	}
+
+	stopAutomation
+	{
+		control.stop();
 	}
 
 	saveData
