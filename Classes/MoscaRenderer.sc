@@ -180,7 +180,7 @@ MoscaRenderer
 			};
 
 			// make sure recbus is equal to Mosca's first ouput
-			if (subOutBus < recBus) { recBus = subOutBus; }
+			if (subOutBus.first < recBus) { recBus = subOutBus.first }
 		} {
 			subOutFunc = { | signal, sublevel | };
 		};

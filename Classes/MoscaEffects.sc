@@ -114,9 +114,8 @@ MoscaEffects {
 					var enc = MoscaUtils.soa_n3d_encoder();
 
 					encodeFunc = { | sig |
-						var convsig = sig * enc;
-						convsig.postln;
-						Out.ar(renderer.n3dBus, convsig);
+						sig = (sig * enc).sum;
+						Out.ar(renderer.n3dBus, sig);
 					};
 				} {
 					encodeFunc = { | sig |
