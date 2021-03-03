@@ -86,6 +86,8 @@ Download the folowing repositories with these links:
 [MathLib](https://github.com/supercollider-quarks/MathLib/archive/master.zip)  
 [Automation](https://github.com/neeels/Automation/archive/master.zip)  
 [atk-sc3](https://github.com/ambisonictoolkit/atk-sc3/archive/master.zip)  
+[SignalBox](https://github.com/ambisonictoolkit/SignalBox/archive/master.zip)  
+[SphericalDesign](https://github.com/ambisonictoolkit/SphericalDesign/archive/master.zip)  
 [SC-HOA](https://github.com/florian-grond/SC-HOA/archive/master.zip)  
 [OSSIA](https://github.com/ossia/ossia-sclang/archive/master.zip)  
 Decompress all of them in the same extension directoy as the sc3-Plugins_**
