@@ -126,28 +126,16 @@ void loop()
     lastStreamTime = millis();    
     mySensor.updateEuler();
 
-    // correct heading data for 90deg rotation of hardware 
     float headingf = mySensor.readEulerHeading();  
-//    if (headingf < 0) {
-//      headingf = (360 + headingf);
-//    }
     
-    // adjust data to suit the receiving software
-    if (headingf > 180) {
-     headingf = -180 + (headingf - 180);
-    }
     headingf = headingf * PI / 180; // convert heading to radians
 
     float rollf = mySensor.readEulerRoll();
-    if (rollf > 180) {
-     rollf = -180 + (rollf - 180);
-    }
+
     rollf = rollf * PI / 180; // convert to radians
 
     float pitchf = mySensor.readEulerPitch();
-    if (pitchf > 180) {
-      pitchf = -180 + (pitchf - 180);
-    }
+
     pitchf = pitchf * PI / 180; // convert to radians
 
 #ifdef SIDEWAYS
