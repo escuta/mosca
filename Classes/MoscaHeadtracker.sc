@@ -51,7 +51,8 @@ HeadTracker
 			inf.do({
 
 				if (switch.v)
-				{ this.matchByte(trackPort.read) };
+				{ this.matchByte(trackPort.read) }
+				{ 1.wait };
 			});
 		});
 
