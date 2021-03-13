@@ -22,6 +22,7 @@
 
 ABTDef : SpatDef {
 	classvar <key, <format;
+	const maxRadius = 50; // maximum radius accepeted by ambitools
 
 	*initClass {
 
@@ -34,12 +35,26 @@ ABTDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		var speakerRadius = renderer.longestRadius,
+		lim, aten2meter, converge;
+
+		lim = maxRadius / (maxRadius + speakerRadius); // radiusRoot value at the maxRadius
+
+		// invert and scale for ambitools r/x attenuation
+		aten2meter = { | radRoot | speakerRadius / atenuator.value(radRoot) };
+
+		converge = { | radRoot | atenuator.value(radRoot.linlin(lim, 1, 0.5, 1)) };
+
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var sig = HOAEncoder.ar(maxOrder,
-				(ref.value + input), CircleRamp.kr(azimuth, 0.1, -pi, pi),
-				Lag.kr(elevation), 0, 1, distance.linlin(0, 0.75, renderer.quarterRadius,
-					renderer.twoAndaHalfRadius), renderer.longestRadius);
+				ref.value + (input * converge.value(radiusRoot)),
+				CircleRamp.kr(azimuth, 0.1, -pi, pi),
+				Lag.kr(elevation),
+				0, // gain
+				1, // spherical
+				aten2meter.value(radiusRoot),
+				speakerRadius);
 			ref.value = (sig * contract) +
 			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
@@ -69,14 +84,14 @@ HOALibDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = distFilter.value(input, distance);
+			var sig = distFilter.value(input, radius);
 			// attenuate high freq with distance
 			sig = HOALibEnc3D.ar(maxOrder,
-				ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75,
-					renderer.quarterRadius, renderer.twoAndaHalfRadius))),
-				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
+				ref.value + (sig * atenuator.value(radiusRoot)),
+				CircleRamp.kr(azimuth, 0.1, -pi, pi),
+				Lag.kr(elevation));
 			ref.value = (sig * contract) +
 			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
@@ -105,16 +120,15 @@ ADTDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = distFilter.value(input, distance);
+			var sig = distFilter.value(input, radius);
 			// attenuate high freq with distance
 			sig = HOAmbiPanner.ar(maxOrder,
-				ref.value + (sig * (renderer.longestRadius /
-					distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))),
+				ref.value + (sig * atenuator.value(radiusRoot)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation));
 			ref.value = (sig * contract) +
-			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
+				Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
 	}
 
@@ -141,14 +155,13 @@ SCHOADef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = distFilter.value(input, distance);
-			// attenuate high freq with distance
+			var sig = distFilter.value(input, radius);
+			// attenuate high freq with radius
 			sig = HOASphericalHarmonics.coefN3D(maxOrder,
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation))
-			* (ref.value + (sig * (renderer.longestRadius /
-				distance.linlin(0, 0.75, renderer.quarterRadius, renderer.twoAndaHalfRadius))));
+				* (ref.value + (sig * atenuator.value(radiusRoot)));
 			ref.value = (sig * contract) +
 			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
@@ -185,13 +198,11 @@ ATKDef : SpatDef {
 
 		server.sync;
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
 			var diffuse, spread, omni,
-			sig = distFilter.value(input, distance),
-			rad = renderer.longestRadius / distance.linlin(0, 0.75,
-				renderer.quarterRadius, renderer.twoAndaHalfRadius);
-			sig = ref.value + (sig * rad);
+			sig = distFilter.value(input, radius);
+			sig = ref.value + (sig * atenuator.value(radiusRoot));
 			omni = FoaEncode.ar(sig, FoaEncoderMatrix.newOmni);
 			spread = FoaEncode.ar(sig, foaEncoderSpread);
 			diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
@@ -199,7 +210,7 @@ ATKDef : SpatDef {
 			sig = Select.ar(spre, [sig, spread]);
 			sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract, azimuth, elevation);
 			sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
-			ref.value = FoaTransform.ar(sig, 'proximity', distance);
+			ref.value = FoaTransform.ar(sig, 'proximity', radius * renderer.longestRadius);
 		};
 	}
 
@@ -227,12 +238,11 @@ BFFMHDef : SpatDef {
 	prSetFunc { | maxOrder, renderer, server |
 		var enc = MoscaUtils.bfOrFmh(maxOrder);
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = distFilter.value(input, distance);
+			var sig = distFilter.value(input, radius);
 			sig = enc.ar(ref.value + sig, azimuth, elevation,
-				(renderer.longestRadius / distance.linlin(0, 0.75,
-					renderer.quarterRadius, renderer.twoAndaHalfRadius)), 0.5);
+				1 / atenuator.value(radiusRoot)); // invert to represnet distance
 			ref.value = (sig * contract) +
 			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
@@ -261,13 +271,12 @@ JOSHDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = distFilter.value(input, distance);
+			var sig = distFilter.value(input, radius);
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 				azimuth, 1 - contract, elevation, 1 - contract,
-				rho: (renderer.longestRadius / distance.linlin(0, 0.75,
-					renderer.quarterRadius, renderer.twoAndaHalfRadius)) - 1,
+				rho: 1 / atenuator.value(radiusRoot), // invert to represent distance
 				mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
 		};
 	}
@@ -295,9 +304,9 @@ VBAPDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, distance, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = distFilter.value(input, distance),
+			var sig = distFilter.value(input, radius),
 			azi = azimuth * MoscaUtils.rad2deg, // convert to degrees
 			elev = elevation * MoscaUtils.rad2deg, // convert to degrees
 			elevexcess = Select.kr(elev < renderer.lowestElevation, [0, elev.abs]);
@@ -306,8 +315,7 @@ VBAPDef : SpatDef {
 			elev = elev.clip(renderer.lowestElevation, renderer.highestElevation);
 			// restrict between min & max
 			ref.value = VBAP.ar(renderer.numOutputs,
-				ref.value + (sig * (renderer.longestRadius / distance.linlin(0, 0.75,
-					renderer.quarterRadius, renderer.twoAndaHalfRadius))),
+					ref.value + (sig * atenuator.value(radiusRoot)),
 				renderer.vbapBuffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elevation),
 				((1 - contract) + (elevexcess / 90)) * 100);
 		};
@@ -323,7 +331,7 @@ VBAPDef : SpatDef {
 //-------------------------------------------//
 
 SpatDef {
-	classvar <defList, distFilter;
+	classvar <defList, distFilter, atenuator;
 	var <spatFunc;
 
 	*initClass {
@@ -332,9 +340,11 @@ SpatDef {
 
 		defList = [];
 
-		distFilter = { | input, distance | // attenuate high freq with distance
-			LPF.ar(input, (1 - distance) * 18000 + 2000);
+		distFilter = { | input, intens | // attenuate high freq with intens
+			LPF.ar(input, (1 - intens) * 18000 + 2000);
 		};
+
+		atenuator = { | radRoot | (1 / radRoot - 1)};
 	}
 
 	*new { | maxOrder, renderer, server | ^super.new.prSetFunc(maxOrder, renderer, server); }
