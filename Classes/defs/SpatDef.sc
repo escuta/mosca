@@ -36,24 +36,23 @@ ABTDef : SpatDef {
 	prSetFunc { | maxOrder, renderer, server |
 
 		var speakerRadius = renderer.longestRadius,
-		lim, aten2meter, converge;
+		lim, converge;
 
 		lim = maxRadius / (maxRadius + speakerRadius); // radiusRoot value at the maxRadius
-
-		// invert and scale for ambitools r/x attenuation
-		aten2meter = { | radRoot | speakerRadius / atenuator.value(radRoot) };
 
 		converge = { | radRoot | atenuator.value(radRoot.linlin(lim, 1, 0.5, 1)) };
 
 		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
 			contract, win, rate, rand|
-			var sig = HOAEncoder.ar(maxOrder,
-				ref.value + (input * converge.value(radiusRoot)),
+			var distance = aten2distance.value(radiusRoot.min(lim)),
+			sig = HOAEncoder.ar(maxOrder,
+				(ref.value * distance) // local reverb make up gain
+				+ (input * converge.value(radiusRoot)),
 				CircleRamp.kr(azimuth, 0.1, -pi, pi),
 				Lag.kr(elevation),
 				0, // gain
 				1, // spherical
-				aten2meter.value(radiusRoot),
+				distance * speakerRadius,
 				speakerRadius);
 			ref.value = (sig * contract) +
 			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
@@ -208,7 +207,8 @@ ATKDef : SpatDef {
 			diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
 			sig = Select.ar(difu, [omni, diffuse]);
 			sig = Select.ar(spre, [sig, spread]);
-			sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract, azimuth, elevation);
+			sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
+				CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
 			sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
 			ref.value = FoaTransform.ar(sig, 'proximity', radius * renderer.longestRadius);
 		};
@@ -242,7 +242,7 @@ BFFMHDef : SpatDef {
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, radius);
 			sig = enc.ar(ref.value + sig, azimuth, elevation,
-				1 / atenuator.value(radiusRoot)); // invert to represnet distance
+				aten2distance.value(radiusRoot)); // invert to represnet distance
 			ref.value = (sig * contract) +
 			Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 		};
@@ -276,7 +276,7 @@ JOSHDef : SpatDef {
 			var sig = distFilter.value(input, radius);
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
 				azimuth, 1 - contract, elevation, 1 - contract,
-				rho: 1 / atenuator.value(radiusRoot), // invert to represent distance
+				rho: aten2distance.value(radiusRoot), // invert to represent distance
 				mul: ((0.5 - win) + (1 - (rate / 40))).clip(0, 1) * 0.5 );
 		};
 	}
@@ -331,7 +331,7 @@ VBAPDef : SpatDef {
 //-------------------------------------------//
 
 SpatDef {
-	classvar <defList, distFilter, atenuator;
+	classvar <defList, distFilter, atenuator, aten2distance;
 	var <spatFunc;
 
 	*initClass {
@@ -345,6 +345,8 @@ SpatDef {
 		};
 
 		atenuator = { | radRoot | (1 / radRoot - 1)};
+
+		aten2distance = { | radRoot | 1 / atenuator.value(radRoot) };
 	}
 
 	*new { | maxOrder, renderer, server | ^super.new.prSetFunc(maxOrder, renderer, server); }

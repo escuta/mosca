@@ -66,7 +66,7 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		^palette;
 	}
 
-	*plim { ^1.2 } // distance limit from origin where processes continue to run
+	*plim { ^1.1 } // distance limit from origin where processes continue to run
 
 	*halfPi { ^1.5707963267949 }
 

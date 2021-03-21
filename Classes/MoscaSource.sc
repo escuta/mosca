@@ -31,14 +31,14 @@ MoscaSource[]
 	var <auxiliary, <aux, <check;
 
 	*new
-	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, center |
+	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList |
 
 		^super.newCopyArgs(index, server, sourceGroup).ctr(
-			ossiaParent, allCritical, spatList, effectList, center);
+			ossiaParent, allCritical, spatList, effectList);
 	}
 
 	ctr
-	{ | ossiaParent, allCritical, spatList, effectList, center |
+	{ | ossiaParent, allCritical, spatList, effectList |
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
 
@@ -70,7 +70,7 @@ MoscaSource[]
 		nChan.node.description_("number of channels for SC or External inputs");
 
 		busInd = OssiaAutomationProxy(input, "Bus_index", Integer,
-			[ 0, (server.options.numOutputBusChannels - 1) ], 0, 'clip', true, false);
+			[ 1, (server.options.numInputBusChannels) ], 1, 'clip', true, false); // start at 1 (instead of 0) to fit jack's port indexes
 
 		busInd.node.description_("Index of the external input bus");
 
@@ -227,7 +227,7 @@ MoscaSource[]
 			};
 		});
 
-		nChan.action_({ | val | this.prSetDefName(); });
+		nChan.action_({ | val | this.prSetDefName() });
 
 		spatializer = Ref();
 		synths = Ref();
@@ -237,7 +237,7 @@ MoscaSource[]
 		localEffect.action_({ | val |
 
 			var i = localEffect.node.domain.values().detectIndex(
-				{ | item | item == val.value; });
+				{ | item | item == val.value });
 
 			effect = effectList[i];
 
@@ -432,34 +432,37 @@ MoscaSource[]
 			switch (nChan.value,
 				1,
 				{
-					if (effect.class != String)
+					if (effect != "Clear")
 					{
-						args = args ++ effect.wSpecPar;
-					} {
-						if (effect != "Clear")
-						{
-							args = args ++ [\room, localDelay.value, \damp, localDecay.value];
-						};
-					};
+						args = args ++ [\llev, localAmount.value];
+
+						if (effect.class != String) { args = args ++ effect.wSpecPar }
+						{ args = args ++ [\room, localDelay.value, \damp, localDecay.value] }
+					}
 				},
 				2,
 				{
-					if (effect.class != String)
+					if (effect != "Clear")
 					{
-						args = args ++ effect.zSpecPar;
-					} {
-						args = args ++ [\room, localDelay.value, \damp, localDecay.value];
-					};
-				},
-				{
-					if (effect.class != String)
-					{
-						args = args ++ effect.wSpecPar;
-					} {
-						args = args ++ [\room, localDelay.value, \damp, localDecay.value];
+						args = args ++ [\llev, localAmount.value];
+
+						if (effect.class != String) { args = args ++ effect.zSpecPar }
+						{ args = args ++ [\room, localDelay.value, \damp, localDecay.value] }
 					};
 
-					args = args ++ [\rotAngle, rotation.value];
+					args = args ++ [\angle, angle.value.degrad];
+				},
+				{
+					if (effect != "Clear")
+					{
+						args = args ++ [\llev, localAmount.value];
+
+						if (effect.class != String) { args = args ++ effect.wSpecPar }
+						{ args = args ++ [\room, localDelay.value, \damp, localDecay.value] }
+					};
+
+					// no acces to center here
+					// args = args ++ [\rotAngle, rotation.value + center.heading.value];
 
 					if (library.value == "ATK") { args = args ++ [\directang, directivity.value] };
 				};

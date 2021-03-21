@@ -100,7 +100,7 @@ Mosca : MoscaBase
 			Array.fill(nsources,
 				{ | i |
 					MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
-						spat.spatList, effects.ossiaGlobal.node.domain.values(), center);
+						spat.spatList, effects.ossiaGlobal.node.domain.values());
 				}
 			)
 		);

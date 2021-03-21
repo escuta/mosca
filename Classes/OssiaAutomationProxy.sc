@@ -254,13 +254,13 @@ OssiaAutomationCoordinates
 	var <>cartBack = true, <spheBack = true;
 
 	*new
-	{ | parent_node, allCritical, center, spatializer, synth |
+	{ | parent_node, allCritical |
 
-		^super.new.ctr(parent_node, allCritical, center, spatializer, synth);
+		^super.new.ctr(parent_node, allCritical);
 	}
 
 	ctr
-	{ | parent_node, allCritical, center, spatializer, synth |
+	{ | parent_node, allCritical |
 
 		var halfPi = MoscaUtils.halfPi();
 

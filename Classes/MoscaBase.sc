@@ -37,7 +37,7 @@ MoscaBase // acts as the public interface
 
 			newSource = MoscaSource(previousSource.index + 1, server, srcGrp, ossiaParent,
 				previousSource.localAmount.node.critical, // get "allCritical" argument
-				spatList, effects.ossiaGlobal.node.domain.values(), center);
+				spatList, effects.ossiaGlobal.node.domain.values());
 
 			newSource.setAction(effects.effectList, spatList, center, ossiaPlay);
 
@@ -361,9 +361,9 @@ MoscaBase // acts as the public interface
 
 		if (sourceNum.isInteger)
 		{
-			^Error("index must be an Integer").throw;
-		} {
 			^sources.get[(sourceNum.clip(1, sources.get.size)) - 1];
+		} {
+			^Error("index must be an Integer").throw;
 		};
 	}
 
@@ -372,9 +372,9 @@ MoscaBase // acts as the public interface
 
 		if (auxNum.isInteger)
 		{
-			^Error("index must be an Integer").throw;
-		} {
 			^(auxNum.clip(1, 5) - 1);
+		} {
+			^Error("index must be an Integer").throw;
 		};
 	}
 

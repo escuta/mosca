@@ -17,8 +17,9 @@
 */
 
 MoscaSpatializer {
-	const playList = #["File","Stream","SCBus","EXBus"];
-	// the diferent types of inputs to spatilizer synths
+	const playList = #["File","Stream","SCBus","EXBus"],
+	// the diferent types of inputs for spatilizer synths
+	minRadRoot = 0.076923076923077;
 
 	classvar playInFunc, <defs, <spatList;
 	// list of spat libs
@@ -114,7 +115,7 @@ MoscaSpatializer {
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
 						var rad = Lag.kr(radAzimElev[0]),
-						radRoot = rad.sqrt.clip(0.01, 1),
+						radRoot = rad.sqrt.clip(minRadRoot, 1),
 						lrevRef = Ref(0),
 						az = radAzimElev[1] - halfPi,
 						revCut = rad.lincurve(1, plim, 1, 0),
@@ -123,17 +124,16 @@ MoscaSpatializer {
 						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
 
 						p = DelayC.ar(p, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
-						effect.localMonoFunc.value(lrevRef, p, wir, (1 - radRoot) * llev,
+						effect.localMonoFunc.value(lrevRef, p, wir, rad * llev,
 							room, damp); // local reverberation
 
 						lrevRef.value = lrevRef.value * revCut;
-						p = p * amp;
 
-						spat.spatFunc.value(lrevRef, p, rad, radRoot,
+						spat.spatFunc.value(lrevRef, p * amp, rad, radRoot,
 							az, radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(p, lrevRef.value,
-							radRoot * glev);
+							(1 - radRoot) * glev);
 					});
 
 					stereo = SynthDef(spat.key ++ play_type ++ 2 ++ effect.key, {
@@ -145,7 +145,7 @@ MoscaSpatializer {
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
 						var rad = Lag.kr(radAzimElev[0]),
-						radRoot = rad.sqrt.clip(0.01, 1),
+						radRoot = rad.sqrt.clip(minRadRoot, 1),
 						lrev1Ref = Ref(0),
 						lrev2Ref = Ref(0),
 						az = Lag.kr(radAzimElev[1] - halfPi),
@@ -156,7 +156,7 @@ MoscaSpatializer {
 						p = DelayC.ar(p, 0.2, (rad * 340)/1640.0 * dopamnt);
 
 						effect.localStereoFunc.value(lrev1Ref, lrev2Ref, p[0], p[1],
-							wir, (1 - radRoot) * llev, room, damp); // local reverberation
+							wir, rad * llev, room, damp); // local reverberation
 
 						lrev1Ref.value = lrev1Ref.value * revCut;
 						lrev2Ref.value = lrev2Ref.value * revCut;
@@ -169,7 +169,7 @@ MoscaSpatializer {
 
 						outPutFuncs[out_type].value(Mix.ar(p) * 0.5,
 							(lrev1Ref.value + lrev2Ref.value) * 0.5,
-							radRoot * glev);
+							(1 - radRoot) * glev);
 					});
 
 					if (maxOrder < 3) {
@@ -197,7 +197,7 @@ MoscaSpatializer {
 							contr = 0, directang = 1, rotAngle = 0 |
 
 							var rad = Lag.kr(radAzimElev[0]),
-							radRoot = rad.sqrt.clip(0.01, 1),
+							radRoot = rad.sqrt.clip(minRadRoot, 1),
 							lrevRef = Ref(0),
 							az = radAzimElev[1] - halfPi,
 							revCut = rad.lincurve(1, plim, 1, 0),
@@ -220,7 +220,7 @@ MoscaSpatializer {
 							p = FoaTransform.ar(p, 'rotate', rotAngle);
 							p = FoaTransform.ar(p, 'push', pushang, az, radAzimElev[2]);
 
-							outPutFuncs[1].value(p, p, radRoot * glev);
+							outPutFuncs[1].value(p, p, (1 - radRoot) * glev);
 						}).send(server);
 
 						MoscaUtils.hoaChanns.do({ | item, count |
@@ -236,7 +236,7 @@ MoscaSpatializer {
 								contr = 0, directang = 1, rotAngle = 0 |
 
 								var rad = Lag.kr(radAzimElev[0]),
-								radRoot = rad.sqrt.clip(0.01, 1),
+								radRoot = rad.sqrt.clip(minRadRoot, 1),
 								lrevRef = Ref(0),
 								az = radAzimElev[1] - halfPi,
 								revCut = rad.lincurve(1, plim, 1, 0),
@@ -260,7 +260,7 @@ MoscaSpatializer {
 								p = FoaTransform.ar(p, 'rotate', rotAngle);
 								p = FoaTransform.ar(p, 'push', pushang, az, radAzimElev[2]);
 
-								outPutFuncs[1].value(p, p, radRoot * glev);
+								outPutFuncs[1].value(p, p, (1 - radRoot) * glev);
 							});
 
 							if (item > 16) {
@@ -283,7 +283,7 @@ MoscaSpatializer {
 							contr = 0, rotAngle = 0|
 
 							var rad = Lag.kr(radAzimElev[0]),
-							radRoot = rad.sqrt.clip(0.01, 1),
+							radRoot = rad.sqrt.clip(minRadRoot, 1),
 							lrevRef = Ref(0),
 							az = radAzimElev[1] - halfPi,
 							revCut = rad.lincurve(1, plim, 1, 0),
@@ -305,7 +305,7 @@ MoscaSpatializer {
 							p = HOATransRotateAz.ar(1, p, rotAngle);
 							p = HOABeamDirac2Hoa.ar(1, p, az, radAzimElev[2], timer_manual:1, focus:pushang);
 
-							outPutFuncs[0].value(p, p, radRoot * glev);
+							outPutFuncs[0].value(p, p, (1 - radRoot) * glev);
 						}).send(server);
 
 						MoscaUtils.hoaChanns.do({ | item, count |
@@ -321,7 +321,7 @@ MoscaSpatializer {
 								contr = 0, rotAngle = 0|
 
 								var rad = Lag.kr(radAzimElev[0]),
-								radRoot = rad.sqrt.clip(0.01, 1),
+								radRoot = rad.sqrt.clip(minRadRoot, 1),
 								lrevRef = Ref(0),
 								az = radAzimElev[1] - halfPi,
 								revCut = rad.lincurve(1, plim, 1, 0),
@@ -343,7 +343,7 @@ MoscaSpatializer {
 									(p * ((1/radRoot) - 1)), rotAngle);
 								p = HOABeamDirac2Hoa.ar(ord, p, az, radAzimElev[2], timer_manual:1, focus:pushang);
 
-								outPutFuncs[0].value(p, p, radRoot * glev);
+								outPutFuncs[0].value(p, p, (1 - radRoot) * glev);
 							});
 
 							if (item > 16) {
