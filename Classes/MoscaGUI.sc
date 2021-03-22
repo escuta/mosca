@@ -356,11 +356,11 @@ MoscaGUI
 			.onClose_({ if (success.not) { "Aborted load!".postln } });
 
 			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-			.value_(control.presetDir)
+			.value_(control.presetDir ++ "/auto/")
 			.action_({ | tf |
 				success = true;
 				dwin.close;
-				aMosca.loadData(tf.value);
+				aMosca.loadAutomation(tf.value);
 			});
 
 			dwin.front;
@@ -936,6 +936,9 @@ MoscaGUI
 		var ossiaLoop, loopEvent, loop, ossiaSync, syncEvent, sync;
 		var canv = Window.new("Automation Control", Rect(0, 0, width, 43)).front;
 
+		// snapshot when opening the window for the first time
+		if (control.gui.isNil && control.now == 0) { control.snapshot };
+
 		control.front(canv, Rect(0, 0, width, 20));
 		canv.onClose_({ autoBut.value_(0) });
 
@@ -959,11 +962,11 @@ MoscaGUI
 			.onClose_({ if (success.not) { "Aborted save".postln } });
 
 			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-			.value_(control.presetDir)
+			.value_(control.presetDir ++ "/auto/")
 			.action_({ | tf |
 				success = true;
 				dwin.close;
-				instance.saveData(tf.value);
+				instance.saveAutomation(tf.value);
 			});
 
 			dwin.front;

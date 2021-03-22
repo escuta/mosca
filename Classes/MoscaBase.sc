@@ -1,6 +1,6 @@
 MoscaBase // acts as the public interface
 {
-	var dur, <autoLoop, <server, <ossiaParent, gui, tracker; // initial rguments
+	var dur, <server, <ossiaParent, gui, tracker; // initial rguments
 	var renderer, <effects, center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
@@ -69,7 +69,9 @@ MoscaBase // acts as the public interface
 	}
 
 	playAutomation
-	{
+	{ | loop = false |
+
+		ossiaLoop.v_(loop);
 		control.play();
 	}
 
@@ -78,20 +80,20 @@ MoscaBase // acts as the public interface
 		control.stop();
 	}
 
-	saveData
+	saveAutomation
 	{ | directory |
 
 		if (directory.notNil && (directory != control.presetDir))
-		{ control.presetDir = directory };
+		{ control.presetDir = PathName(directory).parentPath };
 
 		control.save(control.presetDir);
 	}
 
-	loadData
+	loadAutomation
 	{ | directory |
 
 		if (directory.notNil && (directory != control.presetDir))
-		{ control.presetDir = directory };
+		{ control.presetDir = PathName(directory).parentPath };
 
 		control.load(control.presetDir);
 

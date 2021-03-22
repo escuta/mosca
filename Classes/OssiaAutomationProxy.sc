@@ -18,7 +18,7 @@
 
 AutomationBase
 {
-	var auto, docking_name;
+	var <auto, docking_name;
 
 	absoluteBounds { ^Rect(0,0,0,0) } // to keep Automation happy!
 

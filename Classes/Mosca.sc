@@ -32,9 +32,9 @@ Mosca : MoscaBase
 	*new
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
-		suboutbus, rawformat = \FUMA, rawoutbus, autoloop = false |
+		suboutbus, rawformat = \FUMA, rawoutbus |
 
-		^super.newCopyArgs(dur, autoloop, server).ctr(projDir, nsources, irBank,
+		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
 			outbus, suboutbus, rawformat, rawoutbus);
 	}
@@ -110,7 +110,7 @@ Mosca : MoscaBase
 
 		if (projDir.isNil)
 		{
-			control.presetDir = "HOME".getenv ++ "/auto/";
+			control.presetDir = "HOME".getenv;
 		} {
 			control.presetDir = projDir;
 			control.load(control.presetDir);
@@ -247,8 +247,7 @@ Mosca : MoscaBase
 
 			if (ossiaLoop.v)
 			{
-				sources.get.do_({ | item | item.firstTime = true });
-				ossiaLoop.v_(false);
+				sources.get.do({ | item | item.firstTime = true });
 				"Was looping".postln;
 			};
 
@@ -266,13 +265,11 @@ Mosca : MoscaBase
 
 			ossiaMasterPlay.v_(false);
 
-			if (autoLoop.not || (control.now.round != dur))
+			if (ossiaLoop.v.not || (control.now.round != dur))
 			{
 				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++ control.now).postln;
-				ossiaLoop.v_(false);
 			} {
 				("Did not stop. dur = " ++ dur ++ " now = " ++ control.now).postln;
-				ossiaLoop.v_(true);
 				control.play;
 			};
 
@@ -285,7 +282,7 @@ Mosca : MoscaBase
 
 			if (control.now > dur)
 			{
-				if (autoLoop)
+				if (ossiaLoop)
 				{
 					control.seek; // note, onSeek not called
 				} {
@@ -303,11 +300,6 @@ Mosca : MoscaBase
 			} {
 				control.stop;
 			};
-		});
-
-		ossiaLoop.callback_({ | val |
-			if (autoLoop != val.value)
-			{ autoLoop = val.value };
 		});
 
 		ossiaTransport.callback_({ | num |

@@ -550,7 +550,15 @@ MoscaSource[]
 		{
 			var sf = SoundFile.openRead(file.value);
 
-			if (sf.isNil) { ^Error("incorrect file path").throw; };
+			if (sf.isNil)
+			{
+				// if the fie isn't found, look in the project directory
+				var preset = file.auto.presetDir;
+
+				SoundFile.openRead(preset ++ Pathname(file.value).fileName);
+
+				if (sf.isNil) { ^Error("incorrect file path").throw }
+			};
 
 			chanNum = sf.numChannels;
 			sRate = sf.sampleRate;
