@@ -784,13 +784,13 @@ The number of channels (starting with 1).
 
 METHOD:: playAutomation
 Non-gui method for playing automation data. Useful for playing data immediately after a
-Mosca instance is created. If called after loadData (see below), may require a
+Mosca instance is created. If called after loadAutomation (see below), may require a
 prior "wait" message to allow all data to load.
 
-METHOD:: playAutomationLooped
-Same as playAutomation but run in looped mode.
+ARGUMENT:: loop
+A boolean to enable/disable looping the automation transport.
 
-METHOD:: loadData
+METHOD:: loadAutomation
 Loads saved data not recorded directly by Automation. These include GUI checkbox values
 (with the exception of auxiliary checkboxes) and file names. It is used for loading data
 immediately after a Mosca instance is created and when running Mosca without a GUI. See
