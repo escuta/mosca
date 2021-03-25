@@ -131,7 +131,7 @@ MoscaGUI
 
 		bLoad.visible_(false);
 
-		bStream = Button( win, Rect(83, 50, 79, 20), "Stream")
+		bStream = Button(win, Rect(83, 50, 79, 20), "Stream")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -356,7 +356,7 @@ MoscaGUI
 			.onClose_({ if (success.not) { "Aborted load!".postln } });
 
 			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-			.value_(control.presetDir ++ "/auto/")
+			.value_(control.presetDir)
 			.action_({ | tf |
 				success = true;
 				dwin.close;
@@ -737,14 +737,15 @@ MoscaGUI
 		{
 			sourceList.items_(this.prSetSrcList());
 			sourceList.value_(sourceList.items.size - 1);
-		}
+		};
 	}
 
 	free
 	{
 		global.removeDependant(ctlEvent);
 
-		sources.get.do { | item | this.removeSource(item) };
+		sources.get[currentSource].removeDependant(ctlEvent);
+		sources.get[currentSource].loop.node.removeDependant(loopEvent);
 	}
 
 	prSetSrcList
@@ -962,7 +963,7 @@ MoscaGUI
 			.onClose_({ if (success.not) { "Aborted save".postln } });
 
 			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-			.value_(control.presetDir ++ "/auto/")
+			.value_(control.presetDir)
 			.action_({ | tf |
 				success = true;
 				dwin.close;

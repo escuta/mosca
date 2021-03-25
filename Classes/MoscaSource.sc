@@ -488,9 +488,11 @@ MoscaSource[]
 
 			if ((file.value != "") && (scSynths.value || external.value).not)
 			{
-				var startFrame;
+				var startFrame = 0;
 
 				this.changed(\tpos); // fetch mosca's time for syncing files
+
+				tpos.postln;
 
 				startFrame = sRate * tpos;
 
@@ -506,7 +508,7 @@ MoscaSource[]
 				args = args ++ [
 					\bufnum, buffer.bufnum,
 					\lp, loop.value.asInteger,
-					\tpos, tpos
+					\tpos, startFrame
 				]
 				// WARNING is evrything syncked ?
 			};
@@ -553,7 +555,7 @@ MoscaSource[]
 			if (sf.isNil)
 			{
 				// if the fie isn't found, look in the project directory
-				var preset = file.auto.presetDir;
+				var preset = PathName(file.auto.presetDir).parentPath;
 
 				SoundFile.openRead(preset ++ Pathname(file.value).fileName);
 
@@ -603,6 +605,13 @@ MoscaSource[]
 			};
 
 			defName = library.value ++ playType ++ chanNum ++ fxType;
+
+			// if the synth is playing, stop and relaunch it
+			if (spatializer.get.notNil && play.v)
+			{
+				spatializer.get.free;
+				firstTime = true;
+			}
 		};
 
 		this.changed(\ctl);

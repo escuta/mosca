@@ -423,7 +423,7 @@ MoscaBase // acts as the public interface
 		{
 			gui = MoscaGUI(this, size, palette, lag);
 
-			gui.win.onClose({
+			gui.win.onClose_({
 				gui.free;
 				gui = nil;
 			});

@@ -110,7 +110,7 @@ Mosca : MoscaBase
 
 		if (projDir.isNil)
 		{
-			control.presetDir = "HOME".getenv;
+			control.presetDir = "HOME".getenv ++ "/auto/";
 		} {
 			control.presetDir = projDir;
 			control.load(control.presetDir);
@@ -224,7 +224,7 @@ Mosca : MoscaBase
 
 			if ((loadArgs[0] == \tpos) && ossiaSync.v)
 			{
-				obj.tpos_(control.now);
+				obj.tpos_((control.now).max(0));
 			};
 
 			if (loadArgs.removeAt(0) == \audio)
