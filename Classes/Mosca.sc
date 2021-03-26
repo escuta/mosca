@@ -163,7 +163,7 @@ Mosca : MoscaBase
 	prSetParam
 	{ | spatList, allCritical |
 
-		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Audition_all", Boolean,
+		ossiaMasterPlay = OSSIA_Parameter(ossiaParent, "Play_all", Boolean,
 			critical:true);
 
 		ossiaMasterLib = OSSIA_Parameter(ossiaParent, "Library_all", String,

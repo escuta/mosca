@@ -124,7 +124,7 @@ OssiaAutomationCenter
 		origine = Cartesian();
 
 		ossiaOrigine = OSSIA_Parameter(parent_node, "Origine", OSSIA_vec3f,
-			domain:[[-10, -10, -10], [10, 10, 10]], default_value:[0, 0, 0],
+			domain:[[-1, -1, -1], [1, 1, 1]], default_value:[0, 0, 0],
 			critical:allCritical, repetition_filter:true);
 
 		ossiaOrigine.unit_(OSSIA_position.cart3D);
@@ -205,10 +205,13 @@ OssiaAutomationCenter
 
 		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]) });
 
-		scale.node.callback_({ | v |
+		scale.node.callback_({
 
 			sources.get.do({ | item |
+				var coord = item.coordinates;
 
+				item.coordinates.azElDist.callback.value(coord.azElDist.v);
+				coord.azElDist.changed();
 			})
 		})
 	}
@@ -277,11 +280,11 @@ OssiaAutomationCoordinates
 		y = AutomationProxy(10.0);
 		z = AutomationProxy(0.0);
 
-		azElDist = OSSIA_Parameter(parent_node, "AzElDist", OSSIA_vec3f,
+		azElDist = OSSIA_Parameter(parent_node, "AED", OSSIA_vec3f,
 			domain:[[-180, -90, 0], [180, 90, 20]], default_value:[0, 0, 10],
 			critical:allCritical, repetition_filter:true);
 
-		// azElDist.unit_(OSSIA_position.AzElDist);
+		// azElDist.unit_(OSSIA_position.AED);
 	}
 
 	setAction
@@ -297,7 +300,9 @@ OssiaAutomationCoordinates
 			.tilt(center.pitch.value.neg)
 			.tumble(center.roll.value.neg);
 
-			sphediff = [(sphe.theta - halfPi).wrap(-pi, pi).raddeg, sphe.phi.raddeg, sphe.rho];
+			sphediff = [(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
+				sphe.phi.raddeg,
+				sphe.rho / center.scale.node.v ];
 
 			cartBack = false;
 

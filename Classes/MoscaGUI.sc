@@ -292,7 +292,7 @@ MoscaGUI
 				sources.get[currentSource].coordinates.azElDist.value_(
 					[(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
 						sphe.phi.raddeg,
-						sphe.rho]);
+						sphe.rho / scale.value]);
 			};
 		});
 
@@ -909,25 +909,25 @@ MoscaGUI
 	prMoveSource
 	{ |x, y|
 
-		var point = Cartesian(
+		var src, point = Cartesian(
 			(((x - halfWidth) / halfHeight) / zoomFactor),
 			(((halfHeight - y) / halfHeight) / zoomFactor),
-			zNumBox.value) / scale.value;
+			zNumBox.value);
+
+		src = sources.get[currentSource].coordinates;
 
 		if (orientation.value == [0, 0, 0])
 		{
-			sources.get[currentSource].coordinates.x.valueAction_(point.x + origine.value[0]);
+			src.x.valueAction_(point.x + origine.value[0]);
 			// exeption to record XY mouvements after Z automation
-			sources.get[currentSource].coordinates.y.valueAction_(point.y + origine.value[1]);
+			src.y.valueAction_(point.y + origine.value[1]);
 		} {
 			var sphe = point.asSpherical;
 
-			sphe.theta.postln;
-
-			sources.get[currentSource].coordinates.azElDist.value_(
+			src.azElDist.value_(
 				[(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
 					sphe.phi.raddeg,
-					sphe.rho]);
+					sphe.rho / scale.value ]);
 		};
 	}
 
