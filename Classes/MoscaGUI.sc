@@ -576,14 +576,14 @@ MoscaGUI
 									}
 								)
 							}
-						});
+						})
 					},
 					2,
 					{
 						sources.get.do { | item, i |
-							("" ++ i ++ " " ++ item.coordinates.cartVal.asArray).postln;
-							("" ++ i ++ " " ++ item.coordinates.spheVal.asArray).postln;
-						};
+							("" ++ i ++ " " ++ item.coordinates.cartVal).postln;
+							("" ++ i ++ " " ++ item.coordinates.spheVal).postln;
+						}
 					}
 				)
 			}
@@ -912,7 +912,7 @@ MoscaGUI
 		var src, point = Cartesian(
 			(((x - halfWidth) / halfHeight) / zoomFactor),
 			(((halfHeight - y) / halfHeight) / zoomFactor),
-			zNumBox.value);
+			zNumBox.value) / scale.value;
 
 		src = sources.get[currentSource].coordinates;
 
@@ -927,7 +927,7 @@ MoscaGUI
 			src.azElDist.value_(
 				[(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
 					sphe.phi.raddeg,
-					sphe.rho / scale.value ]);
+					sphe.rho]);
 		};
 	}
 

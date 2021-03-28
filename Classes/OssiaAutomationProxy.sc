@@ -148,8 +148,7 @@ OssiaAutomationCenter
 				var euler = (item.coordinates.cartVal - origine)
 				.rotate(num.value[0].neg)
 				.tilt(num.value[1].neg)
-				.tumble(num.value[2].neg)
-				/ scale.value;
+				.tumble(num.value[2].neg);
 
 				item.coordinates.cartBack_(false);
 
@@ -181,8 +180,7 @@ OssiaAutomationCenter
 				var cart = (item.coordinates.cartVal - origine)
 				.rotate(heading.value.neg)
 				.tilt(pitch.value.neg)
-				.tumble(roll.value.neg)
-				/ scale.value;
+				.tumble(roll.value.neg);
 
 				item.coordinates.cartBack_(false);
 
@@ -210,6 +208,7 @@ OssiaAutomationCenter
 			sources.get.do({ | item |
 				var coord = item.coordinates;
 
+				// access the callback function direvctly as azElDist to avoid reseting the value
 				item.coordinates.azElDist.callback.value(coord.azElDist.v);
 				coord.azElDist.changed();
 			})
@@ -302,7 +301,7 @@ OssiaAutomationCoordinates
 
 			sphediff = [(sphe.theta - halfPi).wrap(-pi, pi).raddeg,
 				sphe.phi.raddeg,
-				sphe.rho / center.scale.node.v ];
+				sphe.rho];
 
 			cartBack = false;
 
@@ -330,7 +329,7 @@ OssiaAutomationCoordinates
 		});
 
 		azElDist.callback_({ | num |
-			spheVal.rho_(num.value[2] * center.scale.value);
+			spheVal.rho_(num.value[2]);
 			spheVal.theta_((num.value[0].degrad.wrap(-pi, pi)) + halfPi);
 			spheVal.phi_(num.value[1].degrad.clip(halfPi.neg, halfPi));
 			spheBack = false;
@@ -342,6 +341,9 @@ OssiaAutomationCoordinates
 						.rotate(center.heading.value)
 						.asCartesian) + center.origine).asArray);
 			};
+
+			// set scaled distance after conversion
+			spheVal.rho_(spheVal.rho * center.scale.value);
 
 			if(spatializer.get.notNil)
 			{
