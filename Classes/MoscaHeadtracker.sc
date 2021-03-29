@@ -25,13 +25,19 @@ HeadTracker
 	trackarr, trackarr2, tracki, trackPort;
 
 	*new
-	{ | center, flag, serialPort, offsetheading |
+	{ | center, flag, serialPort, ofsetHeading |
 
-		^super.newCopyArgs(center, flag, serialPort, offsetheading).headTrackerCtr();
+		^super.new.headTrackerCtr(center, flag, serialPort, ofsetHeading);
 	}
 
 	headTrackerCtr
-	{
+	{ | center, flag, serialPort, ofsetHeading |
+
+		moscaCenter = center;
+		switch = flag;
+		serport = serialPort;
+		headingOffset = ofsetHeading;
+
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, baudRate, crtscts: true);
@@ -132,10 +138,8 @@ HeadTracker
 		};
 	}
 
-	offsetHeading { | angle | // give offset to reset North
-
-		headingOffset = angle;
-	}
+	// give offset to reset North
+	offsetHeading { | angle | headingOffset = angle }
 
 	free
 	{
@@ -149,6 +153,12 @@ HeadTracker
 HeadTrackerGPS : HeadTracker
 {
 	var previousLat, previusLon, previusAlt;
+
+	*new
+	{ | center, flag, serialPort, ofsetHeading, setup |
+
+		^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
+	}
 
 	setTracker //protocol
 	{

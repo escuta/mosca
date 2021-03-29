@@ -108,14 +108,6 @@ Mosca : MoscaBase
 		control = Automation(dur, showLoadSave: false, showSnapshot: true,
 			minTimeStep: 0.001);
 
-		if (projDir.isNil)
-		{
-			control.presetDir = "HOME".getenv ++ "/auto/";
-		} {
-			control.presetDir = projDir;
-			control.load(control.presetDir);
-		};
-
 		this.prSetAction(spat.defs);
 		this.prDockTo();
 		this.prSetSysex();
@@ -158,6 +150,13 @@ Mosca : MoscaBase
 		});
 
 		watcher.play;
+
+		if (projDir.isNil)
+		{
+			control.presetDir = "HOME".getenv ++ "/auto/";
+		} {
+			this.loadAutomation(projDir);
+		};
 	}
 
 	prSetParam

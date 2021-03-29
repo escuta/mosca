@@ -84,7 +84,7 @@ MoscaBase // acts as the public interface
 	{ | directory |
 
 		if (directory.notNil && (directory != control.presetDir))
-		{ control.presetDir = PathName(directory).parentPath };
+		{ control.presetDir = directory };
 
 		control.save(control.presetDir);
 	}
@@ -93,7 +93,7 @@ MoscaBase // acts as the public interface
 	{ | directory |
 
 		if (directory.notNil && (directory != control.presetDir))
-		{ control.presetDir = PathName(directory).parentPath };
+		{ control.presetDir = directory };
 
 		control.load(control.presetDir);
 

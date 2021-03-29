@@ -554,7 +554,7 @@ MoscaSource[]
 
 			if (sf.isNil)
 			{
-				// if the fie isn't found, look in the project directory
+				// if the fie isn't found, look in the project parent directory
 				var preset = PathName(file.auto.presetDir).parentPath;
 
 				SoundFile.openRead(preset ++ Pathname(file.value).fileName);

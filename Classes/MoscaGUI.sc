@@ -284,7 +284,7 @@ MoscaGUI
 			if (orientation.value == [0, 0, 0])
 			{ // exeption to record z mouvements after XY automation
 				sources.get[currentSource].coordinates.z
-				.valueAction_(num.value + origine.value[2]);
+				.valueAction_((num.value + origine.value[2]) / scale.value);
 			} {
 				var sphe = sources.get[currentSource].coordinates.spheVal
 				.asCartesian.z_(num.value).asSpherical;
