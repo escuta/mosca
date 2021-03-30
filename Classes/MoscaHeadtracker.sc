@@ -152,18 +152,30 @@ HeadTracker
 
 HeadTrackerGPS : HeadTracker
 {
-	var previousLat, previusLon, previusAlt;
+	var coord1, coord2, procFunc;
 
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup |
 
-		^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
+		if (setup.isNil)
+		{
+			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
+		} {
+			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
+			.setCoord(0, setup[0]).setCoord(1, setup[1]);
+		};
+	}
+
+	setCoordinate
+	{ | index, coordinate |
 	}
 
 	setTracker //protocol
 	{
 		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
+
+		procFunc = {}; // initialize with an empty function in case no coordinates are set;
 	}
 
 	procGps
