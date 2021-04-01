@@ -152,7 +152,7 @@ HeadTracker
 
 HeadTrackerGPS : HeadTracker
 {
-	var coord1, coord2, procFunc;
+	var <latMin, <latMax, <longMin, <longMax, latCenter, longCenter, procGPS;
 
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup |
@@ -162,12 +162,96 @@ HeadTrackerGPS : HeadTracker
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
 		} {
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
-			.setCoord(0, setup[0]).setCoord(1, setup[1]);
+			.setCoordinates(setup);
 		};
 	}
 
-	setCoordinate
-	{ | index, coordinate |
+	setCoordinates
+	{ | coordinates |
+
+		if (coordinates.isArray)
+		{
+			if (coordinates.flat.size == 4)
+			{
+				var latLong = coordinates.flat;
+
+				if (latLong[0] < latLong[2])
+				{
+					latMin = latLong[0];
+					latMax = latLong[2];
+				}
+				{
+					latMin = latLong[2];
+					latMax = latLong[0];
+				};
+
+				if (latLong[1] < latLong[3])
+				{
+					longMin = latLong[1];
+					longMax = latLong[3];
+				}
+				{
+					longMin = latLong[3];
+					longMax = latLong[1];
+				};
+
+				this.prSetFunc();
+			} {
+				if (latMin.isNil)
+				{
+					latMin = coordinates[0];
+					longMin = coordinates[1];
+				} {
+					if (latMax.isNil)
+					{
+						if (coordinates[0] < latMin)
+						{
+							latMax = latMin;
+							latMin = coordinates[0];
+						} {
+							latMax = coordinates[0];
+						};
+
+						if (coordinates[1] < longMin)
+						{
+							longMax = longMin;
+							longMin = coordinates[1];
+						} {
+							longMax = coordinates[1];
+						};
+
+						this.prSetFunc();
+					} {
+						if (coordinates[0] < (latMin + latCenter))
+						{
+							latMin = coordinates[0];
+						} {
+							latMax = coordinates[0];
+						};
+
+						if (coordinates[1] < (longMin + longCenter))
+						{
+							longMin = coordinates[1];
+						} {
+							longMax = coordinates[1];
+						};
+
+						this.prSetFunc();
+					}
+				}
+			}
+		} { Error.throw("coordinates must be an array") }
+	}
+
+	prSetFunc
+	{
+		procGPS = { | lat, lon, alt |
+
+			latCenter = (latMax - latMin) / 2;
+			longCenter = (longMax - longMin) / 2;
+
+			//if ()
+		}
 	}
 
 	setTracker //protocol
@@ -175,15 +259,12 @@ HeadTrackerGPS : HeadTracker
 		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
 
-		procFunc = {}; // initialize with an empty function in case no coordinates are set;
-	}
+		procGPS = { | lat, lon, alt |
 
-	procGps
-	{ | lat, lon, alt |
-
-		postln( "latitude " + lat);
-		postln( "longitude " + lon);
-		postln( "altitude " + alt);
+			postln( "latitude " + lat);
+			postln( "longitude " + lon);
+			postln( "altitude " + alt);
+		}; // initialize in case no coordinates are set;
 	}
 
 	matchByte
@@ -203,7 +284,7 @@ HeadTrackerGPS : HeadTracker
 					(trackarr2[9]<<8) + trackarr2[8]
 				);
 
-				this.procGps(
+				procGPS.value(
 					(trackarr2[13]<<24) + (trackarr2[12]<<16) +
 					(trackarr2[11]<<8) + trackarr2[10],
 					(trackarr2[17]<<24) + (trackarr2[16]<<16) +

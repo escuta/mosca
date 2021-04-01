@@ -199,11 +199,11 @@ MoscaGUI
 		).action_({ | butt | sources.get[currentSource].loop.valueAction_(butt.value) });
 
 		loopEvent = { | param |
-				{
-					if (param.value != loopCheck.value)
-					{ loopCheck.value_(param.value) };
-				}.defer;
-			};
+			{
+				if (param.value != loopCheck.value)
+				{ loopCheck.value_(param.value) };
+			}.defer;
+		};
 
 		sources.get[currentSource].loop.node.addDependant(loopEvent);
 
@@ -496,7 +496,7 @@ MoscaGUI
 			if (butt.value ==  1)
 			{
 				aMosca.recordAudio(bBlip.value.asBoolean,
-				recNumBox.value.asInteger);
+					recNumBox.value.asInteger);
 			} {
 				aMosca.stopRecording();
 			}
@@ -522,7 +522,7 @@ MoscaGUI
 
 				mouseButton = buttonNumber; // 0 = left, 2 = middle, 1 = right
 
-			if (sourceList.notNil)
+				if (sourceList.notNil)
 				{
 					sourceList.close;
 					sourceList = nil;
