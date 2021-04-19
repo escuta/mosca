@@ -328,7 +328,7 @@ MoscaGUI
 				var window = orientation.gui();
 				origine.gui(window);
 				scale.gui(window);
-				window.onClose_({ butt.value_(0) })
+				window.onClose_({ butt.value_(0) });
 			} {
 				orientation.closeGui();
 				origine.closeGui();
@@ -888,7 +888,7 @@ MoscaGUI
 			} {
 				scInCheck.valueAction_(false);
 				busNumBox.visible_(true);
-				busNumBox.valueAction_(src.busInd.value);
+				busNumBox.value_(src.busInd.value);
 			};
 
 			bLoad.visible_(false);

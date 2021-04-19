@@ -74,8 +74,6 @@ MoscaSource[]
 
 		busInd.node.description_("Index of the external input bus");
 
-		coordinates = OssiaAutomationCoordinates(src, allCritical);
-
 		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
 			[nil, nil, effectList], "Clear", critical:true);
 
@@ -100,6 +98,8 @@ MoscaSource[]
 		library.node.description_(spatList.asString);
 
 		spatType = \N3D;
+
+		coordinates = OssiaAutomationCoordinates(src, allCritical);
 
 		play = OSSIA_Parameter(src, "Play", Boolean, critical:true, repetition_filter:true);
 
@@ -228,6 +228,8 @@ MoscaSource[]
 		});
 
 		nChan.action_({ | val | this.prSetDefName() });
+
+		busInd.action_({ this.changed(\ctl) });
 
 		spatializer = Ref();
 		synths = Ref();

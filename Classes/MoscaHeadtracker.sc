@@ -101,24 +101,16 @@ HeadTracker
 		h = (heading / 100) - pi;
 		h = h - headingOffset;
 
-		if (h < -pi) {
-			h = pi + (pi + h);
-		};
-
-		if (h > pi) {
-			h = -pi - (pi - h);
-		};
-
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 
-		moscaCenter.ossiaOrient.v_([(-1 * h), p, r]);
+		moscaCenter.ossiaOrient.v_([-1 * h, p, r]);
 	}
 
 	matchByte
 	{ | byte |  // match incoming headtracker data
 
-		if (trackarr[tracki].isNil or:{ trackarr[tracki] == byte })
+		if (trackarr[tracki].isNil || ( trackarr[tracki] == byte ))
 		{
 			trackarr2[tracki] = byte;
 			tracki = tracki + 1;
@@ -152,7 +144,9 @@ HeadTracker
 
 HeadTrackerGPS : HeadTracker
 {
-	var <latMin, <latMax, <longMin, <longMax, latCenter, longCenter, procGPS;
+	const gpsCoeficient = 0.0000001, latDeg2meters = 111317.099692,
+	longDeg2meters = 111319.488, areaInMeters = 10;
+	var center, procGPS;
 
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup |
@@ -162,95 +156,32 @@ HeadTrackerGPS : HeadTracker
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
 		} {
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
-			.setCoordinates(setup);
+			.setCenter(setup);
 		};
 	}
 
-	setCoordinates
-	{ | coordinates |
+	setCenter
+	{ | latLongAlt |
 
-		if (coordinates.isArray)
-		{
-			if (coordinates.flat.size == 4)
-			{
-				var latLong = coordinates.flat;
-
-				if (latLong[0] < latLong[2])
-				{
-					latMin = latLong[0];
-					latMax = latLong[2];
-				}
-				{
-					latMin = latLong[2];
-					latMax = latLong[0];
-				};
-
-				if (latLong[1] < latLong[3])
-				{
-					longMin = latLong[1];
-					longMax = latLong[3];
-				}
-				{
-					longMin = latLong[3];
-					longMax = latLong[1];
-				};
-
-				this.prSetFunc();
-			} {
-				if (latMin.isNil)
-				{
-					latMin = coordinates[0];
-					longMin = coordinates[1];
-				} {
-					if (latMax.isNil)
-					{
-						if (coordinates[0] < latMin)
-						{
-							latMax = latMin;
-							latMin = coordinates[0];
-						} {
-							latMax = coordinates[0];
-						};
-
-						if (coordinates[1] < longMin)
-						{
-							longMax = longMin;
-							longMin = coordinates[1];
-						} {
-							longMax = coordinates[1];
-						};
-
-						this.prSetFunc();
-					} {
-						if (coordinates[0] < (latMin + latCenter))
-						{
-							latMin = coordinates[0];
-						} {
-							latMax = coordinates[0];
-						};
-
-						if (coordinates[1] < (longMin + longCenter))
-						{
-							longMin = coordinates[1];
-						} {
-							longMax = coordinates[1];
-						};
-
-						this.prSetFunc();
-					}
-				}
-			}
-		} { Error.throw("coordinates must be an array") }
+		if (latLongAlt.isArray)
+		{ center = [latLongAlt[0], latLongAlt[1], latLongAlt[2]] }
+		{ Error.throw("coordinates must be an array") }
 	}
 
 	prSetFunc
 	{
-		procGPS = { | lat, lon, alt |
+		procGPS = { | coordinates |
+			var dLat, dLong, yStep, xStep, res;
 
-			latCenter = (latMax - latMin) / 2;
-			longCenter = (longMax - longMin) / 2;
+			dLat = coordinates[0] - center[0];
+			dLong = coordinates[1] - center[1];
 
-			//if ()
+			yStep = (dLat * latDeg2meters);
+			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
+
+			// res = [xStep, yStep, 0] / areaInMeters;
+			postln("x " + xStep);
+			postln("y " + yStep);
 		}
 	}
 
@@ -259,11 +190,10 @@ HeadTrackerGPS : HeadTracker
 		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
 
-		procGPS = { | lat, lon, alt |
-
-			postln( "latitude " + lat);
-			postln( "longitude " + lon);
-			postln( "altitude " + alt);
+		procGPS = { | coordinates |
+			postln("latitude " + coordinates[0]);
+			postln("longitude " + coordinates[1]);
+			// postln("altitude " + coordinates[2]);
 		}; // initialize in case no coordinates are set;
 	}
 
@@ -271,7 +201,7 @@ HeadTrackerGPS : HeadTracker
 	{
 		| byte | // match incoming headtracker data
 
-		if (trackarr[tracki].isNil or:{ trackarr[tracki] == byte })
+		if (trackarr[tracki].isNil || (trackarr[tracki] == byte ))
 		{
 			trackarr2[tracki] = byte;
 			tracki= tracki + 1;
@@ -284,14 +214,13 @@ HeadTrackerGPS : HeadTracker
 					(trackarr2[9]<<8) + trackarr2[8]
 				);
 
-				procGPS.value(
-					(trackarr2[13]<<24) + (trackarr2[12]<<16) +
+				procGPS.value([(trackarr2[13]<<24) + (trackarr2[12]<<16) +
 					(trackarr2[11]<<8) + trackarr2[10],
 					(trackarr2[17]<<24) + (trackarr2[16]<<16) +
-					(trackarr2[15]<<8) + trackarr2[14],
-					(trackarr2[21]<<24) + (trackarr2[20]<<16) +
-					(trackarr2[19]<<8) + trackarr2[18]
-				);
+					(trackarr2[15]<<8) + trackarr2[14]
+					//,(trackarr2[21]<<24) + (trackarr2[20]<<16) +
+					//(trackarr2[19]<<8) + trackarr2[18]
+				] * gpsCoeficient);
 
 				tracki = 0;
 			};

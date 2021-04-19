@@ -1,6 +1,6 @@
 MoscaBase // acts as the public interface
 {
-	var dur, <server, <ossiaParent, gui, tracker; // initial rguments
+	var dur, <server, <ossiaParent, gui, <tracker; // initial rguments
 	var renderer, <effects, center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
@@ -459,5 +459,11 @@ MoscaBase // acts as the public interface
 	{ | enable = true |
 
 		if (ossiaTrack.value != enable) { ossiaTrack.value = enable };
+	}
+
+	free
+	{
+		this.freeHeadTracker();
+		^super.free();
 	}
 }

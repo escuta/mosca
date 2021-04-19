@@ -337,7 +337,6 @@ Mosca : MoscaBase
 	{
 		center.dockTo(control);
 		effects.dockTo(control);
-		renderer.dockTo(control);
 
 		sources.get.do({ | item | item.dockTo(control); });
 

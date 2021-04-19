@@ -32,13 +32,13 @@ MoscaRenderer
 	setParam
 	{ | ossiaParent, allCritical |
 
-		ossiaMasterLevel = OssiaAutomationProxy(ossiaParent, "Master_level", Float,
+		ossiaMasterLevel = OSSIA_Parameter(ossiaParent, "Master_level", Float,
 			[-96, 12],	0, 'clip', critical:allCritical);
 
-		ossiaMasterLevel.node.unit_(OSSIA_gain.decibel);
+		ossiaMasterLevel.unit_(OSSIA_gain.decibel);
 	}
 
-	setAction { ossiaMasterLevel.action_({ | num | renderSynth.set(\level, num.value.dbamp) }) }
+	setAction { ossiaMasterLevel.callback_({ | num | renderSynth.set(\level, num.value.dbamp) }) }
 
 	setup
 	{ | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat |
@@ -436,11 +436,5 @@ MoscaRenderer
 	{ | server, target |
 
 		renderSynth = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
-	}
-
-	dockTo
-	{ | automation |
-
-		ossiaMasterLevel.dockTo(automation, "masterlevProxy");
 	}
 }
