@@ -18,7 +18,7 @@
 
 MoscaSource[]
 {
-	var <index, server, srcGrp, defName, effect, <chanNum = 1, spatType, curentSpat;
+	var <index, server, srcGrp, busses, defName, effect, <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -30,9 +30,9 @@ MoscaSource[]
 	var <auxiliary, <aux, <check;
 
 	*new
-	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList |
+	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, busses |
 
-		^super.newCopyArgs(index, server, sourceGroup).ctr(
+		^super.newCopyArgs(index, server, sourceGroup, busses).ctr(
 			ossiaParent, allCritical, spatList, effectList);
 	}
 
@@ -405,6 +405,8 @@ MoscaSource[]
 
 	launchSynth
 	{
+		var out_type = 0;
+
 		if (defName.notNil)
 		{
 			var args = []; // prepare synth Arguments
@@ -491,6 +493,12 @@ MoscaSource[]
 
 			curentSpat = spatType;
 
+			switch (curentSpat,
+				{ \N3D }, { out_type = 0 },
+				{ \FUMA }, { out_type = 1 },
+				{ out_type = 2 };
+			);
+
 			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
 
 			spatializer.set(Synth(defName, // launch spatializer synth
@@ -501,20 +509,20 @@ MoscaSource[]
 						coordinates.spheVal.theta,
 						coordinates.spheVal.phi
 					],
+					\outFunc, busses.get[out_type],
 					\contr, contraction.value,
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,
 					\amp, level.value.dbamp
 				] ++ args,
 				srcGrp.get()
-			).onFree({
-				this.changed(\audio, false, curentSpat);
-				spatializer.set(nil);
-			});
+				).onFree({
+					this.changed(\audio, false, curentSpat);
+					spatializer.set(nil);
+				});
 			);
 		};
 	}
-
 
 	//-------------------------------------------//
 	//              private methods              //
