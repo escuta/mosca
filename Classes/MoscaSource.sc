@@ -26,7 +26,6 @@ MoscaSource[]
 	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <directivity; // input specific parameters
-	var <atk, <spread, <diffuse; // atk specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
 	var <auxiliary, <aux, <check;
 
@@ -70,7 +69,8 @@ MoscaSource[]
 		nChan.node.description_("number of channels for SC or External inputs");
 
 		busInd = OssiaAutomationProxy(input, "Bus_index", Integer,
-			[ 1, (server.options.numInputBusChannels) ], 1, 'clip', true, false); // start at 1 (instead of 0) to fit jack's port indexes
+			[ 1, (server.options.numInputBusChannels) ], 1, 'clip', true, false);
+		// start at 1 (instead of 0) to fit jack's port indexes
 
 		busInd.node.description_("Index of the external input bus");
 
@@ -131,20 +131,10 @@ MoscaSource[]
 
 		rotation.node.unit_(OSSIA_angle.degree).description_("B-Format only");
 
-		atk = OSSIA_Node(src, "Atk");
-
-		directivity = OssiaAutomationProxy(atk, "Directivity", Float,
+		directivity = OssiaAutomationProxy(src, "B-Fmt_atk_directivity", Float,
 			[0, 90], 0, 'clip', critical:allCritical);
 
 		directivity.node.unit_(OSSIA_angle.degree).description_("ATK B-Format only");
-
-		spread = OssiaAutomationProxy(atk, "Spread", Boolean, critical:true);
-
-		spread.node.description_("ATK only");
-
-		diffuse = OssiaAutomationProxy(atk, "Diffuse", Boolean, critical:true);
-
-		diffuse.node.description_("ATK only");
 
 		josh = OSSIA_Node(src, "Josh");
 
@@ -253,9 +243,9 @@ MoscaSource[]
 		localDecay.action_({ | val | this.prSetSynths(\damp, val.value) });
 
 		library.action_({ | val |
-			var i = spatDefs.detectIndex({ | item | item.key == val.value });
+			var i = spatDefs.get.detectIndex({ | item | item.key == val.value });
 
-			spatType = spatDefs[i].format;
+			spatType = spatDefs.get[i].format;
 
 			this.prSetDefName();
 		});
@@ -279,18 +269,6 @@ MoscaSource[]
 		});
 
 		directivity.action_({ | val | this.prSetSynths(\directang, val.value.degrad) });
-
-		spread.action_({ | val |
-			this.prSetSynths(\sp, val.value.asInteger);
-
-			if (val.value) { diffuse.valueAction_(false) };
-		});
-
-		diffuse.action_({ | val |
-			this.prSetSynths(\df, val.value.asInteger);
-
-			if (val.value) { spread.valueAction_(false) };
-		});
 
 		rate.action_({ | val | this.prSetSynths(\grainrate, val.value) });
 
@@ -478,15 +456,11 @@ MoscaSource[]
 
 			if (external.value) { args = args ++ [\busini, busInd.value] };
 
-			switch (library.value,
-				"ATK",
-				{ args = args ++ [\sp, spread.value.asInteger, \df, diffuse.value.asInteger] },
-				"Josh",
-				{
-					args = args ++ [\grainrate, rate.value, \winsize, window.value,
-						\winrand, random.value];
-				}
-			);
+			if (library.value == "Josh")
+			{
+				args = args ++ [\grainrate, rate.value, \winsize, window.value,
+					\winrand, random.value];
+			};
 
 			if ((file.value != "") && (scSynths.value || external.value).not)
 			{

@@ -105,10 +105,10 @@ Mosca : MoscaBase
 			)
 		);
 
-		control = Automation(dur, showLoadSave: false, showSnapshot: true,
-			minTimeStep: 0.001);
+		control = Ref(Automation(dur, showLoadSave: false, showSnapshot: true,
+			minTimeStep: 0.001));
 
-		this.prSetAction(spat.defs);
+		this.prSetAction(spat.spatInstances);
 		this.prDockTo();
 		this.prSetSysex();
 
@@ -143,7 +143,7 @@ Mosca : MoscaBase
 				if (ossiaPlay.value)
 				{
 					ossiaSeekBack = false;
-					ossiaTransport.v_(control.now);
+					ossiaTransport.v_(control.get.now);
 					ossiaSeekBack = true;
 				};
 			});
@@ -153,7 +153,7 @@ Mosca : MoscaBase
 
 		if (projDir.isNil)
 		{
-			control.presetDir = "HOME".getenv ++ "/auto/";
+			control.get.presetDir = "HOME".getenv ++ "/auto/";
 		} {
 			this.loadAutomation(projDir);
 		};
@@ -223,7 +223,7 @@ Mosca : MoscaBase
 
 			if ((loadArgs[0] == \tpos) && ossiaSync.v)
 			{
-				obj.tpos_((control.now).max(0));
+				obj.tpos_((control.get.now).max(0));
 			};
 
 			if (loadArgs.removeAt(0) == \audio)
@@ -237,7 +237,7 @@ Mosca : MoscaBase
 			item.addDependant(dependant);
 		});
 
-		control.onPlay_({
+		control.get.onPlay_({
 			var startTime;
 
 			ossiaMasterPlay.v_(true);
@@ -250,26 +250,26 @@ Mosca : MoscaBase
 				"Was looping".postln;
 			};
 
-			if(control.now < 0)
+			if(control.get.now < 0)
 			{
 				startTime = 0
 			} {
-				startTime = control.now
+				startTime = control.get.now
 			};
 
 			ossiaPlay.set_(true);
 		});
 
-		control.onStop_({
+		control.get.onStop_({
 
 			ossiaMasterPlay.v_(false);
 
-			if (ossiaLoop.v.not || (control.now.round != dur))
+			if (ossiaLoop.v.not || (control.get.now.round != dur))
 			{
-				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++ control.now).postln;
+				("I HAVE STOPPED. dur = " ++ dur ++ " now = " ++ control.get.now).postln;
 			} {
-				("Did not stop. dur = " ++ dur ++ " now = " ++ control.now).postln;
-				control.play;
+				("Did not stop. dur = " ++ dur ++ " now = " ++ control.get.now).postln;
+				control.get.play;
 			};
 
 			ossiaPlay.set_(false);
@@ -279,39 +279,39 @@ Mosca : MoscaBase
 		{ // when there is no gui, Automation callback does not work,
 			// so here we monitor when the transport reaches end
 
-			if (control.now > dur)
+			if (control.get.now > dur)
 			{
 				if (ossiaLoop)
 				{
-					control.seek; // note, onSeek not called
+					control.get.seek; // note, onSeek not called
 				} {
-					control.stop; // stop everything
+					control.get.stop; // stop everything
 				};
 			};
 		};
 
-		control.onEnd_({ control.seek(); });
+		control.get.onEnd_({ control.get.seek(); });
 
 		ossiaPlay.callback_({ | bool |
 			if (bool)
 			{
-				control.play;
+				control.get.play;
 			} {
-				control.stop;
+				control.get.stop;
 			};
 		});
 
 		ossiaTransport.callback_({ | num |
 			if (ossiaSeekBack)
-			{ control.seek(num.value) };
+			{ control.get.seek(num.value) };
 		});
 
 		ossiaRec.callback_({ | bool |
 			if (bool.value)
 			{
-				control.enableRecording;
+				control.get.enableRecording;
 			} {
-				control.stopRecording;
+				control.get.stopRecording;
 			};
 		});
 
@@ -340,7 +340,7 @@ Mosca : MoscaBase
 
 		sources.get.do({ | item | item.dockTo(control); });
 
-		control.snapshot; // necessary to call at least once before saving automation
+		control.get.snapshot; // necessary to call at least once before saving automation
 		// otherwise will get not understood errors on load
 	}
 
@@ -415,17 +415,17 @@ Mosca : MoscaBase
 					1,
 					{
 						"Stop".postln;
-						control.stop;
+						control.get.stop;
 					},
 					2,
 					{
 						"Play".postln;
-						control.play;
+						control.get.play;
 					},
 					3,
 					{
 						"Deffered Play".postln;
-						control.play;
+						control.get.play;
 					},
 					68,
 					{
@@ -437,7 +437,7 @@ Mosca : MoscaBase
 						goto =  (sysex[7] * 3600) + (sysex[8] * 60) + sysex[9] +
 						(sysex[10] / 30);
 
-						control.seek(goto);
+						control.get.seek(goto);
 				});
 			};
 		};

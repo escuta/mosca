@@ -356,7 +356,7 @@ MoscaGUI
 			.onClose_({ if (success.not) { "Aborted load!".postln } });
 
 			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-			.value_(control.presetDir)
+			.value_(control.get.presetDir)
 			.action_({ | tf |
 				success = true;
 				dwin.close;
@@ -387,7 +387,7 @@ MoscaGUI
 			{
 				this.prAutoControl(aMosca)
 			} {
-				control.gui.win.close
+				control.get.gui.win.close
 			}
 		});
 
@@ -829,28 +829,12 @@ MoscaGUI
 			}
 		);
 
-		switch (src.library.value,
-			"ATK",
-			{
-				src.spread.node.gui(ctlView);
-				src.diffuse.node.gui(ctlView);
-
-				src.josh.closeGui(ctlView);
-			},
-			"Josh",
-			{
-				src.spread.node.closeGui(ctlView);
-				src.diffuse.node.closeGui(ctlView);
-
-				src.josh.gui(ctlView);
-			},
-			{
-				src.spread.node.closeGui(ctlView);
-				src.diffuse.node.closeGui(ctlView);
-
-				src.josh.closeGui(ctlView);
-			}
-		);
+		if (src.library.value == "Josh")
+		{
+			src.josh.gui(ctlView);
+		} {
+			src.josh.closeGui(ctlView);
+		};
 
 		if (src.localEffect.value == "Clear")
 		{
@@ -883,10 +867,10 @@ MoscaGUI
 
 			if (src.scSynths.value)
 			{
-				exInCheck.valueAction_(false);
+				exInCheck.value_(false);
 				busNumBox.visible_(false);
 			} {
-				scInCheck.valueAction_(false);
+				scInCheck.value_(false);
 				busNumBox.visible_(true);
 				busNumBox.value_(src.busInd.value);
 			};
@@ -938,9 +922,9 @@ MoscaGUI
 		var canv = Window.new("Automation Control", Rect(0, 0, width, 43)).front;
 
 		// snapshot when opening the window for the first time
-		if (control.gui.isNil && control.now == 0) { control.snapshot };
+		if (control.get.gui.isNil && control.get.now == 0) { control.get.snapshot };
 
-		control.front(canv, Rect(0, 0, width, 20));
+		control.get.front(canv, Rect(0, 0, width, 20));
 		canv.onClose_({ autoBut.value_(0) });
 
 		Button(canv, Rect(0, 23, 150, 20))
@@ -963,7 +947,7 @@ MoscaGUI
 			.onClose_({ if (success.not) { "Aborted save".postln } });
 
 			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-			.value_(control.presetDir)
+			.value_(control.get.presetDir)
 			.action_({ | tf |
 				success = true;
 				dwin.close;

@@ -24,7 +24,7 @@ MoscaSpatializer {
 	classvar playInFunc, <defs, <spatList;
 	// list of spat libs
 
-	var outPutFuncs, spatInstances;
+	var outPutFuncs, <spatInstances;
 
 	*initClass {
 
@@ -64,6 +64,8 @@ MoscaSpatializer {
 
 	ctr { | server |
 
+		spatInstances = Ref();
+
 		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
 		playInFunc = playInFunc.add({ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
 			playerRef.value = In.ar(busini + server.inputBus.index, channum);
@@ -72,7 +74,7 @@ MoscaSpatializer {
 
 	initSpat { | order, renderer, server |
 
-		spatInstances = SpatDef.defList.collect({ | def | def.new(order, renderer, server); });
+		spatInstances.set(SpatDef.defList.collect({ | def | def.new(order, renderer, server); }));
 	}
 
 	makeSpatialisers { | server, maxOrder, renderer, effect |
@@ -95,7 +97,7 @@ MoscaSpatializer {
 		effect.defs.do({ | effect, count |
 			var halfPi = MoscaUtils.halfPi, plim = MoscaUtils.plim;
 
-			spatInstances.do({ | spat, i |
+			spatInstances.get.do({ | spat, i |
 
 				switch (spat.format,
 					{ \N3D }, { out_type = 0 },
@@ -111,7 +113,7 @@ MoscaSpatializer {
 						radAzimElev = #[20, 0, 0], amp = 1,
 						dopamnt = 0, glev = 0, llev = 0,
 						insertFlag = 0, insertOut, insertBack,
-						room = 0.5, damp = 05, wir, df, sp,
+						room = 0.5, damp = 05, wir,
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
 						var rad = Lag.kr(radAzimElev[0]),
@@ -130,7 +132,7 @@ MoscaSpatializer {
 						lrevRef.value = lrevRef.value * revCut;
 
 						spat.spatFunc.value(lrevRef, p * amp, rad, radRoot,
-							az, radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
+							az, radAzimElev[2],  contr, winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(p, lrevRef.value,
 							(1 - radRoot) * glev);
@@ -141,7 +143,7 @@ MoscaSpatializer {
 						radAzimElev = #[20, 0, 0], amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 						insertFlag = 0, insertOut, insertBack,
-						room = 0.5, damp = 05, wir, df, sp,
+						room = 0.5, damp = 05, wir,
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
 						var rad = Lag.kr(radAzimElev[0]),
@@ -163,9 +165,9 @@ MoscaSpatializer {
 						p = p * amp;
 
 						spat.spatFunc.value(lrev1Ref, p[0], rad, radRoot, az + (angle * (1 - rad)),
-							radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
+							radAzimElev[2],  contr, winsize, grainrate, winrand);
 						spat.spatFunc.value(lrev2Ref, p[1], rad, radRoot, az - (angle * (1 - rad)),
-							radAzimElev[2], df, sp, contr, winsize, grainrate, winrand);
+							radAzimElev[2],  contr, winsize, grainrate, winrand);
 
 						outPutFuncs[out_type].value(Mix.ar(p) * 0.5,
 							(lrev1Ref.value + lrev2Ref.value) * 0.5,
@@ -193,7 +195,7 @@ MoscaSpatializer {
 							radAzimElev = #[20, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
-							room = 0.5, damp = 05, wir, df, sp,
+							room = 0.5, damp = 05, wir,
 							contr = 0, directang = 1, rotAngle = 0 |
 
 							var rad = Lag.kr(radAzimElev[0]),
@@ -232,7 +234,7 @@ MoscaSpatializer {
 								radAzimElev = #[20, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
 								insertFlag = 0, insertOut, insertBack,
-								room = 0.5, damp = 05, wir, df, sp,
+								room = 0.5, damp = 05, wir,
 								contr = 0, directang = 1, rotAngle = 0 |
 
 								var rad = Lag.kr(radAzimElev[0]),
@@ -279,7 +281,7 @@ MoscaSpatializer {
 							radAzimElev = #[20, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
-							room = 0.5, damp = 05, wir, df, sp,
+							room = 0.5, damp = 05, wir,
 							contr = 0, rotAngle = 0|
 
 							var rad = Lag.kr(radAzimElev[0]),
@@ -317,7 +319,7 @@ MoscaSpatializer {
 								radAzimElev = #[20, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
 								insertFlag = 0, insertOut, insertBack,
-								room = 0.5, damp = 05, wir, df, sp,
+								room = 0.5, damp = 05, wir,
 								contr = 0, rotAngle = 0|
 
 								var rad = Lag.kr(radAzimElev[0]),

@@ -42,7 +42,7 @@ ABTDef : SpatDef {
 
 		converge = { | radRoot | atenuator.value(radRoot.linlin(lim, 1, 0.5, 1)) };
 
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var distance = aten2distance.value(radiusRoot.min(lim)),
 			sig = HOAEncoder.ar(maxOrder,
@@ -83,7 +83,7 @@ HOALibDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, radius);
 			// attenuate high freq with distance
@@ -119,7 +119,7 @@ ADTDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, radius);
 			// attenuate high freq with distance
@@ -154,7 +154,7 @@ SCHOADef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, radius);
 			// attenuate high freq with radius
@@ -176,37 +176,24 @@ SCHOADef : SpatDef {
 //-------------------------------------------//
 
 ATKDef : SpatDef {
-	classvar <key, <format;
+	classvar <key;
+	var <format = \FUMA;
 
 	*initClass {
 
 		defList = defList.add(this.asClass);
 
 		key = "ATK";
-
-		format = \FUMA;
 	}
 
 	prSetFunc { | maxOrder, renderer, server |
-		var foaEncoderSpread, foaEncoderDiffuse;
 
-		foaEncoderSpread = FoaEncoderKernel.newSpread (subjectID: 6, kernelSize: 2048,
-			server:server, sampleRate:server.sampleRate.asInteger);
-		foaEncoderDiffuse = FoaEncoderKernel.newDiffuse (subjectID: 3, kernelSize: 2048,
-			server:server, sampleRate:server.sampleRate.asInteger);
-
-		server.sync;
-
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var diffuse, spread, omni,
 			sig = distFilter.value(input, radius);
 			sig = ref.value + (sig * atenuator.value(radiusRoot));
-			omni = FoaEncode.ar(sig, FoaEncoderMatrix.newOmni);
-			spread = FoaEncode.ar(sig, foaEncoderSpread);
-			diffuse = FoaEncode.ar(sig, foaEncoderDiffuse);
-			sig = Select.ar(difu, [omni, diffuse]);
-			sig = Select.ar(spre, [sig, spread]);
+			sig = FoaEncode.ar(sig, FoaEncoderMatrix.newOmni);
 			sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
 				CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
 			sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
@@ -215,8 +202,80 @@ ATKDef : SpatDef {
 	}
 
 	key { ^key; }
+}
 
-	format { ^format; }
+//-------------------------------------------//
+//                 ATK SPREAD                //
+//-------------------------------------------//
+
+ATKSpDef : SpatDef {
+	classvar <key;
+	var <format = \FUMA;
+
+	*initClass {
+
+		defList = defList.add(this.asClass);
+
+		key = "ATK_sp";
+	}
+
+	prSetFunc { | maxOrder, renderer, server |
+		var foaEncoderSpread = FoaEncoderKernel.newSpread(subjectID: 6, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
+
+		server.sync;
+
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
+			contract, win, rate, rand|
+			var diffuse, spread, omni,
+			sig = distFilter.value(input, radius);
+			sig = ref.value + (sig * atenuator.value(radiusRoot));
+			sig = FoaEncode.ar(sig, foaEncoderSpread);
+			sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
+				CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
+			sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
+			ref.value = FoaTransform.ar(sig, 'proximity', radius * renderer.longestRadius);
+		};
+	}
+
+	key { ^key; }
+}
+
+//-------------------------------------------//
+//                 ATK DIFFUSE               //
+//-------------------------------------------//
+
+ATKDfDef : SpatDef {
+	classvar <key;
+	var <format = \FUMA;
+
+	*initClass {
+
+		defList = defList.add(this.asClass);
+
+		key = "ATK_df";
+	}
+
+	prSetFunc { | maxOrder, renderer, server |
+		var foaEncoderDiffuse = FoaEncoderKernel.newDiffuse(subjectID: 3, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
+
+		server.sync;
+
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
+			contract, win, rate, rand|
+			var diffuse, spread, omni,
+			sig = distFilter.value(input, radius);
+			sig = ref.value + (sig * atenuator.value(radiusRoot));
+			sig = FoaEncode.ar(sig, foaEncoderDiffuse);
+			sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
+				CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
+			sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
+			ref.value = FoaTransform.ar(sig, 'proximity', radius * renderer.longestRadius);
+		};
+	}
+
+	key { ^key; }
 }
 
 //-------------------------------------------//
@@ -238,7 +297,7 @@ BFFMHDef : SpatDef {
 	prSetFunc { | maxOrder, renderer, server |
 		var enc = MoscaUtils.bfOrFmh(maxOrder);
 
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, radius);
 			sig = enc.ar(ref.value + sig, azimuth, elevation,
@@ -271,7 +330,7 @@ JOSHDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, radius);
 			ref.value = MonoGrainBF.ar(ref.value + sig, win, rate, rand,
@@ -304,7 +363,7 @@ VBAPDef : SpatDef {
 
 	prSetFunc { | maxOrder, renderer, server |
 
-		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation, difu, spre,
+		spatFunc = { |ref, input, radius, radiusRoot, azimuth, elevation,
 			contract, win, rate, rand|
 			var sig = distFilter.value(input, radius),
 			azi = azimuth * MoscaUtils.rad2deg, // convert to degrees

@@ -72,33 +72,33 @@ MoscaBase // acts as the public interface
 	{ | loop = false |
 
 		ossiaLoop.v_(loop);
-		control.play();
+		control.get.play();
 	}
 
 	stopAutomation
 	{
-		control.stop();
+		control.get.stop();
 	}
 
 	saveAutomation
 	{ | directory |
 
-		if (directory.notNil && (directory != control.presetDir))
-		{ control.presetDir = directory };
+		if (directory.notNil && (directory != control.get.presetDir))
+		{ control.get.presetDir = directory };
 
-		control.save(control.presetDir);
+		control.get.save(control.get.presetDir);
 	}
 
 	loadAutomation
 	{ | directory |
 
-		if (directory.notNil && (directory != control.presetDir))
-		{ control.presetDir = directory };
+		if (directory.notNil && (directory != control.get.presetDir))
+		{ control.get.presetDir = directory };
 
-		control.load(control.presetDir);
+		control.get.load(control.get.presetDir);
 
 		// seek at curent time to apply the values loaded
-		control.seek(control.now);
+		control.get.seek(control.get.now);
 	}
 
 	slaveToMMC
@@ -133,7 +133,7 @@ MoscaBase // acts as the public interface
 
 		if (bus.isNil) { bus = renderer.recBus };
 
-		server.record((PathName(control.presetDir).parentPath
+		server.record((PathName(control.get.presetDir).parentPath
 			++ "MoscaOut.wav").standardizePath, bus, channels);
 	}
 

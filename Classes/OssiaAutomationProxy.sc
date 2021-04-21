@@ -27,18 +27,18 @@ AutomationBase
 
 		auto = automation;
 		docking_name = name;
-		automation.dock(this, name);
+		automation.get.dock(this, name);
 	}
 
 	free
 	{
-		if (auto.notNil)
+		if (auto.get.notNil)
 		{
-			var index = auto.clients.detectIndex(
+			var index = auto.get.clients.detectIndex(
 				{ | client | client.name == docking_name }
 			);
 
-			auto.clients.removeAt(index).free;
+			auto.get.clients.removeAt(index).free;
 			postln(docking_name ++ "automation client removed");
 		};
 
