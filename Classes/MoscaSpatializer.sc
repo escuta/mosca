@@ -99,11 +99,7 @@ MoscaSpatializer {
 
 			spatInstances.get.do({ | spat, i |
 
-				switch (spat.format,
-					{ \N3D }, { out_type = 0 },
-					{ \FUMA }, { out_type = 1 },
-					{ out_type = 2 };
-				);
+				out_type = MoscaUtils.formatIndex(spat.format);
 
 				playList.do({ | play_type, j |
 					var mono, stereo;
@@ -111,7 +107,7 @@ MoscaSpatializer {
 					mono = SynthDef(spat.key ++ play_type ++ 1 ++ effect.key, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						radAzimElev = #[20, 0, 0], amp = 1,
-						dopamnt = 0, glev = 0, llev = 0, outBus = #[0, 0],
+						dopamnt = 0, glev = 0, llev = 0, outBus = #[20, 20],
 						insertFlag = 0, insertOut, insertBack,
 						room = 0.5, damp = 05, wir,
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |

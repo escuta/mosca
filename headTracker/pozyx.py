@@ -108,7 +108,7 @@ if __name__ == '__main__':
     # positioning dimension. Others are PozyxConstants.DIMENSION_2D, PozyxConstants.DIMENSION_2_5D
     dimension = PozyxConstants.DIMENSION_3D
     # height of device, required in 2.5D positioning
-    height = 1000   
+    height = 1750   
 
     pozyx = PozyxSerial(serial_port)
     osc_udp_client = SimpleUDPClient(ip, network_port)

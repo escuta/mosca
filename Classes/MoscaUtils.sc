@@ -92,6 +92,15 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 
 	*bfOrFmh { | order | if (order > 1) { ^FMHEncode1 } { ^BFEncode1 } }
 
+	*formatIndex { | format |
+
+		switch (format,
+			{ \N3D }, { ^0 },
+			{ \FUMA }, { ^1 },
+			{ ^2 };
+		);
+	}
+
 	// a-12 decoder matrix
 
 	*soa_a12_decoder_matrix

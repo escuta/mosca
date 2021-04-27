@@ -19,9 +19,7 @@
 /*
 * TODO
 * show Map
-* scale
 * Write SynthDef Once
-* cos distance
 * Multythread evrything
 * Higher order binaural
 * GPS

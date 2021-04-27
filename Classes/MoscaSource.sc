@@ -470,8 +470,6 @@ MoscaSource[]
 
 				this.changed(\tpos); // fetch mosca's time for syncing files
 
-				tpos.postln;
-
 				startFrame = sRate * tpos;
 
 				if (stream.value)
@@ -493,11 +491,7 @@ MoscaSource[]
 
 			curentSpat = spatType;
 
-			switch (curentSpat,
-				{ \N3D }, { out_type = 0 },
-				{ \FUMA }, { out_type = 1 },
-				{ out_type = 2 };
-			);
+			out_type = MoscaUtils.formatIndex(curentSpat);
 
 			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
 
@@ -509,7 +503,7 @@ MoscaSource[]
 						coordinates.spheVal.theta,
 						coordinates.spheVal.phi
 					],
-					\outFunc, busses.get[out_type],
+					\outBus, busses.get[out_type],
 					\contr, contraction.value,
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,

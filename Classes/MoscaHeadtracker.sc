@@ -244,10 +244,6 @@ PozyxOSC
 	ctr
 	{ | center, flag, osc_port, setup |
 
-		var readings;
-
-		readings = Array.fill(avreageBy, { center.ossiaOrigine.v });
-
 		func = OSCFunc(
 			{ | msg |
 
@@ -263,11 +259,7 @@ PozyxOSC
 						]
 					);
 
-					readings.removeAt(0);
-
-					readings = readings ++ [ 2 * ([msg[4], msg[5], msg[6]] / setup) - 1 ];
-
-						center.ossiaOrigine.v_(readings.sum / avreageBy);
+					center.ossiaOrigine.v_(2 * ([msg[4], msg[5], msg[6]] / setup) - 1);
 				}
 			},
 			"/position", recvPort: osc_port);
