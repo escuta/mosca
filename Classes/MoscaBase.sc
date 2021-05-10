@@ -437,7 +437,7 @@ MoscaBase // acts as the public interface
 		{
 			switch (type,
 				\gps,
-				{ tracker = HeadTrackerGPS(center, ossiaTrack, port, offsetheading) },
+				{ tracker = HeadTrackerGPS(center, ossiaTrack, port, offsetheading, extraArgs) },
 				\orient,
 				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
 				\pozyxOSC,

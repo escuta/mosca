@@ -164,7 +164,10 @@ HeadTrackerGPS : HeadTracker
 	{ | latLongAlt |
 
 		if (latLongAlt.isArray)
-		{ center = [latLongAlt[0], latLongAlt[1], latLongAlt[2]] }
+		{
+			center = [latLongAlt[0], latLongAlt[1]];
+			this.prSetFunc();
+		}
 		{ Error.throw("coordinates must be an array") }
 	}
 
@@ -179,9 +182,9 @@ HeadTrackerGPS : HeadTracker
 			yStep = (dLat * latDeg2meters);
 			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
 
-			// res = [xStep, yStep, 0] / areaInMeters;
-			postln("x " + xStep);
-			postln("y " + yStep);
+			moscaCenter.ossiaOrigine.v_([xStep, yStep, 0] / areaInMeters);
+			//postln("x " + xStep);
+			//postln("y " + yStep);
 		}
 	}
 

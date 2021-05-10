@@ -7,7 +7,7 @@
  * and unziped in your Arduino home folder
  */
 
-#define GPS      // Use the Neo GPS module
+// #define GPS      // Use the Neo GPS module
 #define SIDEWAYS // For a device rotated by 90 degrees on Headphones
 // #define DEBUG    // Print out human readable data
 
@@ -139,7 +139,7 @@ void loop()
 
 #ifdef SIDEWAYS
     // note pitch and roll are swapped below because I rotate z axis of device by 90 degrees 
-    message.heading = (headingf - PI / 2) * 100;
+    message.heading = (headingf + (3 * PI) / 2) * 100;
     message.pitch = (rollf + PI) * 100; 
     message.roll = (pitchf + PI) * 100;
 #else
