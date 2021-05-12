@@ -999,7 +999,12 @@ MoscaGUI
 
 	prDataGui
 	{
-		var strings, lefts;
+		var bounds, strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
+			"Local Fx", "Loc. amt.", "Delay", "Decay", "Library"," X", " Y", " Z",
+			"Azimuth", "Elevation", "Distance", "Play", "Level", "Contract.",
+			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Gr. Rate",
+			"Win. size", "Rnd. size", "Aux 1", "C1", "Aux 2", "C2", "Aux 3", "C3",
+			"Aux 4", "C4", "Aux 5", "C5"]; // txt indicators
 
 		wData = Window("Data", Rect(width, 0, 1962, (sources.get.size * 20) + 60),
 			scroll: true).front;
@@ -1009,28 +1014,18 @@ MoscaGUI
 			bData.value_(0);
 		}).view.palette_(palette);
 
-		// left positions of the txt indicators
-		lefts = [ 28, 132, 156, 180, 204, 228, 332, 381, 430, 479, 528, 577,
-			626, 675, 779, 828, 877, 926, 1030, 1054, 1103, 1152, 1201, 1250,
-			1299, 1348, 1397, 1421, 1445, 1494, 1543, 1592, 1641, 1665, 1714,
-			1738, 1787, 1811, 1860, 1884, 1933 ];
-
-		// txt indicators
-		strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
-			" X", " Y", " Z", "Azimuth", "Elevation", "Distance", "Local Fx",
-			"Loc. amt.", "Delay", "Decay", "Library", "Play", "Level", "Contract.",
-			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Sp", "Df",
-			"Gr. Rate", "Win. size", "Rnd. size", "Aux 1", "C1", "Aux 2", "C2",
-			"Aux 3", "C3", "Aux 4", "C4", "Aux 5", "C5" ];
-
-		dataView = UserView(wData, Rect(0, 24, 1962, (sources.get.size * 20) + 40));
+		dataView = UserView(wData, Rect(0, 24, 1910, (sources.get.size * 20) + 40));
 		dataView.addFlowLayout;
 
 		sources.get.do({ | item | this.prAddData(item) });
 
+		bounds = dataView.children.collect(_.bounds);
+
 		strings.do({ | item, i |
 
-			StaticText(wData, Rect(lefts[i], 4, 50, 20))
+			var bound = bounds[i + 1];
+
+			StaticText(wData, Rect(bound.left, 4, bound.width, 20))
 			.font_(Font(Font.defaultSansFace, 9))
 			.string_(item);
 		});

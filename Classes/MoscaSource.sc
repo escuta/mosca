@@ -69,7 +69,7 @@ MoscaSource[]
 		nChan.node.description_("number of channels for SC or External inputs");
 
 		busInd = OssiaAutomationProxy(input, "Bus_index", Integer,
-			[ 1, (server.options.numInputBusChannels) ], 1, 'clip', true, false);
+			[ 1, (server.options.numInputBusChannels) ], index + 1, 'clip', true, false);
 		// start at 1 (instead of 0) to fit jack's port indexes
 
 		busInd.node.description_("Index of the external input bus");
@@ -219,7 +219,11 @@ MoscaSource[]
 
 		nChan.action_({ | val | this.prSetDefName() });
 
-		busInd.action_({ this.changed(\ctl) });
+		busInd.action_({
+
+			this.prReloadIfNeeded();
+			this.changed(\ctl);
+		});
 
 		spatializer = Ref();
 		synths = Ref();
@@ -584,17 +588,22 @@ MoscaSource[]
 
 			defName = library.value ++ playType ++ chanNum ++ fxType;
 
-			// if the synth is playing, stop and relaunch it
-			if (spatializer.get.notNil && play.v)
-			{
-				spatializer.get.free;
-				firstTime = true;
-			}
+			this.prReloadIfNeeded();
 		};
 
 		this.changed(\ctl);
 
 		defName.postln;
+	}
+
+	prReloadIfNeeded
+	{// if the synth is playing, stop and relaunch it
+
+		if (spatializer.get.notNil && play.v)
+		{
+			spatializer.get.free;
+			firstTime = true;
+		}
 	}
 
 	prCheck4Synth

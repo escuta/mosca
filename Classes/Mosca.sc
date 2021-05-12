@@ -18,11 +18,10 @@
 
 /*
 * TODO
-* show Map
 * Write SynthDef Once
 * Multythread evrything
 * Higher order binaural
-* GPS
+* show Map
 */
 
 Mosca : MoscaBase
