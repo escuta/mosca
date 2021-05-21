@@ -262,7 +262,7 @@ PozyxOSC
 						]
 					);
 
-					center.ossiaOrigine.v_(2 * ([msg[4], msg[5], msg[6]] / setup) - 1);
+					center.ossiaOrigine.v_([msg[4], msg[5], msg[6]] / setup);
 				}
 			},
 			"/position", recvPort: osc_port);
