@@ -1004,7 +1004,7 @@ MoscaGUI
 			"Azimuth", "Elevation", "Distance", "Play", "Level", "Contract.",
 			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Gr. Rate",
 			"Win. size", "Rnd. size", "Aux 1", "C1", "Aux 2", "C2", "Aux 3", "C3",
-			"Aux 4", "C4", "Aux 5", "C5"]; // txt indicators
+			"Aux 4", "C4", "Aux 5", "C5" ]; // txt indicators
 
 		wData = Window("Data", Rect(width, 0, 1962, (sources.get.size * 20) + 60),
 			scroll: true).front;
@@ -1017,7 +1017,7 @@ MoscaGUI
 		dataView = UserView(wData, Rect(0, 24, 1910, (sources.get.size * 20) + 40));
 		dataView.addFlowLayout;
 
-		sources.get.do({ | item | this.prAddData(item) });
+		sources.get.do( this.prAddData(_) );
 
 		bounds = dataView.children.collect(_.bounds);
 

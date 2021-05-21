@@ -124,7 +124,7 @@ MoscaBase // acts as the public interface
 		};
 	}
 
-	syncFiles { | boolean = false | ossiaSync(boolean) }
+	syncFiles { | boolean = false | ossiaSync.v_(boolean) }
 
 	recordAudio
 	{ | blips = false, channels = 2, bus |
