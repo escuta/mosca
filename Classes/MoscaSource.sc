@@ -256,7 +256,11 @@ MoscaSource[]
 
 		play.callback_({ | val | this.prCheck4Synth(val) }); // not an automation
 
-		loop.action_({ | val | this.prSetSynths(\lp, val.value.asInteger) });
+		loop.action_({ | val |
+
+			this.prSetSynths(\lp, val.value.asInteger);
+			if (val.value) { this.prSetSynths(\tpos, 0) };
+		});
 
 		level.action_({ | val | this.prSetSynths(\amp, val.value.dbamp) });
 
