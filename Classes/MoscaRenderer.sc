@@ -216,7 +216,7 @@ MoscaRenderer
 					SynthDef("ambiConverter", { | gate = 1 |
 						var sig, env;
 						sig = In.ar(fumaBus, MoscaUtils.fourOrNine(maxOrder));
-						sig = HOAConvert.ar(maxOrder, sig, \FuMa, \ACN_N3D);
+						sig = HOAConvert.ar(maxOrder.min(2), sig, \FuMa, \ACN_N3D);
 						Out.ar(n3dBus, sig);
 					}).send(server);
 
