@@ -29,7 +29,7 @@ Mosca : MoscaBase
 	*new
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
-		suboutbus, rawformat = \FUMA, rawoutbus |
+		suboutbus, rawformat = \FUMA, rawoutbus = 0 |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,

@@ -123,8 +123,9 @@ MoscaRenderer
 
 			vbapBuffer = Buffer.loadCollection(server, vbap_setup.getSetsAndMatrices);
 
-			perfectSphereFunc = { | sig |
-				sig = Array.fill(numOutputs, { | i | DelayN.ar(sig[i],
+			perfectSphereFunc = { | inBus |
+				var in = In.ar(inBus, numOutputs);
+				Array.fill(numOutputs, { | i | DelayN.ar(in[i],
 					delaytime:adjust[i][0], mul:adjust[i][1]) });
 			};
 
@@ -150,8 +151,8 @@ MoscaRenderer
 			lowestElevation = -90;
 			highestElevation = 90;
 
-			perfectSphereFunc = { | sig |
-				sig;
+			perfectSphereFunc = { | inBus |
+				0; // dummy, prevent adding anything
 			};
 
 			nonAmbiBus = Bus.audio(server, numOutputs);
@@ -201,11 +202,9 @@ MoscaRenderer
 
 					renderFunc = { | sub = 1, level = 1 |
 						var sig, nonambi;
-						sig = In.ar(fumaBus, bFormNumChan);
-						nonambi = In.ar(nonAmbiBus, numOutputs);
-						perfectSphereFunc.value(nonambi);
-						sig = (sig + nonambi) * level;
-						subOutFunc.value(sig, sub);
+						sig = In.ar(fumaBus, bFormNumChan) * level;
+						nonambi = perfectSphereFunc.value(nonAmbiBus) * level;
+						subOutFunc.value(sig + nonambi, sub);
 						Out.ar(rawOutBus, sig);
 						Out.ar(outBus, nonambi);
 					};
@@ -221,11 +220,10 @@ MoscaRenderer
 						Out.ar(n3dBus, sig);
 					}).send(server);
 
-					renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
+					renderFunc = { | sub = 1, level = 1 |
 						var sig, nonambi;
 						sig = In.ar(n3dBus, bFormNumChan) * level;
-						nonambi = In.ar(nonAmbiBus, numOutputs) * level;
-						perfectSphereFunc.value(nonambi);
+						nonambi = perfectSphereFunc.value(nonAmbiBus) * level;
 						subOutFunc.value(sig + nonambi, sub);
 						Out.ar(rawOutBus, sig);
 						Out.ar(outBus, nonambi);
@@ -261,8 +259,7 @@ MoscaRenderer
 							sig = BFDecode1.ar1(sig[0], sig[1], sig[2], sig[3],
 								azimuths.collect(_.degrad), elevations.collect(_.degrad),
 								longestRadius, radiusses, mul: 0.5);
-							nonambi = In.ar(nonAmbiBus, numOutputs);
-							perfectSphereFunc.value(nonambi);
+							nonambi= perfectSphereFunc.value(nonambi);
 							sig = (sig + nonambi) * level;
 							subOutFunc.value(sig, sub);
 							Out.ar(outBus, sig);
@@ -275,8 +272,7 @@ MoscaRenderer
 								var sig, nonambi;
 								sig = In.ar(fumaBus, 4);
 								sig = FoaDecode.ar(sig, decoder);
-								nonambi = In.ar(nonAmbiBus, numOutputs);
-								perfectSphereFunc.value(nonambi);
+								nonambi = perfectSphereFunc.value(nonAmbiBus);
 								sig = (sig + nonambi) * level;
 								subOutFunc.value(sig, sub);
 								Out.ar(outBus, sig);
@@ -317,8 +313,7 @@ MoscaRenderer
 								sig[5], sig[6], sig[7], sig[8],
 								azimuths.collect(_.degrad), elevations.collect(_.degrad),
 								longestRadius, radiusses, 0.5);
-							nonambi = In.ar(nonAmbiBus, numOutputs);
-							perfectSphereFunc.value(nonambi);
+							nonambi = perfectSphereFunc.value(nonAmbiBus);
 							sig = (sig + nonambi) * level;
 							subOutFunc.value(sig, sub);
 							Out.ar(outBus, sig);
@@ -339,8 +334,7 @@ MoscaRenderer
 							sig = In.ar(n3dBus, bFormNumChan);
 							sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
 								sig[5], sig[6], sig[7], sig[8], 0, lf_hf, xover:xover);
-							nonambi = In.ar(nonAmbiBus, numOutputs);
-							perfectSphereFunc.value(nonambi);
+							nonambi = perfectSphereFunc.value(nonAmbiBus);
 							sig = (sig + nonambi) * level;
 							subOutFunc.value(sig, sub);
 							Out.ar(outBus, sig);
@@ -364,8 +358,7 @@ MoscaRenderer
 						sig = decoder.ar(sig[0], sig[1], sig[2], sig[3], sig[4],
 							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
 							sig[12], sig[13], sig[14], sig[15], 0, lf_hf, xover:xover);
-						nonambi = In.ar(nonAmbiBus, numOutputs);
-						perfectSphereFunc.value(nonambi);
+						nonambi = perfectSphereFunc.value(nonAmbiBus);
 						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outBus, sig);
@@ -390,8 +383,7 @@ MoscaRenderer
 							sig[12], sig[13], sig[14],sig[15], sig[16], sig[17], sig[18],
 							sig[19], sig[20], sig[21], sig[22], sig[23], sig[24],
 							0, lf_hf, xover:xover);
-						nonambi = In.ar(nonAmbiBus, numOutputs);
-						perfectSphereFunc.value(nonambi);
+						nonambi = perfectSphereFunc.value(nonAmbiBus);
 						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outBus, sig);
@@ -420,8 +412,7 @@ MoscaRenderer
 							sig[26], sig[27], sig[28], sig[29], sig[30], sig[31],
 							sig[32], sig[33], sig[34], sig[35],
 							0, lf_hf, xover:xover);
-						nonambi = In.ar(nonAmbiBus, numOutputs);
-						perfectSphereFunc.value(nonambi);
+						nonambi = perfectSphereFunc.value(nonAmbiBus);
 						sig = (sig + nonambi) * level;
 						subOutFunc.value(sig, sub);
 						Out.ar(outBus, sig);
