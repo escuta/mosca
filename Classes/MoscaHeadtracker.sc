@@ -252,17 +252,17 @@ PozyxOSC
 
 				if (flag.v)
 				{
-					var angles = [msg[1], msg[2], msg[3]] / 16;
+					var angles = (-1 * [msg[1], msg[2], msg[3]]) / 16;
 
 					center.ossiaOrient.v_(
 						[
-							(-1 * angles[0]).degrad.wrap(-pi, pi),
+							(angles[0]).degrad.wrap(-pi, pi),
 							(angles[1]).degrad,
 							(angles[2]).degrad,
 						]
 					);
 
-					center.ossiaOrigine.v_([msg[4], msg[5], msg[6]] / setup);
+					center.ossiaOrigine.v_(2 * ([msg[4], msg[5], msg[6]] / setup) - 1);
 				}
 			},
 			"/position", recvPort: osc_port);
