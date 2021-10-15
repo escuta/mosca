@@ -1,5 +1,5 @@
 /*
-* Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+* Mosca: SuperCollider class by Iain Mott, 2016 and Thibaud Keller, 2018. Licensed under a
 * Creative Commons Attribution-NonCommercial 4.0 International License
 * http://creativecommons.org/licenses/by-nc/4.0/
 * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
@@ -40,9 +40,9 @@ Mosca : MoscaBase
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
 
-		var spat, multyThread, busses = Ref();
+		var spat, multyThread, bussesAndBuff = Ref(IdentityDictionary(4));
 
-		if (server.isNil) { server = Server.local; };
+		if (server.isNil) { server = Server.local };
 
 		multyThread = server.options.threads.notNil;
 		// Server.program.asString.endsWith("supernova");
@@ -70,17 +70,19 @@ Mosca : MoscaBase
 				Out.ar(renderer.fumaBus, blip);
 			}).send(server);
 
-			spat.initSpat(maxOrder, renderer, server);
-
 			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer, irBank);
 
-			spat.makeSpatialisers(server, maxOrder, effects);
+			spat.makeSpatialisers(server, maxOrder, effects, renderer);
 
-			busses.set([
+			bussesAndBuff.get.put(
+				\N3D,
 				[effects.gBxBus, renderer.n3dBus], // N3D output
+				\FUMA
 				[effects.gBfBus, renderer.fumaBus], // FUMA output
-				[effects.gBfBus, renderer.nonAmbiBus] // NONAMBI output
-			]);
+				\NONAMBI
+				[effects.gBfBus, renderer.nonAmbiBus], // NONAMBI output
+				\VBAP,
+				renderer.vbapBuffer); // VBAP buffer
 
 			effects.sendFx(multyThread, server);
 
@@ -104,7 +106,7 @@ Mosca : MoscaBase
 				{ | i |
 					MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
 						spat.spatList, effects.ossiaGlobal.node.domain.values(),
-						busses);
+						bussesAndBuff);
 				}
 			)
 		);

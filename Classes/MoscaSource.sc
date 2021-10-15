@@ -1,5 +1,5 @@
 /*
-* Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+* Mosca: SuperCollider class by Iain Mott, 2016 and Thibaud Keller, 2018. Licensed under a
 * Creative Commons Attribution-NonCommercial 4.0 International License
 * http://creativecommons.org/licenses/by-nc/4.0/
 * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
@@ -18,7 +18,7 @@
 
 MoscaSource[]
 {
-	var <index, server, srcGrp, busses, defName, effect, <chanNum = 1, spatType, curentSpat;
+	var <index, server, srcGrp, bussesAndBuff, defName, effect, <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -30,9 +30,9 @@ MoscaSource[]
 	var <auxiliary, <aux, <check;
 
 	*new
-	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, busses |
+	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, bussesAndBuff |
 
-		^super.newCopyArgs(index, server, sourceGroup, busses).ctr(
+		^super.newCopyArgs(index, server, sourceGroup, bussesAndBuff).ctr(
 			ossiaParent, allCritical, spatList, effectList);
 	}
 
@@ -413,8 +413,6 @@ MoscaSource[]
 
 	launchSynth
 	{
-		var out_type = 0;
-
 		if (defName.notNil)
 		{
 			var args = []; // prepare synth Arguments
@@ -466,10 +464,17 @@ MoscaSource[]
 
 			if (external.value) { args = args ++ [\busini, busInd.value] };
 
+			curentSpat = spatType;
+
 			if (library.value == "Josh")
 			{
 				args = args ++ [\grainrate, rate.value, \winsize, window.value,
 					\winrand, random.value];
+			};
+
+			if (library.value == "VBAP")
+			{
+				args = args ++ [\vbapBuffer, bussesAndBuff.get.at(\VBAP)];
 			};
 
 			if ((file.value != "") && (scSynths.value || external.value).not)
@@ -497,10 +502,6 @@ MoscaSource[]
 				// WARNING is evrything syncked ?
 			};
 
-			curentSpat = spatType;
-
-			out_type = MoscaUtils.formatIndex(curentSpat);
-
 			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
 
 			spatializer.set(Synth(defName, // launch spatializer synth
@@ -511,7 +512,7 @@ MoscaSource[]
 						coordinates.spheVal.theta,
 						coordinates.spheVal.phi
 					],
-					\outBus, busses.get[out_type],
+					\outBus, bussesAndBuff.get.at(curentSpat),
 					\contr, contraction.value,
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,

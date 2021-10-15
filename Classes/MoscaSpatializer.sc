@@ -1,5 +1,5 @@
 /*
-* Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+* Mosca: SuperCollider class by Iain Mott, 2016 and Thibaud Keller, 2018. Licensed under a
 * Creative Commons Attribution-NonCommercial 4.0 International License
 * http://creativecommons.org/licenses/by-nc/4.0/
 * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
@@ -35,21 +35,21 @@ MoscaSpatializer {
 
 		playInFunc = [ // one for File, Stream & Input;
 			// for File-in SynthDefs
-			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			{ | p, bufnum, tpos, lp = 0, rate, channum |
 				var scaledRate = rate * BufRateScale.kr(bufnum);
-				playerRef.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: tpos,
+				p.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: tpos,
 					loop: lp, doneAction:2);
 			},
 			// for Stream-in SynthDefs
-			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+			{ | p, bufnum, lp = 0, channum |
 				var trig;
-				playerRef.value = DiskIn.ar(channum, bufnum, lp);
-				trig = Done.kr(playerRef.value);
+				p.value = DiskIn.ar(channum, bufnum, lp);
+				trig = Done.kr(p.value);
 				FreeSelf.kr(trig);
 			},
 			// for SCBus-in SynthDefs
-			{ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
-				playerRef.value = In.ar(busini, channum);
+			{ | p, busini, channum |
+				p.value = In.ar(busini, channum);
 		}]; // Note, all variables are needed
 	}
 
@@ -67,79 +67,89 @@ MoscaSpatializer {
 		spatInstances = Ref();
 
 		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
-		playInFunc = playInFunc.add({ | playerRef, busini, bufnum, tpos, lp = 0, rate, channum |
+		playInFunc = playInFunc.add({ | playerRef, busini, channum |
 			playerRef.value = In.ar(busini + server.inputBus.index, channum);
 		});
+
+		spatInstances.set(SpatDef.defList.collect({ | def | def.new() }));
 	}
 
-	initSpat { | order, renderer, server |
+	makeSpatialisers { | server, maxOrder, effect, renderer |
 
-		spatInstances.set(SpatDef.defList.collect({ | def | def.new(order, renderer, server); }));
-	}
-
-	makeSpatialisers { | server, maxOrder, effect |
-		var out_type = 0;
-
-		outPutFuncs = [ // contains the synthDef blocks for each spatialyers, 0 = n3d, 1 = fuma, 2 = nonAmbi
+		outPutFuncs = IdentityDictionary(3);
+		outPutFuncs.put(\N3D, // contains the synthDef blocks for each spatialyers
 			{ | dry, wet, globFx, fxBus, outBus |
 				Out.ar(fxBus, wet * globFx); // effect.gBxBus
 				Out.ar(outBus, wet); // renderer.n3dBus
 			},
+			\FUMA,
 			{ | dry, wet, globFx, fxBus, outBus |
 				Out.ar(fxBus, wet * globFx); // effect.gBfBus
 				Out.ar(outBus, wet); // renderer.fumaBus
 			},
+			\NONAMBI,
 			{ | dry, wet, globFx, fxBus, outBus |
 				Out.ar(fxBus, dry * globFx); // effect.gBfBus
 				Out.ar(outBus, wet); // renderer.nonAmbiBus
-		}];
+		});
 
 		effect.defs.do({ | effect, count |
-			var halfPi = MoscaUtils.halfPi, plim = MoscaUtils.plim;
+			var plim = MoscaUtils.plim, out_type = 0, name, metadata;
 
-			spatInstances.get.do({ | spat, i |
+			spatInstances.get.do({ | spat |
 
-				out_type = MoscaUtils.formatIndex(spat.format);
+/*				if (spat.format != \NONAMBI)
+				{
+					metadata = (setup: renderer.)*/
 
 				playList.do({ | play_type, j |
-					var mono, stereo;
 
-					mono = SynthDef(spat.key ++ play_type ++ 1 ++ effect.key, {
-						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-						radAzimElev = #[20, 0, 0], amp = 1,
-						dopamnt = 0, glev = 0, llev = 0, outBus = #[20, 20],
-						insertFlag = 0, insertOut, insertBack,
-						room = 0.5, damp = 05, wir,
-						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
+					spat.channels.do({ | channels |
 
-						var rad = Lag.kr(radAzimElev[0]),
-						radRoot = rad.sqrt.clip(minRadRoot, 1),
-						lrevRef = Ref(0),
-						az = radAzimElev[1] - halfPi,
-						revCut = rad.lincurve(1, plim, 1, 0),
-						p = Ref(0);
+						name = spat.key ++ play_type ++ channels ++ effect.key;
 
-						playInFunc[j].value(p, busini, bufnum, tpos, lp, rate, 1);
+						SynthDef(name, {
+						| radAzimElev = #[10, 0, 0], amp = 1, dopamnt = 0,
+							glev = 0, llev = 0, outBus = #[0, 0] |
 
-						p = DelayC.ar(p, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
-						effect.localMonoFunc.value(lrevRef, p, wir, rad * llev,
-							room, damp); // local reverberation
+							var rad = Lag.kr(radAzimElev[0]),
+							radRoot = rad.sqrt.clip(minRadRoot, 1),
+							lrevRef = Ref(0),
+							azimuth = radAzimElev[1] - MoscaUtils.halfPi,
+							elevation = radAzimElev[2],
+							revCut = rad.lincurve(1, plim, 1, 0),
+							locallev = rad * llev,
+							channum = channels,
+							p = Ref(0);
 
-						lrevRef.value = lrevRef.value * revCut;
+							SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
 
-						spat.spatFunc.value(lrevRef, p * amp, rad, radRoot,
-							az, radAzimElev[2],  contr, winsize, grainrate, winrand);
+							p = DelayC.ar(p, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
 
-						outPutFuncs[out_type].value(p, lrevRef.value,
-							(1 - radRoot) * glev, outBus[0], outBus[1]);
-					});
+							SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p ]);
+							// local reverberation
 
-					stereo = SynthDef(spat.key ++ play_type ++ 2 ++ effect.key, {
+							lrevRef.value = lrevRef.value * revCut;
+
+							p = p * amp;
+
+							SynthDef.wrap(spat.getFunc(channum),
+								prependArgs: [ lrevRef, p, rad, radRoot, azimuth, elevation ]);
+
+							outPutFuncs.at(spat.format).value(p, lrevRef.value,
+								(1 - radRoot) * glev, outBus[0], outBus[1]);
+						}
+
+						).load(server);
+
+/*					name = spat.key ++ play_type ++ 2 ++ effect.key;
+
+					SynthDef(name, {
 						| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
 						radAzimElev = #[20, 0, 0], amp = 1,
 						dopamnt = 0, glev = 0, llev = 0, angle = 1.05,
 						insertFlag = 0, insertOut, insertBack, outBus = #[0, 0],
-						room = 0.5, damp = 05, wir,
+						room = 0.5, damp = 05, wir, vbapBuffer = 0,
 						contr = 1, grainrate = 10, winsize = 0.1, winrand = 0 |
 
 						var rad = Lag.kr(radAzimElev[0]),
@@ -161,34 +171,23 @@ MoscaSpatializer {
 						p = p * amp;
 
 						spat.spatFunc.value(lrev1Ref, p[0], rad, radRoot, az + (angle * (1 - rad)),
-							radAzimElev[2],  contr, winsize, grainrate, winrand);
+							radAzimElev[2],  contr, winsize, grainrate, winrand, vbapBuffer);
 						spat.spatFunc.value(lrev2Ref, p[1], rad, radRoot, az - (angle * (1 - rad)),
-							radAzimElev[2],  contr, winsize, grainrate, winrand);
+							radAzimElev[2],  contr, winsize, grainrate, winrand, vbapBuffer);
 
-						outPutFuncs[out_type].value(Mix.ar(p) * 0.5,
+						outPutFuncs.at(spat.format).value(Mix.ar(p) * 0.5,
 							(lrev1Ref.value + lrev2Ref.value) * 0.5,
 							(1 - radRoot) * glev, outBus[0], outBus[1]);
-					});
-
-					if (maxOrder < 3) {
-						mono.send(server);
-						stereo.send(server);
-					} {
-						if (maxOrder == 3) {
-							mono.send(server);
-							stereo.load(server);
-						} {
-							mono.load(server);
-							stereo.load(server);
-						};
-					};
+					}).load(server);
 
 					if (spat.key == "ATK") {
 
 						// assume FuMa input
-						SynthDef("ATK" ++ play_type ++ 4 ++ effect.key, {
+						name  = "ATK" ++ play_type ++ 4 ++ effect.key;
+
+						SynthDef(name, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							radAzimElev = #[20, 0, 0], amp = 1,
+							radAzimElev = #[10, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, outBus = #[0, 0],
@@ -219,15 +218,17 @@ MoscaSpatializer {
 							p = FoaTransform.ar(p, 'push', pushang, az, radAzimElev[2]);
 
 							outPutFuncs[1].value(p, p, (1 - radRoot) * glev, outBus[0], outBus[1]);
-						}).send(server);
+						}).load(server);
 
 						MoscaUtils.hoaChanns.do({ | item, count |
-							var ord = (item.sqrt) - 1,
+							var ord = (item.sqrt) - 1;
 
 							// assume N3D input
-							hoaSynth = SynthDef("ATK" ++ play_type ++ item ++ effect.key, {
+							name = "ATK" ++ play_type ++ item ++ effect.key;
+
+							SynthDef(name, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-								radAzimElev = #[20, 0, 0], amp = 1,
+								radAzimElev = #[10, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
 								insertFlag = 0, insertOut, insertBack,
 								room = 0.5, damp = 05, wir, outBus = #[0, 0],
@@ -259,22 +260,18 @@ MoscaSpatializer {
 								p = FoaTransform.ar(p, 'push', pushang, az, radAzimElev[2]);
 
 								outPutFuncs[1].value(p, p, (1 - radRoot) * glev, outBus[0], outBus[1]);
-							});
-
-							if (item > 16) {
-								hoaSynth.load(server);
-							} {
-								hoaSynth.send(server);
-							};
+							}).load(server);
 						});
 					};
 
 					if (spat.key == "Ambitools") {
 
 						// assume FuMa input
-						SynthDef("Ambitools" ++ play_type ++ 4 ++ effect.key, {
+						name = "Ambitools" ++ play_type ++ 4 ++ effect.key;
+
+						SynthDef(name, {
 							| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-							radAzimElev = #[20, 0, 0], amp = 1,
+							radAzimElev = #[10, 0, 0], amp = 1,
 							dopamnt = 0, glev = 0, llev = 0,
 							insertFlag = 0, insertOut, insertBack,
 							room = 0.5, damp = 05, wir, outBus = #[0, 0],
@@ -304,15 +301,17 @@ MoscaSpatializer {
 							p = HOABeamDirac2Hoa.ar(1, p, az, radAzimElev[2], timer_manual:1, focus:pushang);
 
 							outPutFuncs[0].value(p, p, (1 - radRoot) * glev, outBus[0], outBus[1]);
-						}).send(server);
+						}).load(server);
 
 						MoscaUtils.hoaChanns.do({ | item, count |
-							var ord = (item.sqrt) - 1,
+							var ord = (item.sqrt) - 1;
 
 							// assume N3D input
-							hoaSynth = SynthDef("Ambitools" ++ play_type ++ item ++ effect.key, {
+							name = "Ambitools" ++ play_type ++ item ++ effect.key;
+
+							SynthDef(name, {
 								| bufnum = 0, rate = 1, tpos = 0, lp = 0, busini,
-								radAzimElev = #[20, 0, 0], amp = 1,
+								radAzimElev = #[10, 0, 0], amp = 1,
 								dopamnt = 0, glev = 0, llev = 0,
 								insertFlag = 0, insertOut, insertBack,
 								room = 0.5, damp = 05, wir, outBus = #[0, 0],
@@ -342,15 +341,10 @@ MoscaSpatializer {
 								p = HOABeamDirac2Hoa.ar(ord, p, az, radAzimElev[2], timer_manual:1, focus:pushang);
 
 								outPutFuncs[0].value(p, p, (1 - radRoot) * glev, outBus[0], outBus[1]);
-							});
-
-							if (item > 16) {
-								hoaSynth.load(server);
-							} {
-								hoaSynth.send(server);
-							}
+							}).load(server);
 						})
-					}
+						}*/
+					})
 				})
 			})
 		})
