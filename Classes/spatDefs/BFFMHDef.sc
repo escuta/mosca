@@ -20,13 +20,16 @@
 //                   BFFMH                   //
 //-------------------------------------------//
 
-BFFMHDef : SpatDef {
-	classvar <key, <format; // class access
+BFFMHDef : SpatDef
+{
+	// class access
 	const <channels = #[ 1, 2 ]; // possible number of channels
+	classvar <format, <key;
 
 	// instance access
 	key { ^key; }
 	format { ^format; }
+	channels { ^channels; }
 
 	*initClass
 	{
@@ -43,7 +46,7 @@ BFFMHDef : SpatDef {
 			if (maxOrder == 1) { enc = BFEncode1 } { enc  = FMHEncode1 };
 
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
-				var sig = distFilter.value(p, rad);
+				var sig = distFilter.value(p.value, rad);
 				sig = enc.ar(lrevRef.value + sig, azimuth, elevation,
 					aten2distance.value(radRoot)); // invert to represnet distance
 				lrevRef.value = (sig * contract) +
@@ -53,7 +56,7 @@ BFFMHDef : SpatDef {
 			if (maxOrder == 1)
 			{
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
-					var sig = distFilter.value(p, rad);
+					var sig = distFilter.value(p.value, rad);
 					sig = lrevRef.value + sig;
 					sig = BFEncodeSter.ar(sig[0], sig[1], azimuth, angle * MoscaUtils.deg2rad, elevation,
 						aten2distance.value(radRoot)) +
@@ -61,7 +64,7 @@ BFFMHDef : SpatDef {
 				};
 			} {
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
-					var sig = distFilter.value(p, rad);
+					var sig = distFilter.value(p.value, rad);
 					sig = FMHEncode1.ar(lrevRef.value + sig, azimuth + (angle * MoscaUtils.deg2rad * (1 - rad)),
 						elevation, aten2distance.value(radRoot))
 					+ FMHEncode1.ar(lrevRef.value + sig, azimuth - (angle * MoscaUtils.deg2rad * (1 - rad)),

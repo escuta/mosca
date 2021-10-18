@@ -20,9 +20,16 @@
 //                   SC-HOA                  //
 //-------------------------------------------//
 
-SCHOADef : SpatDef {
-	classvar <key, <format; // class access
+SCHOADef : SpatDef
+{
+	// class access
 	const <channels = #[ 1, 2 ]; // possible number of channels
+	classvar <format, <key;
+
+	// instance access
+	key { ^key; }
+	format { ^format; }
+	channels { ^channels; }
 
 	*initClass
 	{
@@ -36,7 +43,7 @@ SCHOADef : SpatDef {
 		if (nChanns == 1)
 		{
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
-				var sig = distFilter.value(p, rad);
+				var sig = distFilter.value(p.value, rad);
 				// attenuate high freq with radius
 				sig = HOASphericalHarmonics.coefN3D(maxOrder,
 					CircleRamp.kr(azimuth, 0.1, -pi, pi), Lag.kr(elevation))
@@ -48,7 +55,7 @@ SCHOADef : SpatDef {
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
 				var az = CircleRamp.kr(azimuth, 0.1, -pi, pi),
 				el = Lag.kr(elevation),
-				sig = distFilter.value(p, rad);
+				sig = distFilter.value(p.value, rad);
 				// attenuate high freq with distance
 				sig = lrevRef.value + (sig * atenuator.value(radRoot));
 				sig = (HOASphericalHarmonics.coefN3D(maxOrder,

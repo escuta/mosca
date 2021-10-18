@@ -17,23 +17,12 @@
 */
 
 //-------------------------------------------//
-//                     ATK                   //
+//                 ATK BASE                  //
 //-------------------------------------------//
 
-ATKDef : SpatDef {
-	classvar <format, <key; // class access
-	const <channels = #[ 1, 2, 4, 16, 25, 36 ]; // possible number of channels
-
-	// instance access
-	key { ^key; }
-	format { ^format; }
-
-	*initClass
-	{
-		defList = defList.add(this.asClass);
-		key = "ATK";
-		format = \FUMA;
-	}
+ATKBaseDef : SpatDef
+{
+	var encoder; // specific variables
 
 	getFunc
 	{ | maxOrder, renderer, nChanns |
@@ -41,10 +30,11 @@ ATKDef : SpatDef {
 		switch (nChanns,
 			1,
 			{
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
-					var sig = distFilter.value(p, rad);
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, encoder |
+					var sig = distFilter.value(p.value, rad);
 					sig = lrevRef.value + (sig * atenuator.value(radRoot));
-					sig = FoaEncode.ar(sig, FoaEncoderMatrix.newOmni());
+					sig = FoaEncode.ar(sig, encoder);
+					sig.removeAt(0);
 					sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
 						CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
 					sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
@@ -53,39 +43,132 @@ ATKDef : SpatDef {
 			},
 			2,
 			{
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
-					var sig = distFilter.value(p, rad);
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle, encoder |
+					var l, r, sig = distFilter.value(p.value, rad),
+					az = CircleRamp.kr(azimuth, 0.1, -pi, pi),
+					contr = MoscaUtils.halfPi * contract;
 					sig = lrevRef.value + (sig * atenuator.value(radRoot));
-					sig = FoaEncode.ar(sig, FoaEncoderMatrix.newStereo(angle * MoscaUtils.deg2rad));
-					sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
-						CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
-					sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
+					l = FoaEncode.ar(sig[0], encoder);
+					l.removeAt(0);
+					r = FoaEncode.ar(sig[1], encoder);
+					r.removeAt(0);
+					l = FoaTransform.ar(l, 'push', contr, az + (angle * (1 - rad)), elevation);
+					r = FoaTransform.ar(r, 'push', contr, az - (angle * (1 - rad)), elevation);
+					sig = HPF.ar(l + r, 20); // stops bass frequency blow outs by proximity
 					lrevRef.value = FoaTransform.ar(sig, 'proximity', rad * renderer.longestRadius);
 				};
 			},
 			4,
 			{ // assume FuMa input
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
-					var pushang = 2 - (contract * 2);
+					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					p = FoaDirectO.ar(p * ((1/radRoot) - 1), directang);
+					sig = FoaDirectO.ar(p.value * ((1/radRoot) - 1), directang);
 					// directivity
-					p = FoaTransform.ar(p, 'rotate', rotAngle);
-					p = FoaTransform.ar(p, 'push', pushang, azimuth, elevation);
+					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
+					p.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 				};
 			},
 			{ // assume N3D input
 				var ord = (nChanns.sqrt) - 1;
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
-					var pushang = 2 - (contract * 2);
+					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					p = FoaEncode.ar(p * ((1/radRoot) - 1), MoscaUtils.n2f);
-					p = FoaDirectO.ar(p, directang);
+					sig = FoaEncode.ar(p.value * ((1/radRoot) - 1), MoscaUtils.n2f);
+					sig = FoaDirectO.ar(sig, directang);
 					// directivity
-					p = FoaTransform.ar(p, 'rotate', rotAngle);
-					p = FoaTransform.ar(p, 'push', pushang, azimuth, elevation);
+					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
+					p.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 				};
 			}
 		)
+	}
+
+	getArgs{ ^[\encoder, encoder] }
+}
+
+//-------------------------------------------//
+//                   ATK                     //
+//-------------------------------------------//
+
+ATKDef : ATKBaseDef
+{
+	// class access
+	const <channels = #[ 1, 2, 4, 16, 25, 36 ]; // possible number of channels
+	classvar <format, <key;
+
+	// instance access
+	key { ^key; }
+	format { ^format; }
+	channels { ^channels; }
+
+	*initClass
+	{
+		defList = defList.add(this.asClass);
+		key = "ATK";
+		format = \FUMA;
+	}
+
+	prSetVars
+	{ | maxOrder, renderer, server |
+		encoder = FoaEncoderMatrix.newOmni();
+	}
+}
+
+//-------------------------------------------//
+//                ATK SPREAD                 //
+//-------------------------------------------//
+
+ATKDfDef : ATKBaseDef
+{
+	// class acces
+	const <channels = #[ 1, 2 ]; // possible number of channels
+	classvar <format, <key;
+
+	// instance access
+	key { ^key; }
+	format { ^format; }
+	channels { ^channels; }
+
+	*initClass
+	{
+		defList = defList.add(this.asClass);
+		key = "ATK_sp";
+		format = \FUMA;
+	}
+
+	prSetVars
+	{ | maxOrder, renderer, server |
+		encoder = FoaEncoderKernel.newSpread(subjectID: 6, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
+	}
+}
+
+//-------------------------------------------//
+//                 ATK DIFFUSE               //
+//-------------------------------------------//
+
+ATKSpDef : ATKBaseDef
+{
+	// class acces
+	const <channels = #[ 1, 2 ]; // possible number of channels
+	classvar <format, <key;
+
+	// instance access
+	key { ^key; }
+	format { ^format; }
+	channels { ^channels; }
+
+	*initClass
+	{
+		defList = defList.add(this.asClass);
+		key = "ATK_df";
+		format = \FUMA;
+	}
+
+	prSetVars
+	{ | maxOrder, renderer, server |
+		encoder = FoaEncoderKernel.newDiffuse(subjectID: 3, kernelSize: 2048,
+			server:server, sampleRate:server.sampleRate.asInteger);
 	}
 }

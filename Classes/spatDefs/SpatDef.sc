@@ -17,13 +17,14 @@
 */
 
 //-------------------------------------------//
-//               Base Classe                 //
+//                Base Class                 //
 //-------------------------------------------//
 
-SpatDef {
+SpatDef
+{
+	var busses, format;
+
 	classvar <defList, distFilter, atenuator, aten2distance;
-	const <channels = #[ 1, 2 ]; // possible number of channels
-	// override if necessary
 
 	*initClass
 	{
@@ -41,10 +42,31 @@ SpatDef {
 	}
 
 	*new
-	{ | maxOrder, renderer, server |
+	{ | maxOrder, effects, renderer, server |
 
-		^super.new().prSetVars(maxOrder, renderer, server);
+		^super.new().prSetVars(maxOrder, renderer, server).prSetBusses(effects, renderer);
 	}
 
-	prSetVars{ | maxOrder, renderer, server | } // override this method to set specific parameters.
+	prSetBusses
+	{ | effects, renderer |
+
+		switch(format,
+			\N3D,
+			{
+				busses = [effects.gBxBus, renderer.n3dBus];
+			},
+			\FUMA,
+			{
+				busses = [effects.gBfBus, renderer.fumaBus];
+			},
+			\NONAMBI,
+			{
+				busses = [effects.gBfBus, renderer.nonAmbiBus];
+			}
+		);
+	}
+
+	prSetVars{ | maxOrder, renderer, server | } // override this method to set specific variables.
+	setParams{ | parentOssiaNode | } // override this method to set specific ossia parameters.
+	getArgs{ ^nil } // override this method to get specific Syth arguments.
 }
