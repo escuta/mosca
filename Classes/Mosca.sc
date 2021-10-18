@@ -40,7 +40,7 @@ Mosca : MoscaBase
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
 
-		var spat, multyThread, bussesAndBuff = Ref(IdentityDictionary(4));
+		var spat, multyThread;
 
 		if (server.isNil) { server = Server.local };
 
@@ -74,16 +74,6 @@ Mosca : MoscaBase
 
 			spat.makeSpatialisers(server, maxOrder, effects, renderer);
 
-			bussesAndBuff.get.put(
-				\N3D,
-				[effects.gBxBus, renderer.n3dBus], // N3D output
-				\FUMA
-				[effects.gBfBus, renderer.fumaBus], // FUMA output
-				\NONAMBI
-				[effects.gBfBus, renderer.nonAmbiBus], // NONAMBI output
-				\VBAP,
-				renderer.vbapBuffer); // VBAP buffer
-
 			effects.sendFx(multyThread, server);
 
 			renderer.launchRenderer(server, server.defaultGroup);
@@ -105,8 +95,7 @@ Mosca : MoscaBase
 			Array.fill(nsources,
 				{ | i |
 					MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
-						spat.spatList, effects.ossiaGlobal.node.domain.values(),
-						bussesAndBuff);
+						spat, effects.ossiaGlobal.node.domain.values());
 				}
 			)
 		);

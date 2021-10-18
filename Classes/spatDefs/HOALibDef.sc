@@ -20,13 +20,16 @@
 //                   HOALIB                  //
 //-------------------------------------------//
 
-HOALibDef : SpatDef {
-	classvar <key, <format; // class access
+HOALibDef : SpatDef
+{
+	// class access
 	const <channels = #[ 1, 2 ]; // possible number of channels
+	classvar <format, <key;
 
 	// instance access
 	key { ^key; }
 	format { ^format; }
+	channels { ^channels; }
 
 	*initClass
 	{
@@ -40,7 +43,7 @@ HOALibDef : SpatDef {
 		if (nChanns == 1)
 		{
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
-				var sig = distFilter.value(p, rad);
+				var sig = distFilter.value(p.value, rad);
 				// attenuate high freq with distance
 				sig = HOALibEnc3D.ar(maxOrder,
 					lrevRef.value + (sig * atenuator.value(radRoot)),
@@ -53,7 +56,7 @@ HOALibDef : SpatDef {
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
 				var az = CircleRamp.kr(azimuth, 0.1, -pi, pi),
 				el = Lag.kr(elevation),
-				sig = distFilter.value(p, rad);
+				sig = distFilter.value(p.value, rad);
 				// attenuate high freq with distance
 				sig = lrevRef.value + (sig * atenuator.value(radRoot));
 				sig = HOALibEnc3D.ar(maxOrder,

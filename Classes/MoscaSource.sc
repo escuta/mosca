@@ -18,7 +18,7 @@
 
 MoscaSource[]
 {
-	var <index, server, srcGrp, bussesAndBuff, defName, effect, <chanNum = 1, spatType, curentSpat;
+	var <index, server, srcGrp, spatInstances, defName, effect, <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -30,10 +30,10 @@ MoscaSource[]
 	var <auxiliary, <aux, <check;
 
 	*new
-	{ | index, server, sourceGroup, ossiaParent, allCritical, spatList, effectList, bussesAndBuff |
+	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effectList |
 
-		^super.newCopyArgs(index, server, sourceGroup, bussesAndBuff).ctr(
-			ossiaParent, allCritical, spatList, effectList);
+		^super.newCopyArgs(index, server, sourceGroup, spat.spatInstances).ctr(
+			ossiaParent, allCritical, spat.spatList, effectList);
 	}
 
 	ctr
@@ -247,9 +247,8 @@ MoscaSource[]
 		localDecay.action_({ | val | this.prSetSynths(\damp, val.value) });
 
 		library.action_({ | val |
-			var i = spatDefs.get.detectIndex({ | item | item.key == val.value });
 
-			spatType = spatDefs.get[i].format;
+			spatType = spatInstances.get.at(val.asSymbol).format;
 
 			this.prSetDefName();
 		});
@@ -472,10 +471,7 @@ MoscaSource[]
 					\winrand, random.value];
 			};
 
-			if (library.value == "VBAP")
-			{
-				args = args ++ [\vbapBuffer, bussesAndBuff.get.at(\VBAP)];
-			};
+			args = args ++ spatInstances.get.at(library.value.asSymbol).getArgs;
 
 			if ((file.value != "") && (scSynths.value || external.value).not)
 			{
@@ -512,7 +508,7 @@ MoscaSource[]
 						coordinates.spheVal.theta,
 						coordinates.spheVal.phi
 					],
-					\outBus, bussesAndBuff.get.at(curentSpat),
+					\outBus, spatInstances.get.at(library.value.asSymbol).busses,
 					\contr, contraction.value,
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,

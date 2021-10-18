@@ -17,20 +17,14 @@
 */
 
 //-------------------------------------------//
-//               Base Classe                 //
+//                 NOREVERB                  //
 //-------------------------------------------//
 
-EffectDef
+ClearDef : EffectDef
 {
-	var <globalFunc;
+	classvar <key; // class access
 
-	*initClass { Class.initClassTree(MoscaUtils) }
+	*initClass { key = "Clear"; }
 
-	*new1stOrder { ^super.new.ctr1stOrder() }
-
-	*new2ndOrder { ^super.new.ctr2ndOrder() }
-
-	ctr1stOrder { this.prFourChanGlobal() }
-
-	ctr2ndOrder { this.prTwelveChanGlobal() }
+	*getFunc { | nChanns | ^{ | lrevRef, p | }}
 }

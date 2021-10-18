@@ -20,12 +20,18 @@
 //                    VBAP                   //
 //-------------------------------------------//
 
-VBAPDef : SpatDef {
-	classvar <format, <key; // class access
+VBAPDef : SpatDef
+{
+	var vbapBuffer; // specific variables
+
+	// class access
+	const <channels = #[ 1, 2 ];
+	classvar <format, <key;
 
 	// instance access
 	key { ^key; }
 	format { ^format; }
+	channels { ^channels; }
 
 	*initClass
 	{
@@ -40,7 +46,7 @@ VBAPDef : SpatDef {
 		if (nChanns == 1)
 		{
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, vbapBuffer |
-				var sig = distFilter.value(p, rad),
+				var sig = distFilter.value(p.value, rad),
 				azi = azimuth * MoscaUtils.rad2deg, // convert to degrees
 				elev = elevation * MoscaUtils.rad2deg, // convert to degrees
 				elevexcess = Select.kr(elev < renderer.lowestElevation, [0, elev.abs]);
@@ -50,17 +56,17 @@ VBAPDef : SpatDef {
 				// restrict between min & max
 				lrevRef.value = VBAP.ar(renderer.numOutputs,
 					lrevRef.value + (sig * atenuator.value(radRoot)),
-					vbapBuffer.bufnum, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elev),
+					vbapBuffer, CircleRamp.kr(azi, 0.1, -180, 180), Lag.kr(elev),
 					((1 - contract) + (elevexcess / 90)) * 100);
 			};
 		} {
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle, vbapBuffer |
-				var sig = distFilter.value(p, rad),
+				var contr, sig = distFilter.value(p.value, rad),
 				azi = azimuth * MoscaUtils.rad2deg, // convert to degrees
 				elev = elevation * MoscaUtils.rad2deg, // convert to degrees
-				contr = ((1 - contract) + (elevexcess / 90)) * 100,
 				elevexcess = Select.kr(elev < renderer.lowestElevation, [0, elev.abs]);
 				elevexcess = Select.kr(elev > renderer.highestElevation, [0, elev]);
+				contr = ((1 - contract) + (elevexcess / 90)) * 100;
 				azi = CircleRamp.kr(azi, 0.1, -180, 180);
 				// get elevation overshoot
 				elev = elev.clip(renderer.lowestElevation, renderer.highestElevation);
@@ -68,8 +74,15 @@ VBAPDef : SpatDef {
 				elev = Lag.kr(elev);
 				lrevRef.value = VBAP.ar(renderer.numOutputs,
 					lrevRef.value + (sig * atenuator.value(radRoot)),
-					vbapBuffer.bufnum, azi, elev, contr);
+					vbapBuffer, azi, elev, contr);
 			};
 		}
 	}
+
+	prSetVars
+	{ | maxOrder, renderer, server |
+		vbapBuffer = renderer.vbapBuffer;
+	}
+
+	getArgs{ ^[\vbapBuffer, vbapBuffer.bufnum] }
 }
