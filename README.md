@@ -57,7 +57,7 @@ and an appropriate Arduino board such as an Uno.
 Mosca may also run GUI-free and has a
 mechanism for coded control of the interface (Setup example in the [guide](HelpSource/Guide/guide-Mosca).
 
-## Begginer tips to install from scratch
+## Tips to install from scratch
 
 If you are a linux user on a debian like distro, this [script](https://github.com/scrime-u-bordeaux/scrimpt) can help you build supercollider and it's plugins from source, and install atk kernels and matrices, among many other things.
 
@@ -95,16 +95,20 @@ Decompress all of them in the same extension directoy as the sc3-Plugins_**
 Next, in the code editor of supercollider, recompile the Class Library wih the keyboard shortcut Ctl+Maj+L (on Mac use Command instead of Ctl)
 This is a very useful shortcut that alows you to fully reinitialize you session, I recomend remebering it ! 
 
-Finaly, evaluate the folowing code to open the ATK support Directory.
+Finaly, evaluate the folowing code to download the ATK kernels and matrices.
+```
+(
+Atk.downloadKernels;
+Atk.downloadMatrices;
+) 
+```
+**_workaround (only if the download fails) the folowing code creates and opens the ATK support Directory. ATK [Kernels](https://github.com/ambisonictoolkit/atk-kernels/releases/latest) and ATK [Matrices](https://github.com/ambisonictoolkit/atk-matrices/releases/latest) both need to be downloaded and decompressed in this support Directory. 
 ```
 (
 Atk.createUserSupportDir;
 Atk.openUserSupportDir;
 ) 
 ```
-Download ATK [Matrices](https://github.com/ambisonictoolkit/atk-kernels/releases/latest)  
-and ATK [Kernels](https://github.com/ambisonictoolkit/atk-matrices/releases/latest)  
-and decompress both repositories in the ATK support Directory. 
 
 ## Acknowledgments
 
