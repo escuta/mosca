@@ -102,7 +102,7 @@ Atk.downloadKernels;
 Atk.downloadMatrices;
 ) 
 ```
-**_workaround (only if the download fails) the folowing code creates and opens the ATK support Directory. ATK [Kernels](https://github.com/ambisonictoolkit/atk-kernels/releases/latest) and ATK [Matrices](https://github.com/ambisonictoolkit/atk-matrices/releases/latest) both need to be downloaded and decompressed in this support Directory. 
+**_workaround (only if the download fails) the folowing code creates and opens the ATK support Directory. ATK [Kernels](https://github.com/ambisonictoolkit/atk-kernels/releases/latest) and ATK [Matrices](https://github.com/ambisonictoolkit/atk-matrices/releases/latest) both need to be downloaded and decompressed in this support Directory_** 
 ```
 (
 Atk.createUserSupportDir;
