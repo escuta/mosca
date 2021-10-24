@@ -33,17 +33,17 @@ AllPassDef : EffectDef
 		switch (nChanns,
 			1,
 			{
-				^{ | lrevRef, p, locallev, room, damp |
+				^{ | lrevRef, p, rad, llev, room, damp |
 					var temp = p.value;
 					16.do({ temp = AllpassC.ar(temp, 0.08, room * { Rand(0, 0.08) } +
 						{ Rand(0, 0.001) },
 						damp * 2)});
-					lrevRef.value = temp * locallev;
+					lrevRef.value = temp * (rad * llev);
 				};
 			},
 			2,
 			{
-				^{ | lrevRef, p, locallev, room, damp |
+				^{ | lrevRef, p, rad, llev, room, damp |
 					var temp1 = p.value[0], temp2 = p.value[1];
 					8.do({ temp1 = AllpassC.ar(temp1, 0.08, room * { Rand(0, 0.08) } +
 						{ Rand(0, 0.001) },
@@ -51,16 +51,16 @@ AllPassDef : EffectDef
 					8.do({ temp2 = AllpassC.ar(temp2, 0.08, room * { Rand(0, 0.08) } +
 						{ Rand(0, 0.001) },
 						damp * 2)});
-					lrevRef.value = [temp1, temp2] * locallev;
+					lrevRef.value = [temp1, temp2] * (rad * llev);
 				};
 			},
 			{
-				^{ | lrevRef, p, locallev, room, damp |
+				^{ | lrevRef, p, rad, llev, room, damp |
 					var temp = p.value[0];
 					16.do({ temp = AllpassC.ar(temp, 0.08, room * { Rand(0, 0.08) } +
 						{ Rand(0, 0.001) },
 						damp * 2)});
-					lrevRef.value = temp * locallev;
+					lrevRef.value = temp * (rad * llev);
 				};
 		})
 	}

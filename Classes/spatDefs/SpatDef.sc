@@ -22,9 +22,13 @@
 
 SpatDef
 {
-	var busses, format;
-
 	classvar <defList, distFilter, atenuator, aten2distance;
+	var <busses, <fxOutFunc;
+
+	*new
+	{ | maxOrder, effects, renderer, server |
+		^super.new().prSetVars(maxOrder, renderer, server).prSetBusses(effects, renderer);
+	}
 
 	*initClass
 	{
@@ -41,27 +45,30 @@ SpatDef
 		aten2distance = { | radRoot | 1 / atenuator.value(radRoot) };
 	}
 
-	*new
-	{ | maxOrder, effects, renderer, server |
-
-		^super.new().prSetVars(maxOrder, renderer, server).prSetBusses(effects, renderer);
-	}
-
 	prSetBusses
 	{ | effects, renderer |
 
-		switch(format,
+		switch(this.format,
 			\N3D,
 			{
 				busses = [effects.gBxBus, renderer.n3dBus];
+				fxOutFunc =	{ | dry, wet, globFx, fxBus |
+					Out.ar(fxBus, wet * globFx); // effect.gBxBus
+				};
 			},
 			\FUMA,
 			{
 				busses = [effects.gBfBus, renderer.fumaBus];
+				fxOutFunc = { | dry, wet, globFx, fxBus |
+					Out.ar(fxBus, wet * globFx); // effect.gBfBus
+				}
 			},
 			\NONAMBI,
 			{
 				busses = [effects.gBfBus, renderer.nonAmbiBus];
+				fxOutFunc = { | dry, wet, globFx, fxBus |
+					Out.ar(fxBus, dry * globFx); // effect.gBfBus
+				}
 			}
 		);
 	}
@@ -69,4 +76,5 @@ SpatDef
 	prSetVars{ | maxOrder, renderer, server | } // override this method to set specific variables.
 	setParams{ | parentOssiaNode | } // override this method to set specific ossia parameters.
 	getArgs{ ^nil } // override this method to get specific Syth arguments.
+	format{ ^nil }
 }

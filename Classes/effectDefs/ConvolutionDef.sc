@@ -33,22 +33,24 @@ ConvolutionDef : EffectDef
 		swich (nChanns,
 			1,
 			{
-				^{ | lrevRef, p, rirWspectrum, locallev |
-					lrevRef.value = PartConv.ar(p.value, MoscaUtils.fftSize(), rirWspectrum, locallev);
+				^{ | lrevRef, p, rad, llev, rirWspectrum |
+					lrevRef.value = PartConv.ar(p.value, MoscaUtils.fftSize(), rirWspectrum,
+						rad * llev);
 				};
 			},
 			2,
 			{
-				^{ | lrevRef, p, rirZspectrum, locallev |
+				^{ | lrevRef, p, rad, llev, rirZspectrum |
 					var temp1 = p.value[0], temp2 = p.value[1];
-					temp1 = PartConv.ar(temp1, MoscaUtils.fftSize(), rirZspectrum, locallev);
-					temp2 = PartConv.ar(temp2, MoscaUtils.fftSize(), rirZspectrum, locallev);
-					lrevRef.value = [temp1, temp2] * locallev;
+					temp1 = PartConv.ar(temp1, MoscaUtils.fftSize(), rirZspectrum);
+					temp2 = PartConv.ar(temp2, MoscaUtils.fftSize(), rirZspectrum);
+					lrevRef.value = [temp1, temp2] * (rad * llev);
 				}
 			},
 			{
-				^{ | lrevRef, p, rirWspectrum, locallev |
-					lrevRef.value = PartConv.ar(p.value[0], MoscaUtils.fftSize(), rirWspectrum, locallev);
+				^{ | lrevRef, p, rad, llev, rirWspectrum, locallev |
+					lrevRef.value = PartConv.ar(p.value[0], MoscaUtils.fftSize(), rirWspectrum,
+						rad * llev);
 				};
 		})
 	}

@@ -263,7 +263,7 @@ MoscaSource[]
 
 		level.action_({ | val | this.prSetSynths(\amp, val.value.dbamp) });
 
-		contraction.action_({ | val | this.prSetSynths(\contr, val.value) });
+		contraction.action_({ | val | this.prSetSynths(\contract, val.value) });
 
 		doppler.action_({ | val | this.prSetSynths(\dopamnt, val.value) });
 
@@ -502,14 +502,14 @@ MoscaSource[]
 
 			spatializer.set(Synth(defName, // launch spatializer synth
 				[
+					\outBus, spatInstances.get.at(library.value.asSymbol).busses,
 					\radAzimElev,
 					[
 						coordinates.spheVal.rho,
 						coordinates.spheVal.theta,
 						coordinates.spheVal.phi
 					],
-					\outBus, spatInstances.get.at(library.value.asSymbol).busses,
-					\contr, contraction.value,
+					\contract, contraction.value,
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,
 					\amp, level.value.dbamp
