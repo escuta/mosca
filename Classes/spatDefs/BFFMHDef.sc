@@ -33,17 +33,18 @@ BFFMHDef : SpatDef
 
 	*initClass
 	{
-		if (\HOALibEnc3D1.asClass.notNil) { defList = defList.add(this.asClass)};
-		key = "HoaLib";
-		format = \N3D;
+		defList = defList.add(this.asClass);
+		key = "BF-FMH";
+		format = \FUMA;
 	}
 
 	getFunc { | maxOrder, renderer, nChanns |
 
 		if (nChanns == 1)
-		{ var enc;
+		{
+			var enc;
 
-			if (maxOrder == 1) { enc = BFEncode1 } { enc  = FMHEncode1 };
+			if (maxOrder > 1) { enc = FMHEncode1 } { enc = BFEncode1 };
 
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
 				var sig = distFilter.value(p.value, rad);
@@ -53,26 +54,27 @@ BFFMHDef : SpatDef
 				Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
 			};
 		} {
-			if (maxOrder == 1)
+			if (maxOrder > 1)
 			{
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
 					var sig = distFilter.value(p.value, rad);
-					sig = lrevRef.value + sig;
-					sig = BFEncodeSter.ar(sig[0], sig[1], azimuth, angle * MoscaUtils.deg2rad, elevation,
-						aten2distance.value(radRoot)) +
+					sig = FMHEncode1.ar(lrevRef.value + sig, azimuth + (angle * (1 - rad)), elevation,
+						aten2distance.value(radRoot))
+					+ FMHEncode1.ar(lrevRef.value + sig, azimuth - (angle * (1 - rad)), elevation,
+						aten2distance.value(radRoot)); // invert to represnet distance
+					lrevRef.value = (sig * contract) +
 					Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-				};
+				}
 			} {
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
-					var sig = distFilter.value(p.value, rad);
-					sig = FMHEncode1.ar(lrevRef.value + sig, azimuth + (angle * MoscaUtils.deg2rad * (1 - rad)),
-						elevation, aten2distance.value(radRoot))
-					+ FMHEncode1.ar(lrevRef.value + sig, azimuth - (angle * MoscaUtils.deg2rad * (1 - rad)),
+					var sig = distFilter.value(p.value, rad) + lrevRef.value;
+					sig = BFEncodeSter.ar(sig[0], sig[1], azimuth,
+						angle * MoscaUtils.deg2rad,
 						elevation, aten2distance.value(radRoot)); // invert to represnet distance
 					lrevRef.value = (sig * contract) +
 					Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-				};
+				}
 			}
-		}
+		};
 	}
 }

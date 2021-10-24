@@ -56,7 +56,7 @@ MoscaRenderer
 
 			nonAmbiBus = Bus.audio(server, numOutputs);
 
-			max_func = { |x| // extract the highest value from an array
+			max_func = { | x | // extract the highest value from an array
 				var rep = 0;
 				x.do({ |item|
 					if(item > rep,
@@ -165,7 +165,6 @@ MoscaRenderer
 			}).send(server);
 
 			virtualSetup = true;
-
 		};
 
 		quarterRadius = longestRadius / 4;

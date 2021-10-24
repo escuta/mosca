@@ -33,9 +33,9 @@ JOSHDef : SpatDef
 
 	*initClass
 	{
-		if (\HOALibEnc3D1.asClass.notNil) { defList = defList.add(this.asClass)};
-		key = "HoaLib";
-		format = \N3D;
+		defList = defList.add(this.asClass);
+		key = "Josh";
+		format = \FUMA;
 	}
 
 	getFunc { | maxOrder, renderer, nChanns |

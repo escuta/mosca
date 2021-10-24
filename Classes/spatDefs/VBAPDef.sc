@@ -40,6 +40,13 @@ VBAPDef : SpatDef
 		format = \NONAMBI;
 	}
 
+	prSetVars
+	{ | maxOrder, renderer, server |
+		vbapBuffer = renderer.vbapBuffer;
+	}
+
+	getArgs{ ^[\vbapBuffer, vbapBuffer.bufnum] }
+
 	getFunc
 	{ | maxOrder, renderer, nChanns |
 
@@ -62,8 +69,10 @@ VBAPDef : SpatDef
 		} {
 			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle, vbapBuffer |
 				var contr, sig = distFilter.value(p.value, rad),
-				azi = azimuth * MoscaUtils.rad2deg, // convert to degrees
-				elev = elevation * MoscaUtils.rad2deg, // convert to degrees
+				// convert to degrees
+				azi = azimuth * MoscaUtils.rad2deg,
+				elev = elevation * MoscaUtils.rad2deg,
+				spread = angle * MoscaUtils.rad2deg,
 				elevexcess = Select.kr(elev < renderer.lowestElevation, [0, elev.abs]);
 				elevexcess = Select.kr(elev > renderer.highestElevation, [0, elev]);
 				contr = ((1 - contract) + (elevexcess / 90)) * 100;
@@ -72,17 +81,14 @@ VBAPDef : SpatDef
 				elev = elev.clip(renderer.lowestElevation, renderer.highestElevation);
 				// restrict between min & max
 				elev = Lag.kr(elev);
-				lrevRef.value = VBAP.ar(renderer.numOutputs,
-					lrevRef.value + (sig * atenuator.value(radRoot)),
-					vbapBuffer, azi, elev, contr);
+				sig = lrevRef.value + (sig * atenuator.value(radRoot));
+				lrevRef.value = VBAP.ar(renderer.numOutputs, sig[0], vbapBuffer,
+					azi + (spread * (1 - rad)),
+					elev, contr) +
+				VBAP.ar(renderer.numOutputs, sig[1], vbapBuffer,
+					azi - (spread * (1 - rad)),
+					elev, contr);
 			};
 		}
 	}
-
-	prSetVars
-	{ | maxOrder, renderer, server |
-		vbapBuffer = renderer.vbapBuffer;
-	}
-
-	getArgs{ ^[\vbapBuffer, vbapBuffer.bufnum] }
 }

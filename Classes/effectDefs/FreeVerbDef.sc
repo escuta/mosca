@@ -33,19 +33,22 @@ FreeVerbDef : EffectDef
 		switch(nChanns,
 			1,
 			{
-				^{ | lrevRef, p, locallev, room, damp |
-					lrevRef.value = FreeVerb.ar(p.value, mix: 1, room: room, damp: damp, mul: locallev);
+				^{ | lrevRef, p, rad, llev, room, damp |
+					lrevRef.value = FreeVerb.ar(p.value, mix: 1, room: room, damp: damp,
+						mul: rad * llev);
 				};
 			},
 			2,
 			{
-				^{ | lrevRef, p, locallev, room, damp |
-					lrevRef.value = FreeVerb2.ar(p.value[0], p.value[1], mix: 1, room: room, damp: damp, mul: locallev);
+				^{ | lrevRef, p, rad, llev, room, damp |
+					lrevRef.value = FreeVerb2.ar(p.value[0], p.value[1], mix: 1, room: room, damp: damp,
+						mul: rad * llev);
 				};
 			},
 			{
-				^{ | lrevRef, p, locallev, room, damp |
-					lrevRef.value = FreeVerb.ar(p.value[0], mix: 1, room: room, damp: damp, mul: locallev);
+				^{ | lrevRef, p, rad, llev, room, damp |
+					lrevRef.value = FreeVerb.ar(p.value[0], mix: 1, room: room, damp: damp,
+						mul: rad * llev);
 				};
 		})
 	}

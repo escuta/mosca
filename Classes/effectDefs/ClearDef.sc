@@ -26,5 +26,5 @@ ClearDef : EffectDef
 
 	*initClass { key = "Clear"; }
 
-	*getFunc { | nChanns | ^{ | lrevRef, p | }}
+	*getFunc { | nChanns | ^{ | lrevRef, p, rad, llev | }}
 }

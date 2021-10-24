@@ -55,7 +55,7 @@ ABTDef : SpatDef
 		switch (nChanns,
 			1,
 			{
-				^{ | lrevRef, p, radRoot, azimuth, elevation, contract |
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
 					var distance = aten2distance.value(radRoot.min(lim)),
 					sig = (lrevRef.value * distance) // local reverb make up gain
 						+ (p.value * converge.value(radRoot));
@@ -87,8 +87,8 @@ ABTDef : SpatDef
 						el,
 						0, // gain
 						1, // spherical
-						r, sr)
-					+ HOAEncoder.ar(maxOrder,
+						r, sr) +
+					HOAEncoder.ar(maxOrder,
 						sig[1],
 						az - (angle * (1 - rad)),
 						el,
@@ -104,9 +104,10 @@ ABTDef : SpatDef
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle |
 					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					sig = FoaDecode.ar(p.value * ((1/radRoot) - 1), MoscaUtils.f2n);
+					sig = FoaDecode.ar(lrevRef.value + (p.value * ((1/radRoot) - 1)),
+						MoscaUtils.f2n);
 					sig = HOATransRotateAz.ar(1, sig, rotAngle);
-					p.value = HOABeamDirac2Hoa.ar(1, sig, azimuth, elevation, timer_manual:1, focus:pushang);
+					lrevRef.value = HOABeamDirac2Hoa.ar(1, sig, azimuth, elevation, timer_manual:1, focus:pushang);
 				};
 			},
 			{ // assume N3D input
@@ -116,7 +117,7 @@ ABTDef : SpatDef
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
 					sig = HOATransRotateAz.ar(ord, lrevRef.value +
 						(p.value * ((1/radRoot) - 1)), rotAngle);
-					p.value = HOABeamDirac2Hoa.ar(ord, sig, azimuth, elevation, timer_manual:1, focus:pushang);
+					lrevRef.value = HOABeamDirac2Hoa.ar(ord, sig, azimuth, elevation, timer_manual:1, focus:pushang);
 				};
 			}
 		)

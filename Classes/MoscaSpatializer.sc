@@ -22,7 +22,7 @@ MoscaSpatializer
 	// the diferent types of inputs for spatilizer synths
 	minRadRoot = 0.076923076923077;
 
-	var outPutFuncs, <spatInstances;
+	var <spatInstances;
 
 	classvar playInFunc,
 	<defs, <spatList; // list of spat libs
@@ -32,8 +32,8 @@ MoscaSpatializer
 	spatList { ^spatList; }
 	defs { ^defs; }
 
-	*initClass {
-
+	*initClass
+	{
 		Class.initClassTree(SpatDef);
 
 		defs = SpatDef.defList;
@@ -41,10 +41,9 @@ MoscaSpatializer
 
 		playInFunc = [ // one for File, Stream & Input;
 			// for File-in SynthDefs
-			{ | p, channum, bufnum, tpos = 0, lp = 0, rate |
-				var scaledRate = rate * BufRateScale.kr(bufnum);
-				p.value = PlayBuf.ar(channum, bufnum, scaledRate, startPos: tpos,
-					loop: lp, doneAction:2);
+			{ | p, channum, bufnum, tpos = 0, lp = 0 |
+				p.value = PlayBuf.ar(channum, bufnum, BufRateScale.kr(channum),
+					startPos: tpos, loop: lp, doneAction:2);
 			},
 			// for Stream-in SynthDefs
 			{ | p, channum, bufnum, lp = 0 |
@@ -82,76 +81,61 @@ MoscaSpatializer
 				spatInstances.get.put(def.key.asSymbol, def.new(maxOrder, effect, renderer, server));
 		});
 
-		outPutFuncs = IdentityDictionary(3);
-		outPutFuncs.put(\N3D, // contains the synthDef blocks for each spatialyers
-			{ | dry, wet, globFx, fxBus, outBus |
-				Out.ar(fxBus, wet * globFx); // effect.gBxBus
-				Out.ar(outBus, wet); // renderer.n3dBus
-			},
-			\FUMA,
-			{ | dry, wet, globFx, fxBus, outBus |
-				Out.ar(fxBus, wet * globFx); // effect.gBfBus
-				Out.ar(outBus, wet); // renderer.fumaBus
-			},
-			\NONAMBI,
-			{ | dry, wet, globFx, fxBus, outBus |
-				Out.ar(fxBus, dry * globFx); // effect.gBfBus
-				Out.ar(outBus, wet); // renderer.nonAmbiBus
-		});
+		effect.defs.do({ | effect, count |
 
-		effect.defs.do(
-			{ | effect, count |
+			spatInstances.get.do({ | spat |
 
-				spatInstances.get.do({ | spat |
+				/*if (spat.format != \NONAMBI)
+				{
+				metadata = (setup: renderer.)*/
 
-					/*if (spat.format != \NONAMBI)
-					{
-					metadata = (setup: renderer.)*/
+				playList.do({ | play_type, j |
 
-					playList.do({ | play_type, j |
+					spat.channels.do({ | channels |
 
-						spat.channels.do({ | channels |
+						name = spat.key ++ play_type ++ channels ++ effect.key;
 
-							name = spat.key ++ play_type ++ channels ++ effect.key;
+						SynthDef(name, {
+							| outBus = #[0, 0], radAzimElev = #[10, 0, 0], amp = 1, dopamnt = 0,
+							glev = 0 |
 
-							SynthDef(name, {
-								| radAzimElev = #[10, 0, 0], amp = 1, dopamnt = 0,
-								glev = 0, llev = 0, outBus = #[0, 0] |
+							var rad = Lag.kr(radAzimElev[0]),
+							radRoot = rad.sqrt.clip(minRadRoot, 1),
+							lrevRef = Ref(0),
+							azimuth = radAzimElev[1] - MoscaUtils.halfPi,
+							elevation = radAzimElev[2],
+							revCut = rad.lincurve(1, plim, 1, 0),
+							channum = channels,
+							p = Ref(0);
 
-								var rad = Lag.kr(radAzimElev[0]),
-								radRoot = rad.sqrt.clip(minRadRoot, 1),
-								lrevRef = Ref(0),
-								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
-								elevation = radAzimElev[2],
-								revCut = rad.lincurve(1, plim, 1, 0),
-								locallev = rad * llev,
-								channum = channels,
-								p = Ref(0);
+							SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
 
-								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
+							p.value = DelayC.ar(p.value, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
 
-								p.value = DelayC.ar(p.value, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
+							// local reverberation
+							SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rad ]);
 
-								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p ]);
-								// local reverberation
+							lrevRef.value = lrevRef.value * revCut;
+							p.value = p.value * amp;
 
-								lrevRef.value = lrevRef.value * revCut;
-								p.value = p.value * amp;
+							SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
+								prependArgs: [ lrevRef, p, rad, radRoot, azimuth, elevation ]);
 
-								SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
-									prependArgs: [ lrevRef, p, rad, radRoot, azimuth, elevation ]);
+							spat.fxOutFunc.value(p.value, lrevRef.value,
+							(1 - radRoot) * glev, outBus[0]);
 
-								outPutFuncs.at(spat.format).value(p.value, lrevRef.value,
-									(1 - radRoot) * glev, outBus[0], outBus[1]);
-							}
+							Out.ar(outBus[1], lrevRef.value);
+						},
 
-							).load(server);
+						).load(server);
 
-							postln("Compiling" + name + "SynthDef");
-						})
+						postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
 					})
 				})
-			}
-		)
+			})
+		});
+
+		server.sync;
+		postln("Done");
 	}
 }
