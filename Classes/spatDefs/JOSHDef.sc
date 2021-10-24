@@ -42,38 +42,27 @@ JOSHDef : SpatDef
 
 		if (nChanns == 1)
 		{
-			var enc;
-
-			if (maxOrder > 1) { enc = FMHEncode1 } { enc = BFEncode1 };
-
-			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
-				var sig = distFilter.value(p.value, rad);
-				sig = enc.ar(lrevRef.value + sig, azimuth, elevation,
-					aten2distance.value(radRoot)); // invert to represnet distance
-				lrevRef.value = (sig * contract) +
-				Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-			};
+			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, winsize, grainrate, winrand |
+				var azelwinrand = 1 - contract,
+				sig = distFilter.value(p.value, rad);
+				lrevRef.value = MonoGrainBF.ar(lrevRef.value + sig, winsize, grainrate, winrand,
+					azimuth, azelwinrand, elevation, azelwinrand,
+					rho: aten2distance.value(radRoot), // invert to represent distance
+					mul: ((0.5 - winsize) + (1 - (grainrate / 40))).clip(0, 1) * 0.5);
+			}
 		} {
-			if (maxOrder > 1)
-			{
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
-					var sig = distFilter.value(p.value, rad);
-					sig = FMHEncode1.ar(lrevRef.value + sig, azimuth + (angle * (1 - rad)), elevation,
-						aten2distance.value(radRoot))
-					+ FMHEncode1.ar(lrevRef.value + sig, azimuth - (angle * (1 - rad)), elevation,
-						aten2distance.value(radRoot)); // invert to represnet distance
-					lrevRef.value = (sig * contract) +
-					Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-				}
-			} {
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
-					var sig = distFilter.value(p.value, rad) + lrevRef.value;
-					sig = BFEncodeSter.ar(sig[0], sig[1], azimuth,
-						angle * MoscaUtils.deg2rad,
-						elevation, aten2distance.value(radRoot)); // invert to represnet distance
-					lrevRef.value = (sig * contract) +
-					Silent.ar(renderer.bFormNumChan - 1).addFirst(Mix(sig) * (1 - contract));
-				}
+			^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle winsize, grainrate, winrand |
+				var azelwinrand = 1 - contract,
+				rho = aten2distance.value(radRoot), // invert to represent distance
+				mul = ((0.5 - winsize) + (1 - (grainrate / 40))).clip(0, 1) * 0.5,
+				sig = distFilter.value(p.value, rad);
+				sig = lrevRef.value + sig;
+				lrevRef.value = MonoGrainBF.ar(sig[0], winsize, grainrate, winrand,
+					azimuth + (angle * (1 - rad)), azelwinrand, elevation, azelwinrand,
+					rho: rho, mul: mul)
+				+ MonoGrainBF.ar(sig[1], winsize, grainrate, winrand,
+					azimuth + (angle * (1 - rad)), azelwinrand, elevation, azelwinrand,
+					rho: rho, mul: mul);
 			}
 		};
 	}
