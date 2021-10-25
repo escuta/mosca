@@ -20,22 +20,20 @@
 //                   BFFMH                   //
 //-------------------------------------------//
 
-BFFMHDef : SpatDef
+BFFMHDef : FumaDef
 {
 	// class access
 	const <channels = #[ 1, 2 ]; // possible number of channels
-	classvar <format, <key;
+	classvar <key;
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
 	{
 		defList = defList.add(this.asClass);
 		key = "BF-FMH";
-		format = \FUMA;
 	}
 
 	getFunc { | maxOrder, renderer, nChanns |

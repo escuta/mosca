@@ -20,24 +20,22 @@
 //                    VBAP                   //
 //-------------------------------------------//
 
-VBAPDef : SpatDef
+VBAPDef : NonAmbiDef
 {
 	var vbapBuffer; // specific variables
 
 	// class access
 	const <channels = #[ 1, 2 ];
-	classvar <format, <key;
+	classvar <key;
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
 	{
 		defList = defList.add(this.asClass);
 		key = "VBAP";
-		format = \NONAMBI;
 	}
 
 	prSetVars

@@ -20,22 +20,20 @@
 //                    ADT                    //
 //-------------------------------------------//
 
-ADTDef : SpatDef
+ADTDef : N3DDef
 {
 	// class access
 	const <channels = #[ 1, 2 ];
-	classvar <format, <key;
+	classvar <key;
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
 	{
 		if (\HOAmbiPanner1.asClass.notNil) { defList = defList.add(this.asClass); };
 		key = "ADT";
-		format = \N3D;
 	}
 
 	getFunc

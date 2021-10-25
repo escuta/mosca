@@ -16,54 +16,50 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-//-------------------------------------------//
-//                Base Class                 //
-//-------------------------------------------//
-
-SpatDef
+NonAmbiDef : SpatDef
 {
-	classvar <defList, distFilter, atenuator, aten2distance;
+	// class access
+	classvar <format;
+	var <busses, <fxOutFunc;
 
-	*new
-	{ | maxOrder, effects, renderer, server |
-		^super.new().prSetVars(maxOrder, renderer, server).prSetBusses(effects, renderer);
-	}
+	// instance access
+	format { ^format; }
 
-	*initClass
-	{
-		Class.initClassTree(MoscaUtils);
+	*initClass{ format = \NONAMBI; }
 
-		defList = [];
+	prSetBusses
+	{ | effects, renderer |
 
-		distFilter = { | p, intens | // attenuate high freq with intens
-			LPF.ar(p, (1 - intens) * 18000 + 2000);
+		busses = [effects.gBfBus, renderer.nonAmbiBus];
+		fxOutFunc = { | dry, wet, globFx, fxBus |
+			Out.ar(fxBus, dry * globFx); // effect.gBfBus
 		};
-
-		atenuator = { | radRoot | 1 / radRoot - 1 };
-
-		aten2distance = { | radRoot | 1 / atenuator.value(radRoot) };
 	}
 
 	getMetadata
 	{ | maxOrder, speaker_array |
-		^(order: maxOrder);
+
+		if (speaker_array.isNil)
+		{
+			^(setup: MoscaUtils.emulate_array);
+		} {
+			^(setup: speaker_array);
+		}
 	}
 
 	needsReCompile
 	{ | name, maxOrder, speaker_array |
 
-		var desc = SynthDesc.read(
+		var setup, desc = SynthDesc.read(
 			SynthDef.synthDefDir ++ name ++
 			".scsyndef")[name.asSymbol];
 
+		if (speaker_array.isNil)
+		{ setup = MoscaUtils.emulate_array; }
+		{ setup = speaker_array; };
+
 		if (desc.notNil)
-		{ ^desc.metadata[\order] != maxOrder; }
+		{ ^desc.metadata[\setup] != setup; }
 		{ ^true; };
 	}
-
-	prSetVars{ | maxOrder, renderer, server | } // override this method to set specific variables.
-	setParams{ | parentOssiaNode | } // override this method to set specific ossia parameters.
-	getArgs{ ^nil } // override this method to get specific Syth arguments.
-	format{ ^nil }
-	prSetBusses{}
 }

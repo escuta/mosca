@@ -72,7 +72,7 @@ Mosca : MoscaBase
 
 			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer, irBank);
 
-			spat.makeSpatialisers(server, maxOrder, effects, renderer);
+			spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array);
 
 			effects.sendFx(multyThread, server);
 
