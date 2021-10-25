@@ -22,7 +22,19 @@
 
 ATKBaseDef : SpatDef
 {
-	var <format, encoder; // specific variables
+	var <format, encoder, // specific variables
+	<busses, <fxOutFunc;
+
+	needsReCompile{ | name, maxOrder, speaker_array | ^true }
+
+	prSetBusses
+	{ | effects, renderer |
+
+		busses = [effects.gBfBus, renderer.fumaBus];
+		fxOutFunc = { | dry, wet, globFx, fxBus |
+			Out.ar(fxBus, wet * globFx); // effect.gBfBus
+		};
+	}
 
 	getFunc
 	{ | maxOrder, renderer, nChanns |

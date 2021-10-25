@@ -72,7 +72,7 @@ MoscaSpatializer
 	}
 
 	makeSpatialisers
-	{ | server, maxOrder, effect, renderer |
+	{ | server, maxOrder, effect, renderer, speaker_array |
 
 		var plim = MoscaUtils.plim, name, metadata;
 
@@ -85,51 +85,49 @@ MoscaSpatializer
 
 			spatInstances.get.do({ | spat |
 
-				/*if (spat.format != \NONAMBI)
-				{
-				metadata = (setup: renderer.)*/
-
 				playList.do({ | play_type, j |
 
 					spat.channels.do({ | channels |
 
 						name = spat.key ++ play_type ++ channels ++ effect.key;
 
-						SynthDef(name, {
-							| outBus = #[0, 0], radAzimElev = #[10, 0, 0], amp = 1, dopamnt = 0,
-							glev = 0 |
+						if (spat.needsReCompile(name, maxOrder, speaker_array))
+						{
+							SynthDef(name, {
+								| outBus = #[0, 0], radAzimElev = #[10, 0, 0], amp = 1, dopamnt = 0,
+								glev = 0 |
 
-							var rad = Lag.kr(radAzimElev[0]),
-							radRoot = rad.sqrt.clip(minRadRoot, 1),
-							lrevRef = Ref(0),
-							azimuth = radAzimElev[1] - MoscaUtils.halfPi,
-							elevation = radAzimElev[2],
-							revCut = rad.lincurve(1, plim, 1, 0),
-							channum = channels,
-							p = Ref(0);
+								var rad = Lag.kr(radAzimElev[0]),
+								radRoot = rad.sqrt.clip(minRadRoot, 1),
+								lrevRef = Ref(0),
+								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
+								elevation = radAzimElev[2],
+								revCut = rad.lincurve(1, plim, 1, 0),
+								channum = channels,
+								p = Ref(0);
 
-							SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
+								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
 
-							p.value = DelayC.ar(p.value, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
+								p.value = DelayC.ar(p.value, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
 
-							// local reverberation
-							SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rad ]);
+								// local reverberation
+								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rad ]);
 
-							lrevRef.value = lrevRef.value * revCut;
-							p.value = p.value * amp;
+								lrevRef.value = lrevRef.value * revCut;
+								p.value = p.value * amp;
 
-							SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
-								prependArgs: [ lrevRef, p, rad, radRoot, azimuth, elevation ]);
+								SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
+									prependArgs: [ lrevRef, p, rad, radRoot, azimuth, elevation ]);
 
-							spat.fxOutFunc.value(p.value, lrevRef.value,
-							(1 - radRoot) * glev, outBus[0]);
+								spat.fxOutFunc.value(p.value, lrevRef.value,
+									(1 - radRoot) * glev, outBus[0]);
 
-							Out.ar(outBus[1], lrevRef.value);
-						},
+								Out.ar(outBus[1], lrevRef.value);
+							}, metadata: spat.getMetadata(maxOrder, speaker_array)
+							).store(mdPlugin: TextArchiveMDPlugin);
 
-						).load(server);
-
-						postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
+							postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
+						}
 					})
 				})
 			})

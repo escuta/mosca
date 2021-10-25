@@ -16,26 +16,20 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-//-------------------------------------------//
-//                   JOSH                    //
-//-------------------------------------------//
-
-JOSHDef : SpatDef
+JOSHDef : FumaDef
 {
 	// class access
 	const <channels = #[ 1, 2 ]; // possible number of channels
-	classvar <format, <key;
+	classvar <key;
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
 	{
 		defList = defList.add(this.asClass);
 		key = "Josh";
-		format = \FUMA;
 	}
 
 	getFunc { | maxOrder, renderer, nChanns |

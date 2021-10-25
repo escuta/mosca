@@ -136,11 +136,7 @@ MoscaRenderer
 
 			numOutputs = 26;
 
-			emulate_array = [ [ 0, 90 ], [ 0, 45 ], [ 90, 45 ], [ 180, 45 ], [ -90, 45 ],
-				[ 45, 35 ], [ 135, 35 ], [ -135, 35 ], [ -45, 35 ], [ 0, 0 ], [ 45, 0 ],
-				[ 90, 0 ], [ 135, 0 ], [ 180, 0 ], [ -135, 0 ], [ -90, 0 ], [ -45, 0 ],
-				[ 45, -35 ], [ 135, -35 ], [ -135, -35 ], [ -45, -35 ], [ 0, -45 ],
-				[ 90, -45 ], [ 180, -45 ], [ -90, -45 ], [ 0, -90 ] ];
+			emulate_array = MoscaUtils.emulate_array;
 
 			vbap_setup = VBAPSpeakerArray(3, emulate_array);
 			// emulate 26-point Lebedev grid

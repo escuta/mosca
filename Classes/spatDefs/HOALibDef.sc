@@ -20,22 +20,20 @@
 //                   HOALIB                  //
 //-------------------------------------------//
 
-HOALibDef : SpatDef
+HOALibDef : N3DDef
 {
 	// class access
 	const <channels = #[ 1, 2 ]; // possible number of channels
-	classvar <format, <key;
+	classvar <key;
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
 	{
 		if (\HOALibEnc3D1.asClass.notNil) { defList = defList.add(this.asClass)};
 		key = "HoaLib";
-		format = \N3D;
 	}
 
 	getFunc { | maxOrder, renderer, nChanns |

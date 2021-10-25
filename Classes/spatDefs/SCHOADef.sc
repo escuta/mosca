@@ -20,22 +20,20 @@
 //                   SC-HOA                  //
 //-------------------------------------------//
 
-SCHOADef : SpatDef
+SCHOADef : N3DDef
 {
 	// class access
 	const <channels = #[ 1, 2 ]; // possible number of channels
-	classvar <format, <key;
+	classvar <key;
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
 	{
 		defList = defList.add(this.asClass);
 		key = "SC-HOA";
-		format = \N3D;
 	}
 
 	getFunc { | maxOrder, renderer, nChanns |

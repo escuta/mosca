@@ -20,7 +20,7 @@
 //                 AMBITOOLS                 //
 //-------------------------------------------//
 
-ABTDef : SpatDef
+ABTDef : N3DDef
 {
 	var lim, converge; // specific variables
 
@@ -28,18 +28,16 @@ ABTDef : SpatDef
 
 	// class access
 	<channels = #[ 1, 2, 4, 9, 16, 25, 36 ]; // possible number of channels
-	classvar <format, <key;
+	classvar <key;
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
 	{
 		defList = defList.add(this.asClass);
 		key = "Ambitools";
-		format = \N3D;
 	}
 
 	prSetVars
