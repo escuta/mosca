@@ -25,8 +25,6 @@ ATKBaseDef : SpatDef
 	var <format, encoder, // specific variables
 	<busses, <fxOutFunc;
 
-	needsReCompile{ | name, maxOrder, speaker_array | ^true }
-
 	prSetBusses
 	{ | effects, renderer |
 
@@ -42,11 +40,10 @@ ATKBaseDef : SpatDef
 		switch (nChanns,
 			1,
 			{
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, encoder |
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
 					var sig = distFilter.value(p.value, rad);
 					sig = lrevRef.value + (sig * atenuator.value(radRoot));
 					sig = FoaEncode.ar(sig, encoder);
-					sig.removeAt(0);
 					sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
 						CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
 					sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
@@ -55,15 +52,13 @@ ATKBaseDef : SpatDef
 			},
 			2,
 			{
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle, encoder |
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
 					var l, r, sig = distFilter.value(p.value, rad),
 					az = CircleRamp.kr(azimuth, 0.1, -pi, pi),
 					contr = MoscaUtils.halfPi * contract;
 					sig = lrevRef.value + (sig * atenuator.value(radRoot));
 					l = FoaEncode.ar(sig[0], encoder);
-					l.removeAt(0);
 					r = FoaEncode.ar(sig[1], encoder);
-					r.removeAt(0);
 					l = FoaTransform.ar(l, 'push', contr, az + (angle * (1 - rad)), elevation);
 					r = FoaTransform.ar(r, 'push', contr, az - (angle * (1 - rad)), elevation);
 					sig = HPF.ar(l + r, 20); // stops bass frequency blow outs by proximity
@@ -95,8 +90,6 @@ ATKBaseDef : SpatDef
 			}
 		)
 	}
-
-	getArgs{ ^[\encoder, encoder] }
 }
 
 //-------------------------------------------//
@@ -111,7 +104,6 @@ ATKDef : ATKBaseDef
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
@@ -123,7 +115,7 @@ ATKDef : ATKBaseDef
 	prSetVars
 	{ | maxOrder, renderer, server |
 		format = \FUMA;
-		encoder = FoaEncoderMatrix.newOmni();
+		encoder = FoaEncoderMatrix.newOmni;
 	}
 }
 
@@ -139,7 +131,6 @@ ATKDfDef : ATKBaseDef
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
@@ -148,11 +139,15 @@ ATKDfDef : ATKBaseDef
 		key = "ATK_sp";
 	}
 
+	// allways recompile as the graprequires an kernel instance
+	needsReCompile{ | name, maxOrder, speaker_array | ^true }
+
 	prSetVars
 	{ | maxOrder, renderer, server |
 		format = \FUMA;
 		encoder = FoaEncoderKernel.newSpread(subjectID: 6, kernelSize: 2048,
 			server:server, sampleRate:server.sampleRate.asInteger);
+		server.sync;
 	}
 }
 
@@ -168,7 +163,6 @@ ATKSpDef : ATKBaseDef
 
 	// instance access
 	key { ^key; }
-	format { ^format; }
 	channels { ^channels; }
 
 	*initClass
@@ -177,10 +171,14 @@ ATKSpDef : ATKBaseDef
 		key = "ATK_df";
 	}
 
+	// allways recompile as the graprequires an kernel instance
+	needsReCompile{ | name, maxOrder, speaker_array | ^true }
+
 	prSetVars
 	{ | maxOrder, renderer, server |
 		format = \FUMA;
 		encoder = FoaEncoderKernel.newDiffuse(subjectID: 3, kernelSize: 2048,
 			server:server, sampleRate:server.sampleRate.asInteger);
+		server.sync;
 	}
 }

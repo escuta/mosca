@@ -94,8 +94,8 @@ MoscaSpatializer
 						if (spat.needsReCompile(name, maxOrder, speaker_array))
 						{
 							SynthDef(name, {
-								| outBus = #[0, 0], radAzimElev = #[10, 0, 0], amp = 1, dopamnt = 0,
-								glev = 0 |
+								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
+								amp = 1, dopamnt = 0, glev = 0 |
 
 								var rad = Lag.kr(radAzimElev[0]),
 								radRoot = rad.sqrt.clip(minRadRoot, 1),
