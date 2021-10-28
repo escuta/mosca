@@ -26,5 +26,9 @@ ClearDef : EffectDef
 
 	*initClass { key = "Clear"; }
 
+	// keep this one virtual
+	*new1stOrder { }
+	*new2ndOrder { }
+
 	*getFunc { | nChanns | ^{ | lrevRef, p, rad, llev | }}
 }

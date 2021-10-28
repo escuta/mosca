@@ -25,7 +25,7 @@ MoscaSource[]
 	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
 	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
-	var <angle, <rotation, <directivity; // input specific parameters
+	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
 	var <auxiliary, <aux, <check;
 
@@ -131,27 +131,11 @@ MoscaSource[]
 
 		rotation.node.unit_(OSSIA_angle.degree).description_("B-Format only");
 
-		directivity = OssiaAutomationProxy(src, "B-Fmt_atk_directivity", Float,
-			[0, 90], 0, 'clip', critical:allCritical);
+		extraParams = [];
 
-		directivity.node.unit_(OSSIA_angle.degree).description_("ATK B-Format only");
-
-		josh = OSSIA_Node(src, "Josh");
-
-		rate = OssiaAutomationProxy(josh, "Grain_rate", Float,
-			[1, 60], 10, 'clip', critical:allCritical);
-
-		rate.node.unit_(OSSIA_time.frequency).description_("JoshGrain only");
-
-		window = OssiaAutomationProxy(josh, "Window_size", Float,
-			[0, 0.2], 0.1, 'clip', critical:allCritical);
-
-		window.node.unit_(OSSIA_time.second).description_("JoshGrain only");
-
-		random = OssiaAutomationProxy(josh, "Random_size", Float,
-			[0, 1], 0, 'clip', critical:allCritical);
-
-		random.node.description_("JoshGrain only");
+		spatInstances.get.do({ | item |
+			extraParams = extraParams ++ item.setParams(src, allCritical);
+		});
 
 		auxiliary = OSSIA_Node(src, "Auxiliary");
 
@@ -160,7 +144,6 @@ MoscaSource[]
 		check = [];
 
 		5.do({ | i |
-
 			aux = aux.add(OssiaAutomationProxy(auxiliary, "Aux_" ++ (i + 1), Float,
 				[0, 1], 0, 'clip', critical:allCritical));
 
@@ -240,11 +223,11 @@ MoscaSource[]
 			this.prSetDefName();
 		});
 
-		localAmount.action_({ | val | this.prSetSynths(\llev, val.value) });
+		localAmount.action_({ | val | this.setSynths(\llev, val.value) });
 
-		localDelay.action_({ | val | this.prSetSynths(\room, val.value) });
+		localDelay.action_({ | val | this.setSynths(\room, val.value) });
 
-		localDecay.action_({ | val | this.prSetSynths(\damp, val.value) });
+		localDecay.action_({ | val | this.setSynths(\damp, val.value) });
 
 		library.action_({ | val |
 
@@ -257,42 +240,38 @@ MoscaSource[]
 
 		loop.action_({ | val |
 
-			this.prSetSynths(\lp, val.value.asInteger);
-			if (val.value) { this.prSetSynths(\tpos, 0) };
+			this.setSynths(\lp, val.value.asInteger);
+			if (val.value) { this.setSynths(\tpos, 0) };
 		});
 
-		level.action_({ | val | this.prSetSynths(\amp, val.value.dbamp) });
+		level.action_({ | val | this.setSynths(\amp, val.value.dbamp) });
 
-		contraction.action_({ | val | this.prSetSynths(\contract, val.value) });
+		contraction.action_({ | val | this.setSynths(\contract, val.value) });
 
-		doppler.action_({ | val | this.prSetSynths(\dopamnt, val.value) });
+		doppler.action_({ | val | this.setSynths(\dopamnt, val.value) });
 
-		globalAmount.action_({ | val | this.prSetSynths(\glev, val.value) });
+		globalAmount.action_({ | val | this.setSynths(\glev, val.value) });
 
-		angle.action_({ | val | this.prSetSynths(\angle, val.value.degrad) });
+		angle.action_({ | val | this.setSynths(\angle, val.value.degrad) });
 
 		rotation.action_({ | val |
-			this.prSetSynths(\rotAngle, val.value.degrad  + center.heading.value);
+			this.setSynths(\rotAngle, val.value.degrad  + center.heading.value);
 		});
 
-		directivity.action_({ | val | this.prSetSynths(\directang, val.value.degrad) });
-
-		rate.action_({ | val | this.prSetSynths(\grainrate, val.value) });
-
-		window.action_({ | val | this.prSetSynths(\winsize, val.value) });
-
-		random.action_({ | val | this.prSetSynths(\winrand, val.value) });
+		spatInstances.get.do({ | item |
+			item.setAction(src, this);
+		});
 
 		aux.do({ | item |
 			item.action_({
-				this.prSetSynths(\aux, [aux[0].value, aux[1].value,
+				this.setSynths(\aux, [aux[0].value, aux[1].value,
 					aux[2].value, aux[3].value, aux[4].value]);
 			});
 		});
 
 		check.do({ | item |
 			item.action_({
-				this.prSetSynths(\check, [check[0].value, check[1].value,
+				this.setSynths(\check, [check[0].value, check[1].value,
 					check[2].value, check[3].value, check[4].value]);
 			});
 		});
@@ -315,17 +294,17 @@ MoscaSource[]
 		level.dockTo(automation, "levelProxy_" ++ index);
 		doppler.dockTo(automation, "dopamtProxy_" ++ index);
 		globalAmount.dockTo(automation, "globaamtlProxy_" ++ index);
+
 		localEffect.dockTo(automation, "localProxy_" ++ index);
 		localDelay.dockTo(automation, "localDelayProxy_" ++ index);
 		localDecay.dockTo(automation, "localDecayProxy_" ++ index);
 
 		angle.dockTo(automation, "angleProxy_" ++ index);
 		rotation.dockTo(automation, "rotationProxy_" ++ index);
-		directivity.dockTo(automation, "directivityProxy_" ++ index);
 		contraction.dockTo(automation, "contractionProxy_" ++ index);
-		rate.dockTo(automation, "grainrateProxy_" ++ index);
-		window.dockTo(automation, "windowsizeProxy_" ++ index);
-		random.dockTo(automation, "randomwindowProxy_" ++ index);
+
+		extraParams.do({ | item | item.dockTo(automation,
+			item.node.name ++ "Proxy_" ++ index)});
 
 		aux.do({ | item, i | item.dockTo(automation,
 			"aux" ++ (i + 1) ++ "Proxy_" ++ index)
@@ -396,7 +375,9 @@ MoscaSource[]
 
 		angle.free;
 		rotation.free;
-		directivity.free;
+
+		extraParams.do({ | item | item.free });
+
 		contraction.free;
 		rate.free;
 		window.free;
@@ -450,8 +431,6 @@ MoscaSource[]
 
 					// no acces to center here
 					// args = args ++ [\rotAngle, rotation.value + center.heading.value];
-
-					if (library.value == "ATK") { args = args ++ [\directang, directivity.value] };
 				};
 			);
 
@@ -471,7 +450,8 @@ MoscaSource[]
 					\winrand, random.value];
 			};
 
-			args = args ++ spatInstances.get.at(library.value.asSymbol).getArgs;
+			args = args ++ spatInstances.get.at(library.value.asSymbol)
+			.getArgs(src, nChan.value);
 
 			if ((file.value != "") && (scSynths.value || external.value).not)
 			{
@@ -498,6 +478,9 @@ MoscaSource[]
 				// WARNING is evrything syncked ?
 			};
 
+			args = args ++ spatInstances.get.at(library.value.asSymbol)
+				.getArgs(src, nChan.value);
+
 			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
 
 			spatializer.set(Synth(defName, // launch spatializer synth
@@ -521,6 +504,20 @@ MoscaSource[]
 				});
 			);
 		};
+	}
+
+	setSynths
+	{ | param, value |
+
+		if (spatializer.get.notNil) { spatializer.get.set(param, value) };
+
+		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
+	}
+
+	getLibParams
+	{
+		^spatInstances.get.at(library.value.asSymbol)
+		.getParams(src, chanNum);
 	}
 
 	//-------------------------------------------//
@@ -626,14 +623,6 @@ MoscaSource[]
 				("Source " + (index + 1) + " stopping!").postln;
 			};
 		};
-	}
-
-	prSetSynths
-	{ | param, value |
-
-		if (spatializer.get.notNil) { spatializer.get.set(param, value) };
-
-		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
 	}
 
 	prFreeBuffer // Always free the buffer before changing configuration

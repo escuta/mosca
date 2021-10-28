@@ -27,7 +27,7 @@ NonAmbiDef : SpatDef
 
 	*initClass{ format = \NONAMBI; }
 
-	prSetBusses
+	setBusses
 	{ | effects, renderer |
 
 		busses = [effects.gBfBus, renderer.nonAmbiBus];

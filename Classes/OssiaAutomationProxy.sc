@@ -69,7 +69,19 @@ OssiaAutomationProxy : AutomationBase
 	{ | parent_node, name, type, domain, default_value, bounding_mode = 'free',
 		critical = false, repetition_filter = true |
 
-		^super.new.ctr(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
+		^super.new.ctr(parent_node, name, type, domain, default_value, bounding_mode,
+			critical, repetition_filter);
+	}
+
+	*createIfNeeded
+	{ | parent_node, name, type, domain, default_value, bounding_mode = 'free',
+		critical = false, repetition_filter = true |
+
+		if (parent_node.find(name).isNil)
+		{
+			^super.new.ctr(parent_node, name, type, domain, default_value,
+				bounding_mode, critical, repetition_filter);
+		}
 	}
 
 	ctr
