@@ -823,18 +823,11 @@ MoscaGUI
 			{
 				src.angle.node.closeGui(ctlView);
 				src.rotation.node.gui(ctlView);
-
-				if (src.library.value == "ATK")
-				{ src.directivity.node.gui(ctlView) }
 			}
 		);
 
-		if (src.library.value == "Josh")
-		{
-			src.josh.gui(ctlView);
-		} {
-			src.josh.closeGui(ctlView);
-		};
+		src.getLibParams().do({ | item |
+			item.gui(ctlView) });
 
 		if (src.localEffect.value == "Clear")
 		{

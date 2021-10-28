@@ -65,6 +65,10 @@ MoscaSpatializer
 
 		spatInstances = Ref(IdentityDictionary());
 
+		defs.do({ | def |
+			spatInstances.get.put(def.key.asSymbol, def.new());
+		});
+
 		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
 		playInFunc = playInFunc.add({ | p, channum, busini |
 			p.value = In.ar(busini + server.inputBus.index, channum);
@@ -72,16 +76,15 @@ MoscaSpatializer
 	}
 
 	makeSpatialisers
-	{ | server, maxOrder, effect, renderer, speaker_array |
+	{ | server, maxOrder, effects, renderer, speaker_array |
 
 		var plim = MoscaUtils.plim, name, metadata;
 
-		defs.do(
-			{ | def |
-				spatInstances.get.put(def.key.asSymbol, def.new(maxOrder, effect, renderer, server));
+		spatInstances.get.do({ | def |
+			def.setup(maxOrder, effects, renderer, server);
 		});
 
-		effect.defs.do({ | effect, count |
+		effects.defs.do({ | effect, count |
 
 			spatInstances.get.do({ | spat |
 

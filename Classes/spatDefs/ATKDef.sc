@@ -25,15 +25,6 @@ ATKBaseDef : SpatDef
 	var <format, encoder, // specific variables
 	<busses, <fxOutFunc;
 
-	prSetBusses
-	{ | effects, renderer |
-
-		busses = [effects.gBfBus, renderer.fumaBus];
-		fxOutFunc = { | dry, wet, globFx, fxBus |
-			Out.ar(fxBus, wet * globFx); // effect.gBfBus
-		};
-	}
-
 	getFunc
 	{ | maxOrder, renderer, nChanns |
 
@@ -90,6 +81,15 @@ ATKBaseDef : SpatDef
 			}
 		)
 	}
+
+	prSetBusses
+	{ | effects, renderer |
+
+		busses = [effects.gBfBus, renderer.fumaBus];
+		fxOutFunc = { | dry, wet, globFx, fxBus |
+			Out.ar(fxBus, wet * globFx); // effect.gBfBus
+		};
+	}
 }
 
 //-------------------------------------------//
@@ -110,6 +110,41 @@ ATKDef : ATKBaseDef
 	{
 		defList = defList.add(this.asClass);
 		key = "ATK";
+	}
+
+	setParams
+	{ | parentOssiaNode, allCritical |
+
+		var direct = OssiaAutomationProxy(parentOssiaNode,
+			"Directivity", Float, [0, 90], 0,
+			'clip', critical:allCritical);
+
+		direct.node.unit_(OSSIA_angle.degree).description_("ATK B-Format only");
+
+		^[direct];
+	}
+
+	setAction
+	{ | parentOssiaNode, source |
+
+		parentOssiaNode.find("Directivity")
+		.callback_({ | val | source.setSynths(\directang, val.value.degrad) });
+	}
+
+	getParams
+	{ | parentOssiaNode, nChan |
+
+		if (nChan > 2)
+		{ ^[parentOssiaNode.find("Directivity")] }
+		{ ^[] }
+	}
+
+	getArgs
+	{ | parentOssiaNode, nChan |
+
+		if (nChan > 2)
+		{ ^[\directang, parentOssiaNode.find("B-Fmt_atk_directivity").value] }
+		{ ^[] }
 	}
 
 	prSetVars

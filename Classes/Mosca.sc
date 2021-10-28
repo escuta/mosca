@@ -49,9 +49,9 @@ Mosca : MoscaBase
 
 		renderer = MoscaRenderer(maxOrder);
 
-		spat = MoscaSpatializer(server);
-
 		effects = MoscaEffects();
+
+		spat = MoscaSpatializer(server);
 
 		srcGrp = Ref();
 

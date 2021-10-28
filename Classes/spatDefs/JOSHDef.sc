@@ -32,6 +32,60 @@ JOSHDef : FumaDef
 		key = "Josh";
 	}
 
+	setParams
+	{ | parentOssiaNode, allCritical |
+
+		var josh, rate, window, random;
+
+		josh = OSSIA_Node(parentOssiaNode, "Josh");
+
+		rate = OssiaAutomationProxy(josh, "Grain_rate", Float,
+			[1, 60], 10, 'clip', critical:allCritical);
+
+		rate.node.unit_(OSSIA_time.frequency).description_("JoshGrain only");
+
+		window = OssiaAutomationProxy(josh, "Window_size", Float,
+			[0, 0.2], 0.1, 'clip', critical:allCritical);
+
+		window.node.unit_(OSSIA_time.second).description_("JoshGrain only");
+
+		random = OssiaAutomationProxy(josh, "Random_size", Float,
+			[0, 1], 0, 'clip', critical:allCritical);
+
+		random.node.description_("JoshGrain only");
+
+		^[rate, window, random];
+	}
+
+	setAction
+	{ | parentOssiaNode, source |
+
+		parentOssiaNode.find("Josh/Grain_rate")
+		.callback_({ | val | source.setSynths(\grainrate, val.value) });
+
+		parentOssiaNode.find("Josh/Window_size")
+		.callback_({ | val | source.setSynths(\winsize, val.value) });
+
+		parentOssiaNode.find("Josh/Random_size")
+		.callback_({ | val | source.setSynths(\winrand, val.value) });
+	}
+
+	getParams
+	{ | parentOssiaNode, nChan |
+
+		^parentOssiaNode.find("Josh").children();
+	}
+
+	getArgs
+	{ | parentOssiaNode, nChan |
+
+		^[
+			\grainrate, parentOssiaNode.find("Josh/Grain_rate").value,
+			\winsize, parentOssiaNode.find("Josh/Window_size").value,
+			\winrand, parentOssiaNode.find("Josh/Random_size").value,
+		]
+	}
+
 	getFunc { | maxOrder, renderer, nChanns |
 
 		if (nChanns == 1)

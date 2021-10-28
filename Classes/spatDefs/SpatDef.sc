@@ -24,9 +24,11 @@ SpatDef
 {
 	classvar <defList, distFilter, atenuator, aten2distance;
 
-	*new
+	setup
 	{ | maxOrder, effects, renderer, server |
-		^super.new().prSetVars(maxOrder, renderer, server).prSetBusses(effects, renderer);
+
+		this.prSetVars(maxOrder, renderer, server);
+		this.prSetBusses(effects, renderer);
 	}
 
 	*initClass
@@ -62,8 +64,10 @@ SpatDef
 	}
 
 	prSetVars{ | maxOrder, renderer, server | } // override this method to set specific variables.
-	setParams{ | parentOssiaNode | } // override this method to set specific ossia parameters.
-	getArgs{ ^nil } // override this method to get specific Syth arguments.
-	format{ ^nil }
-	prSetBusses{}
+	setParams{ | parentOssiaNode, allCritical | ^[] } // override this method to set specific ossia parameters.
+	getParams{ | parentOssiaNode, nChan | ^[] } // override this method to get specific ossia parameters.
+	setAction{ | parentOssiaNode, source | } // and their actions
+	getArgs{ | parentOssiaNode, nChan | ^[] } // override this method to get specific Syth arguments.
+	format{}
+	prSetBusses{ | effects, renderer | }
 }
