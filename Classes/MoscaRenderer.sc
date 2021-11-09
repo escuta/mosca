@@ -402,10 +402,8 @@ MoscaRenderer
 							sig[5], sig[6], sig[7], sig[8], sig[9], sig[10], sig[11],
 							sig[12], sig[13], sig[14], sig[15], sig[16], sig[17],
 							sig[18], sig[19], sig[20], sig[21], sig[22], sig[23],
-							sig[24], sig[15], sig[16], sig[17], sig[18], sig[19],
-							sig[20], sig[21], sig[22], sig[23], sig[24], sig[25],
-							sig[26], sig[27], sig[28], sig[29], sig[30], sig[31],
-							sig[32], sig[33], sig[34], sig[35],
+							sig[24], sig[25], sig[26], sig[27], sig[28], sig[29],
+							sig[30], sig[31], sig[32], sig[33], sig[34], sig[35],
 							0, lf_hf, xover:xover);
 						nonambi = perfectSphereFunc.value(nonAmbiBus);
 						sig = (sig + nonambi) * level;
