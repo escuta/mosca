@@ -1,6 +1,6 @@
 MoscaBase // acts as the public interface
 {
-	var dur, <server, <ossiaParent, gui, <tracker; // initial rguments
+	var dur, <server, <ossiaParent, <mainWindow, <tracker; // initial rguments
 	var renderer, <effects, center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
@@ -15,11 +15,8 @@ MoscaBase // acts as the public interface
 			\\angle | Stereo angle | default 1.05 (60 degrees) [0, pi]
 			\\glev | Global effect level [0, 1]
 			\\llev | Local effect level [0, 1]
-			\\room | Local reverb room/delay [0, 1]
-			\\damp | Local reverb damp/decay [0, 1]
 			\\radAzimElev | radius, azimuth and elevation array in radiants [[0,20],[-pi,pi],[-hafPi,halfPi]]
 			\\rotAngle | B-format rotation angle [-pi, pi]
-			\\directang | B-format directivity [0, pi/2]
 			\\contr | Contraction of the soundfiled, from omnidirectional to punctual [0, 1]
 			\\aux | aray of 5 Auxiliary parameter values [[0, 1],[0, 1],[0, 1],[0, 1],[0, 1]]
 			\\check | array of 5 Auxiliary Boolean values [[false,true],[false,true],[false,true],[false,true],[false,true]]
@@ -47,7 +44,7 @@ MoscaBase // acts as the public interface
 
 			sources.set(sources.get.add(newSource));
 
-			if (gui.notNil) { { gui.addSource(sources.get.last) }.defer };
+			if (mainWindow.notNil) { { mainWindow.addSource(sources.get.last) }.defer };
 		})
 	}
 
@@ -63,7 +60,7 @@ MoscaBase // acts as the public interface
 
 				src.free;
 
-				if (gui.notNil) { { gui.removeSource(i) }.defer };
+				if (mainWindow.notNil) { { mainWindow.removeSource(i) }.defer };
 			})
 		}
 	}
@@ -290,12 +287,12 @@ MoscaBase // acts as the public interface
 		src.rotation.valueAction_(rotation);
 	}
 
-	setBFormatDirectivity
-	{ | sourceNum = 1, directivity = 0 |
+	setExtraParams
+	{ | sourceNum = 1, parameter, value = 0 |
 
 		var src = this.prGetSource(sourceNum);
 
-		src.directivity.valueAction_(directivity);
+		src.src.find(parameter).value_(value);
 	}
 
 	setAtkSpread
@@ -419,13 +416,15 @@ MoscaBase // acts as the public interface
 	gui
 	{ | size = 800, palette = \ossia, lag = 0.05 |
 
-		if (gui.isNil)
-		{
-			gui = MoscaGUI(this, size, palette, lag);
 
-			gui.win.onClose_({
-				gui.free;
-				gui = nil;
+
+		if (mainWindow == nil)
+		{
+			mainWindow = MoscaGUI(this, size, palette, lag);
+
+			mainWindow.win.onClose_({
+				mainWindow.free;
+				mainWindow = nil;
 			});
 		}
 	}

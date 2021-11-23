@@ -62,13 +62,7 @@ MoscaEffects {
 		} {
 			if (maxOrder == 1)
 			{
-				defs = defs.collect(
-					{ | item |
-						if (item != ClearDef.asClass)
-						{ item.new1stOrder() }
-						{ item }; // no need to instanciate ClearDef
-					};
-				);
+				defs = defs.collect({ | item | item.new1stOrder() });
 
 				decodeFunc = {
 					var sigf = In.ar(gBfBus, 4);

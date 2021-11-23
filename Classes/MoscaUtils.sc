@@ -72,6 +72,8 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 
 	*rad2deg { ^57.295779513082 }
 
+	*deg2rad { ^1.7453292519943 }
+
 	*hoaChanns { ^[9, 16, 25] }
 
 	*channels { ^[1, 2, 4] ++ this.hoaChanns() }
@@ -90,19 +92,7 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 
 	*fourOrTwelve { | order | if (order > 1) { ^12 } { ^4 } }
 
-	*bfOrFmh { | order | if (order > 1) { ^FMHEncode1 } { ^BFEncode1 } }
-
-	*formatIndex { | format |
-
-		switch (format,
-			{ \N3D }, { ^0 },
-			{ \FUMA }, { ^1 },
-			{ ^2 };
-		);
-	}
-
 	// a-12 decoder matrix
-
 	*soa_a12_decoder_matrix
 	{
 		^Matrix.with([
@@ -134,7 +124,6 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 	}
 
 	// a-12 encoder matrix
-
 	*soa_a12_encoder_matrix
 	{
 		^Matrix.with([
@@ -169,7 +158,6 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 	}
 
 	// 1st-order FuMa-MaxN decoder
-
 	*foa_a12_decoder_matrix
 	{
 		var spher;
@@ -183,7 +171,6 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 	}
 
 	// 1st-order N3D encoder
-
 	*foa_n3d_encoder
 	{
 		^4.collect({ | i |
@@ -193,7 +180,6 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 	}
 
 	// 2nd-order N3D encoder
-
 	*soa_n3d_encoder
 	{
 		^cart.clump(3).collect({ | cart |
@@ -201,4 +187,63 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 			HOASphericalHarmonics.coefN3D(2, sphe.theta(), sphe.phi());
 		});
 	}
+
+	*cartesianToAED
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Cartesian(item[0],item[1],item[2]).asSpherical.rotate(-pi/2)
+		});
+		result = result.collect({
+			arg item,i;
+			[item.theta.raddeg,item.phi.raddeg,item.rho]
+		});
+		^result;
+	}
+
+	*aedToCartesian
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Spherical(item[2], item[0].degrad,item[1].degrad).rotate(pi/2).asCartesian.trunc(0.00000001)
+			});
+		^result;
+	}
+
+	*cartesianToSpherical
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Cartesian(item[0],item[1],item[2]).asSpherical
+		});
+		^result;
+	}
+
+	*sphericalToCartesian
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Spherical(item[0], item[1],item[2]).asCartesian.trunc(0.00000001)
+		});
+		^result;
+	}
+
+
+	*emulate_array
+	{
+		^[ [ 0, 90 ], [ 0, 45 ], [ 90, 45 ], [ 180, 45 ], [ -90, 45 ],
+		[ 45, 35 ], [ 135, 35 ], [ -135, 35 ], [ -45, 35 ], [ 0, 0 ], [ 45, 0 ],
+		[ 90, 0 ], [ 135, 0 ], [ 180, 0 ], [ -135, 0 ], [ -90, 0 ], [ -45, 0 ],
+		[ 45, -35 ], [ 135, -35 ], [ -135, -35 ], [ -45, -35 ], [ 0, -45 ],
+		[ 90, -45 ], [ 180, -45 ], [ -90, -45 ], [ 0, -90 ] ];
+    }
+
 }

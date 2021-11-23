@@ -1,5 +1,5 @@
 /*
- * Mosca: SuperCollider class by Iain Mott, 2016. Licensed under a
+ * Mosca: SuperCollider class by Iain Mott, 2016 and Thibaud Keller, 2018. Licensed under a
  * Creative Commons Attribution-NonCommercial 4.0 International License
  * http://creativecommons.org/licenses/by-nc/4.0/
  * The class makes extensive use of the Ambisonic Toolkit (http://www.ambisonictoolkit.net/)
@@ -69,7 +69,19 @@ OssiaAutomationProxy : AutomationBase
 	{ | parent_node, name, type, domain, default_value, bounding_mode = 'free',
 		critical = false, repetition_filter = true |
 
-		^super.new.ctr(parent_node, name, type, domain, default_value, bounding_mode, critical, repetition_filter);
+		^super.new.ctr(parent_node, name, type, domain, default_value, bounding_mode,
+			critical, repetition_filter);
+	}
+
+	*createIfNeeded
+	{ | parent_node, name, type, domain, default_value, bounding_mode = 'free',
+		critical = false, repetition_filter = true |
+
+		if (parent_node.find(name).isNil)
+		{
+			^super.new.ctr(parent_node, name, type, domain, default_value,
+				bounding_mode, critical, repetition_filter);
+		}
 	}
 
 	ctr
