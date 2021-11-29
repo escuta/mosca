@@ -97,11 +97,11 @@ MoscaStartup
 	}
 	gui
 	{
-		var main = GridLayout();
+		var main = HLayout();
 		var bottom = HLayout();
-		var moscaOptions = VLayout();
-		var serverOptions = GridLayout();
-		var startButton,cancelButton;
+		var moscaOptions; //VLayout
+		var serverOptions; //GridLayout
+		var startButton,cancelButton,advancedParamButton;
 		//server option fields
 
 		var blockSizeInput = EZNumber(window,label:" BlockSize ",
@@ -138,48 +138,57 @@ MoscaStartup
 			action:{|ez| ez.round=ez.value;nbWireBuffer=ez.value}
 		);
 		var i = 1;
-		main.setColumnStretch(0,1);
-		main.setColumnStretch(1,1);
 		//mosca options
-		moscaOptions.add(StaticText.new().string_("Mosca options"),align:\center);
-		moscaOptions.add(nil,2);
+		moscaOptions = CompositeView(window);
+		moscaOptions.background = Color.rand;
+		moscaOptions.layout = VLayout();
+		moscaOptions.layout.add(StaticText.new().string_("Mosca options"),align:\center);
+		moscaOptions.layout.add(nil,2);
 		//server options
-		serverOptions.addSpanning(StaticText.new().string_("Server options"),0,0,1,4,align:\center);
-		serverOptions.setColumnStretch(0,2);
-		serverOptions.setColumnStretch(1,1);
-		serverOptions.setColumnStretch(2,1);
-		serverOptions.setColumnStretch(3,2);
+		serverOptions = CompositeView();
+
+		serverOptions.background = Color.rand;
+		serverOptions.layout = GridLayout();
+		serverOptions.layout.addSpanning(StaticText.new().string_("Server options"),0,0,1,4,align:\center);
+		serverOptions.layout.setColumnStretch(0,2);
+		serverOptions.layout.setColumnStretch(1,1);
+		serverOptions.layout.setColumnStretch(2,1);
+		serverOptions.layout.setColumnStretch(3,2);
 
 		[blockSizeInput,memSizeInput,audioBusInput,inputBusInput,outputBusInput,bufferInput].do{
 			|ezNumber|
 			ezNumber.labelView.align = \left;
 			ezNumber.numberView.align = \right;
-			serverOptions.add(nil,i,0);
-			serverOptions.add(ezNumber.labelView,i,1);
-			serverOptions.add(ezNumber.numberView,i,2);
-			serverOptions.add(nil,i,3);
+			serverOptions.layout.add(nil,i,0);
+			serverOptions.layout.add(ezNumber.labelView,i,1);
+			serverOptions.layout.add(ezNumber.numberView,i,2);
+			serverOptions.layout.add(nil,i,3);
 			i = i+1;
 		};
-		serverOptions.addSpanning(nil,i,0,1,4);
-		serverOptions.setRowStretch(i,2);
+		serverOptions.layout.addSpanning(nil,i,0,1,4);
+		serverOptions.layout.setRowStretch(i,2);
+		serverOptions.visible = false;
 
-		//bottom row
+		//bottom row : buttons
 		startButton = Button.new().string_("Start Server");
 		cancelButton = Button.new().string_("Cancel");
-
+		advancedParamButton = Button.new().string_("Paramètres Avancés");
 		// startButton.action = {this.prStartServer};
 		startButton.action = {"hello world".postln();};
 		cancelButton.action = {this.prCancel};
+		advancedParamButton.action = {serverOptions.visible = serverOptions.visible.not};
 
 		//layout addition to main window
 		bottom.add(startButton);
 		bottom.add(cancelButton);
+		bottom.add(advancedParamButton);
 
-		main.add(moscaOptions,0,0);
-		main.add(serverOptions,0,1);
-		main.add(bottom,1,0);
+		main.add(moscaOptions,1);
+		main.add(serverOptions,1);
 
-		window.layout = main;
+		window.layout = VLayout();
+		window.layout.add(main,2);
+		window.layout.add(bottom,1);
 		window.front;
 	}
 
