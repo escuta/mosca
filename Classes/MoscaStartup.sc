@@ -37,6 +37,7 @@ MoscaStartup
 		oscParent = OSSIA_Device("SC");
 		oscInputName = "ossia score";
 		window = Window.new("Mosca Startup", Rect(10,1000,windowW,windowH));
+		// window.acceptsMouseOver = true;
 		//reading initial servers parameters;
 
 		memSize = 8192*12;
@@ -231,8 +232,8 @@ MoscaStartup
 		view = View();
 		index.postln;
 		entry = [view,coords];
+		//the name field of the view is needed to be able to reach the right child as supercollider QT gui implementation lacks some methods
 		view.name = index;
-		("Hello source n°"+view.name.asInteger).postln;
 		view.background_(Color.rand).layout_(
         HLayout(
 				// [StaticText().string_("Sortie n°"+index.asString),stretch:1],
@@ -244,39 +245,32 @@ MoscaStartup
 			[coords[2],stretch:2],
 			[Button().states_([["Test"]]).action_({"testing".postln;}),stretch:1],
 			[Button().states_([["Delete"]]).action_({
-					var idx;
+					var idx,i;
 					idx = view.name.asInteger;
-					("Bye Source n°"+ view.name.asInteger).postln;
 					idx.postln;
 					//decrement following entries view name
-					//BUG: 03122021: rmontferme: current implementation causes outof bound access as name of view isn't updated
-					/*(entries.size-idx).do{
-						arg i;
-						var v;
-						v = entries[i][0];
-						v.name.postln;
-						v.name = (v.name.asInteger-1);
-						v.name.postln;
-					};*/
-					entries.removeAt(index);
-					setupList.removeAt(index);
-					view.remove;
-					view.name.postln;
+					i = idx;
+					while{ i < (entries.size-1)}{
+						var v = entries[i+1][0];
+						v.name = v.name.asInteger-1;
+						i = i+1;
+					};
+					entries[idx][0].remove;
+					entries.removeAt(idx);
+					setupList.removeAt(idx);
 
 				}),stretch:1]
         )
     );
-		entries.insert(index,entry);
-
-        3.do{arg i;
-			coords[i].action_({arg c; setupList[index][i]=c.value; setupList.do{|i| i.postln};"modification".postln;});
+		entries.add(entry);
+		//setup of action when updating field
+		//must always match parent view name so it reaches the right address
+		3.do{arg i;
+			coords[i].action_({arg c;
+				var idx  = c.parent.name.asInteger;
+				setupList[idx][i]=c.value;});
         };
-        setupList.insert(index,[coords[0].value,coords[1].value,coords[2].value]);
-		setupList.do{
-			|i|
-			i.postln;
-		};
-		"Added".postln;
+        setupList.add([coords[0].value,coords[1].value,coords[2].value]);
 
 	}
 
