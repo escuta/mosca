@@ -26,6 +26,10 @@ MoscaStartup
 	var <>sub;
 	var moscaInstance;
 	var rirBank;
+	var duration;
+
+	//GUI variables
+
 
 	*new
 	{
@@ -37,7 +41,7 @@ MoscaStartup
 		oscParent = OSSIA_Device("SC");
 		oscInputName = "ossia score";
 		window = Window.new("Mosca Startup", Rect(10,1000,windowW,windowH));
-		// window.acceptsMouseOver = true;
+
 		//reading initial servers parameters;
 
 		memSize = 8192*12;
@@ -52,14 +56,54 @@ MoscaStartup
 	}
 	prExposeParameters{
 		oscParent.exposeOSC(servRemoteIP,servRemotePort,servLocalPort);
+		("Exposing OSC to "+servRemoteIP+ ", remote port: " +servRemotePort + " servLocalPort: "+servLocalPort).postln;
 	}
 
 	prHello
 	{
 		"ohioh".postln;
 	}
+	prLoadFromFile{
+		arg path;
+		var file,data;
+		var idx = 0;
+		var parsingError = false;
+		file = CSVFileReader.read(path);
+		data = file.collect(_.collect(_.interpret));
+		while{((idx < data.size) && (parsingError.not)) && (true)}
+		{
+			if(data[idx].size != 3)
+			{
+				parsingError = true;
+			}
+			{//else
+				idx = idx + 1;
+			};
+		};
+
+		if(parsingError){
+			"Error During Parsing".postln;
+		}{
+			"Loading Speaker Configuration File".postln;
+			//if load is okay then replace current setup values and update view as well
+			data.postcs;
+		};
+		^parsingError.not;
+	}
+	prSaveToFile{
+		arg path;
+		var file,data;
+		var idx = 0;
+		var parsingError = false;
+		file = CSVFileWriter(path);
+		setupList.do{
+			arg row;
+			file.writeLine(row);
+		};
+		file.close();
+		"Saving Speaker Configuration File".postln;
+	}
 	prStartServer{
-		var defaultDuration = 9;
 
 		"Starting Server - WIP".postln;
 		"SC_JACK_DEFAULT_INPUTS".setenv(oscInputName);
@@ -82,7 +126,7 @@ MoscaStartup
 			moscaInstance = Mosca(
 				server: server,
 				nsources: sources,
-				dur: defaultDuration,
+				dur: duration,
 				speaker_array: setupList,
 				maxorder: order,
 				outbus: out,
@@ -132,7 +176,7 @@ MoscaStartup
 		var bottom = HLayout();
 		var moscaOptions; //VLayout
 		var serverOptions; //GridLayout
-		var startButton,cancelButton,advancedParamButton;
+		var startButton,cancelButton,advancedParamButton,exposeParamButton;
 
 		moscaOptions = this.prMoscaOptionsGui();
 		serverOptions = this.prServerOptionsGui();
@@ -141,6 +185,7 @@ MoscaStartup
 		startButton = Button.new().string_("Start Server");
 		cancelButton = Button.new().string_("Cancel");
 		advancedParamButton = Button.new().states_([["Paramètres Avancés"],["Fermer Paramètres Avancés"]]);
+		exposeParamButton = Button.new().string_("Exposer les paramètres OSC").action_({this.prExposeParameters});
 		// startButton.action = {this.prStartServer};
 		startButton.action = {"hello world".postln();};
 		cancelButton.action = {this.prCancel};
@@ -148,6 +193,7 @@ MoscaStartup
 
 		//layout addition to main window
 		bottom.add(startButton);
+		bottom.add(exposeParamButton);
 		bottom.add(cancelButton);
 		bottom.add(advancedParamButton);
 
@@ -236,7 +282,6 @@ MoscaStartup
 		view.name = index;
 		view.background_(Color.rand).layout_(
         HLayout(
-				// [StaticText().string_("Sortie n°"+index.asString),stretch:1],
 			[StaticText().string_('x: '),stretch:1],
             [coords[0],stretch:2],
 			[StaticText().string_('y: '),stretch:1],
@@ -284,21 +329,28 @@ MoscaStartup
 		scrollView.canvas.layout = VLayout();
 		scrollView.canvas.layout.add(StaticText.new().string_("Setup"),align:\center);
 		scrollView.canvas.layout.add(View().background_(Color.black).layout_(
+			VLayout(
+			HLayout(
+					[Button().string_("Charger depuis un fichier").action_(
+						{FileDialog({arg path;var res = this.prLoadFromFile(path);if(res){"Hello.yes".postln;}{"Oh noes".postln;}},stripResult: true);}
+					),stretch:1],
+					[Button().string_("Sauvegarder dans un fichier").action_(
+						{FileDialog({arg path;var res = this.prSaveToFile(path);},fileMode:0,acceptMode:1,stripResult: true);}),stretch:1]
+			),
 			HLayout(
 				[Button().string_("Ajouter une sortie").action_({
 					setupViews.size.postln;
 					this.prAddSetupEntry(setupViews);
 					scrollView.canvas.layout.insert(setupViews.last[0],setupViews.size()+1);
-				}),stretch:1],
-				[
-					Button().string_("Charger depuis un fichier"),stretch:1
-				]
+				}),stretch:1]
+			)
 			)
 		));
 		scrollView.canvas.layout.add(nil,stretch:2);
 		^scrollView;
 	}
 	prMoscaOptionsGui{
+
 		var moscaOptions;
 		//mosca option fields
 		var nbSourcesInput = EZNumber(window,label:" Sources",
@@ -306,13 +358,18 @@ MoscaStartup
 			initVal: sources,
 			action:{|ez| ez.round=ez.value;sources=ez.value}
 		);
-		var outInput = EZNumber(window,label:" Out",
+		var outInput = EZNumber(window,label:" Index Bus Première Sortie",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
 			initVal: out,
 			action:{|ez| ez.round=ez.value;out=ez.value}
 		);
+		var durationInput = EZNumber(window,label:" Durée",
+			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
+			initVal: duration,
+			action:{|ez| ez.round=ez.value;duration=ez.value}
+		);
 		var subInput = [
-			StaticText.new(moscaOptions).string_("Subs").align_(\left),
+			StaticText.new(moscaOptions).string_(" Subs").align_(\left),
 			TextField.new(moscaOptions).action_({
 				arg txt;
 				txt.value = this.prParseSub(txt.value);
@@ -333,10 +390,10 @@ MoscaStartup
 		moscaOptions.layout.setColumnStretch(1,1);
 		moscaOptions.layout.setColumnStretch(2,1);
 		moscaOptions.layout.setColumnStretch(3,2);
-		moscaOptions.layout.add(Button.new().string_("Test").action_({
+		moscaOptions.layout.addSpanning(Button.new().string_("Test").action_({
 			|b|
 			"Test".postln;
-		}),1,1);
+		}),1,1,1,2);
 		i = i+1;
 		// subInput[0].align = \left;
 		// subInput[1].align = \center;
@@ -345,7 +402,7 @@ MoscaStartup
 		moscaOptions.layout.add(subInput[1],i,2);
 		moscaOptions.layout.add(nil,i,3);
 		i = i+1;
-		[nbSourcesInput,outInput].do{
+		[nbSourcesInput,outInput,durationInput].do{
 			|ezNumber|
 			ezNumber.labelView.align = \left;
 			ezNumber.numberView.align = \right;
