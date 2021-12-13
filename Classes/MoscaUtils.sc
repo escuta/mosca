@@ -188,13 +188,20 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		});
 	}
 
+	*emulate_array
+	{
+		^[ [ 0, 90 ], [ 0, 45 ], [ 90, 45 ], [ 180, 45 ], [ -90, 45 ],
+		[ 45, 35 ], [ 135, 35 ], [ -135, 35 ], [ -45, 35 ], [ 0, 0 ], [ 45, 0 ],
+		[ 90, 0 ], [ 135, 0 ], [ 180, 0 ], [ -135, 0 ], [ -90, 0 ], [ -45, 0 ],
+		[ 45, -35 ], [ 135, -35 ], [ -135, -35 ], [ -45, -35 ], [ 0, -45 ],
+		[ 90, -45 ], [ 180, -45 ], [ -90, -45 ], [ 0, -90 ] ];
 	*cartesianToAED
 	{
 		arg coordinatesList;
 		var result;
 		result = coordinatesList.collect({
 			arg item,i;
-			Cartesian(item[0],item[1],item[2]).asSpherical.rotate(-pi/2)
+			Cartesian(item[0],item[1],item[2]).asSpherical.rotate(pi/2)
 		});
 		result = result.collect({
 			arg item,i;
@@ -202,15 +209,14 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		});
 		^result;
 	}
-
-	*aedToCartesian
+	*AEDToCartesian
 	{
 		arg coordinatesList;
 		var result;
 		result = coordinatesList.collect({
 			arg item,i;
-			Spherical(item[2], item[0].degrad,item[1].degrad).rotate(pi/2).asCartesian.trunc(0.00000001)
-			});
+			Spherical(item[2], item[0].degrad,item[1].degrad).rotate(-pi/2).asCartesian.trunc(0.00000001)
+		});
 		^result;
 	}
 
@@ -224,8 +230,7 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		});
 		^result;
 	}
-
-	*sphericalToCartesian
+	*SphericalToCartesian
 	{
 		arg coordinatesList;
 		var result;
@@ -235,5 +240,4 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		});
 		^result;
 	}
-
 }
