@@ -95,46 +95,68 @@ MoscaStartup
 		var file,data;
 		var idx = 0;
 		var parsingError = false;
-		file = CSVFileWriter(path);
-		setupList.do{
-			arg row;
-			file.writeLine(row);
-		};
-		file.close();
 		"Saving Speaker Configuration File".postln;
+		if(setupList.size != 0){
+			file = CSVFileWriter(path);
+			setupList.do{
+				arg row;
+				file.writeLine(row);
+			};
+			file.close();
+			"Speaker Configuration File saved".postln;
+		}
+		{
+			parsingError = true;
+			"Speaker Setup is empty! Cancelling save".postln;
+		}
+		^parsingError;
+	}
+	prCheckConfig{
+		var ok = true;
+		if(setupList.size == 0)
+		{
+			ok = false;
+			"Speaker Configuration Missing!".postln;
+		}
+		^ok;
+
+
 	}
 	prStartServer{
 
-		"Starting Server - WIP".postln;
-		"SC_JACK_DEFAULT_INPUTS".setenv(oscInputName);
+		if(this.prCheckConfig)
+		{
+			"Starting Server - WIP".postln;
+			"SC_JACK_DEFAULT_INPUTS".setenv(oscInputName);
 
-		Server.killAll;
-		Server.supernova;
-		server = Server.local;
-		server.options.memSize = memSize;
-		server.options.blockSize = blockSize;
-		server.options.numAudioBusChannels = nbAudioBusChannels;
-		server.options.numInputBusChannels = nbInputBusChannels;
-		server.options.numOutputBusChannels = nbOutputBusChannels;
-		server.options.numWireBufs = nbWireBuffer;
+			Server.killAll;
+			Server.supernova;
+			server = Server.local;
+			server.options.memSize = memSize;
+			server.options.blockSize = blockSize;
+			server.options.numAudioBusChannels = nbAudioBusChannels;
+			server.options.numInputBusChannels = nbInputBusChannels;
+			server.options.numOutputBusChannels = nbOutputBusChannels;
+			server.options.numWireBufs = nbWireBuffer;
 
 
 
-		server.waitForBoot{
-			serverStarted = true;
-			server.sync;
-			moscaInstance = Mosca(
-				server: server,
-				nsources: sources,
-				dur: duration,
-				speaker_array: setupList,
-				maxorder: order,
-				outbus: out,
-				suboutbus: sub,
-				decoder: decoder,
-				rirBank: rirBank,
-				parentOssiaNode: oscParent;
-			).gui();
+			server.waitForBoot{
+				serverStarted = true;
+				server.sync;
+				moscaInstance = Mosca(
+					server: server,
+					nsources: sources,
+					dur: duration,
+					speaker_array: MoscaUtils.cartesianToAED(setupList),
+					maxorder: order,
+					outbus: out,
+					suboutbus: sub,
+					decoder: decoder,
+					rirBank: rirBank,
+					parentOssiaNode: oscParent;
+				).gui();
+			}
 		}
 	}
 	prCancel
@@ -186,8 +208,8 @@ MoscaStartup
 		cancelButton = Button.new().string_("Cancel");
 		advancedParamButton = Button.new().states_([["Paramètres Avancés"],["Fermer Paramètres Avancés"]]);
 		exposeParamButton = Button.new().string_("Exposer les paramètres OSC").action_({this.prExposeParameters});
-		// startButton.action = {this.prStartServer};
-		startButton.action = {"hello world".postln();};
+
+		startButton.action = {this.prCheckConfig};
 		cancelButton.action = {this.prCancel};
 		advancedParamButton.action = {serverOptions.visible = serverOptions.visible.not};
 
@@ -318,7 +340,9 @@ MoscaStartup
         setupList.add([coords[0].value,coords[1].value,coords[2].value]);
 
 	}
-
+	prUpdateSetup{
+		"Updating".postln
+	}
 	prSetupGui{
 		var scrollView = ScrollView();
 		var setupViews;
@@ -332,7 +356,7 @@ MoscaStartup
 			VLayout(
 			HLayout(
 					[Button().string_("Charger depuis un fichier").action_(
-						{FileDialog({arg path;var res = this.prLoadFromFile(path);if(res){"Hello.yes".postln;}{"Oh noes".postln;}},stripResult: true);}
+						{FileDialog({arg path;var res = this.prLoadFromFile(path);if(res){this.prUpdateSetup;}{"Oh noes".postln;}},stripResult: true);}
 					),stretch:1],
 					[Button().string_("Sauvegarder dans un fichier").action_(
 						{FileDialog({arg path;var res = this.prSaveToFile(path);},fileMode:0,acceptMode:1,stripResult: true);}),stretch:1]
