@@ -203,7 +203,7 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		var result;
 		result = coordinatesList.collect({
 			arg item,i;
-			Cartesian(item[0],item[1],item[2]).asSpherical.rotate(pi/2)
+			Cartesian(item[0],item[1],item[2]).asSpherical.rotate(-pi/2)
 		});
 		result = result.collect({
 			arg item,i;
@@ -211,14 +211,15 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		});
 		^result;
 	}
-	*AEDToCartesian
+
+	*aedToCartesian
 	{
 		arg coordinatesList;
 		var result;
 		result = coordinatesList.collect({
 			arg item,i;
-			Spherical(item[2], item[0].degrad,item[1].degrad).rotate(-pi/2).asCartesian.trunc(0.00000001)
-		});
+			Spherical(item[2], item[0].degrad,item[1].degrad).rotate(pi/2).asCartesian.trunc(0.00000001)
+			});
 		^result;
 	}
 
@@ -232,7 +233,8 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		});
 		^result;
 	}
-	*SphericalToCartesian
+
+	*sphericalToCartesian
 	{
 		arg coordinatesList;
 		var result;

@@ -403,7 +403,6 @@ this.prRemoveSetupEntry(view)}),stretch:1]
 			this.prRemoveSetupEntry(setupViews.first[0]);
 		};
 	}
-
 	prUpdateSetup{
 		"Updating".postln
 	}
