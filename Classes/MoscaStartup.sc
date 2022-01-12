@@ -1,10 +1,6 @@
 MoscaStartup
 {
-	//Gui Parameters
-	var window;
-	var <>windowW = 1260;
-	var <>windowH = 920;
-	//Server Parameters
+	//// Server Parameters
 	var server = nil;
 	var <>servRemoteIP = "127.0.0.1";
 	var <>servRemotePort = 9997;
@@ -28,8 +24,21 @@ MoscaStartup
 	var rirBank;
 	var duration;
 
-	//GUI variables
+	//// GUI variables
+	//Window Parameters
+	var window;
+	var <>windowW = 1260;
+	var <>windowH = 920;
+	//layout and views
+	var main;
+	var bottom;
+	var moscaOptions; //VLayout
+	var serverOptions; //GridLayout
+	var scrollView;
+	var setupViews;
 
+	//Buttons
+	var startButton,cancelButton,advancedParamButton,exposeParamButton;
 
 	*new
 	{
@@ -68,6 +77,7 @@ MoscaStartup
 		var file,data;
 		var idx = 0;
 		var parsingError = false;
+		var newData = List[];
 		file = CSVFileReader.read(path);
 		data = file.collect(_.collect(_.interpret));
 		while{((idx < data.size) && (parsingError.not)) && (true)}
@@ -77,6 +87,7 @@ MoscaStartup
 				parsingError = true;
 			}
 			{//else
+				newData.add(data[idx]);
 				idx = idx + 1;
 			};
 		};
@@ -86,7 +97,18 @@ MoscaStartup
 		}{
 			"Loading Speaker Configuration File".postln;
 			//if load is okay then replace current setup values and update view as well
-			data.postcs;
+			("new data List").postln;
+			newData.postcs;
+
+			setupViews.size.postln;
+			this.prClearSetupEntries();
+			setupViews.size.postln;
+			newData.do{
+				arg item;
+				this.prAddSetupEntry(item);
+			};
+
+
 		};
 		^parsingError.not;
 	}
@@ -168,6 +190,7 @@ MoscaStartup
 		arg outputBus;
 
 	}
+
 	prParseSub{
 		arg string;
 		var regex = "^(([1-9][0-9]*|0)(,([1-9][0-9]*|0))*)?$";
@@ -194,14 +217,11 @@ MoscaStartup
 
 	gui
 	{
-		var main = HLayout();
-		var bottom = HLayout();
-		var moscaOptions; //VLayout
-		var serverOptions; //GridLayout
-		var startButton,cancelButton,advancedParamButton,exposeParamButton;
 
-		moscaOptions = this.prMoscaOptionsGui();
-		serverOptions = this.prServerOptionsGui();
+		main = HLayout();
+		bottom = HLayout();
+		this.prMoscaOptionsGui();
+		this.prServerOptionsGui();
 
 		//bottom row : buttons
 		startButton = Button.new().string_("Start Server");
@@ -229,7 +249,7 @@ MoscaStartup
 	}
 
 	prServerOptionsGui{
-		var serverOptions;
+
 		//server option fields
 
 		var blockSizeInput = EZNumber(window,label:" BlockSize ",
@@ -290,13 +310,16 @@ MoscaStartup
 		serverOptions.layout.addSpanning(nil,i,0,1,4);
 		serverOptions.layout.setRowStretch(i,2);
 		serverOptions.visible = false;
-		^serverOptions;
 	}
 	prAddSetupEntry{
-		arg entries;
-		var coords = [NumberBox.new(),NumberBox.new(),NumberBox.new()];
-		var index = entries.size();
+		arg values = [0.0,0.0,0.0];
+		var coords = [
+			NumberBox.new().value_(values[0]),
+			NumberBox.new().value_(values[1]),
+			NumberBox.new().value_(values[2])];
+		var index = setupViews.size();
 		var view,entry;
+		("Adding new entry at coords"++values).postln;
 		view = View();
 		index.postln;
 		entry = [view,coords];
@@ -311,25 +334,10 @@ MoscaStartup
 			[StaticText().string_('z: '),stretch:1],
 			[coords[2],stretch:2],
 			[Button().states_([["Test"]]).action_({"testing".postln;}),stretch:1],
-			[Button().states_([["Delete"]]).action_({
-					var idx,i;
-					idx = view.name.asInteger;
-					idx.postln;
-					//decrement following entries view name
-					i = idx;
-					while{ i < (entries.size-1)}{
-						var v = entries[i+1][0];
-						v.name = v.name.asInteger-1;
-						i = i+1;
-					};
-					entries[idx][0].remove;
-					entries.removeAt(idx);
-					setupList.removeAt(idx);
-
-				}),stretch:1]
+				[Button().states_([["Delete"]]).action_({this.prRemoveSetupEntry(view)}),stretch:1]
         )
     );
-		entries.add(entry);
+		setupViews.add(entry);
 		//setup of action when updating field
 		//must always match parent view name so it reaches the right address
 		3.do{arg i;
@@ -338,14 +346,39 @@ MoscaStartup
 				setupList[idx][i]=c.value;});
         };
         setupList.add([coords[0].value,coords[1].value,coords[2].value]);
-
+		scrollView.canvas.layout.insert(setupViews.last[0],setupViews.size()+1);
 	}
+	prRemoveSetupEntry{
+		arg view;
+		var idx,i;
+
+		idx = view.name.asInteger;
+		("Removing vie at pos "++idx).postln;
+		//decrement following entries view name
+		i = idx;
+		while{ i < (setupViews.size-1)}{
+			var v = setupViews[i+1][0];
+			v.name = v.name.asInteger-1;
+			i = i+1;
+		};
+		setupViews[idx][0].remove;
+		setupViews.removeAt(idx);
+		setupList.removeAt(idx);
+		setupViews.size.postln;
+	}
+	prClearSetupEntries{
+		var n = setupViews.size();
+		("Clearing all "++n++" entries").postln;
+		n.do{
+			this.prRemoveSetupEntry(setupViews.first[0]);
+		};
+	}
+
 	prUpdateSetup{
 		"Updating".postln
 	}
 	prSetupGui{
-		var scrollView = ScrollView();
-		var setupViews;
+		scrollView = ScrollView();
 		setupViews = List();
 		//add setup input
 		scrollView.background_(Color.rand);
@@ -356,26 +389,23 @@ MoscaStartup
 			VLayout(
 			HLayout(
 					[Button().string_("Charger depuis un fichier").action_(
-						{FileDialog({arg path;var res = this.prLoadFromFile(path);if(res){this.prUpdateSetup;}{"Oh noes".postln;}},stripResult: true);}
+						{FileDialog({arg path;var res = this.prLoadFromFile(path);},stripResult: true);}
 					),stretch:1],
 					[Button().string_("Sauvegarder dans un fichier").action_(
 						{FileDialog({arg path;var res = this.prSaveToFile(path);},fileMode:0,acceptMode:1,stripResult: true);}),stretch:1]
 			),
 			HLayout(
 				[Button().string_("Ajouter une sortie").action_({
+					this.prAddSetupEntry();
+
 					setupViews.size.postln;
-					this.prAddSetupEntry(setupViews);
-					scrollView.canvas.layout.insert(setupViews.last[0],setupViews.size()+1);
 				}),stretch:1]
 			)
 			)
 		));
 		scrollView.canvas.layout.add(nil,stretch:2);
-		^scrollView;
 	}
 	prMoscaOptionsGui{
-
-		var moscaOptions;
 		//mosca option fields
 		var nbSourcesInput = EZNumber(window,label:" Sources",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
@@ -399,8 +429,6 @@ MoscaStartup
 				txt.value = this.prParseSub(txt.value);
 			}).align_(\right)
 		];
-
-		var scrollView;
 
 		var i = 1;
 		"Setting mosca gui".postln;
@@ -436,13 +464,12 @@ MoscaStartup
 			moscaOptions.layout.add(nil,i,3);
 			i = i+1;
 		};
-		scrollView = this.prSetupGui();
+		this.prSetupGui();
 		moscaOptions.layout.addSpanning(scrollView,i,1,2,2);
 		i = i+1;
 
 		moscaOptions.layout.addSpanning(nil,i,0,1,4);
 		moscaOptions.layout.setRowStretch(i,2);
-		^moscaOptions;
 
 	}
 
