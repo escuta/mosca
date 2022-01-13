@@ -16,13 +16,13 @@ MoscaStartup
 	var oscInputName;
 	var >decoder = nil;
 	var <>order = -1;
-	var <>setupList;
-	var <>sources = -1;
-	var <>out = -1;
+	var <>setupList = nil;
+	var <>sources = 1;
+	var <>out = 0;
 	var <>sub;
 	var moscaInstance;
-	var rirBank;
-	var duration;
+	var rirBank = nil;
+	var <>duration = 20;
 
 	//// GUI variables
 	//Window Parameters
@@ -53,21 +53,36 @@ MoscaStartup
 
 		//reading initial servers parameters;
 
-		memSize = 8192*12;
-		blockSize = 48;
-		nbAudioBusChannels = 2048;
-		nbInputBusChannels = 44;
-		nbOutputBusChannels = 44;
-		nbWireBuffer = 512;
-
+		memSize = 16384;
+		blockSize = 64;
+		nbAudioBusChannels = 1068;
+		nbInputBusChannels = 32;
+		nbOutputBusChannels = 16;
+		nbWireBuffer = 64;
+		// initial mosca options values
 		setupList = List[];
 		sub = List[];
+
 	}
 	prExposeParameters{
 		oscParent.exposeOSC(servRemoteIP,servRemotePort,servLocalPort);
 		("Exposing OSC to "+servRemoteIP+ ", remote port: " +servRemotePort + " servLocalPort: "+servLocalPort).postln;
 	}
+	prReconnectMosca{
+		var o = server.options;
+		o.numOutputBusChannels.do({ | i |
+			i.postln();
+			Pipe("jack_disconnect ossia' 'score:out_" ++ (i)
+				+ "system:playback_" ++ (i + 1), "w")
+		});
+		o.numOutputBusChannels.do({ | i |
+			i.postln();
+			Pipe("jack_connect ossia' 'score:out_" ++ (i)
+				+ "supernova:input_" ++ (i + 1), "w")
+		});
 
+
+	}
 	prHello
 	{
 		"ohioh".postln;
@@ -137,12 +152,19 @@ MoscaStartup
 		var ok = true;
 		if(setupList.size == 0)
 		{
-			ok = false;
-			"Speaker Configuration Missing!".postln;
+			setupList = nil;
+			// ok = false;
+			// "Speaker Configuration Missing!".postln;
 		}
+		{
+			setupList=MoscaUtils.cartesianToAED(setupList);
+		};
+
+		if(sub.size == 0)
+		{
+			sub = nil;
+		};
 		^ok;
-
-
 	}
 	prStartServer{
 
@@ -154,6 +176,7 @@ MoscaStartup
 			Server.killAll;
 			Server.supernova;
 			server = Server.local;
+			server.options.sampleRate = 48000;
 			server.options.memSize = memSize;
 			server.options.blockSize = blockSize;
 			server.options.numAudioBusChannels = nbAudioBusChannels;
@@ -161,17 +184,21 @@ MoscaStartup
 			server.options.numOutputBusChannels = nbOutputBusChannels;
 			server.options.numWireBufs = nbWireBuffer;
 
+			order =1;
 
 
 			server.waitForBoot{
+				decoder = FoaDecoderKernel.newCIPIC(21, server,server.options.sampleRate.asInteger);
+				"Server Started!".postln;
+				server.options.sampleRate.postln;
 				serverStarted = true;
 				server.sync;
 				moscaInstance = Mosca(
 					server: server,
 					nsources: sources,
 					dur: duration,
-					speaker_array: MoscaUtils.cartesianToAED(setupList),
-					maxorder: order,
+					speaker_array: setupList,
+					maxorder: 1,
 					outbus: out,
 					suboutbus: sub,
 					decoder: decoder,
@@ -229,7 +256,7 @@ MoscaStartup
 		advancedParamButton = Button.new().states_([["Paramètres Avancés"],["Fermer Paramètres Avancés"]]);
 		exposeParamButton = Button.new().string_("Exposer les paramètres OSC").action_({this.prExposeParameters});
 
-		startButton.action = {this.prCheckConfig};
+		startButton.action = {this.prStartServer};
 		cancelButton.action = {this.prCancel};
 		advancedParamButton.action = {serverOptions.visible = serverOptions.visible.not};
 
@@ -408,7 +435,7 @@ MoscaStartup
 	prMoscaOptionsGui{
 		//mosca option fields
 		var nbSourcesInput = EZNumber(window,label:" Sources",
-			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
+			controlSpec: ControlSpec.new(1.0,inf,\lin,1),
 			initVal: sources,
 			action:{|ez| ez.round=ez.value;sources=ez.value}
 		);
