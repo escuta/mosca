@@ -4,7 +4,7 @@ MoscaStartup
 	var server = nil;
 	var <>servRemoteIP = "127.0.0.1";
 	var <>servRemotePort = 9997;
-	var <>servLocalPort = 9980;
+	var <>servLocalPort = 9996;
 	var serverStarted = false;
 	//Server Advanced Parameters
 	var blockSize,memSize;
@@ -155,15 +155,19 @@ MoscaStartup
 			setupList = nil;
 			// ok = false;
 			// "Speaker Configuration Missing!".postln;
+			order = 0;
 		}
 		{
 			setupList=MoscaUtils.cartesianToAED(setupList);
+			order = sqrt(setupList.size)-1;
+			order.postln;
 		};
 
 		if(sub.size == 0)
 		{
 			sub = nil;
 		};
+
 		^ok;
 	}
 	prStartServer{
@@ -179,12 +183,11 @@ MoscaStartup
 			server.options.sampleRate = 48000;
 			server.options.memSize = memSize;
 			server.options.blockSize = blockSize;
-			server.options.numAudioBusChannels = nbAudioBusChannels;
-			server.options.numInputBusChannels = nbInputBusChannels;
-			server.options.numOutputBusChannels = nbOutputBusChannels;
+			server.options.numAudioBusChannels = nbAudioBusChannels.asInteger;
+			server.options.numInputBusChannels = nbInputBusChannels.asInteger;
+			server.options.numOutputBusChannels = nbOutputBusChannels.asInteger;
 			server.options.numWireBufs = nbWireBuffer;
 
-			order =1;
 
 
 			server.waitForBoot{
@@ -195,8 +198,8 @@ MoscaStartup
 				server.sync;
 				moscaInstance = Mosca(
 					server: server,
-					nsources: sources,
-					dur: duration,
+					nsources: sources.asInteger,
+					dur: duration.asInteger,
 					speaker_array: setupList,
 					maxorder: 1,
 					outbus: out,
@@ -297,12 +300,12 @@ MoscaStartup
 			action:{|ez| ez.round=ez.value;nbAudioBusChannels=ez.value}
 		);
 
-		var inputBusInput = EZNumber(window,label:" Input Bus Channels ",
+		var inputBusInput = EZNumber(window,label:" Canaux d'entrée ",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
 			initVal: nbInputBusChannels,
 			action:{|ez| ez.round=ez.value;nbInputBusChannels=ez.value}
 		);
-		var outputBusInput = EZNumber(window,label:" Output Bus Channels ",
+		var outputBusInput = EZNumber(window,label:" Canaux de sortie ",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
 			initVal: nbOutputBusChannels,
 			action:{|ez| ez.round=ez.value;nbOutputBusChannels=ez.value}
@@ -318,7 +321,7 @@ MoscaStartup
 
 		serverOptions.background = Color.rand;
 		serverOptions.layout = GridLayout();
-		serverOptions.layout.addSpanning(StaticText.new().string_("Server options"),0,0,1,4,align:\center);
+		serverOptions.layout.addSpanning(StaticText.new().string_("Server Memory options"),0,0,1,4,align:\center);
 		serverOptions.layout.setColumnStretch(0,2);
 		serverOptions.layout.setColumnStretch(1,1);
 		serverOptions.layout.setColumnStretch(2,1);
@@ -401,6 +404,20 @@ MoscaStartup
 		};
 	}
 
+	prGetPorts{
+		var list;
+		var ports = Set();
+		list = "jack_lsp".unixCmdGetStdOut.split($\n);
+		list.pop();
+		if(list.size != 0){
+			list.do{
+				arg item;
+				ports.add(item.split($:)[0]);
+			};
+		};
+		^(ports.asArray);
+	}
+
 	prUpdateSetup{
 		"Updating".postln
 	}
@@ -419,7 +436,9 @@ MoscaStartup
 						{FileDialog({arg path;var res = this.prLoadFromFile(path);},stripResult: true);}
 					),stretch:1],
 					[Button().string_("Sauvegarder dans un fichier").action_(
-						{FileDialog({arg path;var res = this.prSaveToFile(path);},fileMode:0,acceptMode:1,stripResult: true);}),stretch:1]
+						{FileDialog({arg path;var res = this.prSaveToFile(path);},fileMode:0,acceptMode:1,stripResult: true);
+
+					}),stretch:1]
 			),
 			HLayout(
 				[Button().string_("Ajouter une sortie").action_({
@@ -427,8 +446,7 @@ MoscaStartup
 
 					setupViews.size.postln;
 				}),stretch:1]
-			)
-			)
+			))
 		));
 		scrollView.canvas.layout.add(nil,stretch:2);
 	}
@@ -444,7 +462,7 @@ MoscaStartup
 			initVal: out,
 			action:{|ez| ez.round=ez.value;out=ez.value}
 		);
-		var durationInput = EZNumber(window,label:" Durée",
+		var durationInput = EZNumber(window,label:" Durée des automations (s)",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
 			initVal: duration,
 			action:{|ez| ez.round=ez.value;duration=ez.value}
@@ -456,7 +474,8 @@ MoscaStartup
 				txt.value = this.prParseSub(txt.value);
 			}).align_(\right)
 		];
-
+		var portList = PopUpMenu(window).items_(this.prGetPorts());
+		var scanButton = Button(window).string_("Re-scan").action_{portList.items_(this.prGetPorts())};
 		var i = 1;
 		"Setting mosca gui".postln;
 		//mosca options
@@ -464,18 +483,12 @@ MoscaStartup
 		moscaOptions.background = Color.rand;
 		moscaOptions.layout = GridLayout();
 		moscaOptions.layout.children.postln;
-		moscaOptions.layout.addSpanning(StaticText.new().string_("Mosca options"),0,0,1,4,align:\center);
+		moscaOptions.layout.addSpanning(StaticText.new().string_("Mosca options").background_(Color.rand),0,0,1,4,align:\center);
 		moscaOptions.layout.setColumnStretch(0,2);
 		moscaOptions.layout.setColumnStretch(1,1);
 		moscaOptions.layout.setColumnStretch(2,1);
 		moscaOptions.layout.setColumnStretch(3,2);
-		moscaOptions.layout.addSpanning(Button.new().string_("Test").action_({
-			|b|
-			"Test".postln;
-		}),1,1,1,2);
 		i = i+1;
-		// subInput[0].align = \left;
-		// subInput[1].align = \center;
 		moscaOptions.layout.add(nil,i,0);
 		moscaOptions.layout.add(subInput[0],i,1);
 		moscaOptions.layout.add(subInput[1],i,2);
@@ -492,10 +505,16 @@ MoscaStartup
 			i = i+1;
 		};
 		this.prSetupGui();
+		moscaOptions.layout.addSpanning(HLayout(
+			[portList],
+			[scanButton]),i,1,1,2);
+		i = i+1;
+		moscaOptions.layout.addSpanning(nil,i,0,1,4);
+		i = i + 1;
 		moscaOptions.layout.addSpanning(scrollView,i,1,2,2);
 		i = i+1;
-
 		moscaOptions.layout.addSpanning(nil,i,0,1,4);
+		i = i+1;
 		moscaOptions.layout.setRowStretch(i,2);
 
 	}
