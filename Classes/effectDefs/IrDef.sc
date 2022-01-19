@@ -33,9 +33,11 @@ IrDef[]
 
 		bufWXYZ = Buffer.read(server, ir.fullPath);
 
-		// server.sync;
+		server.sync;
 
 		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
+
+		server.sync;
 
 		this.prLoadLocalIr(server, ir);
 		this.prLoadGlobalIr(server, ir, bufWXYZ, bufAformat);
@@ -51,7 +53,7 @@ IrDef[]
 		// irY = Buffer.readChannel(server, ir.fullPath, channels: [2]);
 		irZ = Buffer.readChannel(server, ir.fullPath, channels: [3]);
 
-		// server.sync;
+		server.sync;
 
 		bufsize = PartConv.calcBufSize(MoscaUtils.fftSize(), irW);
 
@@ -74,11 +76,17 @@ IrDef[]
 	prLoadGlobalIr
 	{ | server, ir, bufWXYZ, bufAformat |
 
-		var irA4, afmtDir = ir.pathOnly ++ $/ ++ key ++ "_Flu.wav";
+		var irA4, afmtDir;
+
+		if (File.exists(ir.pathOnly ++ "Flu").not) {
+			(ir.pathOnly ++ "Flu").makeDir
+		};
+
+		afmtDir = ir.pathOnly ++ "Flu/" ++ key ++ "_Flu.wav";
 
 		if (File.exists(afmtDir).not)
 		{
-			("writing " ++ key ++ "_Flu.wav file in" + ir.pathOnly).postln;
+			("writing " ++ key ++ "_Flu.wav file in" + ir.pathOnly ++ "Flu").postln;
 
 			{
 				BufWr.ar(FoaDecode.ar(
@@ -140,14 +148,19 @@ Ir12chanDef : IrDef
 	prLoadGlobalIr
 	{ | server, ir, bufWXYZ, bufAformat |
 
-		var bufAformat_soa_a12, irA12,
-		afmtDir = ir.pathOnly ++ $/ ++ key ++ "_SoaA12.wav";
+		var bufAformat_soa_a12, irA12, afmtDir;
+
+		if (File.exists(ir.pathOnly ++ "SoaA12").not) {
+			(ir.pathOnly ++ "SoaA12").makeDir
+		};
+
+		afmtDir = ir.pathOnly ++ "SoaA12/" ++ key ++ "_SoaA12.wav";
 
 		if (File.exists(afmtDir).not)
 		{
 			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12);
 
-			("writing " ++ key ++ "_SoaA12.wav file in " + ir.pathOnly).postln;
+			("writing " ++ key ++ "_SoaA12.wav file in " + ir.pathOnly ++ "SoaA12").postln;
 
 			{
 				BufWr.ar(AtkMatrixMix.ar(

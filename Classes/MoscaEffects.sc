@@ -50,7 +50,7 @@ MoscaEffects {
 		busChans = MoscaUtils.fourOrNine(maxOrder);
 		fxChans = MoscaUtils.fourOrTwelve(maxOrder);
 
-		if (irBank.notNil) { this.prLoadir(server, maxOrder, irBank) };
+		if (irBank.notNil) { this.prLoadIr(server, maxOrder, irBank) };
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
@@ -125,11 +125,17 @@ MoscaEffects {
 	prLoadIr
 	{ | server, maxOrder, irBank | // prepare list of impulse responses for local and global reverb
 
-		var def;
-
-		if (maxOrder == 1) { def = IrDef } { def = Ir12chanDef };
-
-		PathName(irBank).entries.do({ | ir | effectList.add(def(server, ir)) });
+		if (maxOrder == 1) {
+			PathName(irBank).entries.do({ | ir |
+				if (ir.extension == "amb") {
+					effectList.add(IrDef(server, ir))
+				}
+			})
+		} { PathName(irBank).entries.do({ | ir |
+			if (ir.extension == "amb") {
+				effectList.add(Ir12chanDef(server, ir))
+			}
+		})};
 	}
 
 	sendFx
