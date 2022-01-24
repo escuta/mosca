@@ -40,11 +40,8 @@ NonAmbiDef : SpatDef
 	{ | maxOrder, speaker_array |
 
 		if (speaker_array.isNil)
-		{
-			^(setup: MoscaUtils.emulate_array);
-		} {
-			^(setup: speaker_array);
-		}
+		{ ^(setup: MoscaUtils.emulate_array); }
+		{ ^(setup: speaker_array); }
 	}
 
 	needsReCompile
@@ -60,6 +57,6 @@ NonAmbiDef : SpatDef
 
 		if (desc.notNil)
 		{ ^desc.metadata[\setup] != setup; }
-		{ ^true; };
+		{ ^true; }
 	}
 }
