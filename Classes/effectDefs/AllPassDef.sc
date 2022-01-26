@@ -27,6 +27,25 @@ AllPassDef : EffectDef
 
 	*initClass { key = "AllPass"; }
 
+	getArgs
+	{ | parentOssiaNode, nChan |
+
+		^[
+			\llev, parentOssiaNode.find("Local_amount").value,
+			\room, parentOssiaNode.find("Room_delay").value,
+			\damp, parentOssiaNode.find("Damp_decay").value
+		]
+	}
+
+	getGlobalArgs
+	{ | parentOssiaNode |
+
+		^[
+			\room, parentOssiaNode.find("Room_delay").value,
+			\damp, parentOssiaNode.find("Damp_decay").value
+		]
+	}
+
 	getFunc
 	{ | nChanns |
 

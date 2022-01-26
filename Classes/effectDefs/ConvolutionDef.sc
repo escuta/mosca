@@ -57,7 +57,7 @@ ConvolutionDef : EffectDef
 
 	prFourChanGlobal
 	{
-		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir |
+		globalFunc = { | sig, a0ir, a1ir, a2ir, a3ir |
 			^[
 				PartConv.ar(sig[0], MoscaUtils.fftSize(), a0ir),
 				PartConv.ar(sig[1], MoscaUtils.fftSize(), a1ir),
@@ -69,7 +69,7 @@ ConvolutionDef : EffectDef
 
 	prTwelveChanGlobal
 	{
-		globalFunc = { | sig, room, damp, a0ir, a1ir, a2ir, a3ir,
+		globalFunc = { | sig, a0ir, a1ir, a2ir, a3ir,
 		a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
 			^[
 				PartConv.ar(sig[0], MoscaUtils.fftSize(), a0ir),

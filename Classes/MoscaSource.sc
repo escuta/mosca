@@ -18,7 +18,8 @@
 
 MoscaSource[]
 {
-	var <index, server, srcGrp, spatInstances, defName, effect, <chanNum = 1, spatType, curentSpat;
+	var <index, server, srcGrp, spatInstances, effectInstances, defName;
+	var <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var <scInBus, <>triggerFunc, <>stopFunc, <synthRegistry, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
@@ -30,10 +31,11 @@ MoscaSource[]
 	var <auxiliary, <aux, <check;
 
 	*new
-	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effectList |
+	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effects |
 
-		^super.newCopyArgs(index, server, sourceGroup, spat.spatInstances).ctr(
-			ossiaParent, allCritical, spat.spatList, effectList);
+		^super.newCopyArgs(index, server, sourceGroup,
+			spat.spatInstances, effects.effectInstances).ctr(
+			ossiaParent, allCritical, spat.spatList, effects.effectList);
 	}
 
 	ctr
@@ -76,8 +78,6 @@ MoscaSource[]
 
 		localEffect = OssiaAutomationProxy(src, "Local_effect", String,
 			[nil, nil, effectList], "Clear", critical:true);
-
-		effect = "Clear";
 
 		localEffect.node.description_(effectList.asString);
 
@@ -213,15 +213,7 @@ MoscaSource[]
 
 		coordinates.setAction(center, spatializer, synths);
 
-		localEffect.action_({ | val |
-
-			var i = localEffect.node.domain.values().detectIndex(
-				{ | item | item == val.value });
-
-			effect = effectList[i];
-
-			this.prSetDefName();
-		});
+		localEffect.action_({ | val | this.prSetDefName() });
 
 		localAmount.action_({ | val | this.setSynths(\llev, val.value) });
 
@@ -398,41 +390,20 @@ MoscaSource[]
 			var args = []; // prepare synth Arguments
 
 			switch (nChan.value,
-				1,
-				{
-					if (effect != "Clear")
-					{
-						args = args ++ [\llev, localAmount.value];
-
-						if (effect.class != String) { args = args ++ effect.wSpecPar }
-						{ args = args ++ [\room, localDelay.value, \damp, localDecay.value] }
-					}
-				},
 				2,
 				{
-					if (effect != "Clear")
-					{
-						args = args ++ [\llev, localAmount.value];
 
-						if (effect.class != String) { args = args ++ effect.zSpecPar }
-						{ args = args ++ [\room, localDelay.value, \damp, localDecay.value] }
-					};
 
 					args = args ++ [\angle, angle.value.degrad];
 				},
 				{
-					if (effect != "Clear")
-					{
-						args = args ++ [\llev, localAmount.value];
-
-						if (effect.class != String) { args = args ++ effect.wSpecPar }
-						{ args = args ++ [\room, localDelay.value, \damp, localDecay.value] }
-					};
-
 					// no acces to center here
 					// args = args ++ [\rotAngle, rotation.value + center.heading.value];
 				};
 			);
+
+			args = args ++ effectInstances.get.at(localEffect.value.asSymbol)
+				.getArgs(localEffect.node, nChan.value);
 
 			if (scSynths.value)
 			{
@@ -443,12 +414,6 @@ MoscaSource[]
 			if (external.value) { args = args ++ [\busini, busInd.value] };
 
 			curentSpat = spatType;
-
-			if (library.value == "Josh")
-			{
-				args = args ++ [\grainrate, rate.value, \winsize, window.value,
-					\winrand, random.value];
-			};
 
 			args = args ++ spatInstances.get.at(library.value.asSymbol)
 			.getArgs(src, nChan.value);
@@ -526,7 +491,7 @@ MoscaSource[]
 
 	prSetDefName
 	{
-		var fxType, playType;
+		var playType;
 
 		if ((file.value != "") && (scSynths.value || external.value).not)
 		{
@@ -576,15 +541,8 @@ MoscaSource[]
 		{
 			defName = nil;
 		} {
-
-			if (effect.class == String)
-			{
-				fxType = effect;
-			} {
-				fxType = "Conv";
-			};
-
-			defName = library.value ++ playType ++ chanNum ++ fxType;
+			defName = library.value ++ playType ++ chanNum
+			++ effectInstances.get.at(localEffect.value.asSymbol).key;
 
 			this.prReloadIfNeeded();
 		};

@@ -16,9 +16,10 @@
 * may be downloaded here: http://escuta.org/mosca
 */
 
-IrDef[]
+IrDef
 {
-	var <key, irSpectrum, bufsize;
+	const <key = "Conv";
+	var irSpectrum, bufsize;
 	var irWspectrum, irZspectrum;
 	// var irXspectrum, irYspectrum;
 
@@ -28,8 +29,6 @@ IrDef[]
 	{ | server, ir |
 
 		var bufWXYZ, bufAformat;
-
-		key = ir.fileNameWithoutExtension;
 
 		bufWXYZ = Buffer.read(server, ir.fullPath);
 
@@ -74,11 +73,13 @@ IrDef[]
 	prLoadGlobalIr
 	{ | server, ir, bufWXYZ, bufAformat |
 
-		var irA4, afmtDir = ir.pathOnly ++ $/ ++ key ++ "_Flu.wav";
+		var irA4, afmtDir = ir.pathOnly ++ $/
+		++ ir.fileNameWithoutExtension ++ "_Flu.wav";
 
 		if (File.exists(afmtDir).not)
 		{
-			("writing " ++ key ++ "_Flu.wav file in" + ir.pathOnly).postln;
+			("writing " ++ ir.fileNameWithoutExtension
+				++ "_Flu.wav file in" + ir.pathOnly).postln;
 
 			{
 				BufWr.ar(FoaDecode.ar(
@@ -93,7 +94,8 @@ IrDef[]
 			(bufAformat.numFrames / server.sampleRate).wait;
 
 			bufAformat.write(afmtDir, headerFormat: "wav", sampleFormat: "int24",
-				completionMessage:{ ("done writing" + key ++ "_Flu.wav").postln; });
+				completionMessage:{ ("done writing" + ir.fileNameWithoutExtension
+					++ "_Flu.wav").postln; });
 
 			server.sync;
 
@@ -141,13 +143,15 @@ Ir12chanDef : IrDef
 	{ | server, ir, bufWXYZ, bufAformat |
 
 		var bufAformat_soa_a12, irA12,
-		afmtDir = ir.pathOnly ++ $/ ++ key ++ "_SoaA12.wav";
+		afmtDir = ir.pathOnly ++ $/
+		++ ir.fileNameWithoutExtension ++ "_SoaA12.wav";
 
 		if (File.exists(afmtDir).not)
 		{
 			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12);
 
-			("writing " ++ key ++ "_SoaA12.wav file in " + ir.pathOnly).postln;
+			("writing " ++ ir.fileNameWithoutExtension
+				++ "_SoaA12.wav file in " + ir.pathOnly).postln;
 
 			{
 				BufWr.ar(AtkMatrixMix.ar(
@@ -162,7 +166,8 @@ Ir12chanDef : IrDef
 			(bufAformat.numFrames / server.sampleRate).wait;
 
 			bufAformat_soa_a12.write(afmtDir, headerFormat: "wav", sampleFormat: "int24",
-				completionMessage:{ ("done writing" + key ++ "_SoaA12.wav").postln; });
+				completionMessage:{ ("done writing" + ir.fileNameWithoutExtension
+					++ "_SoaA12.wav").postln; });
 
 			// server.sync;
 

@@ -49,7 +49,7 @@ Mosca : MoscaBase
 
 		renderer = MoscaRenderer(maxOrder);
 
-		effects = MoscaEffects();
+		effects = MoscaEffects(irBank);
 
 		spat = MoscaSpatializer(server);
 
@@ -70,11 +70,11 @@ Mosca : MoscaBase
 				Out.ar(renderer.fumaBus, blip);
 			}).send(server);
 
-			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer, irBank);
+			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer);
 
 			spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array);
 
-			effects.sendFx(multyThread, server);
+			effects.finalise(multyThread, server, maxOrder, irBank);
 
 			renderer.launchRenderer(server, server.defaultGroup);
 		});
@@ -95,7 +95,7 @@ Mosca : MoscaBase
 			Array.fill(nsources,
 				{ | i |
 					MoscaSource(i, server, srcGrp, ossiaParent, allCritical,
-						spat, effects.ossiaGlobal.node.domain.values());
+						spat, effects);
 				}
 			)
 		);

@@ -17,18 +17,24 @@
 */
 
 MoscaEffects {
-	var <defs, <effectList;
+	classvar <defs;
+	var <effectList, <effectInstances;
 	var <gBfBus, <gBxBus, afmtBus, <transformGrp;
 	var globalFx, b2Fx;
 	var encodeFunc, decodeFunc, busChans, fxChans;
 	var <ossiaGlobal, <ossiaDelay, <ossiaDecay;
 
-	*new { ^super.new().ctr() }
+	*initClass
+	{
+		defs = Array.newFrom(EffectDef.subclasses);
+	}
+
+	*new { | irBank | ^super.new().ctr(irBank) }
 
 	ctr
 	{ | irBank |
 
-		defs = Array.newFrom(EffectDef.subclasses);
+		effectInstances = Ref(IdentityDictionary());
 
 		if (irBank.isNil)
 		{
@@ -39,18 +45,22 @@ MoscaEffects {
 		} {
 			effectList = defs;
 
-			effectList.removeAt(effectList.detectIndex({ | item |
+			effectList.removeAt(defs.detectIndex({ | item |
 				item == ConvolutionDef.asClass }));
+
+			PathName(irBank).entries.do({ | ir |
+				if (ir.extension == "amb") {
+					effectList ++ ir.fileNameWithoutExtension;
+				}
+			});
 		};
 	}
 
 	setup
-	{ | server, sourceGroup, multyThread, maxOrder, renderer, irBank |
+	{ | server, sourceGroup, multyThread, maxOrder, renderer |
 
 		busChans = MoscaUtils.fourOrNine(maxOrder);
 		fxChans = MoscaUtils.fourOrTwelve(maxOrder);
-
-		if (irBank.notNil) { this.prLoadIr(server, maxOrder, irBank) };
 
 		gBfBus = Bus.audio(server, busChans); // global b-format bus
 		gBxBus = Bus.audio(server, busChans); // global n3d b-format bus
@@ -62,7 +72,9 @@ MoscaEffects {
 		} {
 			if (maxOrder == 1)
 			{
-				defs = defs.collect({ | item | item.new1stOrder() });
+				defs.do({ | def |
+					effectInstances.get.put(def.key.asSymbol, def.new1stOrder());
+				});
 
 				decodeFunc = {
 					var sigf = In.ar(gBfBus, 4);
@@ -87,13 +99,9 @@ MoscaEffects {
 					};
 				};
 			} {
-				defs = defs.collect(
-					{ | item |
-						if (item != ClearDef.asClass)
-						{ item.new2ndOrder() }
-						{ item }; // no need to instanciate ClearDef
-					};
-				);
+				defs.do({ | def |
+					effectInstances.get.put(def.key.asSymbol, def.new2ndOrder());
+				});
 
 				decodeFunc = {
 					var sigf = In.ar(gBfBus, 9);
@@ -122,24 +130,8 @@ MoscaEffects {
 		};
 	}
 
-	prLoadIr
-	{ | server, maxOrder, irBank | // prepare list of impulse responses for local and global reverb
-
-		if (maxOrder == 1) {
-			PathName(irBank).entries.do({ | ir |
-				if (ir.extension == "amb") {
-					effectList.add(IrDef(server, ir))
-				}
-			})
-		} { PathName(irBank).entries.do({ | ir |
-			if (ir.extension == "amb") {
-				effectList.add(Ir12chanDef(server, ir))
-			}
-		})};
-	}
-
-	sendFx
-	{ | multyThread, server |
+	finalise
+	{ | multyThread, server, maxOrder, irBank |
 
 		SynthDef(\b2Fx, {
 			var sig = decodeFunc.value();
@@ -149,38 +141,67 @@ MoscaEffects {
 		if (multyThread) {
 
 		} {
-			defs.do({ | item |
+			effectInstances.get.do({ | effect |
 
-				if (item != ClearDef.asClass)
+				if (effect != ClearDef.asClass)
 				{
-					SynthDef(\globalFx ++ item.key, { | gate = 1, room = 0.5, damp = 0.5,
-						a0ir, a1ir, a2ir, a3ir, a4ir, a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir |
-						var sig = In.ar(afmtBus, fxChans);
-						sig = sig * EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
-						sig = item.globalFunc.value(sig, room, damp, a0ir, a1ir, a2ir, a3ir, a4ir,
-							a5ir, a6ir, a7ir, a8ir, a9ir, a10ir, a11ir);
-						encodeFunc.value(sig);
-					}).load(server);
-				};
+					var name = \globalFx ++ effect.key;
+
+					if (effect.needsReCompile(name, maxOrder))
+					{
+						SynthDef(name, { | gate = 1 |
+							var sig = In.ar(afmtBus, fxChans);
+							sig = sig * EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
+							sig = SynthDef.wrap(effect.globalFunc, prependArgs: [ sig ]);
+							encodeFunc.value(sig);
+						}, metadata: effect.getMetadata(maxOrder)
+						).store(mdPlugin: TextArchiveMDPlugin);
+
+						postln("Compiling" + name + "SynthDef");
+					};
+				}
 			});
 		};
+
+		server.sync;
+
+		if (irBank.notNil)
+		{
+			effectInstances.get.removeAt(\Conv);
+
+			if (maxOrder == 1)
+			{
+				PathName(irBank).entries.do({ | ir |
+					if (ir.extension == "amb") {
+						effectInstances.get.put(ir.fileNameWithoutExtension.asSymbol,
+							IrDef(server, ir));
+					}
+				})
+			} {
+				PathName(irBank).entries.do({ | ir |
+					if (ir.extension == "amb") {
+						effectInstances.get.put(ir.fileNameWithoutExtension.asSymbol,
+							Ir12chanDef(server, ir));
+					}
+				})
+			}
+		};
+
+		postln("Done with effects");
 	}
 
 	setParam
 	{ | ossiaParent, allCritical |
 
 		ossiaGlobal = OssiaAutomationProxy(ossiaParent, "Global_effect", String,
-			[nil, nil, effectList.collect({ | item |
-					if (item.class == String) { item } { item.key };
-				};
-		)], "Clear", critical:true, repetition_filter:true);
+			[nil, nil, effectList], "Clear", critical:true, repetition_filter:true);
 
 		ossiaGlobal.node.description_(effectList.asString);
 
-		ossiaDelay = OssiaAutomationProxy(ossiaGlobal.node, "Delay", Float,
+		ossiaDelay = OssiaAutomationProxy(ossiaGlobal.node, "Room_delay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 
-		ossiaDecay = OssiaAutomationProxy(ossiaGlobal.node, "Decay", Float,
+		ossiaDecay = OssiaAutomationProxy(ossiaGlobal.node, "Damp_decay", Float,
 			[0, 1], 0.5, 'clip', critical:allCritical, repetition_filter:true);
 	}
 
@@ -194,11 +215,8 @@ MoscaEffects {
 
 			if (num.value != "Clear")
 			{
-				var synthArgs, i = ossiaGlobal.node.domain.values().detectIndex(
-					{ | item | item == num.value }
-				);
-
-				if (effectList[i].class != String) { synthArgs = effectList[i].irSpecPar() };
+				var instance = effectInstances.get.at(ossiaGlobal.value.asSymbol),
+				args = instance.getGlobalArgs(ossiaGlobal.node);
 
 				// deals with converting and encoding global fx busses
 				if (b2Fx.isNil)
@@ -207,9 +225,8 @@ MoscaEffects {
 					.onFree({ b2Fx = nil });
 				};
 
-				globalFx = Synth(\globalFx ++ num.value,
-					[\gate, 1, \room, ossiaDelay.value, \damp, ossiaDecay.value] ++
-					synthArgs, transformGrp).register.onFree(
+				globalFx = Synth(\globalFx ++ instance.key,
+					[\gate, 1] ++ args, transformGrp).register.onFree(
 					{
 						if (globalFx.isPlaying.not) { b2Fx.free };
 					}

@@ -20,7 +20,7 @@
 //               Base Classe                 //
 //-------------------------------------------//
 
-EffectDef
+EffectDef : MoscaPlugin
 {
 	var <globalFunc;
 
@@ -33,4 +33,6 @@ EffectDef
 	ctr1stOrder { this.prFourChanGlobal() }
 
 	ctr2ndOrder { this.prTwelveChanGlobal() }
+
+	getGlobalArgs { | parentOssiaNode | ^[] } // override this method to get specific Gloabal arguments.
 }

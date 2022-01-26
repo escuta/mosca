@@ -20,7 +20,7 @@
 //                Base Class                 //
 //-------------------------------------------//
 
-SpatDef
+SpatDef : MoscaPlugin
 {
 	classvar <defList, distFilter, atenuator, aten2distance;
 
@@ -63,11 +63,7 @@ SpatDef
 		{ ^true; };
 	}
 
-	prSetVars{ | maxOrder, renderer, server | } // override this method to set specific variables.
-	setParams{ | parentOssiaNode, allCritical | ^[] } // override this method to set specific ossia parameters.
-	getParams{ | parentOssiaNode, nChan | ^[] } // override this method to get specific ossia parameters.
-	setAction{ | parentOssiaNode, source | } // and their actions
-	getArgs{ | parentOssiaNode, nChan | ^[] } // override this method to get specific Syth arguments.
-	format{}
-	prSetBusses{ | effects, renderer | }
+	format {} // override this method to get the spat format (FUMA, N3D, NONAMBI).
+
+	prSetBusses { | effects, renderer | } // override this method to set output busses.
 }

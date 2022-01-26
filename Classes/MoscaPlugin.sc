@@ -35,10 +35,9 @@ MoscaPlugin
 		{ ^true; };
 	}
 
-	prSetVars{ | maxOrder, renderer, server | } // override this method to set specific variables.
-	setParams{ | parentOssiaNode, allCritical | ^[] } // override this method to set specific ossia parameters.
-	getParams{ | parentOssiaNode, nChan | ^[] } // override this method to get specific ossia parameters.
-	setAction{ | parentOssiaNode, source | } // and their actions
-	getArgs{ | parentOssiaNode, nChan | ^[] } // override this method to get specific Syth arguments.
-	getGlobalArgs{ | parentOssiaNode, nChan | ^getArgs(parentOssiaNode, nChan)}
-	}
+	prSetVars { | maxOrder, renderer, server | } // override this method to set specific variables.
+	setParams { | parentOssiaNode, allCritical | ^[] } // override this method to set specific ossia parameters.
+	getParams { | parentOssiaNode, nChan | ^[] } // override this method to get specific ossia parameters.
+	setAction { | parentOssiaNode, source | } // and their actions
+	getArgs { | parentOssiaNode, nChan = 1 | ^[] } // override this method to get specific Local arguments.
+}

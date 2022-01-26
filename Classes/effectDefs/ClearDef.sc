@@ -31,4 +31,8 @@ ClearDef : EffectDef
 	*new2ndOrder { }
 
 	*getFunc { | nChanns | ^{ | lrevRef, p, rad, llev | }}
+
+	*getArgs { | parentOssiaNode, nChan = 1 | ^[] }
+
+	*getGlobalArgs { | parentOssiaNode, nChan = 4 | ^[] }
 }

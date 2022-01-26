@@ -84,7 +84,7 @@ MoscaSpatializer
 			def.setup(maxOrder, effects, renderer, server);
 		});
 
-		effects.defs.do({ | effect, count |
+		effects.effectInstances.get.do({ | effect |
 
 			spatInstances.get.do({ | spat |
 
@@ -113,7 +113,7 @@ MoscaSpatializer
 
 								p.value = DelayC.ar(p.value, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
 
-								// local reverberation
+								// local effect
 								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rad ]);
 
 								lrevRef.value = lrevRef.value * revCut;
@@ -137,6 +137,6 @@ MoscaSpatializer
 		});
 
 		server.sync;
-		postln("Done");
+		postln("Done with spat");
 	}
 }
