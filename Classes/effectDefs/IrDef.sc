@@ -18,10 +18,12 @@
 
 IrDef
 {
-	const <key = "Conv";
+	const <key = "Conv"; // class access
 	var irSpectrum, bufsize;
 	var irWspectrum, irZspectrum;
 	// var irXspectrum, irYspectrum;
+
+	key { ^key } // instance access
 
 	*new { | server, ir | ^super.new.ctr(server, ir) }
 
@@ -32,7 +34,7 @@ IrDef
 
 		bufWXYZ = Buffer.read(server, ir.fullPath);
 
-		// server.sync;
+		server.sync;
 
 		bufAformat = Buffer.alloc(server, bufWXYZ.numFrames, bufWXYZ.numChannels);
 
@@ -50,7 +52,7 @@ IrDef
 		// irY = Buffer.readChannel(server, ir.fullPath, channels: [2]);
 		irZ = Buffer.readChannel(server, ir.fullPath, channels: [3]);
 
-		// server.sync;
+		server.sync;
 
 		bufsize = PartConv.calcBufSize(MoscaUtils.fftSize(), irW);
 
@@ -73,13 +75,19 @@ IrDef
 	prLoadGlobalIr
 	{ | server, ir, bufWXYZ, bufAformat |
 
-		var irA4, afmtDir = ir.pathOnly ++ $/
+		var irA4, afmtDir;
+
+		if (File.exists(ir.pathOnly ++ "Flu").not) {
+			(ir.pathOnly ++ "Flu").makeDir
+		};
+
+		afmtDir = ir.pathOnly ++ "Flu/"
 		++ ir.fileNameWithoutExtension ++ "_Flu.wav";
 
 		if (File.exists(afmtDir).not)
 		{
 			("writing " ++ ir.fileNameWithoutExtension
-				++ "_Flu.wav file in" + ir.pathOnly).postln;
+				++ "_Flu.wav file in" + ir.pathOnly ++ "Flu").postln;
 
 			{
 				BufWr.ar(FoaDecode.ar(
@@ -116,25 +124,39 @@ IrDef
 		});
 	}
 
-	wSpecPar { ^[\wir, irWspectrum] }
+	getArgs
+	{ | parentOssiaNode, nChan |
 
-	zSpecPar { ^[\zir, irZspectrum] }
-
-	wxyzSpecPar
-	{
-		^[\wir, irWspectrum,
-			// \xir, irXspectrum,
-			// \yir, irYspectrum,
-			\zir, irZspectrum];
+		if (nChan == 2)
+		{
+			^[
+				\llev, parentOssiaNode.find("Local_amount").value,
+				\zir, irZspectrum
+			]
+		} {
+			^[
+				\llev, parentOssiaNode.find("Local_amount").value,
+				\wir, irWspectrum
+			]
+		}
 	}
 
-	irSpecPar
-	{
+	getGlobalArgs
+	{ | parentOssiaNode |
+
 		^[\a0ir, irSpectrum[0],
 			\a1ir, irSpectrum[1],
 			\a2ir, irSpectrum[2],
 			\a3ir, irSpectrum[3]];
 	}
+
+	// wxyzSpecPar
+	// {
+	// 	^[\wir, irWspectrum,
+	// 		// \xir, irXspectrum,
+	// 		// \yir, irYspectrum,
+	// 	\zir, irZspectrum];
+	// }
 }
 
 Ir12chanDef : IrDef
@@ -142,8 +164,13 @@ Ir12chanDef : IrDef
 	prLoadGlobalIr
 	{ | server, ir, bufWXYZ, bufAformat |
 
-		var bufAformat_soa_a12, irA12,
-		afmtDir = ir.pathOnly ++ $/
+		var bufAformat_soa_a12, irA12, afmtDir;
+
+		if (File.exists(ir.pathOnly ++ "SoaA12").not) {
+			(ir.pathOnly ++ "SoaA12").makeDir
+		};
+
+		afmtDir = ir.pathOnly ++ "SoaA12/"
 		++ ir.fileNameWithoutExtension ++ "_SoaA12.wav";
 
 		if (File.exists(afmtDir).not)
@@ -151,7 +178,7 @@ Ir12chanDef : IrDef
 			bufAformat_soa_a12 = Buffer.alloc(server, bufWXYZ.numFrames, 12);
 
 			("writing " ++ ir.fileNameWithoutExtension
-				++ "_SoaA12.wav file in " + ir.pathOnly).postln;
+				++ "_SoaA12.wav file in " + ir.pathOnly ++ "SoaA12").postln;
 
 			{
 				BufWr.ar(AtkMatrixMix.ar(
@@ -182,15 +209,16 @@ Ir12chanDef : IrDef
 		12.do({ | i |
 			irA12[i] = Buffer.readChannel(server, afmtDir, channels: [i]);
 			irSpectrum[i] = Buffer.alloc(server, bufsize, 1);
-			// server.sync;
+			server.sync;
 			irSpectrum[i].preparePartConv(irA12[i], MoscaUtils.fftSize());
-			// server.sync;
+			server.sync;
 			irA12[i].free;
 		});
 	}
 
-	irSpecPar
-	{
+	getGlobalArgs
+	{ | parentOssiaNode |
+
 		^[\a0ir, irSpectrum[0],
 			\a1ir, irSpectrum[1],
 			\a2ir, irSpectrum[2],

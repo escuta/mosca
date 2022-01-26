@@ -389,18 +389,16 @@ MoscaSource[]
 		{
 			var args = []; // prepare synth Arguments
 
-			switch (nChan.value,
-				2,
-				{
+			if (nChan.value == 2)
+			{
+				args = args ++ [\angle, angle.value.degrad];
+			};
 
-
-					args = args ++ [\angle, angle.value.degrad];
-				},
-				{
-					// no acces to center here
-					// args = args ++ [\rotAngle, rotation.value + center.heading.value];
-				};
-			);
+			// if (nChan.value > 2)
+			// {
+			// 	// no acces to center here
+			// 	args = args ++ [\rotAngle, rotation.value + center.heading.value];
+			// };
 
 			args = args ++ effectInstances.get.at(localEffect.value.asSymbol)
 				.getArgs(localEffect.node, nChan.value);

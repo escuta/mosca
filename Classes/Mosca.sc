@@ -44,8 +44,10 @@ Mosca : MoscaBase
 
 		if (server.isNil) { server = Server.local };
 
-		multyThread = server.options.threads.notNil;
+		// TODO
 		// Server.program.asString.endsWith("supernova");
+		// multyThread = server.options.threads.notNil;
+		multyThread = false;
 
 		renderer = MoscaRenderer(maxOrder);
 
@@ -74,9 +76,11 @@ Mosca : MoscaBase
 
 			spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array);
 
-			effects.finalise(multyThread, server, maxOrder, irBank);
+			effects.finalize(multyThread, server, maxOrder, irBank);
 
 			renderer.launchRenderer(server, server.defaultGroup);
+
+			postln("Ready !");
 		});
 
 		// setup ossia parameter tree

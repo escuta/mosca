@@ -137,6 +137,5 @@ MoscaSpatializer
 		});
 
 		server.sync;
-		postln("Done with spat");
 	}
 }

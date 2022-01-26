@@ -43,14 +43,16 @@ MoscaEffects {
 
 			effectList = defs.collect({ | item | item.key });
 		} {
-			effectList = defs;
+			effectList = Array.newFrom(defs);
 
 			effectList.removeAt(defs.detectIndex({ | item |
 				item == ConvolutionDef.asClass }));
 
+			effectList = effectList.collect({ | item | item.key });
+
 			PathName(irBank).entries.do({ | ir |
 				if (ir.extension == "amb") {
-					effectList ++ ir.fileNameWithoutExtension;
+					effectList = effectList.add(ir.fileNameWithoutExtension);
 				}
 			});
 		};
@@ -130,7 +132,7 @@ MoscaEffects {
 		};
 	}
 
-	finalise
+	finalize
 	{ | multyThread, server, maxOrder, irBank |
 
 		SynthDef(\b2Fx, {
@@ -169,6 +171,8 @@ MoscaEffects {
 		{
 			effectInstances.get.removeAt(\Conv);
 
+			postln("Loading Impluse Responses ...");
+
 			if (maxOrder == 1)
 			{
 				PathName(irBank).entries.do({ | ir |
@@ -186,8 +190,6 @@ MoscaEffects {
 				})
 			}
 		};
-
-		postln("Done with effects");
 	}
 
 	setParam
