@@ -3,6 +3,7 @@ MoscaStartup
 	//// Server Parameters
 	var server = nil;
 	var <>servRemoteIP = "127.0.0.1";
+		//add form to control ip address and ports.
 	var <>servRemotePort = 9997;
 	var <>servLocalPort = 9996;
 	var serverStarted = false;
@@ -13,15 +14,15 @@ MoscaStartup
 
 	//Mosca Parameters
 	var oscParent;
-	var oscInputName;
+	var audioPort;
 	var >decoder = nil;
 	var <>order = -1;
 	var <>setupList = nil;
 	var <>sources = 1;
 	var <>out = 0;
 	var <>sub;
-	var moscaInstance;
-	var rirBank = nil;
+	var moscaInstance = nil;
+	var rirBank = nil; //TODO add form to control whether or not to use a rir bank
 	var <>duration = 20;
 
 	//// GUI variables
@@ -48,7 +49,7 @@ MoscaStartup
 	{
 
 		oscParent = OSSIA_Device("SC");
-		oscInputName = "ossia score";
+		audioPort = "ossia score";
 		window = Window.new("Mosca Startup", Rect(10,1000,windowW,windowH));
 
 		//reading initial servers parameters;
@@ -68,25 +69,7 @@ MoscaStartup
 		oscParent.exposeOSC(servRemoteIP,servRemotePort,servLocalPort);
 		("Exposing OSC to "+servRemoteIP+ ", remote port: " +servRemotePort + " servLocalPort: "+servLocalPort).postln;
 	}
-	prReconnectMosca{
-		var o = server.options;
-		o.numOutputBusChannels.do({ | i |
-			i.postln();
-			Pipe("jack_disconnect ossia' 'score:out_" ++ (i)
-				+ "system:playback_" ++ (i + 1), "w")
-		});
-		o.numOutputBusChannels.do({ | i |
-			i.postln();
-			Pipe("jack_connect ossia' 'score:out_" ++ (i)
-				+ "supernova:input_" ++ (i + 1), "w")
-		});
 
-
-	}
-	prHello
-	{
-		"ohioh".postln;
-	}
 	prLoadFromFile{
 		arg path;
 		var file,data;
@@ -175,7 +158,7 @@ MoscaStartup
 		if(this.prCheckConfig)
 		{
 			"Starting Server - WIP".postln;
-			"SC_JACK_DEFAULT_INPUTS".setenv(oscInputName);
+			// "SC_JACK_DEFAULT_INPUTS".setenv(audioPort);
 
 			Server.killAll;
 			Server.supernova;
@@ -193,7 +176,6 @@ MoscaStartup
 			server.waitForBoot{
 				decoder = FoaDecoderKernel.newCIPIC(21, server,server.options.sampleRate.asInteger);
 				"Server Started!".postln;
-				server.options.sampleRate.postln;
 				serverStarted = true;
 				server.sync;
 				moscaInstance = Mosca(
@@ -208,11 +190,20 @@ MoscaStartup
 					rirBank: rirBank,
 					parentOssiaNode: oscParent;
 				).gui();
+				server.options.numOutputBusChannels.do({ | i |
+					i.postln();
+					Pipe("jack_disconnect ossia' 'score:out_" ++ (i)
+						+ "system:playback_" ++ (i + 1), "w")
+				});
 			}
 		}
 	}
 	prCancel
 	{
+		if(moscaInstance!=nil){
+			"Closing Mosca".postln;
+			Server.killAll;
+		};
 		window.close();
 		"Cancelling, quitting".postln;
 	}
@@ -315,8 +306,48 @@ MoscaStartup
 			initVal: nbWireBuffer,
 			action:{|ez| ez.round=ez.value;nbWireBuffer=ez.value}
 		);
+		var ipInput = TextField.new(window).value_(servRemoteIP).align_(\center).action_{
+			arg i;
+			var fields = i.value.split($.);
+			if(fields.size != 4)
+			{
+				i.value = servRemoteIP;
+			}
+			{
+				var validIP = true;
+				fields.do{
+					arg f;
+					var n;
+					f = f.stripWhiteSpace;
+
+					n = f.asInteger;
+					if((n < 0) || (n > 255) ||(f.size <= 0) || (f.size > 3)){
+						validIP = false;
+					}
+				};
+				if(validIP)
+				{
+					i.value.postln;
+					servRemoteIP = i.value;
+				}
+				{
+					i.value = servRemoteIP;
+				}
+			}
+
+		};
+		var remotePortInput = NumberBox.new(window).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servRemotePort).action_({
+			arg i;
+			servRemotePort = i.value;
+
+		});
+		var localPortInput = NumberBox.new(window).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servLocalPort).action_({
+			arg i;
+			servLocalPort = i.value;
+		});
 		//server options
 		var i = 1;
+
 		serverOptions = CompositeView(window);
 
 		serverOptions.background = Color.rand;
@@ -337,7 +368,28 @@ MoscaStartup
 			serverOptions.layout.add(nil,i,3);
 			i = i+1;
 		};
+		serverOptions.layout.addSpanning(StaticText.new().string_("Adresse IP du serveur distant"),i,1,1,2,\center);
+		i = i+1;
+		serverOptions.layout.addSpanning(
+			ipInput,i,1,1,2,\right
+		);
+		i = i+1;
+		serverOptions.layout.addSpanning(
+			HLayout(
+				[StaticText.new(window).string_("Port Distant")],
+				[remotePortInput]
+			),i,1,1,2
+		);
+		i = i+1;
+		serverOptions.layout.addSpanning(
+			HLayout(
+				[StaticText.new(window).string_("Port Local")],
+				[localPortInput]
+			),i,1,1,2
+		);
+		i = i+1;
 		serverOptions.layout.addSpanning(nil,i,0,1,4);
+
 		serverOptions.layout.setRowStretch(i,2);
 		serverOptions.visible = false;
 	}
@@ -404,20 +456,6 @@ MoscaStartup
 		};
 	}
 
-	prGetPorts{
-		var list;
-		var ports = Set();
-		list = "jack_lsp".unixCmdGetStdOut.split($\n);
-		list.pop();
-		if(list.size != 0){
-			list.do{
-				arg item;
-				ports.add(item.split($:)[0]);
-			};
-		};
-		^(ports.asArray);
-	}
-
 	prUpdateSetup{
 		"Updating".postln
 	}
@@ -474,15 +512,14 @@ MoscaStartup
 				txt.value = this.prParseSub(txt.value);
 			}).align_(\right)
 		];
-		var portList = PopUpMenu(window).items_(this.prGetPorts());
-		var scanButton = Button(window).string_("Re-scan").action_{portList.items_(this.prGetPorts())};
+		// var portList = PopUpMenu(window).items_(this.prGetPorts()).action_({arg i; audioPort=i.item});
+		// var scanButton = Button(window).string_("Re-scan").action_{portList.items_(this.prGetPorts())};
 		var i = 1;
 		"Setting mosca gui".postln;
 		//mosca options
 		moscaOptions = CompositeView(window);
 		moscaOptions.background = Color.rand;
 		moscaOptions.layout = GridLayout();
-		moscaOptions.layout.children.postln;
 		moscaOptions.layout.addSpanning(StaticText.new().string_("Mosca options").background_(Color.rand),0,0,1,4,align:\center);
 		moscaOptions.layout.setColumnStretch(0,2);
 		moscaOptions.layout.setColumnStretch(1,1);
@@ -505,17 +542,18 @@ MoscaStartup
 			i = i+1;
 		};
 		this.prSetupGui();
-		moscaOptions.layout.addSpanning(HLayout(
+	/*	moscaOptions.layout.addSpanning(HLayout(
 			[portList],
 			[scanButton]),i,1,1,2);
-		i = i+1;
+		i = i+1;*/
 		moscaOptions.layout.addSpanning(nil,i,0,1,4);
 		i = i + 1;
 		moscaOptions.layout.addSpanning(scrollView,i,1,2,2);
 		i = i+1;
-		moscaOptions.layout.addSpanning(nil,i,0,1,4);
-		i = i+1;
+		// moscaOptions.layout.addSpanning(nil,i,0,1,4);
+		// i = i+1;
 		moscaOptions.layout.setRowStretch(i,2);
+
 
 	}
 
