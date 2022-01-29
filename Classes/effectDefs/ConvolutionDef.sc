@@ -33,23 +33,23 @@ ConvolutionDef : EffectDef
 		switch (nChanns,
 			1,
 			{
-				^{ | lrevRef, p, rad, llev, rirWspectrum |
-					lrevRef.value = PartConv.ar(p.value, MoscaUtils.fftSize(), rirWspectrum,
+				^{ | lrevRef, p, rad, llev, wir |
+					lrevRef.value = PartConv.ar(p.value, MoscaUtils.fftSize(), wir,
 						rad * llev);
 				};
 			},
 			2,
 			{
-				^{ | lrevRef, p, rad, llev, rirZspectrum |
+				^{ | lrevRef, p, rad, llev, zir |
 					var temp1 = p.value[0], temp2 = p.value[1];
-					temp1 = PartConv.ar(temp1, MoscaUtils.fftSize(), rirZspectrum);
-					temp2 = PartConv.ar(temp2, MoscaUtils.fftSize(), rirZspectrum);
+					temp1 = PartConv.ar(temp1, MoscaUtils.fftSize(), zir);
+					temp2 = PartConv.ar(temp2, MoscaUtils.fftSize(), zir);
 					lrevRef.value = [temp1, temp2] * (rad * llev);
 				}
 			},
 			{
-				^{ | lrevRef, p, rad, llev, rirWspectrum, locallev |
-					lrevRef.value = PartConv.ar(p.value[0], MoscaUtils.fftSize(), rirWspectrum,
+				^{ | lrevRef, p, rad, llev, wir |
+					lrevRef.value = PartConv.ar(p.value[0], MoscaUtils.fftSize(), wir,
 						rad * llev);
 				};
 		})

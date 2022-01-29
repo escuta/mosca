@@ -389,19 +389,19 @@ MoscaSource[]
 		{
 			var args = []; // prepare synth Arguments
 
-			if (nChan.value == 2)
+			if (chanNum == 2)
 			{
 				args = args ++ [\angle, angle.value.degrad];
 			};
 
-			// if (nChan.value > 2)
+			// if (chanNum > 2)
 			// {
 			// 	// no acces to center here
 			// 	args = args ++ [\rotAngle, rotation.value + center.heading.value];
 			// };
 
 			args = args ++ effectInstances.get.at(localEffect.value.asSymbol)
-				.getArgs(localEffect.node, nChan.value);
+				.getArgs(localEffect.node, chanNum);
 
 			if (scSynths.value)
 			{
@@ -412,9 +412,6 @@ MoscaSource[]
 			if (external.value) { args = args ++ [\busini, busInd.value] };
 
 			curentSpat = spatType;
-
-			args = args ++ spatInstances.get.at(library.value.asSymbol)
-			.getArgs(src, nChan.value);
 
 			if ((file.value != "") && (scSynths.value || external.value).not)
 			{
@@ -442,7 +439,7 @@ MoscaSource[]
 			};
 
 			args = args ++ spatInstances.get.at(library.value.asSymbol)
-				.getArgs(src, nChan.value);
+				.getArgs(src, chanNum);
 
 			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
 

@@ -45,7 +45,8 @@ IrDef
 	prLoadLocalIr
 	{ | server, ir |
 
-		var irW, irX, irY, irZ;
+		var irW, irZ;
+		// var irX, irY;
 
 		irW = Buffer.readChannel(server, ir.fullPath, channels: [0]);
 		// irX = Buffer.readChannel(server, ir.fullPath, channels: [1]);
@@ -56,19 +57,25 @@ IrDef
 
 		bufsize = PartConv.calcBufSize(MoscaUtils.fftSize(), irW);
 
+		server.sync;
+
 		irWspectrum = Buffer.alloc(server, bufsize, 1);
 		// irXspectrum = Buffer.alloc(server, bufsize, 1);
 		// irYspectrum = Buffer.alloc(server, bufsize, 1);
 		irZspectrum = Buffer.alloc(server, bufsize, 1);
 
-		// don't need time domain data anymore, just needed spectral version
+		server.sync;
+
 		irWspectrum.preparePartConv(irW, MoscaUtils.fftSize());
-		irW.free;
 		// irXspectrum.preparePartConv(irX, MoscaUtils.fftSize());
-		// irX.free;
 		// irYspectrum.preparePartConv(irY, MoscaUtils.fftSize());
-		// irY.free;
 		irZspectrum.preparePartConv(irZ, MoscaUtils.fftSize());
+
+		server.sync;
+		// don't need time domain data anymore, just needed spectral version
+		irW.free;
+		// irX.free;
+		// irY.free;
 		irZ.free;
 	}
 
@@ -129,15 +136,12 @@ IrDef
 
 		if (nChan == 2)
 		{
-			^[
-				\llev, parentOssiaNode.find("Local_amount").value,
-				\zir, irZspectrum
-			]
+			// ,
+			^[\llev, parentOssiaNode.find("Local_amount").value,
+				\zir, irZspectrum];
 		} {
-			^[
-				\llev, parentOssiaNode.find("Local_amount").value,
-				\wir, irWspectrum
-			]
+			^[\llev, parentOssiaNode.find("Local_amount").value,
+				\wir, irWspectrum];
 		}
 	}
 
