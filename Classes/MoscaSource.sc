@@ -330,6 +330,7 @@ MoscaSource[]
 
 	setSCBus
 	{
+		chanNum.postln;
 		if (scInBus.notNil)
 		{
 			if (scInBus.numChannels != chanNum)

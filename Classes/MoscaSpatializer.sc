@@ -71,7 +71,7 @@ MoscaSpatializer
 
 		// Make EXBus-in SynthDefs, seperate from the init class because it needs the server informaions
 		playInFunc = playInFunc.add({ | p, channum, busini |
-			p.value = In.ar(busini + server.inputBus.index, channum);
+			p.value = In.ar(busini + server.inputBus.index - 1, channum);
 		});
 	}
 
@@ -129,7 +129,8 @@ MoscaSpatializer
 							}, metadata: spat.getMetadata(maxOrder, speaker_array)
 							).store(mdPlugin: TextArchiveMDPlugin);
 
-							postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
+						postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
+						server.sync;
 						// }
 					})
 				})
