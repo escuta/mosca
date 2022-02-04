@@ -394,11 +394,13 @@ MoscaSource[]
 				args = args ++ [\angle, angle.value.degrad];
 			};
 
-			// if (chanNum > 2)
-			// {
-			// 	// no acces to center here
-			// 	args = args ++ [\rotAngle, rotation.value + center.heading.value];
-			// };
+			if (chanNum > 2)
+			{
+				args = args ++ [\rotAngle, rotation.value]
+				// TODO
+				// + center.heading.value];
+				// but no acces to center here currently
+			};
 
 			args = args ++ effectInstances.get.at(localEffect.value.asSymbol)
 				.getArgs(localEffect.node, chanNum);

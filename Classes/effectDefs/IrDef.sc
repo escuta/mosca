@@ -136,7 +136,6 @@ IrDef
 
 		if (nChan == 2)
 		{
-			// ,
 			^[\llev, parentOssiaNode.find("Local_amount").value,
 				\zir, irZspectrum];
 		} {

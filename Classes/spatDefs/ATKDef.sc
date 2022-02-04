@@ -143,7 +143,7 @@ ATKDef : ATKBaseDef
 	{ | parentOssiaNode, nChan |
 
 		if (nChan > 2)
-		{ ^[\directang, parentOssiaNode.find("B-Fmt_atk_directivity").value] }
+		{ ^[\directang, parentOssiaNode.find("Directivity").value] }
 		{ ^[] }
 	}
 

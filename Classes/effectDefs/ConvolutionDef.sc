@@ -52,7 +52,8 @@ ConvolutionDef : EffectDef
 					lrevRef.value = PartConv.ar(p.value[0], MoscaUtils.fftSize(), wir,
 						rad * llev);
 				};
-		})
+			}
+		)
 	}
 
 	prFourChanGlobal
