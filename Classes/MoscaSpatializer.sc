@@ -130,9 +130,9 @@ MoscaSpatializer
 							).store(mdPlugin: TextArchiveMDPlugin);
 
 						postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
-						server.sync;
 						// }
-					})
+					});
+					server.sync;
 				})
 			})
 		});

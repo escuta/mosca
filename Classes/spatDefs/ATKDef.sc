@@ -64,7 +64,7 @@ ATKBaseDef : SpatDef
 					sig = FoaDirectO.ar(p.value * ((1/radRoot) - 1), directang);
 					// directivity
 					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
-					p.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
+					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 				};
 			},
 			{ // assume N3D input
@@ -76,7 +76,7 @@ ATKBaseDef : SpatDef
 					sig = FoaDirectO.ar(sig, directang);
 					// directivity
 					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
-					p.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
+					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 				};
 			}
 		)
