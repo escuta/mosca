@@ -102,9 +102,9 @@ ABTDef : N3DDef
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle |
 					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					sig = FoaDecode.ar(lrevRef.value + (p.value * ((1/radRoot) - 1)),
+					sig = FoaDecode.ar(p.value * ((1/radRoot) - 1),
 						MoscaUtils.f2n);
-					sig = HOATransRotateAz.ar(1, sig, rotAngle);
+					sig = HOATransRotateAz.ar(1, lrevRef.value + sig, rotAngle);
 					lrevRef.value = HOABeamDirac2Hoa.ar(1, sig, azimuth, elevation, timer_manual:1, focus:pushang);
 				};
 			},

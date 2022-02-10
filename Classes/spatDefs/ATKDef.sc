@@ -61,7 +61,8 @@ ATKBaseDef : SpatDef
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
 					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					sig = FoaDirectO.ar(p.value * ((1/radRoot) - 1), directang);
+					sig = lrevRef.value + (p.value * ((1/radRoot) - 1));
+					sig = FoaDirectO.ar(sig, directang);
 					// directivity
 					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
 					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
@@ -72,7 +73,8 @@ ATKBaseDef : SpatDef
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
 					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					sig = FoaEncode.ar(p.value * ((1/radRoot) - 1), MoscaUtils.n2f);
+					sig = lrevRef.value + (p.value * ((1/radRoot) - 1));
+					sig = FoaEncode.ar(sig, MoscaUtils.n2f);
 					sig = FoaDirectO.ar(sig, directang);
 					// directivity
 					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
