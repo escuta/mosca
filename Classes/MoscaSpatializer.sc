@@ -132,11 +132,9 @@ MoscaSpatializer
 						postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
 						// }
 					});
-					server.sync;
 				})
-			})
+			});
+			server.sync;
 		});
-
-		server.sync;
 	}
 }
