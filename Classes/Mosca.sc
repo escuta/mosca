@@ -40,7 +40,7 @@ Mosca : MoscaBase
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
 
-		var spat, multyThread;
+		var multyThread;
 
 		if (server.isNil) { server = Server.local };
 

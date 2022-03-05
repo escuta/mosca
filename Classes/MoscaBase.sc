@@ -1,7 +1,7 @@
 MoscaBase // acts as the public interface
 {
 	var dur, <server, <ossiaParent, gui, <tracker; // initial rguments
-	var renderer, <effects, center, <sources, srcGrp;
+	var renderer, <spat, <effects, center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
@@ -34,7 +34,7 @@ MoscaBase // acts as the public interface
 
 			newSource = MoscaSource(previousSource.index + 1, server, srcGrp, ossiaParent,
 				previousSource.localAmount.node.critical, // get "allCritical" argument
-				spatList, effects.ossiaGlobal.node.domain.values());
+				spat, effects);
 
 			newSource.setAction(effects.effectList, spatList, center, ossiaPlay);
 
