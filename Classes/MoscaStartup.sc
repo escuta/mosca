@@ -306,51 +306,13 @@ MoscaStartup
 			initVal: nbWireBuffer,
 			action:{|ez| ez.round=ez.value;nbWireBuffer=ez.value}
 		);
-		var ipInput = TextField.new(window).value_(servRemoteIP).align_(\center).action_{
-			arg i;
-			var fields = i.value.split($.);
-			if(fields.size != 4)
-			{
-				i.value = servRemoteIP;
-			}
-			{
-				var validIP = true;
-				fields.do{
-					arg f;
-					var n;
-					f = f.stripWhiteSpace;
 
-					n = f.asInteger;
-					if((n < 0) || (n > 255) ||(f.size <= 0) || (f.size > 3)){
-						validIP = false;
-					}
-				};
-				if(validIP)
-				{
-					i.value.postln;
-					servRemoteIP = i.value;
-				}
-				{
-					i.value = servRemoteIP;
-				}
-			}
-
-		};
-		var remotePortInput = NumberBox.new(window).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servRemotePort).action_({
-			arg i;
-			servRemotePort = i.value;
-
-		});
-		var localPortInput = NumberBox.new(window).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servLocalPort).action_({
-			arg i;
-			servLocalPort = i.value;
-		});
 		//server options
 		var i = 1;
 
 		serverOptions = CompositeView(window);
 
-		serverOptions.background = Color.rand;
+		// serverOptions.background = Color.rand;
 		serverOptions.layout = GridLayout();
 		serverOptions.layout.addSpanning(StaticText.new().string_("Server Memory options"),0,0,1,4,align:\center);
 		serverOptions.layout.setColumnStretch(0,2);
@@ -368,26 +330,8 @@ MoscaStartup
 			serverOptions.layout.add(nil,i,3);
 			i = i+1;
 		};
-		serverOptions.layout.addSpanning(StaticText.new().string_("Adresse IP du serveur distant"),i,1,1,2,\center);
-		i = i+1;
-		serverOptions.layout.addSpanning(
-			ipInput,i,1,1,2,\right
-		);
-		i = i+1;
-		serverOptions.layout.addSpanning(
-			HLayout(
-				[StaticText.new(window).string_("Port Distant")],
-				[remotePortInput]
-			),i,1,1,2
-		);
-		i = i+1;
-		serverOptions.layout.addSpanning(
-			HLayout(
-				[StaticText.new(window).string_("Port Local")],
-				[localPortInput]
-			),i,1,1,2
-		);
-		i = i+1;
+
+
 		serverOptions.layout.addSpanning(nil,i,0,1,4);
 
 		serverOptions.layout.setRowStretch(i,2);
@@ -401,13 +345,12 @@ MoscaStartup
 			NumberBox.new().value_(values[2])];
 		var index = setupViews.size();
 		var view,entry;
-		("Adding new entry at coords"++values).postln;
 		view = View();
 		index.postln;
 		entry = [view,coords];
 		//the name field of the view is needed to be able to reach the right child as supercollider QT gui implementation lacks some methods
 		view.name = index;
-		view.background_(Color.rand).layout_(
+		view.layout_(
         HLayout(
 			[StaticText().string_('x: '),stretch:1],
             [coords[0],stretch:2],
@@ -435,7 +378,6 @@ MoscaStartup
 		var idx,i;
 
 		idx = view.name.asInteger;
-		("Removing vie at pos "++idx).postln;
 		//decrement following entries view name
 		i = idx;
 		while{ i < (setupViews.size-1)}{
@@ -463,7 +405,7 @@ MoscaStartup
 		scrollView = ScrollView();
 		setupViews = List();
 		//add setup input
-		scrollView.background_(Color.rand);
+		// scrollView.background_(Color.rand);
 		scrollView.canvas = View();
 		scrollView.canvas.layout = VLayout();
 		scrollView.canvas.layout.add(StaticText.new().string_("Setup"),align:\center);
@@ -512,24 +454,67 @@ MoscaStartup
 				txt.value = this.prParseSub(txt.value);
 			}).align_(\right)
 		];
+
+		var ipInput = TextField.new(moscaOptions).value_(servRemoteIP).align_(\center).action_{
+			arg i;
+			var fields = i.value.split($.);
+			if(fields.size != 4)
+			{
+				i.value = servRemoteIP;
+			}
+			{
+				var validIP = true;
+				fields.do{
+					arg f;
+					var n;
+					f = f.stripWhiteSpace;
+
+					n = f.asInteger;
+					if((n < 0) || (n > 255) ||(f.size <= 0) || (f.size > 3)){
+						validIP = false;
+					}
+				};
+				if(validIP)
+				{
+					i.value.postln;
+					servRemoteIP = i.value;
+				}
+				{
+					i.value = servRemoteIP;
+				}
+			}
+
+		};
+		var remotePortInput = NumberBox.new(moscaOptions).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servRemotePort).action_({
+			arg i;
+			servRemotePort = i.value.asInteger;
+
+		}).align_(\center);
+		var localPortInput = NumberBox.new(moscaOptions).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servLocalPort).action_({
+			arg i;
+			servLocalPort = i.value.asInteger;
+		}).align_(\center);
+
 		// var portList = PopUpMenu(window).items_(this.prGetPorts()).action_({arg i; audioPort=i.item});
 		// var scanButton = Button(window).string_("Re-scan").action_{portList.items_(this.prGetPorts())};
+
+		//Because there is a lack of certain QT bindings this variable is necessary to locate where are the different GUI element.
 		var i = 1;
 		"Setting mosca gui".postln;
 		//mosca options
 		moscaOptions = CompositeView(window);
-		moscaOptions.background = Color.rand;
+		// moscaOptions.background = Color.rand;
 		moscaOptions.layout = GridLayout();
-		moscaOptions.layout.addSpanning(StaticText.new().string_("Mosca options").background_(Color.rand),0,0,1,4,align:\center);
-		moscaOptions.layout.setColumnStretch(0,2);
-		moscaOptions.layout.setColumnStretch(1,1);
-		moscaOptions.layout.setColumnStretch(2,1);
-		moscaOptions.layout.setColumnStretch(3,2);
+		moscaOptions.layout.addSpanning(StaticText.new().string_("Mosca options"),0,0,1,4,align:\center);
+		moscaOptions.layout.setColumnStretch(0,1);
+		moscaOptions.layout.setColumnStretch(1,2);
+		moscaOptions.layout.setColumnStretch(2,2);
+		moscaOptions.layout.setColumnStretch(3,1);
 		i = i+1;
-		moscaOptions.layout.add(nil,i,0);
+		// moscaOptions.layout.add(nil,i,0);
 		moscaOptions.layout.add(subInput[0],i,1);
 		moscaOptions.layout.add(subInput[1],i,2);
-		moscaOptions.layout.add(nil,i,3);
+		// moscaOptions.layout.add(nil,i,3);
 		i = i+1;
 		[nbSourcesInput,outInput,durationInput].do{
 			|ezNumber|
@@ -549,11 +534,26 @@ MoscaStartup
 		moscaOptions.layout.addSpanning(nil,i,0,1,4);
 		i = i + 1;
 		moscaOptions.layout.addSpanning(scrollView,i,1,2,2);
+		moscaOptions.layout.setRowStretch(i,3);
 		i = i+1;
-		// moscaOptions.layout.addSpanning(nil,i,0,1,4);
+		moscaOptions.layout.addSpanning(nil,i,0,1,4);
+		i = i+1;
+		moscaOptions.layout.addSpanning(
+			HLayout(
+				[StaticText.new().string_("Adresse IP du serveur distant"),stretch:1],
+				[StaticText.new().string_("Port Distant"),stretch:1],
+				[StaticText.new().string_("Port Local"),stretch:1],
+			),i,1,1,2
+		);
+		i = i+1;
+		moscaOptions.layout.addSpanning(
+			HLayout(
+				[ipInput,stretch:1],
+				[remotePortInput,stretch:1],
+				[localPortInput,stretch:1]
+			),i,1,1,2
+		);
 		// i = i+1;
-		moscaOptions.layout.setRowStretch(i,2);
-
 
 	}
 
