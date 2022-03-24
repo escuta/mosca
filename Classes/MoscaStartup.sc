@@ -155,8 +155,11 @@ MoscaStartup
 	}
 	prStartServer{
 
-		if(this.prCheckConfig)
+		if(this.prCheckConfig && moscaInstance == nil)
 		{
+			startButton.enabled = false;
+			startButton.string = "Mosca - en marche";
+
 			"Starting Server - WIP".postln;
 			// "SC_JACK_DEFAULT_INPUTS".setenv(audioPort);
 
@@ -189,19 +192,33 @@ MoscaStartup
 					decoder: decoder,
 					rirBank: rirBank,
 					parentOssiaNode: oscParent;
-				).gui();
+				);
+				moscaInstance.gui();
+				moscaInstance.mainWindow.win.onClose = FunctionList.new.addFunc(moscaInstance.mainWindow.win.onClose);
+				moscaInstance.mainWindow.win.onClose.addFunc({startButton.enabled = true; startButton.string_("Afficher Mosca");});
+				// moscaInstance.mainWindow.win.onClose.postln;
 				server.options.numOutputBusChannels.do({ | i |
-					i.postln();
-					Pipe("jack_disconnect ossia' 'score:out_" ++ (i)
+					Pipe("jack_visibledisconnect ossia' 'score:out_" ++ (i)
 						+ "system:playback_" ++ (i + 1), "w")
 				});
 			}
+		}
+		{//else
+			startButton.enabled = false;
+			"Showing gui back".postln;
+			moscaInstance.gui();
+			moscaInstance.mainWindow.win.onClose = FunctionList.new.addFunc(moscaInstance.mainWindow.win.onClose);
+			moscaInstance.mainWindow.win.onClose.addFunc({startButton.enabled = true; startButton.string_("Afficher Mosca");});
 		}
 	}
 	prCancel
 	{
 		if(moscaInstance!=nil){
 			"Closing Mosca".postln;
+			if(moscaInstance.mainWindow!=nil)
+			{
+				moscaInstance.mainWindow.win.close();
+			};
 			Server.killAll;
 		};
 		window.close();
@@ -245,8 +262,8 @@ MoscaStartup
 		this.prServerOptionsGui();
 
 		//bottom row : buttons
-		startButton = Button.new().string_("Start Server");
-		cancelButton = Button.new().string_("Cancel");
+		startButton = Button.new().string_("Démarrer Mosca");
+		cancelButton = Button.new().string_("Fermer");
 		advancedParamButton = Button.new().states_([["Paramètres Avancés"],["Fermer Paramètres Avancés"]]);
 		exposeParamButton = Button.new().string_("Exposer les paramètres OSC").action_({this.prExposeParameters});
 
