@@ -1,7 +1,7 @@
 MoscaBase // acts as the public interface
 {
-	var dur, <server, <ossiaParent, gui, <tracker; // initial rguments
-	var renderer, <spat, <effects, center, <sources, srcGrp;
+	var dur, <server, <ossiaParent, <mainWindow, <tracker; // initial rguments
+	var renderer, <effects, center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
@@ -44,7 +44,7 @@ MoscaBase // acts as the public interface
 
 			sources.set(sources.get.add(newSource));
 
-			if (gui.notNil) { { gui.addSource(sources.get.last) }.defer };
+			if (mainWindow.notNil) { { mainWindow.addSource(sources.get.last) }.defer };
 		})
 	}
 
@@ -60,7 +60,7 @@ MoscaBase // acts as the public interface
 
 				src.free;
 
-				if (gui.notNil) { { gui.removeSource(i) }.defer };
+				if (mainWindow.notNil) { { mainWindow.removeSource(i) }.defer };
 			})
 		}
 	}
@@ -416,13 +416,15 @@ MoscaBase // acts as the public interface
 	gui
 	{ | size = 800, palette = \ossia, lag = 0.05 |
 
-		if (gui.isNil)
-		{
-			gui = MoscaGUI(this, size, palette, lag);
 
-			gui.win.onClose_({
-				gui.free;
-				gui = nil;
+
+		if (mainWindow == nil)
+		{
+			mainWindow = MoscaGUI(this, size, palette, lag);
+
+			mainWindow.win.onClose_({
+				mainWindow.free;
+				mainWindow = nil;
 			});
 		}
 	}

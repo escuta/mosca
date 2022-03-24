@@ -274,8 +274,8 @@ Mosca : MoscaBase
 			ossiaPlay.set_(false);
 		});
 
-		if (gui.isNil)
-		{ // when there is no gui, Automation callback does not work,
+		if (mainWindow.isNil)
+		{ // when there is no mainWindow, Automation callback does not work,
 			// so here we monitor when the transport reaches end
 
 			if (control.get.now > dur)
