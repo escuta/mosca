@@ -1,29 +1,136 @@
+MoscaConfig{
+	//IP config
+	var <>servIP = "127.0.0.1";
+	var <>servPortRemote = 9997;
+	var <>servPortLocal = 9996;
+	//server memory parameters
+	var <>memSize = 16384;
+	var <>memBlockSize = 64;
+	//serv audio parameters
+	var <>audioChannels = 1068;
+	var <>audioWireBuffer = 64;
+	var <>audioInputs = 2;
+	var <>audioOutputs = 2;
+	//audio spatialisation parameters
+	var <>spatOrder = 1;
+	var <>spatSpeakers = nil;
+	var <>spatSub = nil;
+	var <>spatOut = 0;
+	var <>spatRirBank = nil;
+	//mosca specific
+	var <>moscaSources = 4;
+	var <>moscaDuration = 10;
+
+	*new{
+		^super.new.ctr();
+	}
+
+	ctr{
+		spatSpeakers = List[];
+		spatSub = List[];
+	}
+	autoConfig{
+		if(File.exists("~/.config/Mosca/config.cfg".standardizePath) == false){
+			this.saveConfig();
+		}
+		{//else
+			this.loadConfig();
+		};
+	}
+	prReadProp{
+		arg reader;
+		arg prop;
+		var res;
+		res = reader.getLine();
+		if(res.contains(prop){
+			res = res.split($=)
+			if(res.size >= 2)
+			{
+				res = res[0].stripWhiteSpace();
+			}
+		}
+		^nil;
+	}
+	loadConfig{
+		var reader;
+		reader = FileReader("~/.config/Mosca/config.cfg","r");
+		if(reader.getLine().contains("[Address]")){
+				servIp = this.prReadProp("ip");
+				servPortRemote = this.prReadProp("remotePort");
+				if(servPortRemote!=nil){servPortRemote = servPortRemote.asInteger;}
+				servLocalRemote = this.prReadProp("localPort");
+				if(servPortLocal!=nil){servPortRemote = servPortLocal.asInteger;}
+		};
+		if(reader.getLine().contains("[Memory]"){
+				memSize = this.prReadProp("size");
+				if(memSize!=nil){memSize = memSize.asInteger;}
+				memBlockSize = this.prReadProp("blockSize");
+				if(memBlockSize!=nil){memBlockSize = memBlockSize.asInteger;}
+		};
+		if(reader.getLine().contains("[Memory]")
+		{
+					writer.write("channels ="+audioChannels+"\n");
+					writer.write("wireBuffers ="+audioWireBuffer++"\n");
+					writer.write("inputs ="+audioInputs++"\n");
+					writer.write("outputs ="+audioOutputs++"\n");
+		};
+		if(reader.getLine().contains("[Spatialisation]"){
+					writer.write("order ="+spatOrder++"\n");
+					writer.write("speakerConfig ="+spatSpeaker++"\n");
+					writer.write("sub ="+spatSub++"\n");
+					writer.write("out ="+spatOut++"\n");
+					writer.write("rirBank = "+spatRirBank++"\n");
+		};
+
+	    if(reader.getLine().contains("[Mosca]"){
+					writer.write("sources ="+moscaSources++"\n");
+					writer.write("duration ="+mosaDuration++"\n");
+		};
+		writer.close();
+
+	}
+
+	saveConfig{
+		var writer = File("~/.config/Mosca/config.cfg","w");
+		writer.write("[Address]\n");
+		writer.write("ip ="+servIp++"\n");
+		writer.write("remotePort ="+servPortRemote++"\n");
+		writer.write("localPort ="+servPortLocal++"\n");
+		writer.write("[Memory]\n");
+		writer.write("size ="+memSize++"\n");
+		writer.write("blockSize ="+memBlockSize++"\n");
+		writer.write("[Audio]\n");
+		writer.write("channels ="+audioChannels+"\n");
+		writer.write("wireBuffers ="+audioWireBuffer++"\n");
+		writer.write("inputs ="+audioInputs++"\n");
+		writer.write("outputs ="+audioOutputs++"\n");
+		writer.write("[Spatialisation]\n");
+		writer.write("order ="+spatOrder++"\n");
+		writer.write("speakerConfig ="+spatSpeaker++"\n");
+		writer.write("sub ="+spatSub++"\n");
+		writer.write("out ="+spatOut++"\n");
+		writer.write("rirBank = "+spatRirBank++"\n");
+		writer.write("[Mosca]\n");
+		writer.write("sources ="+moscaSources++"\n");
+		writer.write("duration ="+mosaDuration++"\n");
+		writer.close();
+	}
+
+
+
+}
 MoscaStartup
 {
+	var config;
+	var moscaInstance;
 	//// Server Parameters
 	var server = nil;
-	var <>servRemoteIP = "127.0.0.1";
-		//add form to control ip address and ports.
-	var <>servRemotePort = 9997;
-	var <>servLocalPort = 9996;
 	var serverStarted = false;
-	//Server Advanced Parameters
-	var blockSize,memSize;
-	var nbAudioBusChannels,nbWireBuffer,nbInputBusChannels,nbOutputBusChannels;
-
 
 	//Mosca Parameters
 	var oscParent;
 	var audioPort;
 	var >decoder = nil;
-	var <>order = -1;
-	var <>setupList = nil;
-	var <>sources = 1;
-	var <>out = 0;
-	var <>sub;
-	var moscaInstance = nil;
-	var rirBank = nil; //TODO add form to control whether or not to use a rir bank
-	var <>duration = 20;
 
 	//// GUI variables
 	//Window Parameters
@@ -47,27 +154,14 @@ MoscaStartup
 	}
 	ctr
 	{
-
+		config = MoscaConfig();
 		oscParent = OSSIA_Device("SC");
 		audioPort = "ossia score";
 		window = Window.new("Mosca Startup", Rect(10,1000,windowW,windowH));
-
-		//reading initial servers parameters;
-
-		memSize = 16384;
-		blockSize = 64;
-		nbAudioBusChannels = 1068;
-		nbInputBusChannels = 32;
-		nbOutputBusChannels = 16;
-		nbWireBuffer = 64;
-		// initial mosca options values
-		setupList = List[];
-		sub = List[];
-
 	}
 	prExposeParameters{
-		oscParent.exposeOSC(servRemoteIP,servRemotePort,servLocalPort);
-		("Exposing OSC to "+servRemoteIP+ ", remote port: " +servRemotePort + " servLocalPort: "+servLocalPort).postln;
+		oscParent.exposeOSC(config.servIP,config.servPortRemote,config.servPortLocal);
+		("Exposing OSC to "+config.servIP+ ", remote port: " +config.servPortRemote + " servLocalPort: "+config.servPortLocal).postln;
 	}
 
 	prLoadFromFile{
@@ -116,9 +210,9 @@ MoscaStartup
 		var idx = 0;
 		var parsingError = false;
 		"Saving Speaker Configuration File".postln;
-		if(setupList.size != 0){
+		if(config.spatSpeakers.size != 0){
 			file = CSVFileWriter(path);
-			setupList.do{
+			config.spatSpeakers.do{
 				arg row;
 				file.writeLine(row);
 			};
@@ -133,22 +227,21 @@ MoscaStartup
 	}
 	prCheckConfig{
 		var ok = true;
-		if(setupList.size == 0)
+		if(config.spatSpeakers.size == 0)
 		{
-			setupList = nil;
+			config.spatSpeakers= nil;
 			// ok = false;
 			// "Speaker Configuration Missing!".postln;
-			order = 0;
+			config.spatOrder = 0;
 		}
 		{
-			setupList=MoscaUtils.cartesianToAED(setupList);
-			order = sqrt(setupList.size)-1;
-			order.postln;
+			config.spatSpeakers=MoscaUtils.cartesianToAED(config.spatSpeakers);
+			config.spatOrder = sqrt(config.spatSpeakers.size)-1;
 		};
 
-		if(sub.size == 0)
+		if(config.spatSub.size == 0)
 		{
-			sub = nil;
+			config.spatSub = nil;
 		};
 
 		^ok;
@@ -167,12 +260,12 @@ MoscaStartup
 			Server.supernova;
 			server = Server.local;
 			server.options.sampleRate = 48000;
-			server.options.memSize = memSize;
-			server.options.blockSize = blockSize;
-			server.options.numAudioBusChannels = nbAudioBusChannels.asInteger;
-			server.options.numInputBusChannels = nbInputBusChannels.asInteger;
-			server.options.numOutputBusChannels = nbOutputBusChannels.asInteger;
-			server.options.numWireBufs = nbWireBuffer;
+			server.options.memSize = config.memSize;
+			server.options.blockSize = config.memBlockSize;
+			server.options.numAudioBusChannels = config.audioChannels.asInteger;
+			server.options.numInputBusChannels = config.audioInputs.asInteger;
+			server.options.numOutputBusChannels = config.audioOutputs.asInteger;
+			server.options.numWireBufs = config.audioWireBuffer;
 
 
 
@@ -183,14 +276,14 @@ MoscaStartup
 				server.sync;
 				moscaInstance = Mosca(
 					server: server,
-					nsources: sources.asInteger,
-					dur: duration.asInteger,
-					speaker_array: setupList,
-					maxorder: 1,
-					outbus: out,
-					suboutbus: sub,
+					nsources: config.moscaSources.asInteger,
+					dur: config.moscaDuration.asInteger,
+					speaker_array: config.spatSpeakers,
+					maxorder: config.spatOrder,
+					outbus: config.spatOut,
+					suboutbus: config.spatSub,
 					decoder: decoder,
-					rirBank: rirBank,
+					rirBank: config.spatRirBank,
 					parentOssiaNode: oscParent;
 				);
 				moscaInstance.gui();
@@ -232,19 +325,19 @@ MoscaStartup
 	prParseSub{
 		arg string;
 		var regex = "^(([1-9][0-9]*|0)(,([1-9][0-9]*|0))*)?$";
-		sub.clear;
+		config.spatSub.clear;
 		if((regex.matchRegexp(string)))
 		{
 			string = string.split($,);
 			string.do{
 				arg item;
-				if(sub.indexOf(item.asInteger)==nil)
+				if(config.spatSub.indexOf(item.asInteger)==nil)
 				{
-					sub = sub.add(item.asInteger);
+					config.spatSub = config.spatSub.add(item.asInteger);
 				}
 			};
 
-		string = sub.asArray.asString;
+		string = config.spatSub.asArray.asString;
 		string.remove(string.first);
 		string.remove(string.last);
 		string = string.replace($ ,);
@@ -292,36 +385,36 @@ MoscaStartup
 
 		var blockSizeInput = EZNumber(window,label:" BlockSize ",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: blockSize,
-			action:{|ez| ez.round=ez.value; blockSize=ez.value}
+			initVal: config.memBlockSize,
+			action:{|ez| ez.round=ez.value; config.memBlockSize=ez.value}
 		);
 
 		var memSizeInput = EZNumber(window,label:" MemSize",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: memSize,
-			action:{|ez| ez.round=ez.value;memSize=ez.value}
+			initVal: config.memSize,
+			action:{|ez| ez.round=ez.value;config.memSize=ez.value}
 		);
 
 		var audioBusInput = EZNumber(window,label:" Audio Bus Channels ",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: nbAudioBusChannels,
-			action:{|ez| ez.round=ez.value;nbAudioBusChannels=ez.value}
+			initVal: config.audioChannels,
+			action:{|ez| ez.round=ez.value;config.audioChannels=ez.value}
 		);
 
 		var inputBusInput = EZNumber(window,label:" Canaux d'entrée ",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: nbInputBusChannels,
-			action:{|ez| ez.round=ez.value;nbInputBusChannels=ez.value}
+			initVal: config.audioInputs,
+			action:{|ez| ez.round=ez.value;config.audioInputs=ez.value}
 		);
 		var outputBusInput = EZNumber(window,label:" Canaux de sortie ",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: nbOutputBusChannels,
-			action:{|ez| ez.round=ez.value;nbOutputBusChannels=ez.value}
+			initVal: config.audioOutputs,
+			action:{|ez| ez.round=ez.value;config.audioOutputs=ez.value}
 		);
 		var bufferInput = EZNumber(window,label:" Wire Buffers",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: nbWireBuffer,
-			action:{|ez| ez.round=ez.value;nbWireBuffer=ez.value}
+			initVal: config.audioWireBuffer,
+			action:{|ez| ez.round=ez.value;config.audioWireBuffer=ez.value}
 		);
 
 		//server options
@@ -385,9 +478,9 @@ MoscaStartup
 		3.do{arg i;
 			coords[i].action_({arg c;
 				var idx  = c.parent.name.asInteger;
-				setupList[idx][i]=c.value;});
+				config.spatSpeakers[idx][i]=c.value;});
         };
-        setupList.add([coords[0].value,coords[1].value,coords[2].value]);
+        config.spatSpeakers.add([coords[0].value,coords[1].value,coords[2].value]);
 		scrollView.canvas.layout.insert(setupViews.last[0],setupViews.size()+1);
 	}
 	prRemoveSetupEntry{
@@ -404,7 +497,7 @@ MoscaStartup
 		};
 		setupViews[idx][0].remove;
 		setupViews.removeAt(idx);
-		setupList.removeAt(idx);
+		config.spatSpeakers.removeAt(idx);
 		setupViews.size.postln;
 	}
 	prClearSetupEntries{
@@ -451,18 +544,18 @@ MoscaStartup
 		//mosca option fields
 		var nbSourcesInput = EZNumber(window,label:" Sources",
 			controlSpec: ControlSpec.new(1.0,inf,\lin,1),
-			initVal: sources,
-			action:{|ez| ez.round=ez.value;sources=ez.value}
+			initVal: config.moscaSources,
+			action:{|ez| ez.round=ez.value;config.moscaSources=ez.value}
 		);
 		var outInput = EZNumber(window,label:" Index Bus Première Sortie",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: out,
-			action:{|ez| ez.round=ez.value;out=ez.value}
+			initVal: config.spatOut,
+			action:{|ez| ez.round=ez.value;config.spatOut=ez.value}
 		);
 		var durationInput = EZNumber(window,label:" Durée des automations (s)",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
-			initVal: duration,
-			action:{|ez| ez.round=ez.value;duration=ez.value}
+			initVal: config.moscaDuration,
+			action:{|ez| ez.round=ez.value;config.moscaDuration=ez.value}
 		);
 		var subInput = [
 			StaticText.new(moscaOptions).string_(" Subs").align_(\left),
@@ -472,12 +565,12 @@ MoscaStartup
 			}).align_(\right)
 		];
 
-		var ipInput = TextField.new(moscaOptions).value_(servRemoteIP).align_(\center).action_{
+		var ipInput = TextField.new(moscaOptions).value_(config.servIP).align_(\center).action_{
 			arg i;
 			var fields = i.value.split($.);
 			if(fields.size != 4)
 			{
-				i.value = servRemoteIP;
+				i.value = config.servIP;
 			}
 			{
 				var validIP = true;
@@ -494,22 +587,22 @@ MoscaStartup
 				if(validIP)
 				{
 					i.value.postln;
-					servRemoteIP = i.value;
+					config.servIP = i.value;
 				}
 				{
-					i.value = servRemoteIP;
+					i.value = config.servIP;
 				}
 			}
 
 		};
-		var remotePortInput = NumberBox.new(moscaOptions).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servRemotePort).action_({
+		var remotePortInput = NumberBox.new(moscaOptions).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(config.servPortRemote).action_({
 			arg i;
-			servRemotePort = i.value.asInteger;
+			config.servPortRemote = i.value.asInteger;
 
 		}).align_(\center);
-		var localPortInput = NumberBox.new(moscaOptions).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(servLocalPort).action_({
+		var localPortInput = NumberBox.new(moscaOptions).clipLo_(0).clipHi_(9999).step_(1).decimals_(0).value_(config.servPortLocal).action_({
 			arg i;
-			servLocalPort = i.value.asInteger;
+			config.servPortLocal = i.value.asInteger;
 		}).align_(\center);
 
 		// var portList = PopUpMenu(window).items_(this.prGetPorts()).action_({arg i; audioPort=i.item});
