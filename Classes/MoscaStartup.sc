@@ -38,60 +38,64 @@ MoscaConfig{
 		};
 	}
 	prReadProp{
-		arg reader;
-		arg prop;
+		arg reader,prop;
 		var res;
 		res = reader.getLine();
-		if(res.contains(prop){
-			res = res.split($=)
+        if(res.contains(prop)){
+			res = res.split($=);
 			if(res.size >= 2)
 			{
 				res = res[0].stripWhiteSpace();
 			}
-		}
+		};
 		^nil;
 	}
 	loadConfig{
 		var reader;
 		reader = FileReader("~/.config/Mosca/config.cfg","r");
 		if(reader.getLine().contains("[Address]")){
-				servIp = this.prReadProp("ip");
+				servIP = this.prReadProp("ip");
 				servPortRemote = this.prReadProp("remotePort");
-				if(servPortRemote!=nil){servPortRemote = servPortRemote.asInteger;}
-				servLocalRemote = this.prReadProp("localPort");
-				if(servPortLocal!=nil){servPortRemote = servPortLocal.asInteger;}
+				if(servPortRemote!=nil){servPortRemote = servPortRemote.asInteger;};
+				servPortLocal = this.prReadProp("localPort");
+				if(servPortLocal!=nil){servPortRemote = servPortLocal.asInteger;};
 		};
-		if(reader.getLine().contains("[Memory]"){
+		if(reader.getLine().contains("[Memory]")){
 				memSize = this.prReadProp("size");
-				if(memSize!=nil){memSize = memSize.asInteger;}
+				if(memSize!=nil){memSize = memSize.asInteger;};
 				memBlockSize = this.prReadProp("blockSize");
-				if(memBlockSize!=nil){memBlockSize = memBlockSize.asInteger;}
+				if(memBlockSize!=nil){memBlockSize = memBlockSize.asInteger;};
 		};
-		if(reader.getLine().contains("[Memory]")
+		if(reader.getLine().contains("[Memory]"))
 		{
-					writer.write("channels ="+audioChannels+"\n");
-					writer.write("wireBuffers ="+audioWireBuffer++"\n");
-					writer.write("inputs ="+audioInputs++"\n");
-					writer.write("outputs ="+audioOutputs++"\n");
+			audioChannels = this.prReadProp("channels");
+			if(audioChannels!=nil){audioChannels = audioChannels.asInteger;};
+			audioWireBuffer = this.prReadProp("wirebuffers");
+			if(audioWireBuffer!=nil){audioWireBuffer=audioWireBuffer.asInteger;};
+			audioInputs = this.prReadProp("inputs");
+			if(audioInputs!=nil){audioInputs=audioInputs.asInteger;};
+			audioOutputs = this.prReadProp("inputs");
+			if(audioOutputs!=nil){audioOutputs=audioOutputs.asInteger;};
 		};
-		if(reader.getLine().contains("[Spatialisation]"){
-					writer.write("order ="+spatOrder++"\n");
+		if(reader.getLine().contains("[Spatialisation]")){
+					/*reader.write("order ="+spatOrder++"\n");
 					writer.write("speakerConfig ="+spatSpeaker++"\n");
 					writer.write("sub ="+spatSub++"\n");
 					writer.write("out ="+spatOut++"\n");
-					writer.write("rirBank = "+spatRirBank++"\n");
+					writer.write("rirBank = "+spatRirBank++"\n");*/
 		};
 
-	    if(reader.getLine().contains("[Mosca]"){
-					writer.write("sources ="+moscaSources++"\n");
-					writer.write("duration ="+mosaDuration++"\n");
+        if(reader.getLine().contains("[Mosca]")){
+				/*	writer.write("sources ="+moscaSources++"\n");
+					writer.write("duration ="+mosaDuration++"\n");*/
 		};
-		writer.close();
+		reader.close();
+
 
 	}
 
 	saveConfig{
-		var writer = File("~/.config/Mosca/config.cfg","w");
+		/*var writer = File("~/.config/Mosca/config.cfg","w");
 		writer.write("[Address]\n");
 		writer.write("ip ="+servIp++"\n");
 		writer.write("remotePort ="+servPortRemote++"\n");
@@ -113,7 +117,7 @@ MoscaConfig{
 		writer.write("[Mosca]\n");
 		writer.write("sources ="+moscaSources++"\n");
 		writer.write("duration ="+mosaDuration++"\n");
-		writer.close();
+		writer.close();*/
 	}
 
 
