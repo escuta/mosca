@@ -20,6 +20,8 @@ MoscaConfig{
 	//mosca specific
 	var <>moscaSources = 4;
 	var <>moscaDuration = 10;
+	var <>path = "~/.config/Mosca/";
+	var <>file = "config.cfg";
 
 	*new{
 		^super.new.ctr();
@@ -30,16 +32,22 @@ MoscaConfig{
 		spatSub = List[];
 	}
 	autoConfig{
-		if(File.exists("~/.config/Mosca/config.cfg".standardizePath) == false){
+		if(File.exists((path++file).standardizePath) == false){
+			"No configuration file found - creating a file".postln;
+			if(File.exists(path.standardizePath)==false)
+			{
+					"No configuration directory found - creating a directory".postln;
+					File.mkdir(path.standardizePath);
+			};
 			this.saveConfig();
 		}
 		{//else
 			this.loadConfig();
 		};
 	}
-	prReadProp{
+	*prReadProp{
 		arg reader,prop;
-		var res;
+		var res = nil;
 		res = reader.getLine();
         if(res.contains(prop)){
 			res = res.split($=);
@@ -48,76 +56,100 @@ MoscaConfig{
 				res = res[0].stripWhiteSpace();
 			}
 		};
-		^nil;
+		^res;
 	}
+	*prReadInteger{
+		arg reader,prop;
+		var res = prReadProp(reader,prop);
+		if(res==nil){
+			res = 0;
+		}
+		{//else
+			res = res.asInteger;
+		};
+		^res;
+	}
+
 	loadConfig{
-		var reader;
-		reader = FileReader("~/.config/Mosca/config.cfg","r");
+		var reader,fileSize;
+		var l,data,currentSection;
+		data = Dictionary();
+		reader = File((path++file).standardizePath,"r");
+		/*fileSize = File.fileSize((path++file).standardizePath);
+		while{reader.pos!=fileSize}
+		{
+			l = reader.getLine();
+			if(l.contains($[) && l.contains($]) && (l.contains("List")==false))
+			{
+				currentSection = l.split($[)[1].split($])[0];
+				data.put(currentSection,Dictionary());
+			}
+		};*/
 		if(reader.getLine().contains("[Address]")){
-				servIP = this.prReadProp("ip");
-				servPortRemote = this.prReadProp("remotePort");
-				if(servPortRemote!=nil){servPortRemote = servPortRemote.asInteger;};
-				servPortLocal = this.prReadProp("localPort");
-				if(servPortLocal!=nil){servPortRemote = servPortLocal.asInteger;};
+				servIP = prReadProp(reader,"ip");
+				servPortRemote = prReadInteger(reader,"remotePort");
+				servPortLocal = prReadInteger(reader,"localPort");
 		};
 		if(reader.getLine().contains("[Memory]")){
-				memSize = this.prReadProp("size");
-				if(memSize!=nil){memSize = memSize.asInteger;};
-				memBlockSize = this.prReadProp("blockSize");
-				if(memBlockSize!=nil){memBlockSize = memBlockSize.asInteger;};
+				memSize = prReadInteger(reader,"size");
+				memBlockSize = prReadInteger(reader,"blockSize");
 		};
-		if(reader.getLine().contains("[Memory]"))
+		if(reader.getLine().contains("[Audio]"))
 		{
-			audioChannels = this.prReadProp("channels");
-			if(audioChannels!=nil){audioChannels = audioChannels.asInteger;};
-			audioWireBuffer = this.prReadProp("wirebuffers");
-			if(audioWireBuffer!=nil){audioWireBuffer=audioWireBuffer.asInteger;};
-			audioInputs = this.prReadProp("inputs");
-			if(audioInputs!=nil){audioInputs=audioInputs.asInteger;};
-			audioOutputs = this.prReadProp("inputs");
-			if(audioOutputs!=nil){audioOutputs=audioOutputs.asInteger;};
+			audioChannels = prReadInteger(reader,"channels");
+			audioWireBuffer = prReadInteger(reader,"wirebuffers");
+			audioInputs = prReadInteger(reader,"inputs");
+			audioOutputs = prReadInteger(reader,"inputs");
 		};
 		if(reader.getLine().contains("[Spatialisation]")){
+			spatOrder = prReadInteger(reader,"order");
 					/*reader.write("order ="+spatOrder++"\n");
 					writer.write("speakerConfig ="+spatSpeaker++"\n");
 					writer.write("sub ="+spatSub++"\n");
 					writer.write("out ="+spatOut++"\n");
 					writer.write("rirBank = "+spatRirBank++"\n");*/
+			spatRirBank = prReadProp(reader,"rirBank");
 		};
 
         if(reader.getLine().contains("[Mosca]")){
-				/*	writer.write("sources ="+moscaSources++"\n");
-					writer.write("duration ="+mosaDuration++"\n");*/
+			moscaSources = prReadInteger(reader,"sources");
+			moscaDuration = prReadInteger(reader,"duration");
 		};
 		reader.close();
-
-
 	}
 
 	saveConfig{
-		/*var writer = File("~/.config/Mosca/config.cfg","w");
-		writer.write("[Address]\n");
-		writer.write("ip ="+servIp++"\n");
-		writer.write("remotePort ="+servPortRemote++"\n");
-		writer.write("localPort ="+servPortLocal++"\n");
-		writer.write("[Memory]\n");
-		writer.write("size ="+memSize++"\n");
-		writer.write("blockSize ="+memBlockSize++"\n");
-		writer.write("[Audio]\n");
-		writer.write("channels ="+audioChannels+"\n");
-		writer.write("wireBuffers ="+audioWireBuffer++"\n");
-		writer.write("inputs ="+audioInputs++"\n");
-		writer.write("outputs ="+audioOutputs++"\n");
-		writer.write("[Spatialisation]\n");
-		writer.write("order ="+spatOrder++"\n");
-		writer.write("speakerConfig ="+spatSpeaker++"\n");
-		writer.write("sub ="+spatSub++"\n");
-		writer.write("out ="+spatOut++"\n");
-		writer.write("rirBank = "+spatRirBank++"\n");
-		writer.write("[Mosca]\n");
-		writer.write("sources ="+moscaSources++"\n");
-		writer.write("duration ="+mosaDuration++"\n");
-		writer.close();*/
+		var writer;
+		writer = File(((path++file).standardizePath),"w");
+		if(writer.isOpen)
+		{
+			("Saving Config to"+(path++file).standardizePath).postln;
+			writer.write("[Address]\n");
+			writer.write("ip ="+servIP++"\n");
+			writer.write("remotePort ="+servPortRemote++"\n");
+			writer.write("localPort ="+servPortLocal++"\n");
+			writer.write("[Memory]\n");
+			writer.write("size ="+memSize++"\n");
+			writer.write("blockSize ="+memBlockSize++"\n");
+			writer.write("[Audio]\n");
+			writer.write("channels ="+audioChannels+"\n");
+			writer.write("wireBuffers ="+audioWireBuffer++"\n");
+			writer.write("inputs ="+audioInputs++"\n");
+			writer.write("outputs ="+audioOutputs++"\n");
+			writer.write("[Spatialisation]\n");
+			writer.write("order ="+spatOrder++"\n");
+			writer.write("speakerConfig ="+spatSpeakersa++"\n");
+			writer.write("sub ="+spatSub++"\n");
+			writer.write("out ="+spatOut++"\n");
+			writer.write("rirBank = "+spatRirBank++"\n");
+			writer.write("[Mosca]\n");
+			writer.write("sources ="+moscaSources++"\n");
+			writer.write("duration ="+moscaDuration++"\n");
+			writer.close();
+		}
+		{
+			("Error: Can't create configuration file at "+((path++file).standardizePath)).postln;
+		};
 	}
 
 
@@ -159,6 +191,7 @@ MoscaStartup
 	ctr
 	{
 		config = MoscaConfig();
+		config.autoConfig();
 		oscParent = OSSIA_Device("SC");
 		audioPort = "ossia score";
 		window = Window.new("Mosca Startup", Rect(10,1000,windowW,windowH));
