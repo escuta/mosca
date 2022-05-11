@@ -22,6 +22,7 @@ MoscaConfig{
 	var <>moscaDuration = 10;
 	var <>path = "~/.config/Mosca/";
 	var <>file = "config.cfg";
+	var <>defaultSpeakerCfgFile = "default_setup.csv";
 
 	*new{
 		^super.new.ctr();
@@ -33,34 +34,37 @@ MoscaConfig{
 	}
 	autoConfig{
 		if(File.exists((path++file).standardizePath) == false){
-			"No configuration file found - creating a file".postln;
 			if(File.exists(path.standardizePath)==false)
 			{
 					"No configuration directory found - creating a directory".postln;
 					File.mkdir(path.standardizePath);
 			};
+			"No configuration file found - creating a file".postln;
 			this.saveConfig();
 		}
 		{//else
+			"Found Configuration File. Loading".postln;
 			this.loadConfig();
 		};
 	}
 	*prReadProp{
 		arg reader,prop;
 		var res = nil;
+		("Reading Prop"+prop).postln;
 		res = reader.getLine();
         if(res.contains(prop)){
 			res = res.split($=);
 			if(res.size >= 2)
 			{
-				res = res[0].stripWhiteSpace();
+				res = res[1].stripWhiteSpace();
 			}
 		};
+		res.postln;
 		^res;
 	}
 	*prReadInteger{
 		arg reader,prop;
-		var res = prReadProp(reader,prop);
+		var res = MoscaConfig.prReadProp(reader,prop);
 		if(res==nil){
 			res = 0;
 		}
@@ -72,54 +76,45 @@ MoscaConfig{
 
 	loadConfig{
 		var reader,fileSize;
-		var l,data,currentSection;
-		data = Dictionary();
+		var tmp;
+		// var l,data,currentSection; //TODO implement smarter file parsing.
+		// data = Dictionary();
 		reader = File((path++file).standardizePath,"r");
-		/*fileSize = File.fileSize((path++file).standardizePath);
-		while{reader.pos!=fileSize}
-		{
-			l = reader.getLine();
-			if(l.contains($[) && l.contains($]) && (l.contains("List")==false))
-			{
-				currentSection = l.split($[)[1].split($])[0];
-				data.put(currentSection,Dictionary());
-			}
-		};*/
 		if(reader.getLine().contains("[Address]")){
-				servIP = prReadProp(reader,"ip");
-				servPortRemote = prReadInteger(reader,"remotePort");
-				servPortLocal = prReadInteger(reader,"localPort");
+				servIP = MoscaConfig.prReadProp(reader,"ip");
+				servPortRemote = MoscaConfig.prReadInteger(reader,"remotePort");
+				servPortLocal = MoscaConfig.prReadInteger(reader,"localPort");
 		};
 		if(reader.getLine().contains("[Memory]")){
-				memSize = prReadInteger(reader,"size");
-				memBlockSize = prReadInteger(reader,"blockSize");
+				memSize = MoscaConfig.prReadInteger(reader,"size");
+				memBlockSize = MoscaConfig.prReadInteger(reader,"blockSize");
 		};
 		if(reader.getLine().contains("[Audio]"))
 		{
-			audioChannels = prReadInteger(reader,"channels");
-			audioWireBuffer = prReadInteger(reader,"wirebuffers");
-			audioInputs = prReadInteger(reader,"inputs");
-			audioOutputs = prReadInteger(reader,"inputs");
+			audioChannels = MoscaConfig.prReadInteger(reader,"channels");
+			audioWireBuffer = MoscaConfig.prReadInteger(reader,"wirebuffers");
+			audioInputs = MoscaConfig.prReadInteger(reader,"inputs");
+			audioOutputs = MoscaConfig.prReadInteger(reader,"inputs");
 		};
 		if(reader.getLine().contains("[Spatialisation]")){
-			spatOrder = prReadInteger(reader,"order");
-					/*reader.write("order ="+spatOrder++"\n");
-					writer.write("speakerConfig ="+spatSpeaker++"\n");
-					writer.write("sub ="+spatSub++"\n");
-					writer.write("out ="+spatOut++"\n");
-					writer.write("rirBank = "+spatRirBank++"\n");*/
-			spatRirBank = prReadProp(reader,"rirBank");
+			spatOrder = MoscaConfig.prReadInteger(reader,"order");
+			defaultSpeakerCfgFile = MoscaConfig.prReadProp(reader,"speakerConfig");
+			this.loadSpeakerSetup(defaultSpeakerCfgFile);
+			spatSub = MoscaConfig.prReadProp(reader,"sub").split($\ ).asList;
+			spatOut = MoscaConfig.prReadInteger(reader,"out");
+			spatRirBank = MoscaConfig.prReadProp(reader,"rirBank");
 		};
 
         if(reader.getLine().contains("[Mosca]")){
-			moscaSources = prReadInteger(reader,"sources");
-			moscaDuration = prReadInteger(reader,"duration");
+			moscaSources = MoscaConfig.prReadInteger(reader,"sources");
+			moscaDuration = MoscaConfig.prReadInteger(reader,"duration");
 		};
 		reader.close();
 	}
 
 	saveConfig{
 		var writer;
+		// var listWriter = {arg a;var r = String.new.ccatList(a);r.removeAt(0);r;};
 		writer = File(((path++file).standardizePath),"w");
 		if(writer.isOpen)
 		{
@@ -138,8 +133,11 @@ MoscaConfig{
 			writer.write("outputs ="+audioOutputs++"\n");
 			writer.write("[Spatialisation]\n");
 			writer.write("order ="+spatOrder++"\n");
-			writer.write("speakerConfig ="+spatSpeakersa++"\n");
-			writer.write("sub ="+spatSub++"\n");
+			writer.write("speakerConfig ="+(path++defaultSpeakerCfgFile).standardizePath++"\n");
+			if(spatSpeakers.size > 0){
+				this.saveSpeakerSetup();
+			};
+			writer.write("sub ="+String.new.scatList(spatSub).stripWhiteSpace()++"\n");
 			writer.write("out ="+spatOut++"\n");
 			writer.write("rirBank = "+spatRirBank++"\n");
 			writer.write("[Mosca]\n");
@@ -151,6 +149,58 @@ MoscaConfig{
 			("Error: Can't create configuration file at "+((path++file).standardizePath)).postln;
 		};
 	}
+	saveSpeakerSetup{
+		arg path = path++defaultSpeakerCfgFile;
+		var file,data;
+		var idx = 0;
+		var parsingError = false;
+		"Saving Speaker Configuration File".postln;
+		if(spatSpeakers.size != 0){
+			file = CSVFileWriter(path);
+			spatSpeakers.do{
+				arg row;
+				file.writeLine(row);
+			};
+			file.close();
+			"Speaker Configuration File saved".postln;
+		}
+		{
+			parsingError = true;
+			"Speaker Setup is empty! Cancelling save".postln;
+		}
+		^parsingError;
+	}
+	loadSpeakerSetup{
+		arg path = path++defaultSpeakerCfgFile;
+		var file,data;
+		var idx = 0;
+		var parsingError = false;
+		var newData = List[];
+		file = CSVFileReader.read(path);
+		data = file.collect(_.collect(_.interpret));
+		while{((idx < data.size) && (parsingError.not)) && (true)}
+		{
+			if(data[idx].size != 3)
+			{
+				parsingError = true;
+			}
+			{//else
+				newData.add(data[idx]);
+				idx = idx + 1;
+			};
+		};
+
+		if(parsingError){
+			"Error During Parsing".postln;
+		}{
+			"Loading Speaker Configuration File".postln;
+			//if load is okay then replace current setup values and update view as well
+			("new data List").postln;
+			newData.postcs;
+			spatSpeakers = newData;
+		};
+		^parsingError.not;
+}
 
 
 
@@ -203,64 +253,15 @@ MoscaStartup
 
 	prLoadFromFile{
 		arg path;
-		var file,data;
-		var idx = 0;
-		var parsingError = false;
-		var newData = List[];
-		file = CSVFileReader.read(path);
-		data = file.collect(_.collect(_.interpret));
-		while{((idx < data.size) && (parsingError.not)) && (true)}
-		{
-			if(data[idx].size != 3)
-			{
-				parsingError = true;
-			}
-			{//else
-				newData.add(data[idx]);
-				idx = idx + 1;
-			};
+		if(config.loadSpeakerSetup(path)){
+			this.prDoInitialSetup();
 		};
-
-		if(parsingError){
-			"Error During Parsing".postln;
-		}{
-			"Loading Speaker Configuration File".postln;
-			//if load is okay then replace current setup values and update view as well
-			("new data List").postln;
-			newData.postcs;
-
-			setupViews.size.postln;
-			this.prClearSetupEntries();
-			setupViews.size.postln;
-			newData.do{
-				arg item;
-				this.prAddSetupEntry(item);
-			};
-
-
-		};
-		^parsingError.not;
 	}
 	prSaveToFile{
 		arg path;
-		var file,data;
-		var idx = 0;
-		var parsingError = false;
-		"Saving Speaker Configuration File".postln;
-		if(config.spatSpeakers.size != 0){
-			file = CSVFileWriter(path);
-			config.spatSpeakers.do{
-				arg row;
-				file.writeLine(row);
-			};
-			file.close();
-			"Speaker Configuration File saved".postln;
-		}
-		{
-			parsingError = true;
-			"Speaker Setup is empty! Cancelling save".postln;
-		}
-		^parsingError;
+		^config.saveSpeakerSetup(path);
+
+
 	}
 	prCheckConfig{
 		var ok = true;
@@ -414,6 +415,7 @@ MoscaStartup
 		window.layout.add(main,2);
 		window.layout.add(bottom,1);
 		window.front;
+		this.prDoInitialSetup();
 	}
 
 	prServerOptionsGui{
@@ -484,6 +486,15 @@ MoscaStartup
 		serverOptions.layout.setRowStretch(i,2);
 		serverOptions.visible = false;
 	}
+	prDoInitialSetup{
+		setupViews.size.postln;
+		this.prClearSetupEntries();
+		setupViews.size.postln;
+		config.spatSpeakers.do{
+			arg item;
+			this.prAddSetupEntry(item);
+		};
+	}
 	prAddSetupEntry{
 		arg values = [0.0,0.0,0.0];
 		var coords = [
@@ -506,7 +517,8 @@ MoscaStartup
 			[StaticText().string_('z: '),stretch:1],
 			[coords[2],stretch:2],
 			[Button().states_([["Test"]]).action_({"testing".postln;}),stretch:1],
-				[Button().states_([["Delete"]]).action_({this.prRemoveSetupEntry(view)}),stretch:1]
+				[Button().states_([["Delete"]]).action_({config.spatSpeakers.removeAt(view.name.asInteger);
+this.prRemoveSetupEntry(view)}),stretch:1]
         )
     );
 		setupViews.add(entry);
@@ -517,7 +529,6 @@ MoscaStartup
 				var idx  = c.parent.name.asInteger;
 				config.spatSpeakers[idx][i]=c.value;});
         };
-        config.spatSpeakers.add([coords[0].value,coords[1].value,coords[2].value]);
 		scrollView.canvas.layout.insert(setupViews.last[0],setupViews.size()+1);
 	}
 	prRemoveSetupEntry{
@@ -534,7 +545,6 @@ MoscaStartup
 		};
 		setupViews[idx][0].remove;
 		setupViews.removeAt(idx);
-		config.spatSpeakers.removeAt(idx);
 		setupViews.size.postln;
 	}
 	prClearSetupEntries{
@@ -569,6 +579,7 @@ MoscaStartup
 			),
 			HLayout(
 				[Button().string_("Ajouter une sortie").action_({
+					config.spatSpeakers.add([0,0,0]);
 					this.prAddSetupEntry();
 
 					setupViews.size.postln;
@@ -596,7 +607,7 @@ MoscaStartup
 		);
 		var subInput = [
 			StaticText.new(moscaOptions).string_(" Subs").align_(\left),
-			TextField.new(moscaOptions).action_({
+			TextField.new(moscaOptions).value_({var str = String.new.ccatList(config.spatSub).stripWhiteSpace;str.removeAt(0);str}.value()).action_({
 				arg txt;
 				txt.value = this.prParseSub(txt.value);
 			}).align_(\right)
