@@ -94,7 +94,7 @@ MoscaConfig{
 			audioChannels = MoscaConfig.prReadInteger(reader,"channels");
 			audioWireBuffer = MoscaConfig.prReadInteger(reader,"wirebuffers");
 			audioInputs = MoscaConfig.prReadInteger(reader,"inputs");
-			audioOutputs = MoscaConfig.prReadInteger(reader,"inputs");
+			audioOutputs = MoscaConfig.prReadInteger(reader,"outputs");
 		};
 		if(reader.getLine().contains("[Spatialisation]")){
 			spatOrder = MoscaConfig.prReadInteger(reader,"order");
@@ -249,6 +249,44 @@ MoscaStartup
 	prExposeParameters{
 		oscParent.exposeOSC(config.servIP,config.servPortRemote,config.servPortLocal);
 		("Exposing OSC to "+config.servIP+ ", remote port: " +config.servPortRemote + " servLocalPort: "+config.servPortLocal).postln;
+	}
+
+	prReconnectWith{
+
+		arg device;
+		var devicePortName;
+		var pipe,i,stop;
+		var data,dataReader;
+		data = List();
+		pipe = Pipe.new("jack_lsp -p","r");
+		dataReader = pipe.getLine;
+		while({dataReader.notNil;},{data.add(dataReader);dataReader = pipe.getLine;});
+		pipe.close;
+		data = Array2D.fromArray(data.size/2,2,data.asArray);
+		i = 0;
+		stop = false;
+		while{(i<data.rows) && (stop == false)}
+		{
+			var row = data.rowAt(i);
+			if(row[0].split($:)[0] == device){
+				var currentProps;
+				if(row[1].split($:)[1].split($,)[0].stripWhiteSpace() == "output"){
+					devicePortName = (row[0].split($:)[1].split($_)[0]++$_);
+					stop  = true;
+				};
+			};
+			i = i + 1;
+		};
+		devicePortName.postln;
+		config.audioOutputs.do
+		{
+			| i |
+			i.postln;
+			("jack_connect "++device.escapeChar($ )++":"++devicePortName ++ i	+ "supernova:input_" ++ (i + 1)).postln;
+			Pipe("jack_connect "++device.escapeChar($ )++":"++devicePortName ++ i	+ "supernova:input_" ++ (i + 1), "w");
+			Pipe("jack_disconnect "++device.escapeChar($ )++":"++devicePortName ++ i		+ "system:playback_" ++ (i + 1), "w")
+		};
+
 	}
 
 	prLoadFromFile{
@@ -516,7 +554,7 @@ MoscaStartup
 			[coords[1],stretch:2],
 			[StaticText().string_('z: '),stretch:1],
 			[coords[2],stretch:2],
-			[Button().states_([["Test"]]).action_({"testing".postln;}),stretch:1],
+				// [Button().states_([["Test"]]).action_({"testing".postln;}),stretch:1],
 				[Button().states_([["Delete"]]).action_({config.spatSpeakers.removeAt(view.name.asInteger);
 this.prRemoveSetupEntry(view)}),stretch:1]
         )
