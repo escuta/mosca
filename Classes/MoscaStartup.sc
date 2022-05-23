@@ -1,210 +1,3 @@
-MoscaConfig{
-	//IP config
-	var <>servIP = "127.0.0.1";
-	var <>servPortRemote = 9997;
-	var <>servPortLocal = 9996;
-	//server memory parameters
-	var <>memSize = 16384;
-	var <>memBlockSize = 64;
-	//serv audio parameters
-	var <>audioChannels = 1068;
-	var <>audioWireBuffer = 64;
-	var <>audioInputs = 2;
-	var <>audioOutputs = 2;
-	//audio spatialisation parameters
-	var <>spatOrder = 1;
-	var <>spatSpeakers = nil;
-	var <>spatSub = nil;
-	var <>spatOut = 0;
-	var <>spatRirBank = nil;
-	//mosca specific
-	var <>moscaSources = 4;
-	var <>moscaDuration = 10;
-	var <>path = "~/.config/Mosca/";
-	var <>file = "config.cfg";
-	var <>defaultSpeakerCfgFile = "default_setup.csv";
-
-	*new{
-		^super.new.ctr();
-	}
-
-	ctr{
-		spatSpeakers = List[];
-		spatSub = List[];
-	}
-	autoConfig{
-		if(File.exists((path++file).standardizePath) == false){
-			if(File.exists(path.standardizePath)==false)
-			{
-					"No configuration directory found - creating a directory".postln;
-					File.mkdir(path.standardizePath);
-			};
-			"No configuration file found - creating a file".postln;
-			this.saveConfig();
-		}
-		{//else
-			"Found Configuration File. Loading".postln;
-			this.loadConfig();
-		};
-	}
-	*prReadProp{
-		arg reader,prop;
-		var res = nil;
-		("Reading Prop"+prop).postln;
-		res = reader.getLine();
-        if(res.contains(prop)){
-			res = res.split($=);
-			if(res.size >= 2)
-			{
-				res = res[1].stripWhiteSpace();
-			}
-		};
-		res.postln;
-		^res;
-	}
-	*prReadInteger{
-		arg reader,prop;
-		var res = MoscaConfig.prReadProp(reader,prop);
-		if(res==nil){
-			res = 0;
-		}
-		{//else
-			res = res.asInteger;
-		};
-		^res;
-	}
-
-	loadConfig{
-		var reader,fileSize;
-		var tmp;
-		// var l,data,currentSection; //TODO implement smarter file parsing.
-		// data = Dictionary();
-		reader = File((path++file).standardizePath,"r");
-		if(reader.getLine().contains("[Address]")){
-				servIP = MoscaConfig.prReadProp(reader,"ip");
-				servPortRemote = MoscaConfig.prReadInteger(reader,"remotePort");
-				servPortLocal = MoscaConfig.prReadInteger(reader,"localPort");
-		};
-		if(reader.getLine().contains("[Memory]")){
-				memSize = MoscaConfig.prReadInteger(reader,"size");
-				memBlockSize = MoscaConfig.prReadInteger(reader,"blockSize");
-		};
-		if(reader.getLine().contains("[Audio]"))
-		{
-			audioChannels = MoscaConfig.prReadInteger(reader,"channels");
-			audioWireBuffer = MoscaConfig.prReadInteger(reader,"wirebuffers");
-			audioInputs = MoscaConfig.prReadInteger(reader,"inputs");
-			audioOutputs = MoscaConfig.prReadInteger(reader,"outputs");
-		};
-		if(reader.getLine().contains("[Spatialisation]")){
-			spatOrder = MoscaConfig.prReadInteger(reader,"order");
-			defaultSpeakerCfgFile = MoscaConfig.prReadProp(reader,"speakerConfig");
-			this.loadSpeakerSetup(defaultSpeakerCfgFile);
-			spatSub = MoscaConfig.prReadProp(reader,"sub").split($\ ).asList;
-			spatOut = MoscaConfig.prReadInteger(reader,"out");
-			spatRirBank = MoscaConfig.prReadProp(reader,"rirBank");
-		};
-
-        if(reader.getLine().contains("[Mosca]")){
-			moscaSources = MoscaConfig.prReadInteger(reader,"sources");
-			moscaDuration = MoscaConfig.prReadInteger(reader,"duration");
-		};
-		reader.close();
-	}
-
-	saveConfig{
-		var writer;
-		// var listWriter = {arg a;var r = String.new.ccatList(a);r.removeAt(0);r;};
-		writer = File(((path++file).standardizePath),"w");
-		if(writer.isOpen)
-		{
-			("Saving Config to"+(path++file).standardizePath).postln;
-			writer.write("[Address]\n");
-			writer.write("ip ="+servIP++"\n");
-			writer.write("remotePort ="+servPortRemote++"\n");
-			writer.write("localPort ="+servPortLocal++"\n");
-			writer.write("[Memory]\n");
-			writer.write("size ="+memSize++"\n");
-			writer.write("blockSize ="+memBlockSize++"\n");
-			writer.write("[Audio]\n");
-			writer.write("channels ="+audioChannels+"\n");
-			writer.write("wireBuffers ="+audioWireBuffer++"\n");
-			writer.write("inputs ="+audioInputs++"\n");
-			writer.write("outputs ="+audioOutputs++"\n");
-			writer.write("[Spatialisation]\n");
-			writer.write("order ="+spatOrder++"\n");
-			writer.write("speakerConfig ="+(path++defaultSpeakerCfgFile).standardizePath++"\n");
-			if(spatSpeakers.size > 0){
-				this.saveSpeakerSetup();
-			};
-			writer.write("sub ="+String.new.scatList(spatSub).stripWhiteSpace()++"\n");
-			writer.write("out ="+spatOut++"\n");
-			writer.write("rirBank = "+spatRirBank++"\n");
-			writer.write("[Mosca]\n");
-			writer.write("sources ="+moscaSources++"\n");
-			writer.write("duration ="+moscaDuration++"\n");
-			writer.close();
-		}
-		{
-			("Error: Can't create configuration file at "+((path++file).standardizePath)).postln;
-		};
-	}
-	saveSpeakerSetup{
-		arg path = path++defaultSpeakerCfgFile;
-		var file,data;
-		var idx = 0;
-		var parsingError = false;
-		"Saving Speaker Configuration File".postln;
-		if(spatSpeakers.size != 0){
-			file = CSVFileWriter(path);
-			spatSpeakers.do{
-				arg row;
-				file.writeLine(row);
-			};
-			file.close();
-			"Speaker Configuration File saved".postln;
-		}
-		{
-			parsingError = true;
-			"Speaker Setup is empty! Cancelling save".postln;
-		}
-		^parsingError;
-	}
-	loadSpeakerSetup{
-		arg path = path++defaultSpeakerCfgFile;
-		var file,data;
-		var idx = 0;
-		var parsingError = false;
-		var newData = List[];
-		file = CSVFileReader.read(path);
-		data = file.collect(_.collect(_.interpret));
-		while{((idx < data.size) && (parsingError.not)) && (true)}
-		{
-			if(data[idx].size != 3)
-			{
-				parsingError = true;
-			}
-			{//else
-				newData.add(data[idx]);
-				idx = idx + 1;
-			};
-		};
-
-		if(parsingError){
-			"Error During Parsing".postln;
-		}{
-			"Loading Speaker Configuration File".postln;
-			//if load is okay then replace current setup values and update view as well
-			("new data List").postln;
-			newData.postcs;
-			spatSpeakers = newData;
-		};
-		^parsingError.not;
-}
-
-
-
-}
 MoscaStartup
 {
 	var config;
@@ -232,7 +25,7 @@ MoscaStartup
 	var setupViews;
 
 	//Buttons
-	var startButton,cancelButton,advancedParamButton,exposeParamButton;
+	var startButton,stopButton,quitButton,advancedParamButton,exposeParamButton,reconnectButton;
 
 	*new
 	{
@@ -257,6 +50,7 @@ MoscaStartup
 		var devicePortName;
 		var pipe,i,stop;
 		var data,dataReader;
+		devicePortName = nil;
 		data = List();
 		pipe = Pipe.new("jack_lsp -p","r");
 		dataReader = pipe.getLine;
@@ -277,16 +71,20 @@ MoscaStartup
 			};
 			i = i + 1;
 		};
-		devicePortName.postln;
-		config.audioOutputs.do
+		if(devicePortName.notNil)
 		{
-			| i |
-			i.postln;
-			("jack_connect "++device.escapeChar($ )++":"++devicePortName ++ i	+ "supernova:input_" ++ (i + 1)).postln;
-			Pipe("jack_connect "++device.escapeChar($ )++":"++devicePortName ++ i	+ "supernova:input_" ++ (i + 1), "w");
-			Pipe("jack_disconnect "++device.escapeChar($ )++":"++devicePortName ++ i		+ "system:playback_" ++ (i + 1), "w")
+			config.audioOutputs.do
+			{
+				| i |
+				i.postln;
+				("jack_connect "++device.escapeChar($ )++":"++devicePortName ++ i	+ "supernova:input_" ++ (i + 1)).postln;
+				Pipe("jack_connect "++device.escapeChar($ )++":"++devicePortName ++ i	+ "supernova:input_" ++ (i + 1), "w");
+				Pipe("jack_disconnect "++device.escapeChar($ )++":"++devicePortName ++ i		+ "system:playback_" ++ (i + 1), "w")
+			};
+		}
+		{//else
+			("Error! Reconnexion failed").postln;
 		};
-
 	}
 
 	prLoadFromFile{
@@ -308,12 +106,13 @@ MoscaStartup
 			config.spatSpeakers= nil;
 			// ok = false;
 			// "Speaker Configuration Missing!".postln;
-			config.spatOrder = 0;
+			config.spatOrder = 1;
 		}
 		{
 			config.spatSpeakers=MoscaUtils.cartesianToAED(config.spatSpeakers);
-			config.spatOrder = sqrt(config.spatSpeakers.size)-1;
+			config.spatOrder = max(sqrt(config.spatSpeakers.size)-1,1);
 		};
+		("Current spatialisation order"+config.spatOrder).postln;
 
 		if(config.spatSub.size == 0)
 		{
@@ -327,7 +126,8 @@ MoscaStartup
 		if(this.prCheckConfig && moscaInstance == nil)
 		{
 			startButton.enabled = false;
-			startButton.string = "Mosca - en marche";
+			startButton.string = "Mosca - working";
+			stopButton.enabled = true;
 
 			"Starting Server - WIP".postln;
 			// "SC_JACK_DEFAULT_INPUTS".setenv(audioPort);
@@ -344,7 +144,6 @@ MoscaStartup
 			server.options.numWireBufs = config.audioWireBuffer;
 
 
-
 			server.waitForBoot{
 				decoder = FoaDecoderKernel.newCIPIC(21, server,server.options.sampleRate.asInteger);
 				"Server Started!".postln;
@@ -355,16 +154,16 @@ MoscaStartup
 					nsources: config.moscaSources.asInteger,
 					dur: config.moscaDuration.asInteger,
 					speaker_array: config.spatSpeakers,
-					maxorder: config.spatOrder,
-					outbus: config.spatOut,
-					suboutbus: config.spatSub,
+					maxorder: config.spatOrder.asInteger,
+					outbus: config.spatOut.asInteger,
+					suboutbus: config.spatSub.asArray,
 					decoder: decoder,
 					rirBank: config.spatRirBank,
-					parentOssiaNode: oscParent;
+					parentOssiaNode: oscParent
 				);
 				moscaInstance.gui();
 				moscaInstance.mainWindow.win.onClose = FunctionList.new.addFunc(moscaInstance.mainWindow.win.onClose);
-				moscaInstance.mainWindow.win.onClose.addFunc({startButton.enabled = true; startButton.string_("Afficher Mosca");});
+				moscaInstance.mainWindow.win.onClose.addFunc({startButton.enabled = true; startButton.string_("Display Mosca");});
 				// moscaInstance.mainWindow.win.onClose.postln;
 				server.options.numOutputBusChannels.do({ | i |
 					Pipe("jack_visibledisconnect ossia' 'score:out_" ++ (i)
@@ -377,11 +176,10 @@ MoscaStartup
 			"Showing gui back".postln;
 			moscaInstance.gui();
 			moscaInstance.mainWindow.win.onClose = FunctionList.new.addFunc(moscaInstance.mainWindow.win.onClose);
-			moscaInstance.mainWindow.win.onClose.addFunc({startButton.enabled = true; startButton.string_("Afficher Mosca");});
+			moscaInstance.mainWindow.win.onClose.addFunc({startButton.enabled = true; startButton.string_("Display Mosca");});
 		}
 	}
-	prCancel
-	{
+	prClose{
 		if(moscaInstance!=nil){
 			"Closing Mosca".postln;
 			if(moscaInstance.mainWindow!=nil)
@@ -389,7 +187,14 @@ MoscaStartup
 				moscaInstance.mainWindow.win.close();
 			};
 			Server.killAll;
+			startButton.string_("Start Mosca");
+			stopButton.enabled = false;
 		};
+	}
+	prCancel
+	{
+		this.prClose();
+
 		window.close();
 		"Cancelling, quitting".postln;
 	}
@@ -424,27 +229,33 @@ MoscaStartup
 
 	gui
 	{
-
+		var txt = TextField(window);
 		main = HLayout();
 		bottom = HLayout();
 		this.prMoscaOptionsGui();
 		this.prServerOptionsGui();
 
 		//bottom row : buttons
-		startButton = Button.new().string_("Démarrer Mosca");
-		cancelButton = Button.new().string_("Fermer");
-		advancedParamButton = Button.new().states_([["Paramètres Avancés"],["Fermer Paramètres Avancés"]]);
-		exposeParamButton = Button.new().string_("Exposer les paramètres OSC").action_({this.prExposeParameters});
+		startButton = Button.new().string_("Start Mosca");
+		stopButton = Button.new.string_("Stop Mosca");
+		stopButton.enabled = false;
+		quitButton = Button.new().string_("Quit Mosca");
+		advancedParamButton = Button.new().states_([["Show Advanced parameters"],["Hide Advanced parameters"]]);
+		exposeParamButton = Button.new().string_("Expose OSC parameters").action_({this.prExposeParameters});
+		reconnectButton = Button.new.string_("Reconnect Mosca with target (using jack)").action_({this.prReconnectWith(txt.string);});
+
 
 		startButton.action = {this.prStartServer};
-		cancelButton.action = {this.prCancel};
+		stopButton.action = {this.prClose};
+		quitButton.action = {this.prCancel};
 		advancedParamButton.action = {serverOptions.visible = serverOptions.visible.not};
 
 		//layout addition to main window
-		bottom.add(startButton);
-		bottom.add(exposeParamButton);
-		bottom.add(cancelButton);
-		bottom.add(advancedParamButton);
+		bottom.add(VLayout([startButton],[stopButton]),1);
+		bottom.add(VLayout([exposeParamButton],[quitButton]),1);
+		bottom.add(VLayout([reconnectButton,1],[HLayout([StaticText.new.string_("Target")],[txt]),1]),1);
+		// bottom.add(quitButton);
+		bottom.add(advancedParamButton,1);
 
 		main.add(moscaOptions,2);
 		main.add(serverOptions,1);
@@ -607,16 +418,16 @@ this.prRemoveSetupEntry(view)}),stretch:1]
 		scrollView.canvas.layout.add(View().background_(Color.black).layout_(
 			VLayout(
 			HLayout(
-					[Button().string_("Charger depuis un fichier").action_(
+					[Button().string_("Load from a file").action_(
 						{FileDialog({arg path;var res = this.prLoadFromFile(path);},stripResult: true);}
 					),stretch:1],
-					[Button().string_("Sauvegarder dans un fichier").action_(
+					[Button().string_("Save to a File").action_(
 						{FileDialog({arg path;var res = this.prSaveToFile(path);},fileMode:0,acceptMode:1,stripResult: true);
 
 					}),stretch:1]
 			),
 			HLayout(
-				[Button().string_("Ajouter une sortie").action_({
+				[Button().string_("Add a output").action_({
 					config.spatSpeakers.add([0,0,0]);
 					this.prAddSetupEntry();
 
@@ -633,12 +444,12 @@ this.prRemoveSetupEntry(view)}),stretch:1]
 			initVal: config.moscaSources,
 			action:{|ez| ez.round=ez.value;config.moscaSources=ez.value}
 		);
-		var outInput = EZNumber(window,label:" Index Bus Première Sortie",
+		var outInput = EZNumber(window,label:" First output index",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
 			initVal: config.spatOut,
 			action:{|ez| ez.round=ez.value;config.spatOut=ez.value}
 		);
-		var durationInput = EZNumber(window,label:" Durée des automations (s)",
+		var durationInput = EZNumber(window,label:" Automation duration (in seconds)",
 			controlSpec: ControlSpec.new(0.0,inf,\lin,1),
 			initVal: config.moscaDuration,
 			action:{|ez| ez.round=ez.value;config.moscaDuration=ez.value}
@@ -736,9 +547,9 @@ this.prRemoveSetupEntry(view)}),stretch:1]
 		i = i+1;
 		moscaOptions.layout.addSpanning(
 			HLayout(
-				[StaticText.new().string_("Adresse IP du serveur distant"),stretch:1],
-				[StaticText.new().string_("Port Distant"),stretch:1],
-				[StaticText.new().string_("Port Local"),stretch:1],
+				[StaticText.new().string_("Listening server IP"),stretch:1],
+				[StaticText.new().string_("Listening Port"),stretch:1],
+				[StaticText.new().string_("Local Port"),stretch:1],
 			),i,1,1,2
 		);
 		i = i+1;
