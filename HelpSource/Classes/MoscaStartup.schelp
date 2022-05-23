@@ -22,10 +22,13 @@ PRIVATE:: prAddSetupEntry
 PRIVATE:: prUpdateSetup
 PRIVATE:: prClearSetupEntries
 PRIVATE:: prCancel
-PRIVATE::prParseSub
+PRIVATE:: prParseSub
 PRIVATE:: prRemoveSetupEntry
 PRIVATE:: prCheckConfig
 PRIVATE:: prStartServer
+PRIVATE:: prClose
+PRIVATE:: prDoInitialSetup
+PRIVATE:: prReconnectWith
 
 PRIVATE:: servRemoteIP
 PRIVATE:: sources
@@ -54,8 +57,5 @@ PRIVATE:: duration
 EXAMPLES::
 
 code::
-(
-var m = MoscaStartup();
-m.gui();
-)
+MoscaStartup.new.gui();
 ::

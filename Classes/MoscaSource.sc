@@ -440,7 +440,7 @@ MoscaSource[]
 				this.runTrigger();
 			};
 
-			if (external.value) { args = args ++ [\busini, busInd.value] };
+			if (external.value) { args = args ++ [\busini, busInd.value] -1};
 
 			curentSpat = spatType;
 
