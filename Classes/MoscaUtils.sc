@@ -195,6 +195,7 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		[ 90, 0 ], [ 135, 0 ], [ 180, 0 ], [ -135, 0 ], [ -90, 0 ], [ -45, 0 ],
 		[ 45, -35 ], [ 135, -35 ], [ -135, -35 ], [ -45, -35 ], [ 0, -45 ],
 		[ 90, -45 ], [ 180, -45 ], [ -90, -45 ], [ 0, -90 ] ];
+    }
 	*cartesianToAED
 	{
 		arg coordinatesList;
