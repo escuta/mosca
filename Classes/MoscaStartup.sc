@@ -149,6 +149,16 @@ MoscaStartup
 				"Server Started!".postln;
 				serverStarted = true;
 				server.sync;
+				"Mosca parameters".postln;
+				("server:" +server + "of class"+server.class).postln;
+				("nsources:"+ config.moscaSources.asInteger+ "of class" + config.moscaSources.asInteger.class).postln;
+				("dur:" +config.moscaDuration.asInteger+"of class" + config.moscaDuration.asInteger.class ).postln;
+				("speaker_array:" +config.spatSpeakers+"of class" + config.spatSpeakers.class ).postln;
+				("maxorder:" +config.spatOrder.asInteger+"of class" + config.spatOrder.asInteger.class ).postln;
+				("suboutbus:" +config.spatSub+"of class" + config.spatSub.class ).postln;
+				("decoder:" +decoder+"of class" + decoder.class ).postln;
+				("irBank:" +config.spatRirBank+"of class" + config.spatRirBank.class ).postln;
+				("parentOssiaNode:" +oscParent+"of class" + oscParent.class ).postln;
 				moscaInstance = Mosca(
 					server: server,
 					nsources: config.moscaSources.asInteger,
@@ -156,9 +166,9 @@ MoscaStartup
 					speaker_array: config.spatSpeakers,
 					maxorder: config.spatOrder.asInteger,
 					outbus: config.spatOut.asInteger,
-					suboutbus: config.spatSub.asArray,
+					suboutbus: config.spatSub,
 					decoder: decoder,
-					rirBank: config.spatRirBank,
+					irBank: config.spatRirBank,
 					parentOssiaNode: oscParent
 				);
 				moscaInstance.gui();
@@ -223,7 +233,6 @@ MoscaStartup
 		string.remove(string.last);
 		string = string.replace($ ,);
 		};
-		string.postln;
 		^string;
 	}
 
@@ -436,6 +445,7 @@ this.prRemoveSetupEntry(view)}),stretch:1]
 		));
 		scrollView.canvas.layout.add(nil,stretch:2);
 	}
+
 	prMoscaOptionsGui{
 		//mosca option fields
 		var nbSourcesInput = EZNumber(window,label:" Sources",
@@ -455,7 +465,17 @@ this.prRemoveSetupEntry(view)}),stretch:1]
 		);
 		var subInput = [
 			StaticText.new(moscaOptions).string_(" Subs").align_(\left),
-			TextField.new(moscaOptions).value_({var str = String.new.ccatList(config.spatSub).stripWhiteSpace;str.removeAt(0);str}.value()).action_({
+			TextField.new(moscaOptions).value_(
+				{
+					var str;
+					if(config.spatSub.size == 0){
+						str = "";
+					}{
+						str = String.new.ccatList(config.spatSub).stripWhiteSpace;str.removeAt(0);
+					};
+					str;
+
+			}.value()).action_({
 				arg txt;
 				txt.value = this.prParseSub(txt.value);
 			}).align_(\right)

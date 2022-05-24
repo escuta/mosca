@@ -100,7 +100,8 @@ MoscaConfig{
 			spatOrder = MoscaConfig.prReadInteger(reader,"order");
 			defaultSpeakerCfgFile = MoscaConfig.prReadProp(reader,"speakerConfig");
 			this.loadSpeakerSetup(defaultSpeakerCfgFile);
-			spatSub = MoscaConfig.prReadProp(reader,"sub").split($\ ).asList;
+			spatSub = MoscaConfig.prReadProp(reader,"sub").split($\ ).collect({arg item,i;if(item.size!=0){item.asInteger};});
+			spatSub = spatSub.select({arg item,i; item.notNil}).asList;
 			spatOut = MoscaConfig.prReadInteger(reader,"out");
 			spatRirBank = MoscaConfig.prReadProp(reader,"rirBank");
 		};
