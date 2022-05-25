@@ -118,11 +118,9 @@ MoscaStartup
 		{
 			config.spatSub = nil;
 		};
-
 		^ok;
 	}
 	prStartServer{
-
 		if(this.prCheckConfig && moscaInstance == nil)
 		{
 			startButton.enabled = false;
@@ -149,16 +147,6 @@ MoscaStartup
 				"Server Started!".postln;
 				serverStarted = true;
 				server.sync;
-				"Mosca parameters".postln;
-				("server:" +server + "of class"+server.class).postln;
-				("nsources:"+ config.moscaSources.asInteger+ "of class" + config.moscaSources.asInteger.class).postln;
-				("dur:" +config.moscaDuration.asInteger+"of class" + config.moscaDuration.asInteger.class ).postln;
-				("speaker_array:" +config.spatSpeakers+"of class" + config.spatSpeakers.class ).postln;
-				("maxorder:" +config.spatOrder.asInteger+"of class" + config.spatOrder.asInteger.class ).postln;
-				("suboutbus:" +config.spatSub+"of class" + config.spatSub.class ).postln;
-				("decoder:" +decoder+"of class" + decoder.class ).postln;
-				("irBank:" +config.spatRirBank+"of class" + config.spatRirBank.class ).postln;
-				("parentOssiaNode:" +oscParent+"of class" + oscParent.class ).postln;
 				moscaInstance = Mosca(
 					server: server,
 					nsources: config.moscaSources.asInteger,
@@ -183,28 +171,29 @@ MoscaStartup
 		}
 		{//else
 			startButton.enabled = false;
-			"Showing gui back".postln;
+			stopButton.enabled = true;
 			moscaInstance.gui();
 			moscaInstance.mainWindow.win.onClose = FunctionList.new.addFunc(moscaInstance.mainWindow.win.onClose);
 			moscaInstance.mainWindow.win.onClose.addFunc({startButton.enabled = true; startButton.string_("Display Mosca");});
 		}
 	}
-	prClose{
+	prStopServer{
 		if(moscaInstance!=nil){
-			"Closing Mosca".postln;
+			"Stopping  Mosca".postln;
 			if(moscaInstance.mainWindow!=nil)
 			{
 				moscaInstance.mainWindow.win.close();
 			};
-			Server.killAll;
-			startButton.string_("Start Mosca");
 			stopButton.enabled = false;
+			Server.killAll;
+			moscaInstance.free();
+			moscaInstance = nil;
+		    startButton.string = "Start Mosca";
 		};
 	}
-	prCancel
+	prQuit
 	{
-		this.prClose();
-
+		this.prStopServer();
 		window.close();
 		"Cancelling, quitting".postln;
 	}
@@ -255,8 +244,8 @@ MoscaStartup
 
 
 		startButton.action = {this.prStartServer};
-		stopButton.action = {this.prClose};
-		quitButton.action = {this.prCancel};
+		stopButton.action = {this.prStopServer};
+		quitButton.action = {this.prQuit};
 		advancedParamButton.action = {serverOptions.visible = serverOptions.visible.not};
 
 		//layout addition to main window
