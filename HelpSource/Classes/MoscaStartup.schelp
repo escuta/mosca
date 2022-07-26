@@ -1,0 +1,61 @@
+TITLE:: MoscaStartup
+summary:: Gui Class to start Mosca with more ease.
+categories:: Libraries>Ambisonic Toolkit, Libraries>HOA
+related:: Guide/guide-Mosca
+
+DESCRIPTION::
+
+This class is a GUI created to facilitate the setting up of a Mosca instance.
+It also allows some control over the exposition of OSC parameters and advanced server settings.
+
+CLASSMETHODS::
+
+METHOD:: new
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+PRIVATE:: prAddSetupEntry
+PRIVATE:: prUpdateSetup
+PRIVATE:: prClearSetupEntries
+PRIVATE:: prCancel
+PRIVATE:: prParseSub
+PRIVATE:: prRemoveSetupEntry
+PRIVATE:: prCheckConfig
+PRIVATE:: prStartServer
+PRIVATE:: prClose
+PRIVATE:: prDoInitialSetup
+PRIVATE:: prReconnectWith
+
+PRIVATE:: servRemoteIP
+PRIVATE:: sources
+PRIVATE:: setupList
+PRIVATE:: order
+PRIVATE:: prLoadFromFile
+PRIVATE:: windowH
+PRIVATE:: decoder
+PRIVATE:: sub
+PRIVATE:: gui
+PRIVATE:: out
+PRIVATE:: servRemotePort
+PRIVATE:: servLocalPort
+
+PRIVATE:: ctr
+
+PRIVATE:: prExposeParameters
+PRIVATE:: prSaveToFile
+PRIVATE:: prSetupGui
+PRIVATE:: prTestSound
+PRIVATE:: prMoscaOptionsGui
+PRIVATE:: prServerOptionsGui
+PRIVATE:: windowW
+PRIVATE:: duration
+
+EXAMPLES::
+
+code::
+MoscaStartup.new.gui();
+::

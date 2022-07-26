@@ -187,6 +187,55 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 			HOASphericalHarmonics.coefN3D(2, sphe.theta(), sphe.phi());
 		});
 	}
+	
+	*cartesianToAED
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Cartesian(item[0],item[1],item[2]).asSpherical.rotate(-pi/2)
+		});
+		result = result.collect({
+			arg item,i;
+			[item.theta.raddeg,item.phi.raddeg,item.rho]
+		});
+		^result;
+	}
+
+	*aedToCartesian
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Spherical(item[2], item[0].degrad,item[1].degrad).rotate(pi/2).asCartesian.trunc(0.00000001)
+			});
+		^result;
+	}
+
+	*cartesianToSpherical
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Cartesian(item[0],item[1],item[2]).asSpherical
+		});
+		^result;
+	}
+
+	*sphericalToCartesian
+	{
+		arg coordinatesList;
+		var result;
+		result = coordinatesList.collect({
+			arg item,i;
+			Spherical(item[0], item[1],item[2]).asCartesian.trunc(0.00000001)
+		});
+		^result;
+	}
+
 
 	*emulate_array
 	{
@@ -195,5 +244,6 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 		[ 90, 0 ], [ 135, 0 ], [ 180, 0 ], [ -135, 0 ], [ -90, 0 ], [ -45, 0 ],
 		[ 45, -35 ], [ 135, -35 ], [ -135, -35 ], [ -45, -35 ], [ 0, -45 ],
 		[ 90, -45 ], [ 180, -45 ], [ -90, -45 ], [ 0, -90 ] ];
-	}
+    }
+
 }
