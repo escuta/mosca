@@ -61,6 +61,9 @@ ATKBaseDef : SpatDef
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
 					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
+					//pushang = rad * MoscaUtils.halfPi;
+
+					//SendTrig.kr(Impulse.kr(1), 0, pushang); // debug
 					sig = lrevRef.value + (p.value * ((1/radRoot) - 1));
 					sig = FoaDirectO.ar(sig, directang);
 					// directivity

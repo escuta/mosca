@@ -35,14 +35,16 @@ Mosca : MoscaBase
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
 			outbus, suboutbus, rawformat, rawoutbus);
 	}
-
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
 
 		var multyThread;
 
+
+
 		if (server.isNil) { server = Server.local };
+		~osc = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		// TODO
 		// Server.program.asString.endsWith("supernova");
