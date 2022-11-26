@@ -58,13 +58,15 @@ ATKBaseDef : SpatDef
 			},
 			4,
 			{ // assume FuMa input
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
-					var sig, pushang = 2 - (contract * 2), pushang2;
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang,
+					linear = 1 |
+					var sig, pushang = 2 - (contract * 2), pushang2, linearsig;
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
 					pushang2 = rad * MoscaUtils.halfPi;
-
-					//SendTrig.kr(Impulse.kr(1), 0, pushang2); // debug
-					sig = lrevRef.value + (p.value * ((1/radRoot) - 1));
+					//					SendTrig.kr(Impulse.kr(1), 0, rad ); // debug
+					linearsig = lrevRef.value + (p.value * (12 - (rad * 12))  );
+					sig = lrevRef.value + (p.value * ((1/radRoot) - 1) );
+					sig = Select.ar(linear > 0, [sig, linearsig]);
 					sig = FoaDirectO.ar(sig, directang);
 					// directivity
 					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
