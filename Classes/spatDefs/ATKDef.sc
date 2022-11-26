@@ -59,16 +59,19 @@ ATKBaseDef : SpatDef
 			4,
 			{ // assume FuMa input
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
-					var sig, pushang = 2 - (contract * 2);
+					var sig, pushang = 2 - (contract * 2), pushang2;
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					//pushang = rad * MoscaUtils.halfPi;
+					pushang2 = rad * MoscaUtils.halfPi;
 
-					//SendTrig.kr(Impulse.kr(1), 0, pushang); // debug
+					//SendTrig.kr(Impulse.kr(1), 0, pushang2); // debug
 					sig = lrevRef.value + (p.value * ((1/radRoot) - 1));
 					sig = FoaDirectO.ar(sig, directang);
 					// directivity
 					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
+					// handle contraction fader
 					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
+					// allow field to "move"
+					lrevRef.value = FoaTransform.ar(lrevRef.value, 'push', pushang2, azimuth, elevation);
 				};
 			},
 			{ // assume N3D input
