@@ -37,6 +37,7 @@ ATKBaseDef : SpatDef
 					sig = FoaEncode.ar(sig, encoder);
 					sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
 						CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
+					//SendTrig.kr(Impulse.kr(1), 0, CircleRamp.kr(azimuth, 0.1, -pi, pi) ); // debug
 					sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
 					lrevRef.value = FoaTransform.ar(sig, 'proximity', rad * renderer.longestRadius);
 				};
@@ -45,13 +46,19 @@ ATKBaseDef : SpatDef
 			{
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
 					var l, r, sig = distFilter.value(p.value, rad),
-					az = CircleRamp.kr(azimuth, 0.1, -pi, pi),
-					contr = MoscaUtils.halfPi * contract;
+					contr = MoscaUtils.halfPi * contract, az1, az2;
+					az1 = azimuth + (angle/2.0);
+					az2 = azimuth - (angle/2.0);
+					az1 = Select.kr(az1 < pi, [((pi - (az1 - pi)) * -1), az1]);
+					az1 = Lag.kr(az1, 0.1);
+					az2 = Select.kr(az2 < pi, [((pi - (az2 - pi)) * -1), az2]);
+					az2 = Lag.kr(az2, 0.1);
 					sig = lrevRef.value + (sig * atenuator.value(radRoot));
 					l = FoaEncode.ar(sig[0], encoder);
 					r = FoaEncode.ar(sig[1], encoder);
-					l = FoaTransform.ar(l, 'push', contr, az + (angle * (1 - rad)), elevation);
-					r = FoaTransform.ar(r, 'push', contr, az - (angle * (1 - rad)), elevation);
+					//					SendTrig.kr(Impulse.kr(1), 0, azimuth ); // debug
+					l = FoaTransform.ar(l, 'push', contr, az1, elevation);
+					r = FoaTransform.ar(r, 'push', contr, az2, elevation);
 					sig = HPF.ar(l + r, 20); // stops bass frequency blow outs by proximity
 					lrevRef.value = FoaTransform.ar(sig, 'proximity', rad * renderer.longestRadius);
 				};
@@ -63,7 +70,6 @@ ATKBaseDef : SpatDef
 					var sig, pushang = 2 - (contract * 2), pushang2, linearsig, linearscale;
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
 					pushang2 = rad * MoscaUtils.halfPi;
-					//					SendTrig.kr(Impulse.kr(1), 0, rad ); // debug
 					linearscale = (12 - (rad * 12));
 					linearscale = Select.kr(linearscale > 0, [0, linearscale]); //negs rolled off at zero
 					linearsig = lrevRef.value + (p.value * linearscale  );
