@@ -73,22 +73,34 @@ ABTDef : N3DDef
 			{
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
 					var distance = aten2distance.value(radRoot.min(lim)),
-					az = CircleRamp.kr(azimuth, 0.1, -pi, pi),
+					//				az = CircleRamp.kr(azimuth, 0.1, -pi, pi),
 					el = Lag.kr(elevation),
 					r = distance * renderer.longestRadius,
 					sr = renderer.longestRadius,
 					sig = (lrevRef.value * distance) // local reverb make up gain
-						+ (p.value * converge.value(radRoot));
+					+ (p.value * converge.value(radRoot)), az1, az2;
+					az1 = azimuth + ((angle/2.0) * (1 - rad));
+					az2 = azimuth - ((angle/2.0) * (1 - rad));
+					//az1 = Select.kr(az1 < pi, [((pi - (az1 - pi)) * -1), az1]);
+					az1 = CircleRamp.kr(az1, 0.1, -pi, pi);
+					//az2 = Select.kr(az2 < pi, [((pi - (az2 - pi)) * -1), az2]);
+					az2 = CircleRamp.kr(az2, 0.1, -pi, pi);
+					SendTrig.kr(Impulse.kr(1), 0, azimuth ); // debug
+					SendTrig.kr(Impulse.kr(1), 1, az1 ); // debug
+					SendTrig.kr(Impulse.kr(1), 1, az2 ); // debug
+					
 					sig = HOAEncoder.ar(maxOrder,
 						sig[0],
-						az + (angle * (1 - rad)),
+						//az + (angle * (1 - rad)),
+						az1,
 						el,
 						0, // gain
 						1, // spherical
 						r, sr) +
 					HOAEncoder.ar(maxOrder,
 						sig[1],
-						az - (angle * (1 - rad)),
+						//az - (angle * (1 - rad)),
+						az2,
 						el,
 						0, // gain
 						1, // spherical
