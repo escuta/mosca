@@ -104,13 +104,20 @@ ABTDef : N3DDef
 			},
 			4,
 			{ // assume FuMa input
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle |
-					var sig, pushang = 2 - (contract * 2);
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, linear = 1 |
+					var sig, pushang = 2 - (contract * 2), linearsig, linearscale, sig_a, sig_b;
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
-					sig = FoaDecode.ar(p.value * ((1/radRoot) - 1),
-						MoscaUtils.f2n);
+					linearscale = (12 - (rad * 12));
+					linearscale = Select.kr(linearscale > 0, [0, linearscale]); //negs rolled off at zero
+					linearsig = lrevRef.value + (p.value * linearscale  );
+
+					sig = FoaDecode.ar(p.value * ((1/radRoot) - 1),	MoscaUtils.f2n);
+					sig = Select.ar(linear > 0, [sig, linearsig]);
 					sig = HOATransRotateAz.ar(1, lrevRef.value + sig, rotAngle);
-					lrevRef.value = HOABeamDirac2Hoa.ar(1, sig, azimuth, elevation, timer_manual:1, focus:pushang);
+					SendTrig.kr(Impulse.kr(1), 0, pushang ); // debug
+					sig_a = HOABeamDirac2Hoa.ar(1, sig, azimuth, elevation, timer_manual:1, focus:pushang);
+					sig_b = HOABeamDirac2Hoa.ar(1, sig_a, azimuth, elevation, timer_manual:1, focus: rad * (1 - contract));
+					lrevRef.value = XFade2.ar(sig_a, sig_b, 1 - contract, level: 1.0)
 				};
 			},
 			{ // assume N3D input
