@@ -47,12 +47,10 @@ ATKBaseDef : SpatDef
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, angle |
 					var l, r, sig = distFilter.value(p.value, rad),
 					contr = MoscaUtils.halfPi * contract, az1, az2;
-					az1 = azimuth + (angle/2.0);
-					az2 = azimuth - (angle/2.0);
-					az1 = Select.kr(az1 < pi, [((pi - (az1 - pi)) * -1), az1]);
-					az1 = Lag.kr(az1, 0.1);
-					az2 = Select.kr(az2 < pi, [((pi - (az2 - pi)) * -1), az2]);
-					az2 = Lag.kr(az2, 0.1);
+					az1 = azimuth + ((angle/2.0) * (1 - rad));
+					az2 = azimuth - ((angle/2.0) * (1 - rad));
+					az1 = CircleRamp.kr(az1, 0.1, -pi, pi);
+					az2 = CircleRamp.kr(az2, 0.1, -pi, pi);
 					sig = lrevRef.value + (sig * atenuator.value(radRoot));
 					l = FoaEncode.ar(sig[0], encoder);
 					r = FoaEncode.ar(sig[1], encoder);
