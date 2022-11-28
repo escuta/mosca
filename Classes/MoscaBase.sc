@@ -5,7 +5,7 @@ MoscaBase // acts as the public interface
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
-	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
+	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher, <graphicpath;
 
 	*printSynthParams
 	{

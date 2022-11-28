@@ -29,15 +29,15 @@ Mosca : MoscaBase
 	*new
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
-		suboutbus, rawformat = \FUMA, rawoutbus = 0 |
+		suboutbus, rawformat = \FUMA, rawoutbus = 0, graphicPath |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus);
+			outbus, suboutbus, rawformat, rawoutbus, graphicPath);
 	}
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
-		speaker_array, outBus, subOutBus, rawFormat, rawOutBus |
+		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, graphicPath |
 
 		var multyThread;
 
@@ -58,6 +58,8 @@ Mosca : MoscaBase
 		spat = MoscaSpatializer(server);
 
 		srcGrp = Ref();
+
+		graphicpath = graphicPath;
 
 		// start asynchronious processes
 		server.doWhenBooted({

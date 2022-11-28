@@ -640,7 +640,7 @@ MoscaGUI
 		win.drawFunc_({ // draw circles for center, max distance & sources
 
 			var plim = MoscaUtils.plim();
-
+			//("GraphicPath is: " + aMosca.graphicpath).postln;
 			Pen.fillColor = palette.color('middark', 'active');
 			Pen.addArc(halfWidth@halfHeight, halfHeight * zoomFactor, 0, 2pi);
 			Pen.fill;
