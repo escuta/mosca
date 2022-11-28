@@ -459,4 +459,19 @@ Mosca : MoscaBase
 
 		}).play;
 	}
+
+	
+	scaleGraphic
+	{ | scale = 100 |
+		
+		var newSynth, curentSpat;
+
+		if(graphicpath.notNil) {
+			("Scaling" + graphicpath + "by" + scale + "%").postln;
+		}
+		
+		
+	}
+	
+
 }

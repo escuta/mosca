@@ -29,6 +29,7 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
+	var graphicImage, graphicWidth, graphicHeight, graphicOrigin;
 
 	classvar halfPi;
 
@@ -70,6 +71,15 @@ MoscaGUI
 		halfWidth = width * 0.5;
 		height = width; // on init
 		halfHeight = halfWidth;
+
+		if(aMosca.graphicpath.notNil){
+			graphicImage = Image.open(aMosca.graphicpath);
+			graphicWidth = graphicImage.width;
+			graphicHeight = graphicImage.height;
+			graphicOrigin = Point((graphicWidth / -2), (graphicHeight / -2));
+			("graphicHeight is: " + graphicHeight + " graphicWidth = " + graphicWidth).postln;
+		};
+
 
 		// main window
 		win = Window("Mosca", (width)@(height)).front; // main indow
@@ -640,11 +650,20 @@ MoscaGUI
 		win.drawFunc_({ // draw circles for center, max distance & sources
 
 			var plim = MoscaUtils.plim();
-			//("GraphicPath is: " + aMosca.graphicpath).postln;
 			Pen.fillColor = palette.color('middark', 'active');
 			Pen.addArc(halfWidth@halfHeight, halfHeight * zoomFactor, 0, 2pi);
 			Pen.fill;
 
+			if(aMosca.graphicpath.notNil){
+				//("GraphicPath is: " + aMosca.graphicpath).postln;
+				//graphicImage = Image.open(aMosca.graphicpath);
+				//graphicWidth = graphicImage.width;
+				//graphicHeight = graphicImage.height;
+				//graphicOrigin = Point((graphicWidth / -2), (graphicHeight / -2));
+				//("graphicHeight is: " + graphicHeight + " graphicWidth = " + graphicWidth).postln;
+				Pen.drawImage( graphicOrigin, graphicImage, operation: 'sourceIn', opacity:0.85);
+			};
+			
 			Pen.strokeColor = palette.color('midlight', 'active');
 			Pen.addArc(halfWidth@halfHeight, halfHeight * zoomFactor * 0.25, 0, 2pi);
 			Pen.stroke;
