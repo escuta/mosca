@@ -60,6 +60,7 @@ Mosca : MoscaBase
 		srcGrp = Ref();
 
 		graphicpath = graphicPath;
+		lastgraphicupdate = Main.elapsedTime;
 
 		// start asynchronious processes
 		server.doWhenBooted({
@@ -478,6 +479,27 @@ Mosca : MoscaBase
 		
 		
 	}
+
+	updateGraphic
+	{
+		arg zf, gw, gh;
+		var period = Main.elapsedTime - lastgraphicupdate;
+		if (period > 1) {
+			var width, height;
+			"Oi!".postln;
+			lastgraphicupdate =  Main.elapsedTime;
+			graphicImage = Image.open(graphicpath);
+			width = gw * zf;
+			height = gh * zf;
+			//("Scaling" + aMosca.graphicpath + "by" + scale + "%").postln;
+			graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
+			graphicOrigin = Point((width / -2), (height / -2));
+			
+		};
+		
+
+	}
+	
 	
 
 }

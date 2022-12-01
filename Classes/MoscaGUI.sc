@@ -29,6 +29,7 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
+	var graphicWidth, graphicHeight;
 
 	classvar halfPi;
 
@@ -73,14 +74,15 @@ MoscaGUI
 		aMosca.winwidth = width;
 		aMosca.winheight = height;
 		if(aMosca.graphicpath.notNil){
-			var width, height;
+			var gwidth, gheight;
+			("Size is " + size).postln;
 			aMosca.graphicImage = Image.open(aMosca.graphicpath);
-			//aMosca.graphicWidth = aMosca.graphicImage.width;
-			//aMosca.graphicHeight = aMosca.graphicImage.height;
-			width = aMosca.graphicImage.width;
-			height = aMosca.graphicImage.height;
+			graphicWidth = aMosca.graphicImage.width; // save orig size for zooming
+			graphicHeight = aMosca.graphicImage.height;
+			gwidth = aMosca.graphicImage.width;
+			gheight = aMosca.graphicImage.height;
 			//			aMosca.graphicOrigin = Point((aMosca.graphicWidth / -2), (aMosca.graphicHeight / -2));
-			aMosca.graphicOrigin = Point((width / -2), (height / -2));
+			aMosca.graphicOrigin = Point((gwidth / -2), (gheight / -2));
 			//		("graphicHeight is: " + aMosca.graphicHeight + " graphicWidth = " + aMosca.graphicWidth).postln;
 		};
 
@@ -614,12 +616,36 @@ MoscaGUI
 			if ((dy < 0) && (zoomFactor <= 10))
 			{
 				zoomFactor = zoomFactor * 1.01;
+				if(aMosca.graphicpath.notNil){
+					aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
+					
+					/*
+					var width, height;
+					//aMosca.graphicImage = Image.open(aMosca.graphicpath);
+					width = graphicWidth * zoomFactor;
+					height = graphicHeight * zoomFactor;
+					//("Scaling" + aMosca.graphicpath + "by" + scale + "%").postln;
+					aMosca.graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
+					aMosca.graphicOrigin = Point((width / -2), (height / -2));
+					*/
+			
+				};
 				win.refresh;
 			};
 
 			if ((dy > 0) && (zoomFactor >= 0.55))
 			{
 				zoomFactor = zoomFactor * 0.99;
+				if(aMosca.graphicpath.notNil){
+					//var width, height;
+					aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
+					//width = graphicWidth * zoomFactor;
+					//height = graphicHeight * zoomFactor;
+					//("Scaling" + aMosca.graphicpath + "by" + scale + "%").postln;
+					//aMosca.graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
+					//aMosca.graphicOrigin = Point((width / -2), (height / -2));
+			
+				};
 				win.refresh;
 			};
 		});
@@ -662,8 +688,12 @@ MoscaGUI
 			if(aMosca.graphicpath.notNil){
 				var originx = aMosca.graphicOrigin.x + (aMosca.winwidth * 0.5);
 				var originy = aMosca.graphicOrigin.y + (aMosca.winheight * 0.5);
-
-				Pen.drawImage( Point(originx, originy), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+				//var period = Main.elapsedTime - aMosca.lastgraphicupdate;
+				//if (period > 1) {
+				//	lastgraphicupdate =  Main.elapsedTime;
+				//	("zoomFactor " + zoomFactor).postln;
+					Pen.drawImage( Point(originx, originy), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+				//};
 			};
 			
 			Pen.strokeColor = palette.color('midlight', 'active');
