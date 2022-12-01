@@ -29,7 +29,8 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
-	var graphicImage, graphicWidth, graphicHeight, graphicOrigin;
+	//var graphicImage, graphicWidth, graphicHeight, graphicOrigin;
+	//var graphicWidth, graphicHeight, graphicOrigin;
 
 	classvar halfPi;
 
@@ -71,13 +72,14 @@ MoscaGUI
 		halfWidth = width * 0.5;
 		height = width; // on init
 		halfHeight = halfWidth;
-
+		aMosca.winwidth = width;
+		aMosca.winheight = height;
 		if(aMosca.graphicpath.notNil){
-			graphicImage = Image.open(aMosca.graphicpath);
-			graphicWidth = graphicImage.width;
-			graphicHeight = graphicImage.height;
-			graphicOrigin = Point((graphicWidth / -2), (graphicHeight / -2));
-			("graphicHeight is: " + graphicHeight + " graphicWidth = " + graphicWidth).postln;
+			aMosca.graphicImage = Image.open(aMosca.graphicpath);
+			aMosca.graphicWidth = aMosca.graphicImage.width;
+			aMosca.graphicHeight = aMosca.graphicImage.height;
+			aMosca.graphicOrigin = Point((aMosca.graphicWidth / -2), (aMosca.graphicHeight / -2));
+			("graphicHeight is: " + aMosca.graphicHeight + " graphicWidth = " + aMosca.graphicWidth).postln;
 		};
 
 
@@ -626,7 +628,8 @@ MoscaGUI
 			halfWidth = width * 0.5;
 			height = view.bounds.height;
 			halfHeight = height * 0.5;
-
+			aMosca.winheight = height;
+			aMosca.winwidth = width;
 			// set initial furthest source as 10 times the apparent radius
 			furthest = halfHeight * 10;
 
@@ -655,13 +658,16 @@ MoscaGUI
 			Pen.fill;
 
 			if(aMosca.graphicpath.notNil){
+				var originx = aMosca.graphicOrigin.x + (aMosca.winwidth * 0.5);
+				var originy = aMosca.graphicOrigin.y + (aMosca.winheight * 0.5);
 				//("GraphicPath is: " + aMosca.graphicpath).postln;
 				//graphicImage = Image.open(aMosca.graphicpath);
 				//graphicWidth = graphicImage.width;
 				//graphicHeight = graphicImage.height;
 				//graphicOrigin = Point((graphicWidth / -2), (graphicHeight / -2));
 				//("graphicHeight is: " + graphicHeight + " graphicWidth = " + graphicWidth).postln;
-				Pen.drawImage( graphicOrigin, graphicImage, operation: 'sourceIn', opacity:0.85);
+				//				Pen.drawImage( aMosca.graphicOrigin, aMosca.graphicImage, operation: 'sourceIn', opacity:0.85);
+				Pen.drawImage( Point(originx, originy), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
 			};
 			
 			Pen.strokeColor = palette.color('midlight', 'active');

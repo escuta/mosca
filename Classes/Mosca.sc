@@ -464,10 +464,22 @@ Mosca : MoscaBase
 	scaleGraphic
 	{ | scale = 100 |
 		
-		var newSynth, curentSpat;
-
 		if(graphicpath.notNil) {
-			("Scaling" + graphicpath + "by" + scale + "%").postln;
+			var width, height;
+			graphicImage = Image.open(graphicpath); // reload to maintain quality
+			width = graphicImage.width * scale / 100;
+			height = graphicImage.height * scale / 100;
+			("Scaling" + graphicpath + "by" + scale + "%" + ". winwidth = "
+				+ winwidth).postln;
+			graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
+			graphicOrigin = Point((graphicImage.width / -2), (graphicImage.height / -2));
+
+			//graphicOrigin.x = (width * 0.5) + (winwidth * 0.5);
+			//graphicOrigin.y = (height / -2) + (winheight * 0.5);
+
+			//this.graphicImage.width = this.graphicWidth * scale / 100;
+			//graphicImage.height = graphicImage.height * scale / 100;
+			
 		}
 		
 		
