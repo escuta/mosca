@@ -688,17 +688,14 @@ MoscaGUI
 			if(aMosca.graphicpath.notNil){
 				var originx = aMosca.graphicOrigin.x + (aMosca.winwidth * 0.5);
 				var originy = aMosca.graphicOrigin.y + (aMosca.winheight * 0.5);
-				//var period = Main.elapsedTime - aMosca.lastgraphicupdate;
-				//if (period > 1) {
-				//	lastgraphicupdate =  Main.elapsedTime;
-				//	("zoomFactor " + zoomFactor).postln;
-
 
 				("Teste: " + aMosca.center.ossiaOrient.v[0]).postln;
-
-				Pen.rotate(aMosca.center.ossiaOrient.v[0], (aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
-					Pen.drawImage( Point(originx, originy), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
-				//};
+				Pen.use {
+					Pen.rotate(aMosca.center.ossiaOrient.v[0],
+						(aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
+					Pen.drawImage( Point(originx, originy),
+						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+				};
 			};
 			
 			Pen.strokeColor = palette.color('midlight', 'active');
