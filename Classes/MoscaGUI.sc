@@ -615,7 +615,7 @@ MoscaGUI
 
 			if ((dy < 0) && (zoomFactor <= 10))
 			{
-				zoomFactor = zoomFactor * 1.01;
+				aMosca.zoomfactor = zoomFactor = zoomFactor * 1.01;
 				if(aMosca.graphicpath.notNil){
 					aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
 					
@@ -635,7 +635,7 @@ MoscaGUI
 
 			if ((dy > 0) && (zoomFactor >= 0.55))
 			{
-				zoomFactor = zoomFactor * 0.99;
+				aMosca.zoomfactor = zoomFactor = zoomFactor * 0.99;
 				if(aMosca.graphicpath.notNil){
 					//var width, height;
 					aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
@@ -692,6 +692,11 @@ MoscaGUI
 				//if (period > 1) {
 				//	lastgraphicupdate =  Main.elapsedTime;
 				//	("zoomFactor " + zoomFactor).postln;
+
+
+				("Teste: " + aMosca.center.ossiaOrient.v[0]).postln;
+
+				Pen.rotate(aMosca.center.ossiaOrient.v[0], (aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
 					Pen.drawImage( Point(originx, originy), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
 				//};
 			};
