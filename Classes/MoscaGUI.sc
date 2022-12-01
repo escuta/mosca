@@ -86,7 +86,7 @@ MoscaGUI
 		// main window
 		win = Window("Mosca", (width)@(height)).front; // main indow
 		win.view.palette_(palette);
-
+		aMosca.window = win;
 		// source index
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");

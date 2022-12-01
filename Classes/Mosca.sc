@@ -473,13 +473,7 @@ Mosca : MoscaBase
 				+ winwidth).postln;
 			graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
 			graphicOrigin = Point((graphicImage.width / -2), (graphicImage.height / -2));
-
-			//graphicOrigin.x = (width * 0.5) + (winwidth * 0.5);
-			//graphicOrigin.y = (height / -2) + (winheight * 0.5);
-
-			//this.graphicImage.width = this.graphicWidth * scale / 100;
-			//graphicImage.height = graphicImage.height * scale / 100;
-			
+			window.refresh;
 		}
 		
 		
