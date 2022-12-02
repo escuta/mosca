@@ -692,27 +692,29 @@ MoscaGUI
 				var originy = aMosca.graphicOrigin.y + halfwinheight;
 
 				var hww, hwh, hsgh, hsgw;
+				var disabledZoomFactor = 1; // disabling zooming of graphic for now
 				// compensate for Pen.scale below
 				hww = halfwinwidth;
 				hwh = halfwinheight;
-				hsgw = aMosca.graphicImage.width * zoomFactor / 2;
-				hsgh = aMosca.graphicImage.width * zoomFactor / 2;
+				hsgw = aMosca.graphicImage.width * disabledZoomFactor / 2;
+				hsgh = aMosca.graphicImage.height * disabledZoomFactor / 2;
 
-				("originx: " + originx + " originy: " + originy).postln;
-				("halfwinwidth: " + halfwinwidth + " halfwinheight: " + halfwinheight).postln;
-				
+				("origine 0: " + origine.value[0] + "origine 1: " + origine.value[1] + " Scale: " + scale.value).postln;
+				("graphic width: " + aMosca.graphicImage.width + " graphic height: " + aMosca.graphicImage.height).postln;
+				("halfHeight: " + halfHeight + "halfWidth: " + halfWidth).postln;
 				
 				
 				Pen.use {
 					
 					//Pen.moveTo(Point(halfwinwidth, halfwinheight));
-					Pen.scale(zoomFactor, zoomFactor);	
-					//Pen.translate( -0.5 * (aMosca.graphicOrigin.x - (aMosca.graphicOrigin.x * zoomFactor)), -0.5 * (aMosca.graphicOrigin.y - (aMosca.graphicOrigin.y * zoomFactor)) );	
+					Pen.scale(disabledZoomFactor, disabledZoomFactor);	
+					//Pen.translate( -0.5 * (aMosca.graphicOrigin.x - (aMosca.graphicOrigin.x * disabledZoomFactor)), -0.5 * (aMosca.graphicOrigin.y - (aMosca.graphicOrigin.y * disabledZoomFactor)) );	
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						(aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
+					Pen.translate(scale.value * origine.value[0] * halfWidth * -1, scale.value * origine.value[1] * halfHeight);
 					
-					Pen.drawImage( Point( (hww / zoomFactor) - (hsgw / zoomFactor),
-						(hwh / zoomFactor) - (hsgh / zoomFactor) ), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+					Pen.drawImage( Point( (hww / disabledZoomFactor) - (hsgw / disabledZoomFactor),
+						(hww / disabledZoomFactor) - (hsgw / disabledZoomFactor) ), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
 					
 				};
 				
