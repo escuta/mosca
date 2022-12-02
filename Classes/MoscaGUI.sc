@@ -686,20 +686,36 @@ MoscaGUI
 			Pen.fill;
 
 			if(aMosca.graphicpath.notNil){
-				var originx = aMosca.graphicOrigin.x + (aMosca.winwidth * 0.5);
-				var originy = aMosca.graphicOrigin.y + (aMosca.winheight * 0.5);
+				var halfwinwidth = aMosca.winwidth * 0.5;
+				var halfwinheight = aMosca.winheight * 0.5;
+				var originx = aMosca.graphicOrigin.x + halfwinwidth;
+				var originy = aMosca.graphicOrigin.y + halfwinheight;
 
-				("Teste: " + zoomFactor).postln;
-				Pen.use {
-					Pen.scale(zoomFactor, zoomFactor);
-				};
+				var hww, hwh, hsgh, hsgw;
+				// compensate for Pen.scale below
+				hww = halfwinwidth;
+				hwh = halfwinheight;
+				hsgw = aMosca.graphicImage.width * zoomFactor / 2;
+				hsgh = aMosca.graphicImage.width * zoomFactor / 2;
+
+				("originx: " + originx + " originy: " + originy).postln;
+				("halfwinwidth: " + halfwinwidth + " halfwinheight: " + halfwinheight).postln;
+				
+				
+				
 				Pen.use {
 					
+					//Pen.moveTo(Point(halfwinwidth, halfwinheight));
+					Pen.scale(zoomFactor, zoomFactor);	
+					//Pen.translate( -0.5 * (aMosca.graphicOrigin.x - (aMosca.graphicOrigin.x * zoomFactor)), -0.5 * (aMosca.graphicOrigin.y - (aMosca.graphicOrigin.y * zoomFactor)) );	
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						(aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
-					Pen.drawImage( Point(originx, originy),
-						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+					
+					Pen.drawImage( Point( (hww / zoomFactor) - (hsgw / zoomFactor),
+						(hwh / zoomFactor) - (hsgh / zoomFactor) ), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+					
 				};
+				
 			};
 			
 			Pen.strokeColor = palette.color('midlight', 'active');
