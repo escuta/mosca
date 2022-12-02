@@ -692,6 +692,8 @@ MoscaGUI
 				var originy = aMosca.graphicOrigin.y + halfwinheight;
 
 				var hsgh, hsgw;
+				//var localZoomFactor = zoomFactor * scale.value;
+
 				//var disabledZoomFactor = 1; // disabling zooming of graphic for now
 				// compensate for Pen.scale below
 				//hww = halfwinwidth;
@@ -712,7 +714,8 @@ MoscaGUI
 						//						(aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
 						halfWidth, halfHeight); // leave as width, height
 					Pen.scale(zoomFactor, zoomFactor);	
-					Pen.translate(scale.value * origine.value[0] * halfHeight * -1, scale.value * origine.value[1] * halfHeight);
+					Pen.translate(origine.value[0] * halfHeight * -1 * scale.value,
+						origine.value[1] * halfHeight * scale.value);
 					
 					Pen.drawImage( Point( (halfWidth / zoomFactor) - (hsgw / zoomFactor),
 						(halfHeight / zoomFactor) - (hsgh / zoomFactor) ), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
