@@ -71,8 +71,8 @@ MoscaGUI
 		halfWidth = width * 0.5;
 		height = width; // on init
 		halfHeight = halfWidth;
-		aMosca.winwidth = width;
-		aMosca.winheight = height;
+		//aMosca.winwidth = width;
+		//aMosca.winheight = height;
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
 			("Size is " + size).postln;
@@ -616,36 +616,12 @@ MoscaGUI
 			if ((dy < 0) && (zoomFactor <= 10))
 			{
 				aMosca.zoomfactor = zoomFactor = zoomFactor * 1.01;
-				if(aMosca.graphicpath.notNil){
-					//aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
-					
-					/*
-					var width, height;
-					//aMosca.graphicImage = Image.open(aMosca.graphicpath);
-					width = graphicWidth * zoomFactor;
-					height = graphicHeight * zoomFactor;
-					//("Scaling" + aMosca.graphicpath + "by" + scale + "%").postln;
-					aMosca.graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
-					aMosca.graphicOrigin = Point((width / -2), (height / -2));
-					*/
-			
-				};
 				win.refresh;
 			};
 
 			if ((dy > 0) && (zoomFactor >= 0.55))
 			{
 				aMosca.zoomfactor = zoomFactor = zoomFactor * 0.99;
-				if(aMosca.graphicpath.notNil){
-					//var width, height;
-					//aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
-					//width = graphicWidth * zoomFactor;
-					//height = graphicHeight * zoomFactor;
-					//("Scaling" + aMosca.graphicpath + "by" + scale + "%").postln;
-					//aMosca.graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
-					//aMosca.graphicOrigin = Point((width / -2), (height / -2));
-			
-				};
 				win.refresh;
 			};
 		});
@@ -656,8 +632,7 @@ MoscaGUI
 			halfWidth = width * 0.5;
 			height = view.bounds.height;
 			halfHeight = height * 0.5;
-			aMosca.winheight = height;
-			aMosca.winwidth = width;
+
 			// set initial furthest source as 10 times the apparent radius
 			furthest = halfHeight * 10;
 
@@ -686,30 +661,17 @@ MoscaGUI
 			Pen.fill;
 
 			if(aMosca.graphicpath.notNil){
-				var halfwinwidth = aMosca.winwidth * 0.5;
-				var halfwinheight = aMosca.winheight * 0.5;
-				var originx = aMosca.graphicOrigin.x + halfwinwidth;
-				var originy = aMosca.graphicOrigin.y + halfwinheight;
+				var originx = aMosca.graphicOrigin.x + halfWidth;
+				var originy = aMosca.graphicOrigin.y + halfHeight;
 
 				var hsgh, hsgw;
-				//var localZoomFactor = zoomFactor * scale.value;
-
-				//var disabledZoomFactor = 1; // disabling zooming of graphic for now
-				// compensate for Pen.scale below
-				//hww = halfwinwidth;
-				//hwh = halfwinheight;
 				hsgw = aMosca.graphicImage.width * zoomFactor / 2;
 				hsgh = aMosca.graphicImage.height * zoomFactor / 2;
 
-				//("origine 0: " + origine.value[0] + "origine 1: " + origine.value[1] + " Scale: " + scale.value).postln;
-				//("graphic width: " + aMosca.graphicImage.width + " graphic height: " + aMosca.graphicImage.height).postln;
-				//("halfHeight: " + halfHeight + "halfWidth: " + halfWidth).postln;
 				
 				
 				Pen.use {
 					
-					//Pen.moveTo(Point(halfwinwidth, halfwinheight));
-					//Pen.translate( -0.5 * (aMosca.graphicOrigin.x - (aMosca.graphicOrigin.x * zoomFactor)), -0.5 * (aMosca.graphicOrigin.y - (aMosca.graphicOrigin.y * zoomFactor)) );	
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						//						(aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
 						halfWidth, halfHeight); // leave as width, height
@@ -718,7 +680,8 @@ MoscaGUI
 						origine.value[1] * halfHeight * scale.value);
 					
 					Pen.drawImage( Point( (halfWidth / zoomFactor) - (hsgw / zoomFactor),
-						(halfHeight / zoomFactor) - (hsgh / zoomFactor) ), aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+						(halfHeight / zoomFactor) - (hsgh / zoomFactor) ),
+						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
 					
 				};
 				

@@ -472,10 +472,10 @@ Mosca : MoscaBase
 			graphicImage = Image.open(graphicpath); // reload to maintain quality
 			width = graphicImage.width * scale / 100;
 			height = graphicImage.height * scale / 100;
-			("Scaling" + graphicpath + "by" + scale + "%" + ". winwidth = "
-				+ winwidth).postln;
-			graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
-			graphicOrigin = Point((graphicImage.width / -2), (graphicImage.height / -2));
+			graphicImage.setSize(width.asInteger, height.asInteger,
+				'keepAspectRatioByExpanding');
+			graphicOrigin = Point((graphicImage.width / -2),
+				(graphicImage.height / -2));
 			window.refresh;
 		}
 		
