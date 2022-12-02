@@ -63,6 +63,9 @@ MoscaGUI
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
 
+		// from Mosca params
+		scale.value = aMosca.scalefactor;
+		
 		// set initial size values
 		width = size;
 
