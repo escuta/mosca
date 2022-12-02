@@ -617,7 +617,7 @@ MoscaGUI
 			{
 				aMosca.zoomfactor = zoomFactor = zoomFactor * 1.01;
 				if(aMosca.graphicpath.notNil){
-					aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
+					//aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
 					
 					/*
 					var width, height;
@@ -638,7 +638,7 @@ MoscaGUI
 				aMosca.zoomfactor = zoomFactor = zoomFactor * 0.99;
 				if(aMosca.graphicpath.notNil){
 					//var width, height;
-					aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
+					//aMosca.updateGraphic(zoomFactor, graphicWidth, graphicHeight);
 					//width = graphicWidth * zoomFactor;
 					//height = graphicHeight * zoomFactor;
 					//("Scaling" + aMosca.graphicpath + "by" + scale + "%").postln;
@@ -689,8 +689,12 @@ MoscaGUI
 				var originx = aMosca.graphicOrigin.x + (aMosca.winwidth * 0.5);
 				var originy = aMosca.graphicOrigin.y + (aMosca.winheight * 0.5);
 
-				("Teste: " + aMosca.center.ossiaOrient.v[0]).postln;
+				("Teste: " + zoomFactor).postln;
 				Pen.use {
+					Pen.scale(zoomFactor, zoomFactor);
+				};
+				Pen.use {
+					
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						(aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
 					Pen.drawImage( Point(originx, originy),
