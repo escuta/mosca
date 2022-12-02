@@ -6,7 +6,8 @@ MoscaBase // acts as the public interface
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
-	var <graphicpath, <>winwidth,<>winheight, <>graphicImage, <>graphicOrigin, <>window, <>lastgraphicupdate, <>zoomfactor;
+	var <graphicpath, <scalefactor, <>winwidth,<>winheight, <>graphicImage, <>graphicOrigin, <>window,
+	<>zoomfactor;
 
 	*printSynthParams
 	{

@@ -29,15 +29,17 @@ Mosca : MoscaBase
 	*new
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
-		suboutbus, rawformat = \FUMA, rawoutbus = 0, graphicPath |
+		suboutbus, rawformat = \FUMA, rawoutbus = 0,
+		graphicPath, scaleFactor = 0 |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, graphicPath);
+			outbus, suboutbus, rawformat, rawoutbus, graphicPath, scaleFactor);
 	}
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
-		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, graphicPath |
+		speaker_array, outBus, subOutBus, rawFormat, rawOutBus,
+		graphicPath, scaleFactor |
 
 		var multyThread;
 
@@ -60,7 +62,7 @@ Mosca : MoscaBase
 		srcGrp = Ref();
 
 		graphicpath = graphicPath;
-		lastgraphicupdate = Main.elapsedTime;
+		scalefactor = scaleFactor;
 
 		// start asynchronious processes
 		server.doWhenBooted({
@@ -479,27 +481,6 @@ Mosca : MoscaBase
 		
 		
 	}
-
-	updateGraphic
-	{
-		arg zf, gw, gh;
-		var period = Main.elapsedTime - lastgraphicupdate;
-		if (period > 1) {
-			var width, height;
-			"Oi!".postln;
-			lastgraphicupdate =  Main.elapsedTime;
-			graphicImage = Image.open(graphicpath);
-			width = gw * zf;
-			height = gh * zf;
-			//("Scaling" + aMosca.graphicpath + "by" + scale + "%").postln;
-			graphicImage.setSize(width.asInteger, height.asInteger, 'keepAspectRatioByExpanding');
-			graphicOrigin = Point((width / -2), (height / -2));
-			
-		};
-		
-
-	}
-	
 	
 
 }
