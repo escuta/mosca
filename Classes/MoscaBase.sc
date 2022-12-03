@@ -418,7 +418,7 @@ MoscaBase // acts as the public interface
 	}
 
 	gui
-	{ | size = 800, palette = \ossia, lag = 0.05 |
+	{ | size = 700, palette = \ossia, lag = 0.05 |
 
 		if (gui.isNil)
 		{
