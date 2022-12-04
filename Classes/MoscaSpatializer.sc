@@ -94,8 +94,8 @@ MoscaSpatializer
 
 						name = spat.key ++ play_type ++ channels ++ effect.key;
 
-						// if (spat.needsReCompile(name, maxOrder, speaker_array))
-						// {
+						if (spat.needsReCompile(name, maxOrder, speaker_array))
+						{
 							SynthDef(name, {
 								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
 								amp = 1, dopamnt = 0, glev = 0 |
@@ -129,8 +129,8 @@ MoscaSpatializer
 							}, metadata: spat.getMetadata(maxOrder, speaker_array)
 							).store(mdPlugin: TextArchiveMDPlugin);
 
-						postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
-						// }
+							postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
+						}
 					});
 				})
 			});
