@@ -671,11 +671,11 @@ MoscaGUI
 				Pen.use {
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						halfWidth, halfHeight); // leave as width, height
-					("windowscale = " + windowscale + "scale.value = " + scale.value).postln;
 					Pen.scale(zoomFactor * windowscale, zoomFactor * windowscale);	
 					Pen.translate( (origine.value[0] * halfHeight * -1 * scale.value / windowscale),
 						(origine.value[1] * halfHeight * scale.value / windowscale ) );
-					Pen.drawImage( Point( (halfWidth / zoomFactor / windowscale) - (hsgw / zoomFactor / windowscale) ,
+					Pen.drawImage( Point( (halfWidth / zoomFactor / windowscale)
+						- (hsgw / zoomFactor / windowscale),
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
 						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
 					
