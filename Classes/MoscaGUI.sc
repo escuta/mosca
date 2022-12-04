@@ -683,8 +683,8 @@ MoscaGUI
 					("windowscale = " + windowscale + "scale.value = " + scale.value).postln;
 					Pen.scale(zoomFactor * windowscale, zoomFactor * windowscale);	
 					//Pen.scale(zoomFactor, zoomFactor);	
-					Pen.translate( (origine.value[0] * halfHeight * -1 * scale.value),
-						(origine.value[1] * halfHeight * scale.value ) );
+					Pen.translate( (origine.value[0] * halfHeight * -1 * scale.value / windowscale),
+						(origine.value[1] * halfHeight * scale.value / windowscale ) );
 					//("X offset: " + (origine.value[0] * halfHeight * -1 * scale.value) + "Origine=x: " + origine.value[0] ).postln;
 					//Pen.translate( ((size) - height) * windowscale, ((size) - height) * windowscale);
 					
