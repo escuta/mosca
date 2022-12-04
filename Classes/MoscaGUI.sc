@@ -665,29 +665,16 @@ MoscaGUI
 
 			if(aMosca.graphicpath.notNil){
 				var windowscale = halfHeight / (size / 2);
-				//var originx = (aMosca.graphicOrigin.x / windowscale) + halfWidth;
-				//var originy = (aMosca.graphicOrigin.y / windowscale) + halfHeight;
-				//var originx = (aMosca.graphicImage.width * windowscale / 2) + halfWidth;
-				//var originy = (aMosca.graphicImage.height * windowscale / 2) + halfHeight;
 				var hsgh, hsgw;
-		//("width = " + aMosca.graphicImage.width).postln; 
 				hsgw = aMosca.graphicImage.width * windowscale * zoomFactor / 2;
 				hsgh = aMosca.graphicImage.height * windowscale * zoomFactor / 2;
-
-				
-				
 				Pen.use {
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
-						//						(aMosca.winwidth * 0.5), (aMosca.winheight * 0.5));
 						halfWidth, halfHeight); // leave as width, height
 					("windowscale = " + windowscale + "scale.value = " + scale.value).postln;
 					Pen.scale(zoomFactor * windowscale, zoomFactor * windowscale);	
-					//Pen.scale(zoomFactor, zoomFactor);	
 					Pen.translate( (origine.value[0] * halfHeight * -1 * scale.value / windowscale),
 						(origine.value[1] * halfHeight * scale.value / windowscale ) );
-					//("X offset: " + (origine.value[0] * halfHeight * -1 * scale.value) + "Origine=x: " + origine.value[0] ).postln;
-					//Pen.translate( ((size) - height) * windowscale, ((size) - height) * windowscale);
-					
 					Pen.drawImage( Point( (halfWidth / zoomFactor / windowscale) - (hsgw / zoomFactor / windowscale) ,
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
 						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
