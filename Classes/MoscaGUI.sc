@@ -21,11 +21,11 @@ MoscaGUI
 	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
-	var autoBut, loadBut, origineBut, fxBut;
+	var autoBut, loadBut, originBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
-	var origine, orientation, scale;
+	var origin, orientation, scale;
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
@@ -59,7 +59,7 @@ MoscaGUI
 	{ | aMosca, size |
 
 		// get ossia parameters
-		origine = aMosca.ossiaParent.find("Origine");
+		origin = aMosca.ossiaParent.find("Origin");
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
 
@@ -303,7 +303,7 @@ MoscaGUI
 			if (orientation.value == [0, 0, 0])
 			{ // exeption to record z mouvements after XY automation
 				sources.get[currentSource].coordinates.z
-				.valueAction_((num.value + origine.value[2]) / scale.value);
+				.valueAction_((num.value + origin.value[2]) / scale.value);
 			} {
 				var sphe = sources.get[currentSource].coordinates.spheVal
 				.asCartesian.z_(num.value).asSpherical;
@@ -325,7 +325,7 @@ MoscaGUI
 
 		aMosca.ossiaParent.find("Track_Center").gui(originView);
 
-		origineBut = Button(originView, Rect(0, 0, 88, 20))
+		originBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -345,12 +345,12 @@ MoscaGUI
 			if (butt.value == 1)
 			{
 				var window = orientation.gui();
-				origine.gui(window);
+				origin.gui(window);
 				scale.gui(window);
 				window.onClose_({ butt.value_(0) });
 			} {
 				orientation.closeGui();
-				origine.closeGui();
+				origin.closeGui();
 				scale.closeGui();
 			}
 		});
@@ -672,8 +672,8 @@ MoscaGUI
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						halfWidth, halfHeight); // leave as width, height
 					Pen.scale(zoomFactor * windowscale, zoomFactor * windowscale);	
-					Pen.translate( (origine.value[0] * halfHeight * -1 * scale.value / windowscale),
-						(origine.value[1] * halfHeight * scale.value / windowscale ) );
+					Pen.translate( (origin.value[0] * halfHeight * -1 * scale.value / windowscale),
+						(origin.value[1] * halfHeight * scale.value / windowscale ) );
 					Pen.drawImage( Point( (halfWidth / zoomFactor / windowscale)
 						- (hsgw / zoomFactor / windowscale),
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
@@ -933,9 +933,9 @@ MoscaGUI
 
 		if (orientation.value == [0, 0, 0])
 		{
-			src.x.valueAction_(point.x + origine.value[0]);
+			src.x.valueAction_(point.x + origin.value[0]);
 			// exeption to record XY mouvements after Z automation
-			src.y.valueAction_(point.y + origine.value[1]);
+			src.y.valueAction_(point.y + origin.value[1]);
 		} {
 			var sphe = point.asSpherical;
 

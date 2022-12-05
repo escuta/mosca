@@ -11,7 +11,7 @@
 #define SIDEWAYS // For a device rotated by 90 degrees on Headphones
 // #define DEBUG    // Print out human readable data
 
-#include <NineAxesMotion.h> 
+#include "NAxisMotion.h" 
 #include <Wire.h>
 
 #ifdef GPS
@@ -69,7 +69,7 @@ struct message_t
 
 message_t message;
 
-NineAxesMotion mySensor;
+NAxisMotion mySensor;
 unsigned long lastStreamTime = 0;     // the last streamed time stamp
 const int streamPeriod = 20;          // stream at 50Hz (time period(ms) =1000/frequency(Hz))
 

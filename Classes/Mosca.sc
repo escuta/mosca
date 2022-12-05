@@ -323,18 +323,18 @@ Mosca : MoscaBase
 
 		ossiaTrack.callback_({ | v |
 			var orientation = center.ossiaOrient;
-			var origine = center.ossiaOrigine;
+			var origin = center.ossiaOrigin;
 
 			if (v)
 			{
 				orientation.access_mode_(\bi);
-				origine.access_mode_(\bi);
+				origin.access_mode_(\bi);
 			} {
 				orientation.access_mode_(\set);
-				origine.access_mode_(\set);
+				origin.access_mode_(\set);
 
 				orientation.value_([0, 0, 0]);
-				origine.value_([0, 0, 0]);
+				origin.value_([0, 0, 0]);
 			};
 		});
 	}

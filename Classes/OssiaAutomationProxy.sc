@@ -113,10 +113,10 @@ OssiaAutomationProxy : AutomationBase
 OssiaAutomationCenter
 {
 	// defines the listenig point position and orientation
-	var <ossiaOrient, <ossiaOrigine;
+	var <ossiaOrient, <ossiaOrigin;
 	var oX, oY, oZ;
 	var <heading, <pitch, <roll;
-	var <origine, <scale;
+	var <origin, <scale;
 
 	*new { | parent_node, allCritical | ^super.new.ctr(parent_node, allCritical) }
 
@@ -133,13 +133,13 @@ OssiaAutomationCenter
 		pitch = AutomationProxy(0.0);
 		roll = AutomationProxy(0.0);
 
-		origine = Cartesian();
+		origin = Cartesian();
 
-		ossiaOrigine = OSSIA_Parameter(parent_node, "Origine", OSSIA_vec3f,
+		ossiaOrigin = OSSIA_Parameter(parent_node, "Origin", OSSIA_vec3f,
 			domain:[[-1, -1, -1], [1, 1, 1]], default_value:[0, 0, 0],
 			critical:allCritical, repetition_filter:true);
 
-		ossiaOrigine.unit_(OSSIA_position.cart3D);
+		ossiaOrigin.unit_(OSSIA_position.cart3D);
 
 		oX = AutomationProxy(0.0);
 		oY = AutomationProxy(0.0);
@@ -157,7 +157,7 @@ OssiaAutomationCenter
 		ossiaOrient.callback_({ | num |
 
 			sources.get.do({ | item |
-				var euler = (item.coordinates.cartVal - origine)
+				var euler = (item.coordinates.cartVal - origin)
 				.rotate(num.value[0].neg)
 				.tilt(num.value[1].neg)
 				.tumble(num.value[2].neg);
@@ -183,13 +183,13 @@ OssiaAutomationCenter
 
 		roll.action_({ | num | ossiaOrient.v_([heading.value, pitch.value, num.value]) });
 
-		ossiaOrigine.callback_({ | num |
+		ossiaOrigin.callback_({ | num |
 
-			origine.set(num[0].value, num[1].value, num[2].value);
+			origin.set(num[0].value, num[1].value, num[2].value);
 
 			sources.get.do({ | item |
 
-				var cart = (item.coordinates.cartVal - origine)
+				var cart = (item.coordinates.cartVal - origin)
 				.rotate(heading.value.neg)
 				.tilt(pitch.value.neg)
 				.tumble(roll.value.neg);
@@ -209,11 +209,11 @@ OssiaAutomationCenter
 			if (oZ.value != num[2].value) { oZ.valueAction = num[2].value };
 		});
 
-		oX.action_({ | num | ossiaOrigine.v_([num.value, oY.value, oZ.value]) });
+		oX.action_({ | num | ossiaOrigin.v_([num.value, oY.value, oZ.value]) });
 
-		oY.action_({ | num | ossiaOrigine.v_([oX.value, num.value, oZ.value]) });
+		oY.action_({ | num | ossiaOrigin.v_([oX.value, num.value, oZ.value]) });
 
-		oZ.action_({ | num | ossiaOrigine.v_([oX.value, oY.value, num.value]) });
+		oZ.action_({ | num | ossiaOrigin.v_([oX.value, oY.value, num.value]) });
 
 		scale.node.callback_({
 
@@ -252,7 +252,7 @@ OssiaAutomationCenter
 		roll.free;
 
 		ossiaOrient.free;
-		ossiaOrigine.free;
+		ossiaOrigin.free;
 
 		scale.free;
 
@@ -306,7 +306,7 @@ OssiaAutomationCoordinates
 		cartesian.callback_({ | num |
 			var sphe, sphediff;
 			cartVal.set(num.value[0], num.value[1], num.value[2]);
-			sphe = (cartVal - center.origine)
+			sphe = (cartVal - center.origin)
 			.rotate(center.heading.value.neg)
 			.tilt(center.pitch.value.neg)
 			.tumble(center.roll.value.neg);
@@ -351,7 +351,7 @@ OssiaAutomationCoordinates
 					((spheVal.tumble(center.roll.value)
 						.tilt(center.pitch.value)
 						.rotate(center.heading.value)
-						.asCartesian) + center.origine).asArray);
+						.asCartesian) + center.origin).asArray);
 			};
 
 			// set scaled distance after conversion
