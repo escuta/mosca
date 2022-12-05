@@ -30,7 +30,7 @@ Mosca : MoscaBase
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
-		graphicPath, scaleFactor = 0 |
+		graphicPath, scaleFactor = 1 |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
@@ -43,10 +43,9 @@ Mosca : MoscaBase
 
 		var multyThread;
 
-
-
 		if (server.isNil) { server = Server.local };
-		~osc = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+
+		// ~osc = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		// TODO
 		// Server.program.asString.endsWith("supernova");
@@ -62,7 +61,6 @@ Mosca : MoscaBase
 		srcGrp = Ref();
 
 		graphicpath = graphicPath;
-		scalefactor = scaleFactor;
 
 		// start asynchronious processes
 		server.doWhenBooted({
@@ -101,6 +99,7 @@ Mosca : MoscaBase
 		this.prSetParam(spat.spatList, allCritical); // global control
 
 		center = OssiaAutomationCenter(ossiaParent, allCritical);
+		center.scale.value(scaleFactor);
 
 		sources = Ref(
 			Array.fill(nsources,
@@ -463,10 +462,10 @@ Mosca : MoscaBase
 		}).play;
 	}
 
-	
+
 	scaleGraphic
 	{ | scale = 100 |
-		
+
 		if(graphicpath.notNil) {
 			var width, height;
 			graphicImage = Image.open(graphicpath); // reload to maintain quality
@@ -478,9 +477,9 @@ Mosca : MoscaBase
 				(graphicImage.height / -2));
 			window.refresh;
 		}
-		
-		
+
+
 	}
-	
+
 
 }
