@@ -63,9 +63,6 @@ MoscaGUI
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
 
-		// from Mosca params
-		scale.value = aMosca.scalefactor;
-		
 		// set initial size values
 		width = size;
 
@@ -671,18 +668,18 @@ MoscaGUI
 				Pen.use {
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						halfWidth, halfHeight); // leave as width, height
-					Pen.scale(zoomFactor * windowscale, zoomFactor * windowscale);	
+					Pen.scale(zoomFactor * windowscale, zoomFactor * windowscale);
 					Pen.translate( (origin.value[0] * halfHeight * -1 * scale.value / windowscale),
 						(origin.value[1] * halfHeight * scale.value / windowscale ) );
 					Pen.drawImage( Point( (halfWidth / zoomFactor / windowscale)
 						- (hsgw / zoomFactor / windowscale),
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
 						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
-					
+
 				};
-				
+
 			};
-			
+
 			Pen.strokeColor = palette.color('midlight', 'active');
 			Pen.addArc(halfWidth@halfHeight, halfHeight * zoomFactor * 0.25, 0, 2pi);
 			Pen.stroke;

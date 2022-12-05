@@ -30,23 +30,21 @@ Mosca : MoscaBase
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
-		graphicPath, scaleFactor = 0 |
+		graphicPath, scaleFactor |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, graphicPath, scaleFactor);
+			outbus, suboutbus, rawformat, rawoutbus, scaleFactor);
 	}
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
-		speaker_array, outBus, subOutBus, rawFormat, rawOutBus,
-		graphicPath, scaleFactor |
+		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor |
 
 		var multyThread;
 
-
-
 		if (server.isNil) { server = Server.local };
-		~osc = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+
+		// ~osc = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
 
 		// TODO
 		// Server.program.asString.endsWith("supernova");
@@ -60,9 +58,6 @@ Mosca : MoscaBase
 		spat = MoscaSpatializer(server);
 
 		srcGrp = Ref();
-
-		graphicpath = graphicPath;
-		scalefactor = scaleFactor;
 
 		// start asynchronious processes
 		server.doWhenBooted({
@@ -101,6 +96,7 @@ Mosca : MoscaBase
 		this.prSetParam(spat.spatList, allCritical); // global control
 
 		center = OssiaAutomationCenter(ossiaParent, allCritical);
+		if (scaleFactor.notNil) { 	center.scale.value_(scaleFactor); };
 
 		sources = Ref(
 			Array.fill(nsources,
@@ -462,25 +458,4 @@ Mosca : MoscaBase
 
 		}).play;
 	}
-
-	
-	scaleGraphic
-	{ | scale = 100 |
-		
-		if(graphicpath.notNil) {
-			var width, height;
-			graphicImage = Image.open(graphicpath); // reload to maintain quality
-			width = graphicImage.width * scale / 100;
-			height = graphicImage.height * scale / 100;
-			graphicImage.setSize(width.asInteger, height.asInteger,
-				'keepAspectRatioByExpanding');
-			graphicOrigin = Point((graphicImage.width / -2),
-				(graphicImage.height / -2));
-			window.refresh;
-		}
-		
-		
-	}
-	
-
 }

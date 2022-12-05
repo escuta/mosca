@@ -253,8 +253,8 @@ MoscaRenderer
 							sig = In.ar(fumaBus, 4);
 							sig = BFDecode1.ar1(sig[0], sig[1], sig[2], sig[3],
 								azimuths.collect(_.degrad), elevations.collect(_.degrad),
-								longestRadius, radiusses, mul: 0.5);
-							nonambi= perfectSphereFunc.value(nonambi);
+								longestRadius, radiusses, 0.5);
+							nonambi = perfectSphereFunc.value(nonAmbiBus);
 							sig = (sig + nonambi) * level;
 							subOutFunc.value(sig, sub);
 							Out.ar(outBus, sig);

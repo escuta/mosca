@@ -182,7 +182,7 @@ HeadTrackerGPS : HeadTracker
 			yStep = (dLat * latDeg2meters);
 			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
 
-			moscaCenter.ossiaOrigine.v_([xStep, yStep, 0] / areaInMeters);
+			moscaCenter.ossiaOrigin.v_([xStep, yStep, 0] / areaInMeters);
 			//postln("x " + xStep);
 			//postln("y " + yStep);
 		}
@@ -262,7 +262,7 @@ PozyxOSC
 						]
 					);
 
-					center.ossiaOrigine.v_(2 * ([msg[4], msg[5], msg[6]] / setup) - 1);
+					center.ossiaOrigin.v_(2 * ([msg[4], msg[5], msg[6]] / setup) - 1);
 				}
 			},
 			"/position", recvPort: osc_port);

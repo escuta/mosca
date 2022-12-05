@@ -6,10 +6,7 @@ MoscaBase // acts as the public interface
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
-	var <graphicpath, <scalefactor,
-	<>graphicImage, <>graphicOrigin,
-	<>window,
-	<>zoomfactor;
+	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window, <>zoomfactor;
 
 	*printSynthParams
 	{
@@ -418,7 +415,9 @@ MoscaBase // acts as the public interface
 	}
 
 	gui
-	{ | size = 800, palette = \ossia, lag = 0.05 |
+	{ | size = 800, palette = \ossia, lag = 0.05, graphicPath |
+
+		if (graphicPath.notNil) { graphicpath = graphicPath; };
 
 		if (gui.isNil)
 		{
@@ -428,6 +427,22 @@ MoscaBase // acts as the public interface
 				gui.free;
 				gui = nil;
 			});
+		}
+	}
+
+	scaleGraphic
+	{ | scale = 100 |
+
+		if(graphicpath.notNil) {
+			var width, height;
+			graphicImage = Image.open(graphicpath); // reload to maintain quality
+			width = graphicImage.width * scale / 100;
+			height = graphicImage.height * scale / 100;
+			graphicImage.setSize(width.asInteger, height.asInteger,
+				'keepAspectRatioByExpanding');
+			graphicOrigin = Point((graphicImage.width / -2),
+				(graphicImage.height / -2));
+			window.refresh;
 		}
 	}
 
