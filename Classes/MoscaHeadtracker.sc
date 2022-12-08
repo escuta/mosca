@@ -175,7 +175,6 @@ HeadTrackerGPS : HeadTracker
 	{
 		procGPS = { | coordinates |
 			var dLat, dLong, yStep, xStep, res;
-
 			dLat = coordinates[0] - center[0];
 			dLong = coordinates[1] - center[1];
 
@@ -183,8 +182,8 @@ HeadTrackerGPS : HeadTracker
 			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
 
 			moscaCenter.ossiaOrigin.v_([xStep, yStep, 0] / areaInMeters);
-			//postln("x " + xStep);
-			//postln("y " + yStep);
+			postln("x " + xStep);
+			postln("y " + yStep);
 		}
 	}
 

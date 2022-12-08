@@ -7,9 +7,9 @@
  * and unziped in your Arduino home folder
  */
 
-// #define GPS      // Use the Neo GPS module
+#define GPS      // Use the Neo GPS module
 #define SIDEWAYS // For a device rotated by 90 degrees on Headphones
-// #define DEBUG    // Print out human readable data
+//#define DEBUG    // Print out human readable data
 
 #include "NAxisMotion.h" 
 #include <Wire.h>
@@ -18,14 +18,16 @@
 
 // The NeoGPS and AltSoftSerial Library can be installed through the Library manager found in the /Tools tab or by pressing "Ctl+Maj+I"
 #include <NMEAGPS.h>       
-#include <AltSoftSerial.h> 
+//#include <AltSoftSerial.h> 
+#include <NeoSWSerial.h> 
 
 NMEAGPS       gps;
-gps_fix       fix;
+//gps_fix       fix;
 bool          receivedFix = false;
 
 static const uint32_t GPSBaud = 9600;
-AltSoftSerial gpsPort;  //  only use RXPin = 9, TXPin = 8
+//AltSoftSerial gpsPort( 9, 8);  //  only use RXPin = 9, TXPin = 8
+NeoSWSerial gpsPort( 9, 8);  //  only use RXPin = 9, TXPin = 8
 
 const unsigned char UBLOX_INIT[] PROGMEM = {
   // Rate (pick one)
@@ -48,16 +50,14 @@ const unsigned char UBLOX_INIT[] PROGMEM = {
 
 struct message_t
 {
-  uint16_t heading;
+ uint16_t heading;
   uint16_t roll;
-  uint16_t pitch;
+  uint16_t pitch;  
   int32_t lat;
   int32_t lon;
   int32_t alt;
 };
-
 #else
-
 struct message_t
 {
   uint16_t heading;
@@ -65,7 +65,9 @@ struct message_t
   uint16_t pitch;
 }; 
 
+
 #endif
+
 
 message_t message;
 
@@ -81,9 +83,9 @@ void setup()
   
   gpsPort.begin(GPSBaud);
 
-  for (size_t i = 0; i < sizeof(UBLOX_INIT); i++) {                        
-    gpsPort.write( pgm_read_byte(UBLOX_INIT+i) );
-  };
+//  for (size_t i = 0; i < sizeof(UBLOX_INIT); i++) {                        
+//    gpsPort.write( pgm_read_byte(UBLOX_INIT+i) );
+//  };
   
 #endif
 
@@ -102,8 +104,8 @@ void loop()
 
 #ifdef GPS
 
-  if (gps.available( gpsPort )) {
-    fix = gps.read();
+  while (gps.available( gpsPort )) {
+    gps_fix fix = gps.read();
 
     if (fix.valid.location) {
       message.lat = fix.latitudeL();
@@ -113,10 +115,10 @@ void loop()
     receivedFix = true;
   }
 
-  if ((millis() > 5000) && !receivedFix) {
-    Serial.println( F("No GPS detected: check wiring.") );
-    while(true);
-  }
+  //if ((millis() > 5000) && !receivedFix) {
+  //  Serial.println( F("No GPS detected: check wiring.") );
+  //  while(true);
+  //}
 
 #endif
 
@@ -157,11 +159,11 @@ void loop()
 #ifdef GPS
     Serial.print(message.roll);
     Serial.print("\t Latitude = ");  
-    Serial.print(message.lat);
+    Serial.print(message.lat, 6);
     Serial.print(". Longitude = ");  
-    Serial.print(message.lon);
+    Serial.print(message.lon, 6);
     Serial.print(". Altitude = ");  
-    Serial.println(message.alt);
+    Serial.println(message.alt, 6);
 #else
     Serial.println(message.roll);
 #endif
