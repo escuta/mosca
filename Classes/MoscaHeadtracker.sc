@@ -236,8 +236,8 @@ HeadTrackerGPS : HeadTracker
 			};
 			
 			moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
-			postln("x " + xStep);
-			postln("y " + yStep);
+			postln("x " + xStep + "curX " + curXStep);
+			postln("y " + yStep + "curY " + curYStep);
 		}
 	}
 
