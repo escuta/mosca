@@ -192,7 +192,7 @@ HeadTrackerGPS : HeadTracker
 			if (lagFactor != 0)
 			{
 				if (xStep != lastXStep) {
-					var diff = xStep - lastXStep;
+					var diff = xStep - curXStep;
 					xStepIncrement = diff / lagFactor;
 					lastXStep = xStep;
 					interpXStep = true;
@@ -203,7 +203,9 @@ HeadTrackerGPS : HeadTracker
 						if (curXStep < lastXStep) {
 							interpXStep = false;
 						}
-					} {
+					};
+					if (xStepIncrement > 0) 
+					{
 						if (curXStep > lastXStep) {
 							interpXStep = false;
 					}
@@ -213,7 +215,7 @@ HeadTrackerGPS : HeadTracker
 				//	+ xStepIncrement).postln;
 				// Lag in yStep
 				if (yStep != lastYStep) {
-					var diff = yStep - lastYStep;
+					var diff = yStep - curYStep;
 					yStepIncrement = diff / 100;
 					lastYStep = yStep;
 					interpYStep = true;
@@ -224,7 +226,9 @@ HeadTrackerGPS : HeadTracker
 						if (curYStep < lastYStep) {
 							interpYStep = false;
 						}
-					} {
+					};
+					if (yStepIncrement > 0)
+					{
 						if (curYStep > lastYStep) {
 							interpYStep = false;
 						}
@@ -236,8 +240,8 @@ HeadTrackerGPS : HeadTracker
 			};
 			
 			moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
-			postln("x " + xStep + "curX " + curXStep);
-			postln("y " + yStep + "curY " + curYStep);
+			postln("x " + xStep + "curX " + curXStep + "xStepIncrement " + xStepIncrement);
+			postln("y " + yStep + "curY " + curYStep + "yStepIncrement " + yStepIncrement);
 		}
 	}
 
