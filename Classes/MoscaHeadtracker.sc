@@ -188,7 +188,6 @@ HeadTrackerGPS : HeadTracker
 			yStep = (dLat * latDeg2meters);
 			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
 			// lag in xStep
-			//("lagFractor = " + lagFactor).postln;
 			if (lagFactor != 0)
 			{
 				if (xStep != lastXStep) {
@@ -196,6 +195,8 @@ HeadTrackerGPS : HeadTracker
 					xStepIncrement = diff / lagFactor;
 					lastXStep = xStep;
 					interpXStep = true;
+					("Latitude: " + coordinates[0]
+						+ "Longitude: " + coordinates[1]).postln;
 				};
 				if (interpXStep == true) {
 					curXStep = curXStep + xStepIncrement;
@@ -211,12 +212,10 @@ HeadTrackerGPS : HeadTracker
 					}
 					};
 				};
-				//("curXStep = " + curXStep + "xStepIncrement = "
-				//	+ xStepIncrement).postln;
 				// Lag in yStep
 				if (yStep != lastYStep) {
 					var diff = yStep - curYStep;
-					yStepIncrement = diff / 100;
+					yStepIncrement = diff / lagFactor;
 					lastYStep = yStep;
 					interpYStep = true;
 				};
@@ -240,8 +239,8 @@ HeadTrackerGPS : HeadTracker
 			};
 			
 			moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
-			postln("x " + xStep + "curX " + curXStep + "xStepIncrement " + xStepIncrement);
-			postln("y " + yStep + "curY " + curYStep + "yStepIncrement " + yStepIncrement);
+			//postln("x " + xStep + "curX " + curXStep + "xStepIncrement " + xStepIncrement);
+			//postln("y " + yStep + "curY " + curYStep + "yStepIncrement " + yStepIncrement);
 		}
 	}
 
