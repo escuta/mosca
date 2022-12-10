@@ -22,7 +22,10 @@ HeadTracker
 
 	var moscaCenter, switch, serport, <headingOffset,
 	troutine, kroutine,
-	trackarr, trackarr2, tracki, trackPort;
+	trackarr, trackarr2, tracki, trackPort,
+	lastXStep = 0, xStepIncrement, curXStep = 0, interpXStep = true,
+	lastYStep = 0, yStepIncrement, curYStep = 0, interpYStep = true,
+	lagFactor = 0;
 
 	*new
 	{ | center, flag, serialPort, ofsetHeading |
@@ -166,6 +169,9 @@ HeadTrackerGPS : HeadTracker
 		if (latLongAlt.isArray)
 		{
 			center = [latLongAlt[0], latLongAlt[1]];
+			if (latLongAlt.size == 4) {
+				lagFactor = latLongAlt[2] / latLongAlt[3];
+			};
 			this.prSetFunc();
 		}
 		{ Error.throw("coordinates must be an array") }
@@ -175,13 +181,61 @@ HeadTrackerGPS : HeadTracker
 	{
 		procGPS = { | coordinates |
 			var dLat, dLong, yStep, xStep, res;
+			
 			dLat = coordinates[0] - center[0];
 			dLong = coordinates[1] - center[1];
 
 			yStep = (dLat * latDeg2meters);
 			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
-
-			moscaCenter.ossiaOrigin.v_([xStep, yStep, 0] / areaInMeters);
+			// lag in xStep
+			//("lagFractor = " + lagFactor).postln;
+			if (lagFactor != 0)
+			{
+				if (xStep != lastXStep) {
+					var diff = xStep - lastXStep;
+					xStepIncrement = diff / lagFactor;
+					lastXStep = xStep;
+					interpXStep = true;
+				};
+				if (interpXStep == true) {
+					curXStep = curXStep + xStepIncrement;
+					if (xStepIncrement < 0) {
+						if (curXStep < lastXStep) {
+							interpXStep = false;
+						}
+					} {
+						if (curXStep > lastXStep) {
+							interpXStep = false;
+					}
+					};
+				};
+				//("curXStep = " + curXStep + "xStepIncrement = "
+				//	+ xStepIncrement).postln;
+				// Lag in yStep
+				if (yStep != lastYStep) {
+					var diff = yStep - lastYStep;
+					yStepIncrement = diff / 100;
+					lastYStep = yStep;
+					interpYStep = true;
+				};
+				if (interpYStep == true) {
+					curYStep = curYStep + yStepIncrement;
+					if (yStepIncrement < 0) {
+						if (curYStep < lastYStep) {
+							interpYStep = false;
+						}
+					} {
+						if (curYStep > lastYStep) {
+							interpYStep = false;
+						}
+					};
+				};
+			} {
+				curXStep = xStep;
+				curYStep = yStep;
+			};
+			
+			moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
 			postln("x " + xStep);
 			postln("y " + yStep);
 		}
