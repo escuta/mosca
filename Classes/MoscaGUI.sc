@@ -29,7 +29,10 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
-	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage;
+	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage, graphicImage;
+	var origin2Graphic;
+	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
+	
 	classvar halfPi;
 
 	*initClass
@@ -73,10 +76,9 @@ MoscaGUI
 		halfHeight = halfWidth;
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
-			("Size is " + size).postln;
-			aMosca.graphicImage = Image.open(aMosca.graphicpath);
-			gwidth = aMosca.graphicImage.width;
-			gheight = aMosca.graphicImage.height;
+			graphicImage = Image.open(aMosca.graphicpath);
+			gwidth = graphicImage.width;
+			gheight = graphicImage.height;
 			aMosca.graphicOrigin = Point((gwidth / -2), (gheight / -2));
 		};
 
@@ -89,16 +91,42 @@ MoscaGUI
 
 		if(aMosca.graphicpath.notNil){
 
+			rotatedGraphicCoords = { | x, y |
+
+				var halfWidth = win.view.bounds.width / 2;
+				var halfHeight = win.view.bounds.height / 2;
+				var gHalfWidth = graphicImage.width / 2;
+				var gHalfHeight = graphicImage.height / 2;
+				var zoomFactor = aMosca.zoomfactor;
+				var graphicx, graphicy;
+				var origin = origin2Graphic;
+				var orient = aMosca.orient.value[0];
+				//var rx, ry;
+				x = ((x - halfWidth) / halfHeight) / zoomFactor;
+				y = ((halfHeight - y) / halfHeight) / zoomFactor;
+				graphicx = (x * gHalfHeight) + origin.x;
+				graphicy = origin.y - (y * gHalfHeight );
+				("x = " + x + "graphicx = " + graphicx).postln;
+				("y = " + y + "graphicy = " + graphicy).postln;
+				orient = orient * -1;
+				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
+
+				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
+				Point(rx,ry)
+
+
+			};
+
 			drawOnImage = { | view, x, y |
 				var halfWidth = win.view.bounds.width / 2;
 				var halfHeight = win.view.bounds.height / 2;
-				var gHalfWidth = aMosca.graphicImage.width / 2;
-				var gHalfHeight = aMosca.graphicImage.height / 2;
+				var gHalfWidth = graphicImage.width / 2;
+				var gHalfHeight = graphicImage.height / 2;
 				var zoomFactor = aMosca.zoomfactor;
 				var graphicx, graphicy;
-				var origin = aMosca.origin2Graphic;
+				var origin = origin2Graphic;
 				var orient = aMosca.orient.value[0];
-				var rx, ry;
+				//var rx, ry;
 				x = ((x - halfWidth) / halfHeight) / zoomFactor;
 				y = ((halfHeight - y) / halfHeight) / zoomFactor;
 				graphicx = (x * gHalfHeight) + origin.x;
@@ -377,37 +405,33 @@ MoscaGUI
 				scale.closeGui();
 			}
 		});
-
-		drawBut = Button(originView, Rect(0, 0, 88, 20))
-		.focusColor_(palette.color('midlight', 'active'))
-		.states_(
-			[
+		if(aMosca.graphicpath.notNil){
+			drawBut = Button(originView, Rect(0, 0, 88, 20))
+			.focusColor_(palette.color('midlight', 'active'))
+			.states_(
 				[
-					"Draw",
-					palette.color('light', 'active'),
-					palette.color('middark', 'active')
-				],
-				[
-					"Stop ",
-					palette.color('middark', 'active'),
-					palette.color('light', 'active')
+					[
+						"Draw",
+						palette.color('light', 'active'),
+						palette.color('middark', 'active')
+					],
+					[
+						"Stop ",
+						palette.color('middark', 'active'),
+						palette.color('light', 'active')
 					]
 				]
 			).action_({ | butt |
-
-			if (butt.value == 1)
-			{
-				//var window = orientation.gui();
-				//origin.gui(window);
-				//scale.gui(window);
-				//window.onClose_({ butt.value_(0) });
-			} {
-				//orientation.closeGui();
-				//origin.closeGui();
-				//scale.closeGui();
-			}
-		});
-
+				
+				if (butt.value == 1)
+				{
+					drawing = true;
+					lastRx = lastRy = nil; // first mouse click to set
+				} {
+					drawing = false;
+				}
+			});
+		};
 		loadBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -606,6 +630,8 @@ MoscaGUI
 						var x = ((mx - halfWidth) / halfHeight) / zoomFactor;
 						var y = ((halfHeight - my) / halfHeight) / zoomFactor;
 						var closest = [0, furthest];
+
+						
 						// save sources index and distance from click
 						// initialize at the furthest point
 						sources.get.do({ | item, i |
@@ -619,11 +645,17 @@ MoscaGUI
 								closest[0] = i;
 							};
 						});
+						if(drawing == false) {
 
-						if (closest[0] != currentSource)
-						{ this.prSourceSelect(closest[0]) };
-
-						this.prMoveSource(mx, my);
+							if (closest[0] != currentSource)
+							{ this.prSourceSelect(closest[0]) };
+							this.prMoveSource(mx, my);
+						} {
+							//"Drawing".postln;
+							"Start vale: ".post;
+							this.prRotatedGraphicCoords(mx, my);
+							//rotated.postln;
+						};
 					},
 					1,
 					{
@@ -663,7 +695,16 @@ MoscaGUI
 		win.view.mouseMoveAction_({ | view, mx, my, modifiers |
 
 			// left button
-			if (mouseButton == 0) { this.prMoveSource(mx, my) };
+			if (mouseButton == 0) {
+				if (drawing == false) {
+					this.prMoveSource(mx, my)
+				} {
+					var rotated = rotatedGraphicCoords.value(mx, my );
+					//rotated.postln;
+
+				};
+
+			};
 		});
 
 		win.view.mouseWheelAction_({ | view, mx, my, modifiers, dx, dy |
@@ -718,17 +759,17 @@ MoscaGUI
 			if(aMosca.graphicpath.notNil){
 				var windowscale = halfHeight / (size / 2);
 				var hsgh, hsgw;
-				hsgw = aMosca.graphicImage.width * windowscale * zoomFactor / 2;
-				hsgh = aMosca.graphicImage.height * windowscale * zoomFactor / 2;
+				hsgw = graphicImage.width * windowscale * zoomFactor / 2;
+				hsgh = graphicImage.height * windowscale * zoomFactor / 2;
 				// origin2Graphic is used in annotation/drawing - gives origin coords with respect to
 // graphic pixels
-graphicWidth = aMosca.graphicImage.width; // keep graphicWidth updated for drawing
-graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for drawing
-				aMosca.origin2Graphic = Point( ((origin.value[0] * halfHeight * scale.value / windowscale )
-					+ (aMosca.graphicImage.width / 2)),
+graphicWidth = graphicImage.width; // keep graphicWidth updated for drawing
+graphicHeight = graphicImage.height; // keep graphicWidth updated for drawing
+				origin2Graphic = Point( ((origin.value[0] * halfHeight * scale.value / windowscale )
+					+ (graphicImage.width / 2)),
 					((origin.value[1] * halfHeight * -1 * scale.value / windowscale )
-						+ (aMosca.graphicImage.height / 2)) );
-                origin2Graphic = aMosca.origin2Graphic; // save a copy for drawing elsewhere
+						+ (graphicImage.height / 2)) );
+                //origin2Graphic = aMosca.origin2Graphic; // save a copy for drawing elsewhere
 				Pen.use {
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						halfWidth, halfHeight); // leave as width, height
@@ -738,7 +779,7 @@ graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for dra
 					Pen.drawImage( Point( (halfWidth / zoomFactor / windowscale)
 						- (hsgw / zoomFactor / windowscale),
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
-						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+						graphicImage, operation: 'sourceIn', opacity:0.99);
 
 
 				};
@@ -863,6 +904,34 @@ graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for dra
 			aFileNode.valueAction_(path);
 		});
 	}
+
+	prRotatedGraphicCoords
+	{ | x, y |
+
+				var halfWidth = win.view.bounds.width / 2;
+		var halfHeight = win.view.bounds.height / 2; 
+				var gHalfWidth = graphicImage.width / 2;
+		var gHalfHeight = graphicImage.height / 2;
+		//var zoomFactor = zoomfactor;
+
+				var graphicx, graphicy;
+				var origin = origin2Graphic;
+		//				var orient = aMosca.orient.value[0];
+		var orient = orientation.value[0];
+				//var rx, ry;
+				x = ((x - halfWidth) / halfHeight) / zoomFactor;
+				y = ((halfHeight - y) / halfHeight) / zoomFactor;
+				graphicx = (x * gHalfHeight) + origin.x;
+				graphicy = origin.y - (y * gHalfHeight );
+				("y = " + y + "graphicy = " + graphicy).postln;
+		orient = orient * -1;
+				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
+
+				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
+				
+		
+("rx: " + rx + "ry: " + ry).postln;
+			}
 
 	prSourceSelect
 	{ | index |
