@@ -30,7 +30,7 @@ MoscaGUI
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
 	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage;
-
+	var drawBut;
 	classvar halfPi;
 
 	*initClass
@@ -104,16 +104,16 @@ MoscaGUI
 				y = ((halfHeight - y) / halfHeight) / zoomFactor;
 				graphicx = (x * gHalfHeight) + origin.x; 
 				graphicy = origin.y - (y * gHalfHeight );
-				("x = " + x + "graphicx = " + graphicx).postln;
-				("y = " + y + "graphicy = " + graphicy).postln;
+				//("x = " + x + "graphicx = " + graphicx).postln;
+				//("y = " + y + "graphicy = " + graphicy).postln;
 				orient = orient * -1;
 				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
 				
 				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
 				
 				
-				("rx: " + rx + "ry: " + ry).postln; 
-				origin.postln;
+				//("rx: " + rx + "ry: " + ry).postln; 
+				//origin.postln;
 			};
 			
 			win.acceptsMouseOver = true;
@@ -349,7 +349,6 @@ MoscaGUI
 		originView.addFlowLayout();
 
 		aMosca.ossiaParent.find("Track_Center").gui(originView);
-
 		originBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -379,7 +378,37 @@ MoscaGUI
 				scale.closeGui();
 			}
 		});
+		/*
+		drawBut = Button(originView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Draw",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				],
+				[
+					"Stop ",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				]
+			]
+		).action_({ | butt |
 
+			if (butt.value == 1)
+			{
+				//var window = orientation.gui();
+				//origin.gui(window);
+				//scale.gui(window);
+				//window.onClose_({ butt.value_(0) });
+			} {
+				//orientation.closeGui();
+				//origin.closeGui();
+				//scale.closeGui();
+			}
+			});
+		*/
 		loadBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
