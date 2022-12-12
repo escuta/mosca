@@ -29,7 +29,7 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
-	var graphicWidth, graphicHeight;
+	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage;
 
 	classvar halfPi;
 
@@ -62,6 +62,7 @@ MoscaGUI
 		origin = aMosca.ossiaParent.find("Origin");
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
+		aMosca.orient = orientation; // used in drawing
 
 		// set initial size values
 		width = size;
@@ -71,26 +72,53 @@ MoscaGUI
 		halfWidth = width * 0.5;
 		height = width; // on init
 		halfHeight = halfWidth;
-		//aMosca.winwidth = width;
-		//aMosca.winheight = height;
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
 			("Size is " + size).postln;
 			aMosca.graphicImage = Image.open(aMosca.graphicpath);
-			graphicWidth = aMosca.graphicImage.width; // save orig size for zooming
-			graphicHeight = aMosca.graphicImage.height;
 			gwidth = aMosca.graphicImage.width;
 			gheight = aMosca.graphicImage.height;
-			//			aMosca.graphicOrigin = Point((aMosca.graphicWidth / -2), (aMosca.graphicHeight / -2));
 			aMosca.graphicOrigin = Point((gwidth / -2), (gheight / -2));
-			//		("graphicHeight is: " + aMosca.graphicHeight + " graphicWidth = " + aMosca.graphicWidth).postln;
 		};
+
 
 
 		// main window
 		win = Window("Mosca", (width)@(height)).front; // main indow
 		win.view.palette_(palette);
 		aMosca.window = win;
+
+		if(aMosca.graphicpath.notNil){
+
+			drawOnImage = { | view, x, y |
+				var halfWidth = win.view.bounds.width / 2;
+				var halfHeight = win.view.bounds.height / 2;
+				var gHalfWidth = aMosca.graphicImage.width / 2;
+				var gHalfHeight = aMosca.graphicImage.height / 2;
+				var zoomFactor = aMosca.zoomfactor;
+				var graphicx, graphicy;
+				var origin = aMosca.origin2Graphic;
+				var orient = aMosca.orient.value[0];
+				var rx, ry;
+				x = ((x - halfWidth) / halfHeight) / zoomFactor;
+				y = ((halfHeight - y) / halfHeight) / zoomFactor;
+				graphicx = (x * gHalfHeight) + origin.x; 
+				graphicy = origin.y - (y * gHalfHeight );
+				("x = " + x + "graphicx = " + graphicx).postln;
+				("y = " + y + "graphicy = " + graphicy).postln;
+				orient = orient * -1;
+				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
+				
+				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
+				
+				
+				("rx: " + rx + "ry: " + ry).postln; 
+				origin.postln;
+			};
+			
+			win.acceptsMouseOver = true;
+			win.view.mouseOverAction = drawOnImage;
+		};
 		// source index
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");
@@ -552,7 +580,6 @@ MoscaGUI
 						var closest = [0, furthest];
 						// save sources index and distance from click
 						// initialize at the furthest point
-
 						sources.get.do({ | item, i |
 							var dis = ((x - item.coordinates.spheVal.x).squared
 								+ (y - item.coordinates.spheVal.y).squared).sqrt;
@@ -665,6 +692,15 @@ MoscaGUI
 				var hsgh, hsgw;
 				hsgw = aMosca.graphicImage.width * windowscale * zoomFactor / 2;
 				hsgh = aMosca.graphicImage.height * windowscale * zoomFactor / 2;
+				// origin2Graphic is used in annotation/drawing - gives origin coords with respect to
+// graphic pixels
+graphicWidth = aMosca.graphicImage.width; // keep graphicWidth updated for drawing
+graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for drawing
+				aMosca.origin2Graphic = Point( ((origin.value[0] * halfHeight * scale.value / windowscale )
+					+ (aMosca.graphicImage.width / 2)),
+					((origin.value[1] * halfHeight * -1 * scale.value / windowscale )
+						+ (aMosca.graphicImage.height / 2)) );
+                origin2Graphic = aMosca.origin2Graphic; // save a copy for drawing elsewhere
 				Pen.use {
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
 						halfWidth, halfHeight); // leave as width, height
@@ -675,6 +711,7 @@ MoscaGUI
 						- (hsgw / zoomFactor / windowscale),
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
 						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
+					
 
 				};
 
@@ -925,9 +962,7 @@ MoscaGUI
 			(((x - halfWidth) / halfHeight) / zoomFactor),
 			(((halfHeight - y) / halfHeight) / zoomFactor),
 			zNumBox.value) / scale.value;
-
 		src = sources.get[currentSource].coordinates;
-
 		if (orientation.value == [0, 0, 0])
 		{
 			src.x.valueAction_(point.x + origin.value[0]);
