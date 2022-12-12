@@ -378,7 +378,7 @@ MoscaGUI
 				scale.closeGui();
 			}
 		});
-		/*
+		
 		drawBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -408,7 +408,7 @@ MoscaGUI
 				//scale.closeGui();
 			}
 			});
-		*/
+		
 		loadBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
