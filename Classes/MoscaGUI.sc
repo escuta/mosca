@@ -21,7 +21,7 @@ MoscaGUI
 	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
-	var autoBut, loadBut, originBut, fxBut;
+	var autoBut, loadBut, originBut, drawBut,fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
@@ -30,7 +30,6 @@ MoscaGUI
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
 	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage;
-	var drawBut;
 	classvar halfPi;
 
 	*initClass
@@ -102,20 +101,20 @@ MoscaGUI
 				var rx, ry;
 				x = ((x - halfWidth) / halfHeight) / zoomFactor;
 				y = ((halfHeight - y) / halfHeight) / zoomFactor;
-				graphicx = (x * gHalfHeight) + origin.x; 
+				graphicx = (x * gHalfHeight) + origin.x;
 				graphicy = origin.y - (y * gHalfHeight );
 				//("x = " + x + "graphicx = " + graphicx).postln;
 				//("y = " + y + "graphicy = " + graphicy).postln;
 				orient = orient * -1;
 				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
-				
+
 				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
-				
-				
-				//("rx: " + rx + "ry: " + ry).postln; 
+
+
+				//("rx: " + rx + "ry: " + ry).postln;
 				//origin.postln;
 			};
-			
+
 			win.acceptsMouseOver = true;
 			win.view.mouseOverAction = drawOnImage;
 		};
@@ -345,7 +344,7 @@ MoscaGUI
 		.action_({ | num | zNumBox.valueAction_((num.value - 0.5) * 2) });
 
 		// sub view for grouping global transforamtion widgets (effects, rotations, mouvements)
-		originView = UserView(win, Rect(width - 94, height - 128, 94, 124));
+		originView = UserView(win, Rect(width - 94, height - 152, 94, 148));
 		originView.addFlowLayout();
 
 		aMosca.ossiaParent.find("Track_Center").gui(originView);
@@ -378,7 +377,7 @@ MoscaGUI
 				scale.closeGui();
 			}
 		});
-		
+
 		drawBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -392,9 +391,9 @@ MoscaGUI
 					"Stop ",
 					palette.color('middark', 'active'),
 					palette.color('light', 'active')
+					]
 				]
-			]
-		).action_({ | butt |
+			).action_({ | butt |
 
 			if (butt.value == 1)
 			{
@@ -407,8 +406,8 @@ MoscaGUI
 				//origin.closeGui();
 				//scale.closeGui();
 			}
-			});
-		
+		});
+
 		loadBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -700,7 +699,7 @@ MoscaGUI
 
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
-			originView.bounds_(Rect(width - 94, height - 128, 94, 124));
+			originView.bounds_(Rect(width - 94, height - 152, 94, 148));
 
 			dialView.bounds_(Rect(width - 94, 3, 94, 150));
 
@@ -740,7 +739,7 @@ graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for dra
 						- (hsgw / zoomFactor / windowscale),
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
 						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
-					
+
 
 				};
 
