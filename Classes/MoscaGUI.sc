@@ -713,8 +713,11 @@ MoscaGUI
 						//win.view.background_(Color.clear);
 
 						aMosca.graphicImage.draw({ arg image;
-
-        Pen.translate(100, 100);
+							Pen.width = 3;
+							Pen.strokeColor=Color.black;
+							Pen.line(lastRotated, rotated);
+							Pen.perform([\stroke, \fill].choose);
+							/*				//Pen.translate(100, 100);
         1000.do {
             // set the Color
             Pen.color = Color.green(rrand(0.0, 1), rrand(0.0, 0.5));
@@ -726,7 +729,7 @@ MoscaGUI
                 2pi.rand
             );
             Pen.perform([\stroke, \fill].choose);
-        };
+        }; */
 	
 }) ;
 
