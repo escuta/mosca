@@ -103,10 +103,10 @@ MoscaGUI
 				var graphicx, graphicy;
 				//				var origin = origin2Graphic;
 				//var imorigin = Point();
-				var gorigin = Point(halfWidth, halfHeight );
+				var gorigin = Point(halfWidth, halfHeight ) * scale.value;
 				var orient = aMosca.orient.value[0];
 				var winx, winy;
-				var widthDiff = gHalfWidth - halfWidth;
+				//				var widthDiff = gHalfWidth - halfWidth;
 				//var rx, ry;
 
 				//winx = ((x - halfWidth) / halfHeight) / zoomFactor;
@@ -114,14 +114,14 @@ MoscaGUI
 				winy = (((halfHeight - y) / halfHeight) / zoomFactor);
 				//graphicx = (gHalfWidth / halfHeight / zoomFactor) * winx;
 				//graphicx = (x * gHalfHeight / ( gHalfWidth/ halfHeight)) + origin.x;
-				graphicx = ((winx * (size / 2)  ) ) + gHalfWidth +  (origin.value[0] * size / 2);
-				graphicy =  (gHalfHeight - (winy * (size / 2) ) - (origin.value[1] * size / 2) ) ;
+				graphicx = (((winx * (size / 2)  ) ) + gHalfWidth +  (origin.value[0] * scale.value * size / 2)) ;
+				graphicy =  (gHalfHeight - (winy * (size / 2) ) - (origin.value[1] * scale.value * size / 2) ) ;
 				//graphicy = origin.y - (y * halfHeight);
 				//graphicy = origin.y - (y * gHalfHeight / ( gHalfHeight/ halfHeight));
 				//orient = orient * -1;
-				rx = ((graphicx - gorigin.x) * orient.cos) - ((graphicy - gorigin.y) * (orient.sin)) + gorigin.x;
+				rx = ((graphicx - gorigin.x) * orient.cos) - ((graphicy - gorigin.y) * (orient.sin)) + (gorigin.x );
 
-				ry = ((graphicx - gorigin.x) * orient.sin) + ((graphicy - gorigin.y) * (orient.cos)) + gorigin.y;
+				ry = ((graphicx - gorigin.x) * orient.sin) + ((graphicy - gorigin.y) * (orient.cos)) + (gorigin.y );
 				//rx = graphicx;
 				//ry = graphicy;
 				
@@ -803,8 +803,8 @@ MoscaGUI
 // graphic pixels
 graphicWidth = aMosca.graphicImage.width; // keep graphicWidth updated for drawing
 graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for drawing
-				origin2Graphic = Point( ((origin.value[0] * halfHeight * scale.value / windowscale )
-					+ (aMosca.graphicImage.width / 2)),
+				origin2Graphic = Point( ((origin.value[0] * halfHeight
+					* scale.value / windowscale ) + (aMosca.graphicImage.width / 2)),
 					((origin.value[1] * halfHeight * -1 * scale.value / windowscale )
 						+ (aMosca.graphicImage.height / 2)) );
                 //origin2Graphic = aMosca.origin2Graphic; // save a copy for drawing elsewhere
