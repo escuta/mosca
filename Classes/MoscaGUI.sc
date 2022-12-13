@@ -77,7 +77,7 @@ MoscaGUI
 		halfHeight = halfWidth;
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
-			aMosca.graphicImage = Image. open(aMosca.graphicpath);
+			aMosca.graphicImage = Image.open(aMosca.graphicpath);
 			gImage = aMosca.graphicImage;
 			gwidth = aMosca.graphicImage.width;
 			gheight = aMosca.graphicImage.height;
@@ -101,19 +101,35 @@ MoscaGUI
 				var gHalfHeight = aMosca.graphicImage.height / 2;
 				var zoomFactor = aMosca.zoomfactor;
 				var graphicx, graphicy;
-				var origin = origin2Graphic;
+				//				var origin = origin2Graphic;
+				//var imorigin = Point();
+				var gorigin = Point(halfWidth, halfHeight);
 				var orient = aMosca.orient.value[0];
+				var winx, winy;
+				var widthDiff = gHalfWidth - halfWidth;
 				//var rx, ry;
-				x = ((x - halfWidth) / halfHeight) / zoomFactor;
-				y = ((halfHeight - y) / halfHeight) / zoomFactor;
-				graphicx = (x * gHalfHeight) + origin.x;
-				graphicy = origin.y - (y * gHalfHeight );
-				//("x = " + x + "graphicx = " + graphicx).postln;
-				//("y = " + y + "graphicy = " + graphicy).postln;
-				orient = orient * -1;
-				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
 
-				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
+				//winx = ((x - halfWidth) / halfHeight) / zoomFactor;
+				winx = (((x - halfWidth) / halfHeight) / zoomFactor);
+				winy = ((halfHeight - y) / halfHeight) / zoomFactor;
+				//graphicx = (gHalfWidth / halfHeight / zoomFactor) * winx;
+				//graphicx = (x * gHalfHeight / ( gHalfWidth/ halfHeight)) + origin.x;
+				graphicx = ((winx * (size / 2)  ) ) + gHalfWidth ;
+				graphicy =  (gHalfHeight - (winy * (size / 2) ) ) ;
+				//graphicy = origin.y - (y * halfHeight);
+				//graphicy = origin.y - (y * gHalfHeight / ( gHalfHeight/ halfHeight));
+				//orient = orient * -1;
+				rx = ((graphicx - gorigin.x) * orient.cos) - ((graphicy - gorigin.y) * (orient.sin)) + gorigin.x;
+
+				ry = ((graphicx - gorigin.x) * orient.sin) + ((graphicy - gorigin.y) * (orient.cos)) + gorigin.y;
+				//rx = graphicx;
+				//ry = graphicy;
+				
+				("x = " + x + "winx = " + winx + "graphicx = " + graphicx + "gorigin.x = " + gorigin.x + "orient: " + orient).postln;
+				//("winy = " + winy + "graphicx = " + graphicx).postln;
+				("test: " + origin.value[0]).postln;
+				
+				//rx = rx * gHalfWidth / halfHeight;
 				Point(rx,ry)
 
 
@@ -655,10 +671,10 @@ MoscaGUI
 							this.prMoveSource(mx, my);
 						} {
 							//"Drawing".postln;
-							var rotated = this.prRotatedGraphicCoords(mx, my);
+							//rotated = this.prRotatedGraphicCoords(mx, my);
 							//"Start vale: ".post;
-							lastRx = rx;
-							lastRy = ry;
+							lastRx = nil;
+							lastRy = nil;
 							("rx: " + rx + "ru: " + ry).postln;
 						};
 					},
@@ -705,35 +721,20 @@ MoscaGUI
 					this.prMoveSource(mx, my)
 				} {
 					rotated = rotatedGraphicCoords.value(mx, my );
-					if(rotated.x != lastRx || rotated.y != lastRy) {
+					if( (rotated.x != lastRx ||
+						rotated.y != lastRy) && lastRx.notNil )
+					{
 						lastRotated = Point(lastRx, lastRy);
-						("lastRx: " + lastRx + "rx: "
-							+ rotated.x + "lastRy: " + lastRy +
-							"ry: " + rotated.y).postln;
-						//win.view.background_(Color.clear);
-
+						//("lastRx: " + lastRx + "rx: "
+						//	+ rotated.x + "lastRy: " + lastRy +
+						//	"ry: " + rotated.y).postln;
+						
 						aMosca.graphicImage.draw({ arg image;
 							Pen.width = 3;
 							Pen.strokeColor=Color.black;
 							Pen.line(lastRotated, rotated);
 							Pen.perform([\stroke, \fill].choose);
-							/*				//Pen.translate(100, 100);
-        1000.do {
-            // set the Color
-            Pen.color = Color.green(rrand(0.0, 1), rrand(0.0, 0.5));
-            Pen.addAnnularWedge(
-                (10000.rand)@(10000.rand),
-                rrand(10, 50),
-                rrand(51, 100),
-                2pi.rand,
-                2pi.rand
-            );
-            Pen.perform([\stroke, \fill].choose);
-        }; */
-	
-}) ;
-
-						
+						}) ;
 						win.refresh;
 					};
 					lastRx = rotated.x;
@@ -967,7 +968,7 @@ graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for dra
 			aFileNode.valueAction_(path);
 		});
 	}
-
+	/*
 	prRotatedGraphicCoords
 	{ | x, y |
 
@@ -996,7 +997,7 @@ graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for dra
 		//("rx: " + rx + "ry: " + ry).postln;
 		Point(rx, ry)
 			}
-
+	*/
 	prSourceSelect
 	{ | index |
 
