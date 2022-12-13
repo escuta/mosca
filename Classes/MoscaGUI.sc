@@ -103,7 +103,7 @@ MoscaGUI
 				var graphicx, graphicy;
 				//				var origin = origin2Graphic;
 				//var imorigin = Point();
-				var gorigin = Point(halfWidth, halfHeight);
+				var gorigin = Point(halfWidth, halfHeight );
 				var orient = aMosca.orient.value[0];
 				var winx, winy;
 				var widthDiff = gHalfWidth - halfWidth;
@@ -111,11 +111,11 @@ MoscaGUI
 
 				//winx = ((x - halfWidth) / halfHeight) / zoomFactor;
 				winx = (((x - halfWidth) / halfHeight) / zoomFactor);
-				winy = ((halfHeight - y) / halfHeight) / zoomFactor;
+				winy = (((halfHeight - y) / halfHeight) / zoomFactor);
 				//graphicx = (gHalfWidth / halfHeight / zoomFactor) * winx;
 				//graphicx = (x * gHalfHeight / ( gHalfWidth/ halfHeight)) + origin.x;
-				graphicx = ((winx * (size / 2)  ) ) + gHalfWidth ;
-				graphicy =  (gHalfHeight - (winy * (size / 2) ) ) ;
+				graphicx = ((winx * (size / 2)  ) ) + gHalfWidth +  (origin.value[0] * size / 2);
+				graphicy =  (gHalfHeight - (winy * (size / 2) ) - (origin.value[1] * size / 2) ) ;
 				//graphicy = origin.y - (y * halfHeight);
 				//graphicy = origin.y - (y * gHalfHeight / ( gHalfHeight/ halfHeight));
 				//orient = orient * -1;
