@@ -29,7 +29,7 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
-	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage, graphicImage;
+	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage, gImage;
 	var origin2Graphic;
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
 	var rotated, lastRotated;
@@ -77,10 +77,10 @@ MoscaGUI
 		halfHeight = halfWidth;
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
-			graphicImage = Image.open(aMosca.graphicpath);
-			aMosca.gImage = graphicImage;
-			gwidth = graphicImage.width;
-			gheight = graphicImage.height;
+			aMosca.graphicImage = Image. open(aMosca.graphicpath);
+			gImage = aMosca.graphicImage;
+			gwidth = aMosca.graphicImage.width;
+			gheight = aMosca.graphicImage.height;
 			aMosca.graphicOrigin = Point((gwidth / -2), (gheight / -2));
 		};
 
@@ -97,8 +97,8 @@ MoscaGUI
 
 				var halfWidth = win.view.bounds.width / 2;
 				var halfHeight = win.view.bounds.height / 2;
-				var gHalfWidth = graphicImage.width / 2;
-				var gHalfHeight = graphicImage.height / 2;
+				var gHalfWidth = aMosca.graphicImage.width / 2;
+				var gHalfHeight = aMosca.graphicImage.height / 2;
 				var zoomFactor = aMosca.zoomfactor;
 				var graphicx, graphicy;
 				var origin = origin2Graphic;
@@ -711,6 +711,25 @@ MoscaGUI
 							+ rotated.x + "lastRy: " + lastRy +
 							"ry: " + rotated.y).postln;
 						//win.view.background_(Color.clear);
+
+						aMosca.graphicImage.draw({ arg image;
+
+        Pen.translate(100, 100);
+        1000.do {
+            // set the Color
+            Pen.color = Color.green(rrand(0.0, 1), rrand(0.0, 0.5));
+            Pen.addAnnularWedge(
+                (10000.rand)@(10000.rand),
+                rrand(10, 50),
+                rrand(51, 100),
+                2pi.rand,
+                2pi.rand
+            );
+            Pen.perform([\stroke, \fill].choose);
+        };
+	
+}) ;
+
 						
 						win.refresh;
 					};
@@ -774,16 +793,16 @@ MoscaGUI
 			if(aMosca.graphicpath.notNil){
 				var windowscale = halfHeight / (size / 2);
 				var hsgh, hsgw;
-				hsgw = graphicImage.width * windowscale * zoomFactor / 2;
-				hsgh = graphicImage.height * windowscale * zoomFactor / 2;
+				hsgw = aMosca.graphicImage.width * windowscale * zoomFactor / 2;
+				hsgh = aMosca.graphicImage.height * windowscale * zoomFactor / 2;
 				// origin2Graphic is used in annotation/drawing - gives origin coords with respect to
 // graphic pixels
-graphicWidth = graphicImage.width; // keep graphicWidth updated for drawing
-graphicHeight = graphicImage.height; // keep graphicWidth updated for drawing
+graphicWidth = aMosca.graphicImage.width; // keep graphicWidth updated for drawing
+graphicHeight = aMosca.graphicImage.height; // keep graphicWidth updated for drawing
 				origin2Graphic = Point( ((origin.value[0] * halfHeight * scale.value / windowscale )
-					+ (graphicImage.width / 2)),
+					+ (aMosca.graphicImage.width / 2)),
 					((origin.value[1] * halfHeight * -1 * scale.value / windowscale )
-						+ (graphicImage.height / 2)) );
+						+ (aMosca.graphicImage.height / 2)) );
                 //origin2Graphic = aMosca.origin2Graphic; // save a copy for drawing elsewhere
 				Pen.use {
 					Pen.rotate(aMosca.center.ossiaOrient.v[0],
@@ -794,14 +813,28 @@ graphicHeight = graphicImage.height; // keep graphicWidth updated for drawing
 					Pen.drawImage( Point( (halfWidth / zoomFactor / windowscale)
 						- (hsgw / zoomFactor / windowscale),
 						(halfHeight / zoomFactor / windowscale) - (hsgh / zoomFactor / windowscale)  ),
-						graphicImage, operation: 'sourceIn', opacity:0.99);
+						aMosca.graphicImage, operation: 'sourceIn', opacity:0.99);
 
 
 				};
-
+				/*
 				if(drawing == true) {
-					("Graphic image: " + graphicImage).postln;
-					/*	graphicImage.draw({ arg image;
+					//("Graphic image: " + aMosca.graphicImage).postln;
+					aMosca.graphicImage.draw({ arg image;
+					1000.do {
+            // set the Color
+            Pen.color = Color.green(rrand(0.0, 1), rrand(0.0, 0.5));
+            Pen.addAnnularWedge(
+                (10000.rand)@(10000.rand),
+                rrand(10, 50),
+                rrand(51, 100),
+                2pi.rand,
+                2pi.rand
+            );
+            Pen.perform([\stroke, \fill].choose);
+					};
+					});
+					/*	aMosca.graphicImage.draw({ arg image;
 						Pen.line(rotated, lastRotated);
 						//Pen.line(10@120, 300@120);
 						Pen.width = 10;
@@ -810,7 +843,7 @@ graphicHeight = graphicImage.height; // keep graphicWidth updated for drawing
 						//("rotated: " + rotated + "lastRotated: " + lastRotated).postln;
 						});
 					*/
-				};
+				}; */
 			};
 
 			Pen.strokeColor = palette.color('midlight', 'active');
@@ -937,8 +970,8 @@ graphicHeight = graphicImage.height; // keep graphicWidth updated for drawing
 
 				var halfWidth = win.view.bounds.width / 2;
 		var halfHeight = win.view.bounds.height / 2; 
-				var gHalfWidth = graphicImage.width / 2;
-		var gHalfHeight = graphicImage.height / 2;
+				var gHalfWidth = gImage.width / 2;
+		var gHalfHeight = gImage.height / 2;
 		//var zoomFactor = zoomfactor;
 
 				var graphicx, graphicy;

@@ -6,7 +6,7 @@ MoscaBase // acts as the public interface
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
-	var <graphicpath, <>gImage, <>graphicOrigin, <>window, <>zoomfactor = 1;
+	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window, <>zoomfactor = 1;
 	//	var <>winstance; // window of instance 
 	var <>origin2Graphic, <>orient; //origin with respect to graphic pixels
 	
@@ -438,13 +438,13 @@ MoscaBase // acts as the public interface
 
 		if(graphicpath.notNil) {
 			var width, height;
-			gImage = Image.open(graphicpath); // reload to maintain quality
-			width = gImage.width * scale / 100;
-			height = gImage.height * scale / 100;
-			gImage.setSize(width.asInteger, height.asInteger,
+			graphicImage = Image.open(graphicpath); // reload to maintain quality
+			width = graphicImage.width * scale / 100;
+			height = graphicImage.height * scale / 100;
+			graphicImage.setSize(width.asInteger, height.asInteger,
 				'keepAspectRatioByExpanding');
-			graphicOrigin = Point((gImage.width / -2),
-				(gImage.height / -2));
+			graphicOrigin = Point((graphicImage.width / -2),
+				(graphicImage.height / -2));
 			window.refresh;
 		}
 	}
