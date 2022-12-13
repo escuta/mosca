@@ -32,6 +32,7 @@ MoscaGUI
 	var graphicWidth, graphicHeight, origin2Graphic, drawOnImage, graphicImage;
 	var origin2Graphic;
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
+	var rotated, lastRotated;
 	
 	classvar halfPi;
 
@@ -77,6 +78,7 @@ MoscaGUI
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
 			graphicImage = Image.open(aMosca.graphicpath);
+			aMosca.gImage = graphicImage;
 			gwidth = graphicImage.width;
 			gheight = graphicImage.height;
 			aMosca.graphicOrigin = Point((gwidth / -2), (gheight / -2));
@@ -106,8 +108,8 @@ MoscaGUI
 				y = ((halfHeight - y) / halfHeight) / zoomFactor;
 				graphicx = (x * gHalfHeight) + origin.x;
 				graphicy = origin.y - (y * gHalfHeight );
-				("x = " + x + "graphicx = " + graphicx).postln;
-				("y = " + y + "graphicy = " + graphicy).postln;
+				//("x = " + x + "graphicx = " + graphicx).postln;
+				//("y = " + y + "graphicy = " + graphicy).postln;
 				orient = orient * -1;
 				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
 
@@ -116,7 +118,7 @@ MoscaGUI
 
 
 			};
-
+			/*
 			drawOnImage = { | view, x, y |
 				var halfWidth = win.view.bounds.width / 2;
 				var halfHeight = win.view.bounds.height / 2;
@@ -141,10 +143,11 @@ MoscaGUI
 
 				//("rx: " + rx + "ry: " + ry).postln;
 				//origin.postln;
-			};
+				};
+			*/
 
-			win.acceptsMouseOver = true;
-			win.view.mouseOverAction = drawOnImage;
+			//win.acceptsMouseOver = true;
+			//win.view.mouseOverAction = drawOnImage;
 		};
 		// source index
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
@@ -426,7 +429,7 @@ MoscaGUI
 				if (butt.value == 1)
 				{
 					drawing = true;
-					lastRx = lastRy = nil; // first mouse click to set
+					//lastRx = lastRy = nil; // first mouse click to set
 				} {
 					drawing = false;
 				}
@@ -652,9 +655,11 @@ MoscaGUI
 							this.prMoveSource(mx, my);
 						} {
 							//"Drawing".postln;
-							"Start vale: ".post;
-							this.prRotatedGraphicCoords(mx, my);
-							//rotated.postln;
+							var rotated = this.prRotatedGraphicCoords(mx, my);
+							//"Start vale: ".post;
+							lastRx = rx;
+							lastRy = ry;
+							("rx: " + rx + "ru: " + ry).postln;
 						};
 					},
 					1,
@@ -699,8 +704,18 @@ MoscaGUI
 				if (drawing == false) {
 					this.prMoveSource(mx, my)
 				} {
-					var rotated = rotatedGraphicCoords.value(mx, my );
-					//rotated.postln;
+					rotated = rotatedGraphicCoords.value(mx, my );
+					if(rotated.x != lastRx || rotated.y != lastRy) {
+						lastRotated = Point(lastRx, lastRy);
+						("lastRx: " + lastRx + "rx: "
+							+ rotated.x + "lastRy: " + lastRy +
+							"ry: " + rotated.y).postln;
+						//win.view.background_(Color.clear);
+						
+						win.refresh;
+					};
+					lastRx = rotated.x;
+					lastRy = rotated.y;
 
 				};
 
@@ -784,6 +799,18 @@ graphicHeight = graphicImage.height; // keep graphicWidth updated for drawing
 
 				};
 
+				if(drawing == true) {
+					("Graphic image: " + graphicImage).postln;
+					/*	graphicImage.draw({ arg image;
+						Pen.line(rotated, lastRotated);
+						//Pen.line(10@120, 300@120);
+						Pen.width = 10;
+						Pen.stroke;
+						//Pen.perform([\stroke, \fill].choose);
+						//("rotated: " + rotated + "lastRotated: " + lastRotated).postln;
+						});
+					*/
+				};
 			};
 
 			Pen.strokeColor = palette.color('midlight', 'active');
@@ -930,7 +957,8 @@ graphicHeight = graphicImage.height; // keep graphicWidth updated for drawing
 				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
 				
 		
-("rx: " + rx + "ry: " + ry).postln;
+		//("rx: " + rx + "ry: " + ry).postln;
+		Point(rx, ry)
 			}
 
 	prSourceSelect
