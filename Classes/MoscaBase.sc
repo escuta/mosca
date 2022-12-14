@@ -7,8 +7,7 @@ MoscaBase // acts as the public interface
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
 	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window, <>zoomfactor = 1;
-	//	var <>winstance; // window of instance 
-	var <>origin2Graphic, <>orient; //origin with respect to graphic pixels
+	var <>orient; //origin with respect to graphic pixels 
 	
 	
 	*printSynthParams
