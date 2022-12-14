@@ -119,7 +119,7 @@ MoscaGUI
 				graphicy =  (gHalfHeight - (winy * (size / 2) ) - (origin.value[1] * scale.value * size / 2) ) ;
 				//graphicy = origin.y - (y * halfHeight);
 				//graphicy = origin.y - (y * gHalfHeight / ( gHalfHeight/ halfHeight));
-				//orient = orient * -1;
+				orient = orient * -1;
 				rx = ((graphicx - gorigin.x) * orient.cos) - ((graphicy - gorigin.y) * (orient.sin)) + (gorigin.x );
 
 				ry = ((graphicx - gorigin.x) * orient.sin) + ((graphicy - gorigin.y) * (orient.cos)) + (gorigin.y );
@@ -129,6 +129,7 @@ MoscaGUI
 				("x = " + x + "winx = " + winx + "graphicx = " + graphicx + "gorigin.x = " + gorigin.x + "orient: " + orient).postln;
 				//("winy = " + winy + "graphicx = " + graphicx).postln;
 				("gorigin: " + gorigin + "origin: " + origin.value).postln;
+				("rx: " + rx + "ry: " + ry).postln;
 				
 				//rx = rx * gHalfWidth / halfHeight;
 				Point(rx,ry)
