@@ -351,7 +351,8 @@ MoscaGUI
 		.action_({ | num | zNumBox.valueAction_((num.value - 0.5) * 2) });
 
 		// sub view for grouping global transforamtion widgets (effects, rotations, mouvements)
-		originView = UserView(win, Rect(width - 94, height - 152, 94, 148));
+		//originView = UserView(win, Rect(width - 94, height - 152, 94, 148));
+		originView = UserView(win, Rect(width - 94, height - 176, 94, 172));
 		originView.addFlowLayout();
 
 		aMosca.ossiaParent.find("Track_Center").gui(originView);
@@ -409,6 +410,45 @@ MoscaGUI
 				} {
 					drawing = false;
 				}
+			});
+
+
+						drawBut = Button(originView, Rect(0, 0, 88, 20))
+			.focusColor_(palette.color('midlight', 'active'))
+			.states_(
+				[
+					[
+						"Save graphic",
+						palette.color('light', 'active'),
+						palette.color('middark', 'active')
+					] 
+				]
+			).action_({ | butt |
+				
+				//if (butt.value == 1)
+				//{
+				var bounds, dwin, textField, success = false, path;
+
+			bounds = Rect(100,400,400,30);
+				path = PathName(aMosca.graphicpath);
+			dwin = Window("Save annotation: choose file name", bounds)
+				.onClose_({ if (success.not) { "Aborted save!".postln } });
+
+			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
+			.value_(path.pathOnly)
+				.action_({ | tf |
+					("Saving: " + tf.value).postln;
+					aMosca.graphicImage.write(tf.value, quality: -1);
+				success = true;
+				dwin.close;
+				
+			});
+
+					dwin.front;
+
+					//drawing = true;
+					//lastRx = lastRy = nil; // first mouse click to set
+					//	}  
 			});
 		};
 		loadBut = Button(originView, Rect(0, 0, 88, 20))
@@ -738,7 +778,8 @@ MoscaGUI
 
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
-			originView.bounds_(Rect(width - 94, height - 152, 94, 148));
+			//originView.bounds_(Rect(width - 94, height - 152, 94, 148))
+		      originView.bounds_(Rect(width - 94, height - 176, 94, 172));
 
 			dialView.bounds_(Rect(width - 94, 3, 94, 150));
 
