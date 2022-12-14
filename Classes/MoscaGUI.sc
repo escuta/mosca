@@ -406,7 +406,8 @@ MoscaGUI
 				if (butt.value == 1)
 				{
 					drawing = true;
-					//lastRx = lastRy = nil; // first mouse click to set
+					fork { while { drawing == true }
+						{ defer { win.refresh;  }; 1.wait; } };
 				} {
 					drawing = false;
 				}
@@ -712,7 +713,13 @@ MoscaGUI
 				)
 			}
 		);
-
+		/*
+		Mouse(\a, { |...args| 
+			if (mouseButton == 0) {
+				("Test x: " + args[3] + "y: " + args[4] + "mouseButton: " + mouseButton).postln;
+			};
+			});
+		*/
 		win.view.mouseMoveAction_({ | view, mx, my, modifiers |
 
 			// left button
@@ -720,14 +727,12 @@ MoscaGUI
 				if (drawing == false) {
 					this.prMoveSource(mx, my)
 				} {
+					
 					rotated = rotatedGraphicCoords.value(mx, my );
 					if( (rotated.x != lastRx ||
 						rotated.y != lastRy) && lastRx.notNil )
 					{
 						lastRotated = Point(lastRx, lastRy);
-						//("lastRx: " + lastRx + "rx: "
-						//	+ rotated.x + "lastRy: " + lastRy +
-						//	"ry: " + rotated.y).postln;
 						
 						aMosca.graphicImage.draw({ arg image;
 							Pen.width = 3;
@@ -735,11 +740,12 @@ MoscaGUI
 							Pen.line(lastRotated, rotated);
 							Pen.perform([\stroke, \fill].choose);
 						}) ;
-						win.refresh;
+						//	win.refresh;
+					
 					};
 					lastRx = rotated.x;
 					lastRy = rotated.y;
-
+					
 				};
 
 			};
@@ -770,10 +776,10 @@ MoscaGUI
 			// set initial furthest source as 10 times the apparent radius
 			furthest = halfHeight * 10;
 
-			zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5),
+			zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5 - 24),
 				20, halfHeight));
 
-			zNumBox.bounds_(Rect(width - 45, (halfHeight * 0.5) + halfHeight,
+			zNumBox.bounds_(Rect(width - 45, (halfHeight * 0.5 - 24 ) + halfHeight,
 				40, 20));
 
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
