@@ -103,7 +103,7 @@ MoscaGUI
 				var graphicx, graphicy;
 				//				var origin = origin2Graphic;
 				//var imorigin = Point();
-				var gorigin = Point(halfWidth, halfHeight ) * scale.value;
+				var gorigin = Point(halfWidth, halfHeight ) / scale.value;
 				var orient = aMosca.orient.value[0];
 				var winx, winy;
 				//				var widthDiff = gHalfWidth - halfWidth;
@@ -134,36 +134,6 @@ MoscaGUI
 
 
 			};
-			/*
-			drawOnImage = { | view, x, y |
-				var halfWidth = win.view.bounds.width / 2;
-				var halfHeight = win.view.bounds.height / 2;
-				var gHalfWidth = graphicImage.width / 2;
-				var gHalfHeight = graphicImage.height / 2;
-				var zoomFactor = aMosca.zoomfactor;
-				var graphicx, graphicy;
-				var origin = origin2Graphic;
-				var orient = aMosca.orient.value[0];
-				//var rx, ry;
-				x = ((x - halfWidth) / halfHeight) / zoomFactor;
-				y = ((halfHeight - y) / halfHeight) / zoomFactor;
-				graphicx = (x * gHalfHeight) + origin.x;
-				graphicy = origin.y - (y * gHalfHeight );
-				//("x = " + x + "graphicx = " + graphicx).postln;
-				//("y = " + y + "graphicy = " + graphicy).postln;
-				orient = orient * -1;
-				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
-
-				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
-
-
-				//("rx: " + rx + "ry: " + ry).postln;
-				//origin.postln;
-				};
-			*/
-
-			//win.acceptsMouseOver = true;
-			//win.view.mouseOverAction = drawOnImage;
 		};
 		// source index
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
