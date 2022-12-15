@@ -21,7 +21,7 @@ MoscaGUI
 	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
-	var autoBut, loadBut, originBut, drawBut,fxBut;
+	var autoBut, loadBut, originBut, drawBut, saveBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
@@ -414,7 +414,7 @@ MoscaGUI
 			});
 
 
-						drawBut = Button(originView, Rect(0, 0, 88, 20))
+			saveBut = Button(originView, Rect(0, 0, 88, 20))
 			.focusColor_(palette.color('midlight', 'active'))
 			.states_(
 				[
@@ -713,13 +713,8 @@ MoscaGUI
 				)
 			}
 		);
-		/*
-		Mouse(\a, { |...args| 
-			if (mouseButton == 0) {
-				("Test x: " + args[3] + "y: " + args[4] + "mouseButton: " + mouseButton).postln;
-			};
-			});
-		*/
+		
+		
 		win.view.mouseMoveAction_({ | view, mx, my, modifiers |
 
 			// left button
@@ -943,36 +938,7 @@ MoscaGUI
 			aFileNode.valueAction_(path);
 		});
 	}
-	/*
-	prRotatedGraphicCoords
-	{ | x, y |
 
-				var halfWidth = win.view.bounds.width / 2;
-		var halfHeight = win.view.bounds.height / 2; 
-				var gHalfWidth = gImage.width / 2;
-		var gHalfHeight = gImage.height / 2;
-		//var zoomFactor = zoomfactor;
-
-				var graphicx, graphicy;
-				var origin = origin2Graphic;
-		//				var orient = aMosca.orient.value[0];
-		var orient = orientation.value[0];
-				//var rx, ry;
-				x = ((x - halfWidth) / halfHeight) / zoomFactor;
-				y = ((halfHeight - y) / halfHeight) / zoomFactor;
-				graphicx = (x * gHalfHeight) + origin.x;
-				graphicy = origin.y - (y * gHalfHeight );
-				("y = " + y + "graphicy = " + graphicy).postln;
-		orient = orient * -1;
-				rx = ((graphicx - origin.x) * orient.cos) - ((graphicy - origin.y) * (orient.sin)) + origin.x;
-
-				ry = ((graphicx - origin.x) * orient.sin) + ((graphicy - origin.y) * (orient.cos)) + origin.y;
-				
-		
-		//("rx: " + rx + "ry: " + ry).postln;
-		Point(rx, ry)
-			}
-	*/
 	prSourceSelect
 	{ | index |
 
