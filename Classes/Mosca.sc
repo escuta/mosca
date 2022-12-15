@@ -329,8 +329,6 @@ Mosca : MoscaBase
 				orientation.access_mode_(\set);
 				origin.access_mode_(\set);
 
-				orientation.value_([0, 0, 0]);
-				origin.value_([0, 0, 0]);
 			};
 		});
 	}
