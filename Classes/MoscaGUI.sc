@@ -21,7 +21,7 @@ MoscaGUI
 	var sources, global, control, guiInt, palette; // initial arguments
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
-	var autoBut, loadBut, originBut, drawBut, saveBut, fxBut;
+	var autoBut, loadBut, originBut, drawBut, saveBut, writeBut, fxBut;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
@@ -31,7 +31,7 @@ MoscaGUI
 	var mouseButton, furthest, sourceList;
 	var graphicWidth, graphicHeight, drawOnImage, gImage;
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
-	var rotated, lastRotated;
+	var rotated, lastRotated, annotateTextField = nil, annotate = false;
 	
 	classvar halfPi;
 
@@ -419,8 +419,54 @@ MoscaGUI
 					drawing = false;
 				}
 			});
+			
+			
+			//		annotate graphic
+			writeBut = Button(originView, Rect(0, 0, 41, 20))
+			.focusColor_(palette.color('midlight', 'active'))
+			.states_(
+				[
+					[
+						"Write",
+						palette.color('light', 'active'),
+						palette.color('middark', 'active')
+					] 
+				]
+			).action_({ | butt |
+				
+				//if (butt.value == 1)
+				//{
+				var bounds, dwin, success = false, path;
+				//drawing = false;
+				drawBut.valueAction = 0;
+				annotate = true;
+				bounds = Rect(100,400,400,60);
+				path = PathName(aMosca.graphicpath);
+				dwin = Window("Annotate: enter text and click on graphic", bounds)
+				.onClose_({ if (success.not) { "Decided not to write!".postln;
+					annotateTextField = nil; annotate = false;
+				drawing = false} });
+				
+				annotateTextField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
+				.value_()
+				.action_({ | tf |
+					("Please now place text on graphic: " + tf.value).postln;
+					//aMosca.graphicImage.write(tf.value, quality: -1);
+					success = true;
+					annotate = false;
+					drawing = false;
+				dwin.close;
+					
+				});
+				
+				dwin.front;
 
-
+					//drawing = true;
+					//lastRx = lastRy = nil; // first mouse click to set
+					//	}  
+			});
+			//};
+				
 			//			saveBut = Button(originView, Rect(0, 0, 88, 20))
 			saveBut = Button(originView, Rect(0, 0, 41, 20))
 			.focusColor_(palette.color('midlight', 'active'))
@@ -437,29 +483,34 @@ MoscaGUI
 				//if (butt.value == 1)
 				//{
 				var bounds, dwin, textField, success = false, path;
-
-			bounds = Rect(100,400,400,30);
+				
+				bounds = Rect(100,400,400,30);
 				path = PathName(aMosca.graphicpath);
-			dwin = Window("Save annotation: choose file name", bounds)
+				dwin = Window("Save annotation: choose file name", bounds)
 				.onClose_({ if (success.not) { "Aborted save!".postln } });
-
-			textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-			.value_(path.pathOnly)
+				
+				textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
+				.value_(path.pathOnly)
 				.action_({ | tf |
 					("Saving: " + tf.value).postln;
 					aMosca.graphicImage.write(tf.value, quality: -1);
-				success = true;
+					success = true;
 				dwin.close;
+					
+				});
 				
-			});
-
-					dwin.front;
+				dwin.front;
 
 					//drawing = true;
 					//lastRx = lastRy = nil; // first mouse click to set
 					//	}  
 			});
+
+
 		};
+				
+
+		
 		loadBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -673,8 +724,11 @@ MoscaGUI
 								closest[0] = i;
 							};
 						});
-						if(drawing == false) {
-
+						//if(drawing.isNil){
+						//	drawing = false;
+						//};
+						if( (drawing == false) && (annotate == false) ) {
+							"or here?".postln;
 							if (closest[0] != currentSource)
 							{ this.prSourceSelect(closest[0]) };
 							this.prMoveSource(mx, my);
@@ -727,7 +781,8 @@ MoscaGUI
 
 			// left button
 			if (mouseButton == 0) {
-				if (drawing == false) {
+				if (drawing == false && annotate == false) {
+					"Am i here?".postln;
 					this.prMoveSource(mx, my)
 				} {
 					
