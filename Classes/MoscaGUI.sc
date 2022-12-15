@@ -129,7 +129,7 @@ MoscaGUI
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");
 
-		exInCheck = Button(win, Rect(4, 30, 79, 20), "EXin")
+		exInCheck = Button(win, Rect(4, 30, 79, 20), "EX-in")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
