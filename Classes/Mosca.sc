@@ -195,7 +195,7 @@ Mosca : MoscaBase
 		ossiaSync = OSSIA_Parameter(ossiaAutomation, "Sync_files", Boolean,
 			critical:true, repetition_filter:true);
 
-		ossiaTrack = OSSIA_Parameter(ossiaParent, "Track_Center", Boolean, default_value:true);
+		ossiaTrack = OSSIA_Parameter(ossiaParent, "Track_Centre", Boolean, default_value:true);
 	}
 
 	prSetAction

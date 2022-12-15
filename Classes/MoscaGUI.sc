@@ -129,7 +129,7 @@ MoscaGUI
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");
 
-		exInCheck = Button(win, Rect(4, 30, 79, 20), "EX-in")
+		exInCheck = Button(win, Rect(4, 30, 79, 20), "EXin")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
 			[
@@ -352,10 +352,16 @@ MoscaGUI
 
 		// sub view for grouping global transforamtion widgets (effects, rotations, mouvements)
 		//originView = UserView(win, Rect(width - 94, height - 152, 94, 148));
-		originView = UserView(win, Rect(width - 94, height - 176, 94, 172));
+		if(aMosca.graphicpath.notNil){
+			originView = UserView(win, Rect(width - 194, height - 176, 94,
+				172));
+		}{
+			originView = UserView(win, Rect(width - 94, height - 128, 94,
+				124));
+		};
 		originView.addFlowLayout();
 
-		aMosca.ossiaParent.find("Track_Center").gui(originView);
+		aMosca.ossiaParent.find("Track_Centre").gui(originView);
 		originBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -386,7 +392,8 @@ MoscaGUI
 			}
 		});
 		if(aMosca.graphicpath.notNil){
-			drawBut = Button(originView, Rect(0, 0, 88, 20))
+			//drawBut = Button(originView, Rect(0, 0, 88, 20))
+			drawBut = Button(originView, Rect(0, 0, 41, 20))
 			.focusColor_(palette.color('midlight', 'active'))
 			.states_(
 				[
@@ -414,12 +421,13 @@ MoscaGUI
 			});
 
 
-			saveBut = Button(originView, Rect(0, 0, 88, 20))
+			//			saveBut = Button(originView, Rect(0, 0, 88, 20))
+			saveBut = Button(originView, Rect(0, 0, 41, 20))
 			.focusColor_(palette.color('midlight', 'active'))
 			.states_(
 				[
 					[
-						"Save graphic",
+						"Save",
 						palette.color('light', 'active'),
 						palette.color('middark', 'active')
 					] 
@@ -770,18 +778,26 @@ MoscaGUI
 
 			// set initial furthest source as 10 times the apparent radius
 			furthest = halfHeight * 10;
-
-			zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5 - 24),
+			if(aMosca.graphicpath.notNil){
+				zSlider.bounds_(Rect(width - 35, ((halfHeight * 0.5) - 10 ),
+				20, halfHeight - 10));
+				zNumBox.bounds_(Rect(width - 45, ((halfHeight * 0.5) - 20 )
+					+ halfHeight, 40, 20));
+			}{
+				zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5),
 				20, halfHeight));
+				zNumBox.bounds_(Rect(width - 45, (halfHeight * 0.5)
+					+ halfHeight, 40, 20));
+			};
 
-			zNumBox.bounds_(Rect(width - 45, (halfHeight * 0.5 - 24 ) + halfHeight,
-				40, 20));
 
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
-			//originView.bounds_(Rect(width - 94, height - 152, 94, 148))
-		      originView.bounds_(Rect(width - 94, height - 176, 94, 172));
-
+			if(aMosca.graphicpath.notNil){
+				originView.bounds_(Rect(width - 94, height - 152, 94, 172));
+			}{
+				originView.bounds_(Rect(width - 94, height - 128, 94, 148));
+			};
 			dialView.bounds_(Rect(width - 94, 3, 94, 150));
 
 			masterView.bounds_(masterView.bounds.top_(height - 76));
