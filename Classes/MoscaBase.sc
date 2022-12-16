@@ -6,7 +6,8 @@ MoscaBase // acts as the public interface
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
-	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window, <>zoomfactor = 1;
+	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window,
+	<>zoomfactor = 1, <>fontsize = 14;
 	var <>orient; //origin with respect to graphic pixels 
 	
 	
@@ -417,9 +418,11 @@ MoscaBase // acts as the public interface
 	}
 
 	gui
-	{ | size = 800, palette = \ossia, lag = 0.05, graphicPath |
+	{ | size = 800, palette = \ossia, lag = 0.05, graphicPath, fontSize = 14 |
 
 		if (graphicPath.notNil) { graphicpath = graphicPath; };
+		if (fontSize.notNil) { fontsize = fontSize;
+		("fontSize: " + fontSize).postln;};
 
 		if (gui.isNil)
 		{

@@ -31,7 +31,8 @@ MoscaGUI
 	var mouseButton, furthest, sourceList;
 	var graphicWidth, graphicHeight, drawOnImage, gImage;
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
-	var rotated, lastRotated, annotateTextField = nil, annotate = false;
+	var rotated, lastRotated, annotateText = nil, annotate = false;
+	var printText;
 	
 	classvar halfPi;
 
@@ -121,9 +122,16 @@ MoscaGUI
 				ry = ((graphicx - gOrigin.x) * orient.sin)
 				+ ((graphicy - gOrigin.y) * (orient.cos)) + (gOrigin.y );
 				Point(rx,ry)
-
-
 			};
+
+			printText = { | image, x, y, string, fontSize |
+				var font = Font("Monaco", fontSize);
+				image.draw{
+					Pen.stringAtPoint(string, x@y, font, Color.black); 
+				};
+				win.refresh;
+			};
+			
 		};
 		// source index
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
@@ -413,10 +421,12 @@ MoscaGUI
 				if (butt.value == 1)
 				{
 					drawing = true;
+					annotate = false;
 					fork { while { drawing == true }
 						{ defer { win.refresh;  }; 1.wait; } };
 				} {
 					drawing = false;
+					annotate = false;
 				}
 			});
 			
@@ -436,25 +446,26 @@ MoscaGUI
 				
 				//if (butt.value == 1)
 				//{
-				var bounds, dwin, success = false, path;
+				var bounds, dwin, success = false, path, textField;
 				//drawing = false;
 				drawBut.valueAction = 0;
 				annotate = true;
-				bounds = Rect(100,400,400,60);
-				path = PathName(aMosca.graphicpath);
+				bounds = Rect(200,300,430,20);
+				//path = PathName(aMosca.graphicpath);
 				dwin = Window("Annotate: enter text and click on graphic", bounds)
 				.onClose_({ if (success.not) { "Decided not to write!".postln;
-					annotateTextField = nil; annotate = false;
+					annotateText = nil; annotate = false;
 				drawing = false} });
 				
-				annotateTextField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-				.value_()
+				textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
+				.value_("")
 				.action_({ | tf |
-					("Please now place text on graphic: " + tf.value).postln;
+					("Click on graphic with mouse to place text: ").postln;
 					//aMosca.graphicImage.write(tf.value, quality: -1);
 					success = true;
-					annotate = false;
+					annotate = true;
 					drawing = false;
+					annotateText = tf.value;
 				dwin.close;
 					
 				});
@@ -468,7 +479,7 @@ MoscaGUI
 			//};
 				
 			//			saveBut = Button(originView, Rect(0, 0, 88, 20))
-			saveBut = Button(originView, Rect(0, 0, 41, 20))
+			saveBut = Button(originView, Rect(0, 0, 88, 20))
 			.focusColor_(palette.color('midlight', 'active'))
 			.states_(
 				[
@@ -724,18 +735,23 @@ MoscaGUI
 								closest[0] = i;
 							};
 						});
-						//if(drawing.isNil){
-						//	drawing = false;
-						//};
+
 						if( (drawing == false) && (annotate == false) ) {
-							"or here?".postln;
 							if (closest[0] != currentSource)
 							{ this.prSourceSelect(closest[0]) };
 							this.prMoveSource(mx, my);
 						} {
-							//"Drawing".postln;
-							//rotated = this.prRotatedGraphicCoords(mx, my);
-							//"Start vale: ".post;
+							if ( (annotate == true) &&
+								annotateText.notNil)
+							{
+								var rotated = rotatedGraphicCoords.value(mx, my );
+								printText.(aMosca.graphicImage, rx, ry,
+									annotateText, aMosca.fontsize);
+								//annotateText = nil;
+								drawing = false;
+								annotate = false;
+							};
+				
 							lastRx = nil;
 							lastRy = nil;
 							("rx: " + rx + "ru: " + ry).postln;
@@ -781,8 +797,7 @@ MoscaGUI
 
 			// left button
 			if (mouseButton == 0) {
-				if (drawing == false && annotate == false) {
-					"Am i here?".postln;
+				if ((drawing == false) && (annotate == false) ) {
 					this.prMoveSource(mx, my)
 				} {
 					
@@ -834,10 +849,11 @@ MoscaGUI
 			// set initial furthest source as 10 times the apparent radius
 			furthest = halfHeight * 10;
 			if(aMosca.graphicpath.notNil){
-				zSlider.bounds_(Rect(width - 35, ((halfHeight * 0.5) - 10 ),
-				20, halfHeight - 10));
-				zNumBox.bounds_(Rect(width - 45, ((halfHeight * 0.5) - 20 )
-					+ halfHeight, 40, 20));
+				var ztop, zheight = (halfHeight * 0.8) - 20;
+				ztop = halfHeight - (zheight * 0.5);
+				zSlider.bounds_(Rect(width - 35, ztop,
+				20, zheight));
+				zNumBox.bounds_(Rect(width - 45, ztop + zheight + 4, 40, 20));
 			}{
 				zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5),
 				20, halfHeight));
@@ -849,7 +865,7 @@ MoscaGUI
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
 			if(aMosca.graphicpath.notNil){
-				originView.bounds_(Rect(width - 94, height - 152, 94, 172));
+				originView.bounds_(Rect(width - 94, height - 176, 94, 172));
 			}{
 				originView.bounds_(Rect(width - 94, height - 128, 94, 148));
 			};
