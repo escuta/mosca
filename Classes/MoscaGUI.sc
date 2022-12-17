@@ -29,10 +29,11 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
-	var graphicWidth, graphicHeight, drawOnImage, gImage;
+	var graphicWidth, graphicHeight, drawOnImage;
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
 	var rotated, lastRotated, annotateText = nil, annotate = false;
 	var printText;
+	var maxUndo = 5, undoAr, storeGraphicUndo, getGraphicUndo;
 	
 	classvar halfPi;
 
@@ -66,6 +67,7 @@ MoscaGUI
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
 		aMosca.orient = orientation; // used in drawing
+		undoAr = [];
 
 		// set initial size values
 		width = size;
@@ -78,7 +80,9 @@ MoscaGUI
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
 			aMosca.graphicImage = Image.open(aMosca.graphicpath);
-			gImage = aMosca.graphicImage;
+			"copying graphicImage".postln;
+			//			gImageTmp = aMosca.graphicImage;
+			//storeGraphicUndo.value(aMosca.graphicImage);
 			gwidth = aMosca.graphicImage.width;
 			gheight = aMosca.graphicImage.height;
 			aMosca.graphicOrigin = Point((gwidth / -2), (gheight / -2));
@@ -131,6 +135,31 @@ MoscaGUI
 				};
 				win.refresh;
 			};
+
+			storeGraphicUndo = { | graphic |
+				var gtmp = Image.fromImage(graphic);
+				if (undoAr.size < maxUndo) {
+					undoAr = undoAr.addFirst(gtmp);
+				} {
+					var tmpAr = Array(0);
+					undoAr = undoAr.addFirst(gtmp);
+					maxUndo.do({ arg item, i;
+						tmpAr = tmpAr.add(undoAr[i]);
+					});
+					undoAr = tmpAr;
+				};
+				("undoAr = " + undoAr).postln;
+				aMosca.teste = undoAr;
+
+			};
+
+			getGraphicUndo = {
+				if(undoAr[0].notNil == true) {
+					undoAr.removeAt(0);
+				};
+			};
+
+			
 			
 		};
 		// source index
@@ -420,6 +449,7 @@ MoscaGUI
 				
 				if (butt.value == 1)
 				{
+					storeGraphicUndo.value(aMosca.graphicImage);
 					drawing = true;
 					annotate = false;
 					fork { while { drawing == true }
@@ -745,6 +775,8 @@ MoscaGUI
 								annotateText.notNil)
 							{
 								var rotated = rotatedGraphicCoords.value(mx, my );
+								"Storing undo!".postln;
+								storeGraphicUndo.value(aMosca.graphicImage);
 								printText.(aMosca.graphicImage, rx, ry,
 									annotateText, aMosca.fontsize);
 								//annotateText = nil;
@@ -875,6 +907,26 @@ MoscaGUI
 
 			drawEvent.value;
 		});
+
+		if(aMosca.graphicpath.notNil){
+			win.view.keyDownAction_({
+				| view, char, modifiers, unicode |
+				if (unicode == 26){                //ctl-z
+					var width, height;
+					var graphic = getGraphicUndo.value;
+					if(graphic.notNil == true) {
+						"Undo!".postln;
+						width = aMosca.graphicImage.width;
+						height = aMosca.graphicImage.height;
+						aMosca.graphicImage = graphic;
+						aMosca.graphicOrigin = Point((graphic.width / -2),
+							(graphic.height / -2));
+						win.refresh;
+						//aMosca.scaleGraphic(aMosca.graphicScale);
+					};
+				};				
+			});
+		};
 
 		win.drawFunc_({ // draw circles for center, max distance & sources
 

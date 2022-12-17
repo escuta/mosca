@@ -7,8 +7,8 @@ MoscaBase // acts as the public interface
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
 	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window,
-	<>zoomfactor = 1, <>fontsize = 14;
-	var <>orient; //origin with respect to graphic pixels 
+	<>zoomfactor = 1, <>fontsize = 14, <graphicScale = 100;
+	var <>orient, <>teste; //origin with respect to graphic pixels 
 	
 	
 	*printSynthParams
@@ -440,6 +440,7 @@ MoscaBase // acts as the public interface
 
 		if(graphicpath.notNil) {
 			var width, height;
+			graphicScale = scale;
 			graphicImage = Image.open(graphicpath); // reload to maintain quality
 			width = graphicImage.width * scale / 100;
 			height = graphicImage.height * scale / 100;
