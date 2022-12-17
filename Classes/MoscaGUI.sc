@@ -33,7 +33,7 @@ MoscaGUI
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
 	var rotated, lastRotated, annotateText = nil, annotate = false;
 	var printText;
-	var maxUndo = 5, undoAr, storeGraphicUndo, getGraphicUndo;
+	var maxUndo, undoAr, storeGraphicUndo, getGraphicUndo;
 	
 	classvar halfPi;
 
@@ -67,6 +67,7 @@ MoscaGUI
 		orientation = aMosca.ossiaParent.find("Orientation");
 		scale = aMosca.ossiaParent.find("Scale_factor");
 		aMosca.orient = orientation; // used in drawing
+		maxUndo = aMosca.maxundo;
 		undoAr = [];
 
 		// set initial size values
@@ -148,7 +149,6 @@ MoscaGUI
 					});
 					undoAr = tmpAr;
 				};
-				("undoAr = " + undoAr).postln;
 				aMosca.teste = undoAr;
 
 			};
@@ -775,7 +775,6 @@ MoscaGUI
 								annotateText.notNil)
 							{
 								var rotated = rotatedGraphicCoords.value(mx, my );
-								"Storing undo!".postln;
 								storeGraphicUndo.value(aMosca.graphicImage);
 								printText.(aMosca.graphicImage, rx, ry,
 									annotateText, aMosca.fontsize);
@@ -786,7 +785,6 @@ MoscaGUI
 				
 							lastRx = nil;
 							lastRy = nil;
-							("rx: " + rx + "ru: " + ry).postln;
 						};
 					},
 					1,

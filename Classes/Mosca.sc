@@ -30,15 +30,15 @@ Mosca : MoscaBase
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
-		graphicPath, scaleFactor, fontSize |
+		graphicPath, scaleFactor, fontSize, maxUndo |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize);
+			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo);
 	}
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
-		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize |
+		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo |
 
 		var multyThread;
 
