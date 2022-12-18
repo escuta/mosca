@@ -8,7 +8,7 @@ MoscaBase // acts as the public interface
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
 	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window,
 	<>zoomfactor = 1, <>fontsize = 14, <graphicScale = 100, <maxundo;
-	var <>orient, <>teste; //origin with respect to graphic pixels 
+	var <>orient; //origin with respect to graphic pixels 
 	
 	
 	*printSynthParams

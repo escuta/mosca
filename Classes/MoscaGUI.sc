@@ -81,9 +81,6 @@ MoscaGUI
 		if(aMosca.graphicpath.notNil){
 			var gwidth, gheight;
 			aMosca.graphicImage = Image.open(aMosca.graphicpath);
-			"copying graphicImage".postln;
-			//			gImageTmp = aMosca.graphicImage;
-			//storeGraphicUndo.value(aMosca.graphicImage);
 			gwidth = aMosca.graphicImage.width;
 			gheight = aMosca.graphicImage.height;
 			aMosca.graphicOrigin = Point((gwidth / -2), (gheight / -2));
@@ -149,8 +146,6 @@ MoscaGUI
 					});
 					undoAr = tmpAr;
 				};
-				aMosca.teste = undoAr;
-
 			};
 
 			getGraphicUndo = {
@@ -480,6 +475,7 @@ MoscaGUI
 				//drawing = false;
 				drawBut.valueAction = 0;
 				annotate = true;
+				annotateText = nil;
 				bounds = Rect(200,300,430,20);
 				//path = PathName(aMosca.graphicpath);
 				dwin = Window("Annotate: enter text and click on graphic", bounds)
@@ -527,7 +523,7 @@ MoscaGUI
 				
 				bounds = Rect(100,400,400,30);
 				path = PathName(aMosca.graphicpath);
-				dwin = Window("Save annotation: choose file name", bounds)
+				dwin = Window("Save annotations: choose file name", bounds)
 				.onClose_({ if (success.not) { "Aborted save!".postln } });
 				
 				textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
@@ -832,6 +828,7 @@ MoscaGUI
 				} {
 					
 					rotated = rotatedGraphicCoords.value(mx, my );
+					{
 					if( (rotated.x != lastRx ||
 						rotated.y != lastRy) && lastRx.notNil )
 					{
@@ -846,6 +843,7 @@ MoscaGUI
 						//	win.refresh;
 					
 					};
+				}.defer;
 					lastRx = rotated.x;
 					lastRy = rotated.y;
 					
@@ -1147,9 +1145,14 @@ MoscaGUI
 			src.localDelay.node.closeGui(localView);
 			src.localDecay.node.closeGui(localView);
 		} {
-			src.localAmount.node.gui(localView);
-			src.localDelay.node.gui(localView);
-			src.localDecay.node.gui(localView);
+			if ((src.localEffect.value != "AllPass") &&
+				(src.localEffect.value != "FreeVerb")) {
+					src.localAmount.node.gui(localView);
+				} {
+					src.localAmount.node.gui(localView);
+					src.localDelay.node.gui(localView);
+					src.localDecay.node.gui(localView);
+				};
 		};
 
 		if (global.ossiaGlobal.value == "Clear")
