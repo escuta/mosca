@@ -107,11 +107,11 @@ MoscaSpatializer
 								elevation = radAzimElev[2],
 								revCut = rad.lincurve(1, plim, 1, 0),
 								channum = channels,
-								p = Ref(0);
+								p = Ref(0), dRad;
 
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
-
-								p.value = DelayC.ar(p.value, 0.2, (rad * 340)/1640.0 * dopamnt); // Doppler
+								dRad = Lag.kr(rad, 1.0); 
+								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
 
 								// local effect
 								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rad ]);
