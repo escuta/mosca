@@ -110,7 +110,8 @@ MoscaSpatializer
 								p = Ref(0), dRad;
 
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
-								dRad = Lag.kr(rad, 1.0); 
+								dRad = Lag.kr(rad, 1.0);
+								dopamnt = Lag.kr(dopamnt, 2.0);
 								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
 
 								// local effect
