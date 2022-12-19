@@ -290,7 +290,7 @@ MoscaSource[]
 		localEffect.dockTo(automation, "localProxy_" ++ index);
 		localDelay.dockTo(automation, "localDelayProxy_" ++ index);
 		localDecay.dockTo(automation, "localDecayProxy_" ++ index);
-
+localAmount.dockTo(automation, "localAmountProxy_" ++ index);
 		angle.dockTo(automation, "angleProxy_" ++ index);
 		rotation.dockTo(automation, "rotationProxy_" ++ index);
 		contraction.dockTo(automation, "contractionProxy_" ++ index);
