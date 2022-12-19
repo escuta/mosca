@@ -44,7 +44,9 @@ Mosca : MoscaBase
 
 		if (server.isNil) { server = Server.local };
 
-		// ~osc = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+		//	~osc = OSCresponderNode(server.addr, '/tr', { |time, resp, msg| msg.postln }).add;  // debugging
+
+		~osc = OSCFunc({ |msg| msg.postln }, '/tr', server.addr); // debugging
 
 		// TODO
 		// Server.program.asString.endsWith("supernova");

@@ -71,11 +71,18 @@ ATKBaseDef : SpatDef
 					linearscale = (12 - (rad * 12));
 					linearscale = Select.kr(linearscale > 0, [0, linearscale]); //negs rolled off at zero
 					linearsig = lrevRef.value + (p.value * linearscale  );
+					SendTrig.kr(Impulse.kr(1), 0, azimuth ); // debug
+					SendTrig.kr(Impulse.kr(1), 1, rotAngle ); // debug
+					
 					sig = lrevRef.value + (p.value * ((1/radRoot) - 1) );
 					sig = Select.ar(linear > 0, [sig, linearsig]);
 					sig = FoaDirectO.ar(sig, directang);
-					// directivity
+					// directivity (rotation fader?)
 					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
+
+					// rotation/tilt/tumble of field itself -- need orientation values!
+					sig = FoaTransform.ar(sig, 'rtt', azimuth, 0, 0);
+					
 					// handle contraction fader
 					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 					// allow field to "move"
