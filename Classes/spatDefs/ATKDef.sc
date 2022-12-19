@@ -63,7 +63,7 @@ ATKBaseDef : SpatDef
 			},
 			4,
 			{ // assume FuMa input
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang,
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, orientation = #[0, 0, 0], directang,
 					linear = 1 |
 					var sig, pushang = 2 - (contract * 2), pushang2, linearsig, linearscale;
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
@@ -72,17 +72,17 @@ ATKBaseDef : SpatDef
 					linearscale = Select.kr(linearscale > 0, [0, linearscale]); //negs rolled off at zero
 					linearsig = lrevRef.value + (p.value * linearscale  );
 					SendTrig.kr(Impulse.kr(1), 0, azimuth ); // debug
-					SendTrig.kr(Impulse.kr(1), 1, rotAngle ); // debug
-					
+					SendTrig.kr(Impulse.kr(1), 1, orientation ); // debug
+
 					sig = lrevRef.value + (p.value * ((1/radRoot) - 1) );
 					sig = Select.ar(linear > 0, [sig, linearsig]);
 					sig = FoaDirectO.ar(sig, directang);
 					// directivity (rotation fader?)
-					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
+					sig = FoaTransform.ar(sig, 'rotate', orientation[0]);
 
 					// rotation/tilt/tumble of field itself -- need orientation values!
 					sig = FoaTransform.ar(sig, 'rtt', azimuth, 0, 0);
-					
+
 					// handle contraction fader
 					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 					// allow field to "move"
@@ -91,14 +91,14 @@ ATKBaseDef : SpatDef
 			},
 			{ // assume N3D input
 				var ord = (nChanns.sqrt) - 1;
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, directang |
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, orientation = #[0, 0, 0], directang |
 					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
 					sig = lrevRef.value + (p.value * ((1/radRoot) - 1));
 					sig = FoaEncode.ar(sig, MoscaUtils.n2f);
 					sig = FoaDirectO.ar(sig, directang);
 					// directivity
-					sig = FoaTransform.ar(sig, 'rotate', rotAngle);
+					sig = FoaTransform.ar(sig, 'rotate', orientation[0]);
 					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 				};
 			}

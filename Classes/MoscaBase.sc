@@ -8,9 +8,9 @@ MoscaBase // acts as the public interface
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
 	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window,
 	<>zoomfactor = 1, <>fontsize = 14, <graphicScale = 100, <maxundo;
-	var <>orient; //origin with respect to graphic pixels 
-	
-	
+	var <>orient; //origin with respect to graphic pixels
+
+
 	*printSynthParams
 	{
 		("Parameters usable in SynthDefs
@@ -20,7 +20,7 @@ MoscaBase // acts as the public interface
 			\\glev | Global effect level [0, 1]
 			\\llev | Local effect level [0, 1]
 			\\radAzimElev | radius, azimuth and elevation array in radiants [[0,20],[-pi,pi],[-hafPi,halfPi]]
-			\\rotAngle | B-format rotation angle [-pi, pi]
+             \\orientation | B-format rotation angle [[-pi, pi], [-pi, pi], [-pi, pi]]
 			\\contr | Contraction of the soundfiled, from omnidirectional to punctual [0, 1]
 			\\aux | aray of 5 Auxiliary parameter values [[0, 1],[0, 1],[0, 1],[0, 1],[0, 1]]
 			\\check | array of 5 Auxiliary Boolean values [[false,true],[false,true],[false,true],[false,true],[false,true]]

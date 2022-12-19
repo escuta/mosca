@@ -104,7 +104,7 @@ ABTDef : N3DDef
 			},
 			4,
 			{ // assume FuMa input
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle, linear = 1 |
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, orientation = #[0, 0, 0], linear = 1 |
 					var sig, pushang = 2 - (contract * 2), linearsig, linearscale, sig_a, sig_b;
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
 					linearscale = (12 - (rad * 12));
@@ -112,21 +112,21 @@ ABTDef : N3DDef
 					linearsig = lrevRef.value + (p.value * linearscale  );
 					sig = FoaDecode.ar(p.value * ((1/radRoot) - 1),	MoscaUtils.f2n);
 					sig = Select.ar(linear > 0, [sig, linearsig]);
-					sig = HOATransRotateAz.ar(1, lrevRef.value + sig, rotAngle);
+					sig = HOATransRotateAz.ar(1, lrevRef.value + sig, orientation[0]);
 					// handle contraction
 					sig_a = HOABeamDirac2Hoa.ar(1, sig, azimuth, elevation, timer_manual:1, focus:pushang);
-					// handle focus with distance 
+					// handle focus with distance
 					sig_b = HOABeamDirac2Hoa.ar(1, sig_a, azimuth, elevation, timer_manual:1, focus: rad * (1 - contract));
 					lrevRef.value = XFade2.ar(sig_a, sig_b, 1 - contract, level: 1.0)
 				};
 			},
 			{ // assume N3D input
 				var ord = (nChanns.sqrt) - 1;
-				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, rotAngle |
+				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract, orientation = #[0, 0, 0] |
 					var sig, pushang = 2 - (contract * 2);
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
 					sig = HOATransRotateAz.ar(ord, lrevRef.value +
-						(p.value * ((1/radRoot) - 1)), rotAngle);
+						(p.value * ((1/radRoot) - 1)), orientation[0]);
 					lrevRef.value = HOABeamDirac2Hoa.ar(ord, sig, azimuth, elevation, timer_manual:1, focus:pushang);
 				};
 			}

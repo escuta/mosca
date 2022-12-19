@@ -28,7 +28,7 @@ MoscaSource[]
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
-	var <auxiliary, <aux, <check;
+	var <auxiliary, <aux, <check, <orientation = #[0, 0, 0];
 
 	*new
 	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effects |
@@ -247,7 +247,9 @@ MoscaSource[]
 		angle.action_({ | val | this.setSynths(\angle, val.value.degrad) });
 
 		rotation.action_({ | val |
-			this.setSynths(\rotAngle, val.value.degrad  + center.heading.value);
+			var rotated = orientation;
+			rotated[0] = rotated[0] + val.value.degrad;
+			this.setSynths(\orientation, rotated);
 		});
 
 		spatInstances.get.do({ | item |
@@ -365,7 +367,7 @@ MoscaSource[]
 		localDelay.free;
 		localDecay.free;
 		localAmount.free;
-		
+
 		angle.free;
 		rotation.free;
 
@@ -397,10 +399,9 @@ MoscaSource[]
 
 			if (chanNum > 2)
 			{
-				args = args ++ [\rotAngle, rotation.value]
-				// TODO
-				// + center.heading.value];
-				// but no acces to center here currently
+				var rotated = orientation;
+				rotated[0] = rotated[0] + rotation.value.degrad;
+				args = args ++ [\orientation, rotated]
 			};
 
 			args = args ++ effectInstances.get.at(localEffect.value.asSymbol)

@@ -162,6 +162,8 @@ OssiaAutomationCenter
 				.tilt(num.value[1].neg)
 				.tumble(num.value[2].neg);
 
+				item.orientation = num;
+
 				item.coordinates.cartBack_(false);
 
 				item.coordinates.azElDist.v_([(euler.theta - halfPi).wrap(-pi, pi).raddeg,
