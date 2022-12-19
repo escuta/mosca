@@ -37,7 +37,6 @@ ATKBaseDef : SpatDef
 					sig = FoaEncode.ar(sig, encoder);
 					sig = FoaTransform.ar(sig, 'push', MoscaUtils.halfPi * contract,
 						CircleRamp.kr(azimuth, 0.1, -pi, pi), elevation);
-					//SendTrig.kr(Impulse.kr(1), 0, CircleRamp.kr(azimuth, 0.1, -pi, pi) ); // debug
 					sig = HPF.ar(sig, 20); // stops bass frequency blow outs by proximity
 					lrevRef.value = FoaTransform.ar(sig, 'proximity', rad * renderer.longestRadius);
 				};
@@ -54,7 +53,6 @@ ATKBaseDef : SpatDef
 					sig = lrevRef.value + (sig * atenuator.value(radRoot));
 					l = FoaEncode.ar(sig[0], encoder);
 					r = FoaEncode.ar(sig[1], encoder);
-					//					SendTrig.kr(Impulse.kr(1), 0, azimuth ); // debug
 					l = FoaTransform.ar(l, 'push', contr, az1, elevation);
 					r = FoaTransform.ar(r, 'push', contr, az2, elevation);
 					sig = HPF.ar(l + r, 20); // stops bass frequency blow outs by proximity
@@ -71,8 +69,6 @@ ATKBaseDef : SpatDef
 					linearscale = (12 - (rad * 12));
 					linearscale = Select.kr(linearscale > 0, [0, linearscale]); //negs rolled off at zero
 					linearsig = lrevRef.value + (p.value * linearscale  );
-					SendTrig.kr(Impulse.kr(1), 0, azimuth ); // debug
-					SendTrig.kr(Impulse.kr(1), 1, orientation ); // debug
 
 					sig = lrevRef.value + (p.value * ((1/radRoot) - 1) );
 					sig = Select.ar(linear > 0, [sig, linearsig]);

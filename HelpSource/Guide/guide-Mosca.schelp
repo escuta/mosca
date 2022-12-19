@@ -253,112 +253,9 @@ s.waitForBoot {
 
 section::Coded control
 
-The GUI does not control internal variables directly, but rather via proxies of the class AutomationGuiProxy. This enables Mosca to run with or without a GUI as it is the proxies that save and read Automation data to and from disk and not the GUI elements themselves. Ordinarily the user does not need to know about this technical detail, however the proxies serve another useful purpose, they can be used for coded control of Mosca, with or without an active GUI. Proxies objects behave like GUI elements in that they have a value and an assigned function that when called upon, acts on that variable. So for example, if we wish to get the current x-position for a particular source we may use: myMoscaInstanceName.xboxProxy[i].value, where i is the index number of the source (starting at zero). We may use the method valueAction to set the value of a proxy and have its value propagated through the system. So for example, if we wish to change the position of the x-coordenate for source 2 to 0.5, we use: myMoscaInstanceName.xboxProxy[1].valueAction = 0.5. See list below.
+Am instance of the Mosca GUI and its sources may be controlled SuperCollider code usuing the functions defined in the class MoscaBase. Similarly, Mosca parameters may be used to modulate synths. See the file MoscaBase.sc in the source for the available options.
 
-subsection::Per source Proxies
-
-list::
-
-##xboxProxy - x-coord [-200, 200] in meters
-
-##yboxProxy - y-coord [-200, 200] in meters
-
-##zboxProxy - z-coord [-200, 200] in meters
-
-##hwncheckProxy - Hardware-in checkbox (flag)
-
-##scncheckProxy - SuperCollider-in checkbox (flag)
-
-##ncanboxProxy - number of channels [1, 2, 4, 9, 16, 25, 36]
-
-##businiboxProxy - start bus [0, n]
-
-##lpcheckProxy - loop checkbox (flag)
-
-##libboxProxy - Library selection [0, 6]
-
-##vboxProxy - level [0, 2]
-
-##dpboxProxy - Doppler amount [0, 1]
-
-##cboxProxy - contraction [0, 1]
-
-##dstrvboxProxy - Distant Reverb [0, 2 + rirBank]
-
-##lboxProxy - distant reverb amount [0, 1]
-
-##rmboxProxy - Dst. room/delay [0, 1]
-
-##dmboxProxy - Dst. damp/decay [0, 1]
-
-##gboxProxy - close reverb amount [0, 1]
-
-##aboxProxy - angle [0, pi] in radiants
-
-##rboxProxy - rotation [-pi, pi] in radiants
-
-##dboxProxy - Directivity angle [0, pi/2] in radiants
-
-##spcheckProxy - spread checkbox (flag)
-
-##dfcheckProxy - diffuse checkbox (flag)
-
-##rateboxProxy - Grain rate [1, 60] in hertz
-
-##winboxProxy - Window size [0, 0.2] in seconds
-
-##randboxProxy - Random window [0, 1] % of Window size
-
-##a1checkProxy - auxiliary 1 button (flag)
-
-##a2checkProxy - auxiliary 2 button (flag)
-
-##a3checkProxy - auxiliary 3 button (flag)
-
-##a4checkProxy - auxiliary 4 button (flag)
-
-##a5checkProxy - auxiliary 5 button (flag)
-
-##a1boxProxy - auxiliary 1 level [0, 1]
-
-##a2boxProxy - auxiliary 2 level [0, 1]
-
-##a3boxProxy - auxiliary 3 level [0, 1]
-
-##a4boxProxy - auxiliary 4 level [0, 1]
-
-##a5boxProxy - auxiliary 5 level [0, 1]
-
-##stcheckProxy - stream check (data window) (flag)
-
-##tfieldProxy - file path (data window) (path)
-::
-
-subsection::Global Proxies
-
-accesed without [i] index
-
-list::
-
-##clsrvboxProxy - Distant Reverb [0, 2 + rirBank]
-
-##clsrmboxProxy - Cls. room/delay [0, 1]
-
-##clsdmboxProxy - Cls. damp/decay [0, 1]
-
-##masterlevProxy - Master level [0, 2]
-
-##oxnumboxProxy - Listener position on the X axis [-200, 200] in meters
-
-##oynumboxProxy - Listener position on the Y axis [-200, 200] in meters
-
-##oznumboxProxy - Listener position on the Z axis [-200, 200] in meters
-
-##headingnumboxProxy - Listener orientation around the Z axis [-pi, pi] in radiants
-
-##pitchnumboxProxy - Listener orientation around the X axis [-pi, pi] in radiants
-
-##rollnumboxProxy - Listener orientation around the Y axis [-pi, pi] in radiants
+The following example shows the control of the Cartesian coordinates of source 1 with the setCartesian function.
 ::
 
 code::
@@ -377,30 +274,27 @@ var body_pos_x = 1.4e6; // An X axis position of the body to be attracted
 var body_pos_y = 7.5e5; // A Y axis position of the body to be attracted
 var body_vel_x = 0.0;   // Body velocity split into two components, X and Y
 var body_vel_y = 8.5e3;
-var scale = 10000 * 1.8;
+~scale = 10000000 * 0.17;
+
 ~orbit = true;             // set ~orbit to false to turn orbit off (see after end of block)
 
 Routine {
-	while ( {~orbit}, {
-		radius = (pow(body_pos_x, 2) + pow(body_pos_y, 2)).sqrt;
-		grav_accel = (grav_const * (earth_mass / pow(radius, 2)));
-		angle = atan2(body_pos_x, body_pos_y);
-		body_vel_x = body_vel_x + (sin(angle) * grav_accel);
-		body_vel_y = body_vel_y + (cos(angle) * grav_accel);
-		body_pos_x = body_pos_x - body_vel_x;
-		body_pos_y = body_pos_y - body_vel_y;
-		// Control x,y and z values for source 1
-		~moscaInstance.xboxProxy[0].valueAction = (body_pos_x / scale);
-		~moscaInstance.yboxProxy[0].valueAction = (body_pos_y / scale);
-		~moscaInstance.zboxProxy[0].valueAction = (body_pos_y / scale / 2);
-				// duplicate Y for Z-axis
-		0.02.wait;
-	};
-	);
+    while ( {~orbit}, {
+        radius = (pow(body_pos_x, 2) + pow(body_pos_y, 2)).sqrt;
+        grav_accel = (grav_const * (earth_mass / pow(radius, 2)));
+        angle = atan2(body_pos_x, body_pos_y);
+        body_vel_x = body_vel_x + (sin(angle) * grav_accel);
+        body_vel_y = body_vel_y + (cos(angle) * grav_accel);
+        body_pos_x = (body_pos_x - body_vel_x);
+        body_pos_y = (body_pos_y - body_vel_y);
+		~moscaInstance.setCartesian(1, body_pos_x / ~scale,
+			body_pos_y / ~scale, 0);
+        0.02.wait;
+    };
+    );
 }.play;
 
 )
-
 ~orbit = false    // turn off orbit
 ::
 
