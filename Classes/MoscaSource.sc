@@ -28,7 +28,7 @@ MoscaSource[]
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
-	var <auxiliary, <aux, <check, orientation = #[0, 0, 0];
+	var <auxiliary, <aux, <check, orientation;
 
 	*new
 	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effects |
@@ -150,6 +150,8 @@ MoscaSource[]
 			check = check.add(OssiaAutomationProxy(auxiliary, "Ckeck_" ++ (i + 1),
 				Boolean, critical:allCritical));
 		});
+
+		orientation = ossiaParent.find("Orientation").value;
 	}
 
 	setAction
