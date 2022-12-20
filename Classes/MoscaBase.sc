@@ -385,16 +385,17 @@ MoscaBase // acts as the public interface
 	// Set by user. Registerred functions called by "play"
 
 	embedSynth
-	{ | sourceNum = 1, numChans = 1, triggerFunc, stopFunc, register |
+	{ | sourceNum = 1, numChans = 1, triggerFunc, stopFunc |
 
 		var src = this.prGetSource(sourceNum);
-
+		// presently only one synth can be registered with a source
 		src.nChan.valueAction_(numChans);
 		src.scSynths.valueAction_(true);
 		src.triggerFunc = triggerFunc;
 		src.stopFunc = stopFunc;
-		src.synthRegistry.clear;
-		src.synthRegistry.add(register);
+		//src.synthRegistry.clear;
+		//("register = " + register).postln;
+		//		src.synthRegistry.addFirst(register);
 	}
 
 	clearEmbededSynth
@@ -404,7 +405,7 @@ MoscaBase // acts as the public interface
 
 		src.triggerFunc = nil;
 		src.stopFunc = nil;
-		src.synthRegistry.clear;
+		//src.synthRegistry.clear;
 	}
 
 	getSCBus
