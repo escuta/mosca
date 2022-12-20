@@ -488,7 +488,8 @@ MoscaSource[]
 
 		if (chanNum > 2)
 		{
-			this.setSynths(\orientation, orientation[0] + rotation.value.degrad);
+			this.setSynths(\orientation, [ (orientation[0] + rotation.value.degrad),
+				orientation[1].neg, orientation[2].neg ]);
 		}
 	}
 

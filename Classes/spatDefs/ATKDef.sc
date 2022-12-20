@@ -77,13 +77,18 @@ ATKBaseDef : SpatDef
 					//sig = FoaTransform.ar(sig, 'rotate', orientation[0]);
 
 					// rotation/tilt/tumble of field itself -- need orientation values!
-					//SendTrig.kr(Impulse.kr(1), 0, orientation[0] ); // debug
-					sig = FoaTransform.ar(sig, 'rtt', orientation[0], orientation[1], orientation[2]);
+
+					//sig = FoaTransform.ar(sig, 'rtt', orientation[0], orientation[1], orientation[2]);
 
 					// handle contraction fader
 					lrevRef.value = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 					// allow field to "move"
 					lrevRef.value = FoaTransform.ar(lrevRef.value, 'push', pushang2, azimuth, elevation);
+					//SendTrig.kr(Impulse.kr(1), 0, orientation[0] ); // debug
+					//SendTrig.kr(Impulse.kr(1), 1, orientation[1] ); // debug
+					//SendTrig.kr(Impulse.kr(1), 2, orientation[2] ); // debug
+
+					lrevRef.value = FoaTransform.ar(lrevRef.value, 'rtt', orientation[0], orientation[1], orientation[2]);
 				};
 			},
 			{ // assume N3D input
