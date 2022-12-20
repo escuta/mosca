@@ -253,8 +253,7 @@ MoscaSource[]
 			if (chanNum > 2)
 			{
 				var rotated = orientation;
-				rotated[0] = rotated[0] + val.value.degrad;
-				this.setSynths(\orientation, rotated);
+				this.setSynths(\orientation, orientation[0] + val.value.degrad);
 			}
 		});
 
@@ -405,9 +404,7 @@ MoscaSource[]
 
 			if (chanNum > 2)
 			{
-				var rotated = orientation;
-				rotated[0] = rotated[0] + rotation.value.degrad;
-				args = args ++ [\orientation, rotated]
+				args = args ++ [\orientation, orientation[0] + rotation.value.degrad]
 			};
 
 			args = args ++ effectInstances.get.at(localEffect.value.asSymbol)
@@ -491,9 +488,7 @@ MoscaSource[]
 
 		if (chanNum > 2)
 		{
-			var rotated = orientation;
-			rotated[0] = rotated[0] + rotation.value.degrad;
-			this.setSynths(\orientation, rotated);
+			this.setSynths(\orientation, orientation[0] + rotation.value.degrad);
 		}
 	}
 

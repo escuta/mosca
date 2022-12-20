@@ -162,7 +162,7 @@ OssiaAutomationCenter
 				.tilt(num.value[1].neg)
 				.tumble(num.value[2].neg);
 
-				item.orientation = num;
+				item.orientation = num.value.neg;
 
 				item.coordinates.cartBack_(false);
 
