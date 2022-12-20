@@ -28,7 +28,7 @@ MoscaSource[]
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
 	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
-	var <auxiliary, <aux, <check, <>orientation = #[0, 0, 0];
+	var <auxiliary, <aux, <check, orientation = #[0, 0, 0];
 
 	*new
 	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effects |
@@ -247,9 +247,13 @@ MoscaSource[]
 		angle.action_({ | val | this.setSynths(\angle, val.value.degrad) });
 
 		rotation.action_({ | val |
-			var rotated = orientation;
-			rotated[0] = rotated[0] + val.value.degrad;
-			this.setSynths(\orientation, rotated);
+
+			if (chanNum > 2)
+			{
+				var rotated = orientation;
+				rotated[0] = rotated[0] + val.value.degrad;
+				this.setSynths(\orientation, rotated);
+			}
 		});
 
 		spatInstances.get.do({ | item |
@@ -476,6 +480,19 @@ MoscaSource[]
 		if (spatializer.get.notNil) { spatializer.get.set(param, value) };
 
 		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
+	}
+
+	orientation_
+	{ | newOrient |
+
+		orientation = newOrient;
+
+		if (chanNum > 2)
+		{
+			var rotated = orientation;
+			rotated[0] = rotated[0] + rotation.value.degrad;
+			this.setSynths(\orientation, rotated);
+		}
 	}
 
 	getLibParams
