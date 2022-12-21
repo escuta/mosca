@@ -30,7 +30,6 @@ MoscaSource[]
 	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
 	var <auxiliary, <aux, <check, orientation;
-	//	var <>scSynth; // only one per source at this stage
 
 	*new
 	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effects |
@@ -100,7 +99,6 @@ MoscaSource[]
 		spatType = \N3D;
 
 		coordinates = OssiaAutomationCoordinates(src, allCritical);
-
 		play = OSSIA_Parameter(src, "Play", Boolean, critical:true, repetition_filter:true);
 
 		firstTime = true;
@@ -482,7 +480,10 @@ MoscaSource[]
 
 		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
 
-		if (scSynths.value && embeddedSynth.notNil) {	embeddedSynth.set(param, value) };   
+		if (scSynths.value && embeddedSynth.notNil) {	embeddedSynth.set(param, value);
+			//embeddedSynth.set(\coordinates, [coordinates.spheVal.rho, // just for tests!
+			//	coordinates.spheVal.theta, coordinates.spheVal.phi]);
+		};   
 	}
 
 	orientation_
@@ -494,8 +495,26 @@ MoscaSource[]
 		{
 			this.setSynths(\orientation, [ (orientation[0] + rotation.value.degrad),
 				orientation[1].neg, orientation[2].neg ]);
+		};
+		if (embeddedSynth.notNil) {
+			embeddedSynth.set(\orientation, [ (orientation[0] + rotation.value.degrad),
+				orientation[1].neg, orientation[2].neg ]);
 		}
 	}
+
+	/*
+	//test
+	cartesian_
+	{ | newCartesian |
+
+		cartesian = newCartesian;
+
+		if (embeddedSynth.notNil) {
+			embeddedSynth.set(\cartesian, [ cartesian[0],
+				cartesian[1].neg, cartesian[2].neg ]);
+		}
+		}
+	*/
 
 	getLibParams
 	{
