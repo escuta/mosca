@@ -287,8 +287,8 @@ Routine {
         body_vel_y = body_vel_y + (cos(angle) * grav_accel);
         body_pos_x = (body_pos_x - body_vel_x);
         body_pos_y = (body_pos_y - body_vel_y);
-		~moscaInstance.setCartesian(1, body_pos_x / ~scale,
-			body_pos_y / ~scale, 0);
+        ~moscaInstance.setCartesian(1, body_pos_x / ~scale,
+            body_pos_y / ~scale, body_pos_y / ~scale / 5);
         0.02.wait;
     };
     );
@@ -417,7 +417,7 @@ s.waitForBoot {
 ~decoder.free;
 ::
 
-section::Embed SuperCollider in source 
+section::Embed SuperCollider synth in a Mosca source 
 
 A single SuperCollider synth may be embedded in a Mosca source and receive source-specific and global data from the Mosca GUI.
 
@@ -431,25 +431,31 @@ Mosca.printSynthParams;
 
 (
 
+// set Doppler amount and effect
+~moscaInstance.setDoppler(1, 0.5);
+~moscaInstance.setLocalEffect(1, "FreeVerb");
+~moscaInstance.setLocalAmount(1, 0.01);
 
-    SynthDef("test-out", { | outbus=0, freq=440, radAzimElev = #[0,0,0],
-	orientation = #[0,0,0], dopamnt = 0 |
+SynthDef("test-out", { | outbus=0, freq=440, radAzimElev = #[0,0,0],
+	orientation = #[0,0,0], amp = 0 |
     var source, source2, point, delEnv;
     var dis = Lag.kr(radAzimElev[0], 0.1);
     var freqAdjust = dis * 40;
-    delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
+	SendTrig.kr(Impulse.kr(1), 0, amp ); // debug
+
+	delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
         sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
     source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
         doneAction: 2));
     Out.ar(outbus, source);
     // or try stereo. Don't forget to put 2 channels for embedSynth
-    // and getSCBuse below and to comment out the Out.ar above
-    //source2 = Pulse.ar(freq + 23 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2));
+	// and getSCBuse below. Comment out the Out.ar above
+	//source2 = Pulse.ar(freq + 23 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2));
     //    Out.ar(outbus, [source, source2]);
 }).send(s);
 
-    ~moscaInstance.embedSynth(1, 1, // first source, mono synth
-     triggerFunc:{~mySynth = Synth.new("test-out", [\freq, 220, \outbus,
+	~moscaInstance.embedSynth(1, 1, // first source, mono synth
+    triggerFunc:{~mySynth = Synth.new("test-out", [\freq, 420, \outbus,
         ~moscaInstance.getSCBus(1, 1), \radAzimElev, #[0,0,0]
 	]).onFree({"done".postln;})}
 	);

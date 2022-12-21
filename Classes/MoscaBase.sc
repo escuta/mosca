@@ -14,20 +14,16 @@ MoscaBase // acts as the public interface
 	*printSynthParams
 	{
 		("Parameters usable in SynthDefs
-            \\radAzimElev | Array with source radius (0-1), azimuth and elevation
-			\\level | source level in dBs [-96dB - 12dB]
-			\\doppler | Doppler amount [0-1]
-            \\localAmount | local effect amount [0-1]
-            \\localDelay | local effect delay (allpass and freeverb only) [0-1]
-            \\localDecay | local effect decay (allpass and freeverb only) [0-1]
-            \\globalAmount | global effect amount [0-1]
-            \\contraction | Contraction of the soundfiled, from omnidirectional to focused [0-1]
+			\\dopamnt | Doppler amount [0-1]
+            \\room | local effect delay (allpass and freeverb only) [0, 1]
+            \\damp | local effect decay (allpass and freeverb only) [0, 1]
+            \\contract | Contraction of the soundfiled, from omnidirectional to focused [0-1]
 			\\angle | Stereo angle | default 1.05 (60 degrees) [0, pi]
+            \\rotation | z-axis rotation of B-format [-pi, pi]
 			\\glev | Global effect level [0, 1]
 			\\llev | Local effect level [0, 1]
 			\\radAzimElev | radius, azimuth and elevation array in radiants [[0,20],[-pi,pi],[-hafPi,halfPi]]
-             \\orientation | B-format rotation angle [[-pi, pi], [-pi, pi], [-pi, pi]]
-			\\contr | Contraction of the soundfiled, from omnidirectional to punctual [0, 1]
+            \\orientation | B-format rotation angle [[-pi, pi], [-pi, pi], [-pi, pi]]
 			\\aux | aray of 5 Auxiliary parameter values [[0, 1],[0, 1],[0, 1],[0, 1],[0, 1]]
 			\\check | array of 5 Auxiliary Boolean values [[false,true],[false,true],[false,true],[false,true],[false,true]]
 		").postln;
