@@ -431,26 +431,31 @@ code::
 Mosca.printSynthParams;
 
 (
-SynthDef("test-out", { | outbus=0, freq=440, radius = 0.5 |
-	var source, source2, point, freqAdjust, delEnv,
-	dis = Lag.kr(radius, 0.1);
-	freqAdjust = dis;
-	delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
-		sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
-	source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-		doneAction: 2));
-	Out.ar(outbus, source);
-	// or try stereo with 2 channels set in gui
-	//    source2 = Pulse.ar(freq + 3 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
-	//            doneAction: 2));
-	//    Out.ar(outbus, [source, source2]);
+
+~osc = OSCFunc({ |msg| msg.postln }, '/tr', s.addr);
+
+    SynthDef("test-out", { | outbus=0, freq=440, radAzimElev = #[0,0,0],
+	orientation = #[0,0,0], dopamnt = 0 |
+    var source, source2, point, delEnv;
+    var dis = Lag.kr(radAzimElev[0], 0.1);
+    var freqAdjust = dis * 40;
+    delEnv = Env.dadsr(0.2, attackTime: 0.1, decayTime: inf,
+        sustainLevel: 0.9); // envelope with an onset delay equal to lag buffer
+    source = Pulse.ar(freq + freqAdjust, width: dis, mul: EnvGen.kr(delEnv,
+        doneAction: 2));
+    Out.ar(outbus, source);
+    // or try stereo. Don't forget to put 2 channels for embedSynth
+    // and getSCBuse below. Comment out the Out.ar above
+    //source2 = Pulse.ar(freq + 23 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2));
+    //    Out.ar(outbus, [source, source2]);
 }).send(s);
 
-~moscaInstance.embedSynth(1, 1, // first source, mono synth
-	triggerFunc:{~mySynth = Synth.new("test-out", [\freq, 220, \outbus,
-		~moscaInstance.getSCBus(1, 1)]).onFree({"done".postln;})},
-	stopFunc:{~mySynth.free;},
-	register:~mySynth);
+    ~moscaInstance.embedSynth(1, 1, // first source, mono synth
+     triggerFunc:{~mySynth = Synth.new("test-out", [\freq, 220, \outbus,
+        ~moscaInstance.getSCBus(1, 1), \radAzimElev, #[0,0,0]
+	]).onFree({"done".postln;})}
+	);
+
 )
 
 /*

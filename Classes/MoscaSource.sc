@@ -22,7 +22,7 @@ MoscaSource[]
 	var <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
 	var embeddedSynthRef;
-	var <scInBus, <>triggerFunc, <>stopFunc, <>firstTime; // sc synth specific
+	var <scInBus, <>triggerFunc, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
 	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
 	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
@@ -331,9 +331,9 @@ MoscaSource[]
 
 	runStop
 	{
-		if (stopFunc.notNil)
+		if (triggerFunc.notNil)
 		{
-			stopFunc.value;
+			//stopFunc.value;
 			synths.set(nil);
 			//embeddedSynth = nil;
 			embeddedSynthRef.get.free;
