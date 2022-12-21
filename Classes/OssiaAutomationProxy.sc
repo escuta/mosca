@@ -301,7 +301,7 @@ OssiaAutomationCoordinates
 	}
 
 	setAction
-	{ | center, spatializer, synth |
+	{ | center, spatializer, synth, embeddedSynthRef |
 
 		var halfPi = MoscaUtils.halfPi();
 
@@ -367,6 +367,11 @@ OssiaAutomationCoordinates
 			if (synth.get.notNil)
 			{
 				synth.get.do({ _.set(\radAzimElev, [spheVal.rho, spheVal.theta, spheVal.phi]); });
+			};
+
+			if (embeddedSynthRef.get.notNil) {
+				embeddedSynthRef.get.set(\radAzimElev, [spheVal.rho,
+				spheVal.theta, spheVal.phi]);
 			};
 
 			spheBack = true;

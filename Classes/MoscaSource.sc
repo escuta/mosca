@@ -21,7 +21,7 @@ MoscaSource[]
 	var <index, server, srcGrp, spatInstances, effectInstances, defName;
 	var <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
-	var <embeddedSynth;
+	var embeddedSynthRef;
 	var <scInBus, <>triggerFunc, <>stopFunc, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
 	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
@@ -210,8 +210,9 @@ MoscaSource[]
 
 		spatializer = Ref();
 		synths = Ref();
+		embeddedSynthRef = Ref();
 		
-		coordinates.setAction(center, spatializer, synths);
+		coordinates.setAction(center, spatializer, synths, embeddedSynthRef);
 
 		localEffect.action_({ | val | this.prSetDefName() });
 
@@ -245,6 +246,8 @@ MoscaSource[]
 		globalAmount.action_({ | val | this.setSynths(\glev, val.value) });
 
 		angle.action_({ | val | this.setSynths(\angle, val.value.degrad) });
+
+		//	coordinates.action_({ | val | this.setSynths(\angle, val.value.degrad) });
 
 		rotation.action_({ | val |
 
@@ -318,8 +321,11 @@ MoscaSource[]
 	{
 		if (triggerFunc.notNil)
 		{
-			embeddedSynth = triggerFunc.value;
-			"RUNNING TRIGGER".postln;
+
+			embeddedSynthRef.set(
+				triggerFunc.value;
+			);
+				"RUNNING TRIGGER".postln;
 		};
 	}
 
@@ -329,7 +335,10 @@ MoscaSource[]
 		{
 			stopFunc.value;
 			synths.set(nil);
-			embeddedSynth = nil;
+			//embeddedSynth = nil;
+			embeddedSynthRef.get.free;
+			embeddedSynthRef.set(nil);
+			
 
 			"RUNNING STOP".postln;
 		};
@@ -480,10 +489,7 @@ MoscaSource[]
 
 		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
 
-		if (scSynths.value && embeddedSynth.notNil) {	embeddedSynth.set(param, value);
-			//embeddedSynth.set(\coordinates, [coordinates.spheVal.rho, // just for tests!
-			//	coordinates.spheVal.theta, coordinates.spheVal.phi]);
-		};   
+		if (scSynths.value && embeddedSynthRef.get.notNil) { embeddedSynthRef.get.set(param, value)};   
 	}
 
 	orientation_
@@ -496,8 +502,8 @@ MoscaSource[]
 			this.setSynths(\orientation, [ (orientation[0] + rotation.value.degrad),
 				orientation[1].neg, orientation[2].neg ]);
 		};
-		if (embeddedSynth.notNil) {
-			embeddedSynth.set(\orientation, [ (orientation[0] + rotation.value.degrad),
+		if (embeddedSynthRef.get.notNil) {
+			embeddedSynthRef.get.set(\orientation, [ (orientation[0] + rotation.value.degrad),
 				orientation[1].neg, orientation[2].neg ]);
 		}
 	}
@@ -591,12 +597,16 @@ MoscaSource[]
 
 	prReloadIfNeeded
 	{// if the synth is playing, stop and relaunch it
-
 		if (spatializer.get.notNil && play.v)
 		{
 			spatializer.get.free;
 			firstTime = true;
-		}
+		};
+		if (embeddedSynthRef.get.notNil && play.v)
+		{
+			"Switching off!".postln;
+			embeddedSynthRef.get.free;
+		};
 	}
 
 	prCheck4Synth
