@@ -253,10 +253,10 @@ s.waitForBoot {
 
 section::Coded control
 
-Am instance of the Mosca GUI and its sources may be controlled SuperCollider code usuing the functions defined in the class MoscaBase. Similarly, Mosca parameters may be used to modulate synths. See the file MoscaBase.sc in the source for the available options.
+An instance of the Mosca GUI and its sources may be controlled SuperCollider code using the functions defined in the class MoscaBase. Similarly, Mosca parameters may be used to modulate synths. See the file MoscaBase.sc in the source for the available options.
 
 The following example shows the control of the Cartesian coordinates of source 1 with the setCartesian function.
-::
+
 
 code::
 (
@@ -417,22 +417,20 @@ s.waitForBoot {
 ~decoder.free;
 ::
 
-section::Use with Supercollider synths.
+section::Embed SuperCollider in source 
 
-SC-in must be selected in GUI for the particular source and the number of channels entered (either 1, 2, 4, 9, 25 or 36).
-
-In the example below, two sources are dedicated in the GUI. Source 1 and 2, each with 1 channel (in "No. of Channels"). "SC-in" is select for both.
-
-Write a Synthdef. Note that you must specify an out bus in the arguments as well as any GUI data that you wish to use ("radius" in this example).
+A single SuperCollider synth may be embedded in a Mosca source and receive source-specific and global data from the Mosca GUI.
 
 code::
 
-// For a full list of GUI data available run the folowing line
+// For a list of Mosca data available to synths, run the folowing line:
+
 Mosca.printSynthParams;
+
+// The following assumes existence a Mosca instance named ~moscaInstance 
 
 (
 
-~osc = OSCFunc({ |msg| msg.postln }, '/tr', s.addr);
 
     SynthDef("test-out", { | outbus=0, freq=440, radAzimElev = #[0,0,0],
 	orientation = #[0,0,0], dopamnt = 0 |
@@ -445,7 +443,7 @@ Mosca.printSynthParams;
         doneAction: 2));
     Out.ar(outbus, source);
     // or try stereo. Don't forget to put 2 channels for embedSynth
-    // and getSCBuse below. Comment out the Out.ar above
+    // and getSCBuse below and to comment out the Out.ar above
     //source2 = Pulse.ar(freq + 23 + freqAdjust, width: dis, mul: EnvGen.kr(delEnv, doneAction: 2));
     //    Out.ar(outbus, [source, source2]);
 }).send(s);
@@ -458,41 +456,6 @@ Mosca.printSynthParams;
 
 )
 
-/*
-Set up first source
-
-The user must create a "Trigger function" that contains synths. This function will be called when "audition" a particular source or when the transport's play button is selected in the GUI. The user must use the getSCBus method to set the bus number for the particular source (sources numbered from 1 on) as well as "onFree" of the Synth class to deregister the synth (with the method deregisterSynth). The method registerSynth is used to register it.
-
-These simple sounds work best with some doppler set in GUI and some reverb.
-*/
-
-(
-~source1PlayFunc = {
-~mySynth = Synth.new("test-out", [\freq, 220, \outbus,
-~moscaInstance.getSCBus(1)]).onFree({"done".postln; ~moscaInstance.deregisterSynth(1,
-~mySynth)});
-
-~moscaInstance.registerSynth(1, ~mySynth);
-};
-~source1StopFunc = {~mySynth.free; };
-~moscaInstance.setTriggerFunc(1, ~source1PlayFunc);
-~moscaInstance.setStopFunc(1, ~source1StopFunc);
-)
-
-// second source
-(
-~source2PlayFunc = {
-~myOtherSynth = Synth.new("test-out", [\freq, 550, \outbus,
-~moscaInstance.getSCBus(2)]).onFree({"done".postln; ~moscaInstance.deregisterSynth(2,
-~myOtherSynth)});
-
-~moscaInstance.registerSynth(2, ~myOtherSynth);
-};
-~source2StopFunc = {~myOtherSynth.free; };
-
-~moscaInstance.setTriggerFunc(2, ~source2PlayFunc);
-~moscaInstance.setStopFunc(2, ~source2StopFunc);
-)
 ::
 
 subsection::Effect Insert

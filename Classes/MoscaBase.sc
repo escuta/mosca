@@ -14,8 +14,14 @@ MoscaBase // acts as the public interface
 	*printSynthParams
 	{
 		("Parameters usable in SynthDefs
-			\\amp | amplitude [0, 4]
-			\\dopamnt | Doppler ammount [0, 1]
+            \\radAzimElev | Array with source radius (0-1), azimuth and elevation
+			\\level | source level in dBs [-96dB - 12dB]
+			\\doppler | Doppler amount [0-1]
+            \\localAmount | local effect amount [0-1]
+            \\localDelay | local effect delay (allpass and freeverb only) [0-1]
+            \\localDecay | local effect decay (allpass and freeverb only) [0-1]
+            \\globalAmount | global effect amount [0-1]
+            \\contraction | Contraction of the soundfiled, from omnidirectional to focused [0-1]
 			\\angle | Stereo angle | default 1.05 (60 degrees) [0, pi]
 			\\glev | Global effect level [0, 1]
 			\\llev | Local effect level [0, 1]
@@ -385,14 +391,14 @@ MoscaBase // acts as the public interface
 	// Set by user. Registerred functions called by "play"
 
 	embedSynth
-	{ | sourceNum = 1, numChans = 1, triggerFunc, stopFunc |
+	{ | sourceNum = 1, numChans = 1, triggerFunc |
 
 		var src = this.prGetSource(sourceNum);
 		// presently only one synth can be registered with a source
 		src.nChan.valueAction_(numChans);
 		src.scSynths.valueAction_(true);
 		src.triggerFunc = triggerFunc;
-		src.stopFunc = stopFunc;
+		//src.stopFunc = stopFunc;
 		//src.synthRegistry.clear;
 		//("register = " + register).postln;
 		//		src.synthRegistry.addFirst(register);
@@ -404,7 +410,7 @@ MoscaBase // acts as the public interface
 		var src = this.prGetSource(sourceNum);
 
 		src.triggerFunc = nil;
-		src.stopFunc = nil;
+		//src.stopFunc = nil;
 		//src.synthRegistry.clear;
 	}
 

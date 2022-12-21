@@ -4,7 +4,7 @@ categories::Libraries>Ambisonic Toolkit, Libraries>HOA
 related::Guide/guide-Mosca, Tutorials/ABCs-of-the-ATK, Guides/HOAguide, Tutorials/AutomationIntro, Guides/OssiaReference
 
 note::
-Installing the ATK
+Installing the ATK  
 link:: http://www.ambisonictoolkit.net/download/kernels##Kernels:: and
 link:: http://www.ambisonictoolkit.net/download/matrices##Matrices:: is
 required, as well as the
