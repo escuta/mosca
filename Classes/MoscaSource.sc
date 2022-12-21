@@ -21,15 +21,16 @@ MoscaSource[]
 	var <index, server, srcGrp, spatInstances, effectInstances, defName;
 	var <chanNum = 1, spatType, curentSpat;
 	var <spatializer, synths, buffer; // communicatin with the audio server
+	var <embeddedSynth;
 	var <scInBus, <>triggerFunc, <>stopFunc, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
 	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
 	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
-	var <play, <loop, <level, <contraction ,<doppler, <globalAmount;
+	var <play, <loop, <level, <contraction ,<doppler, <globalAmount, <ox;
 	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
 	var <auxiliary, <aux, <check, orientation;
-	var <>scSynth; // only one per source at this stage
+	//	var <>scSynth; // only one per source at this stage
 
 	*new
 	{ | index, server, sourceGroup, ossiaParent, allCritical, spat, effects |
@@ -211,7 +212,7 @@ MoscaSource[]
 
 		spatializer = Ref();
 		synths = Ref();
-
+		
 		coordinates.setAction(center, spatializer, synths);
 
 		localEffect.action_({ | val | this.prSetDefName() });
@@ -319,7 +320,7 @@ MoscaSource[]
 	{
 		if (triggerFunc.notNil)
 		{
-			scSynth = triggerFunc.value;
+			embeddedSynth = triggerFunc.value;
 			"RUNNING TRIGGER".postln;
 		};
 	}
@@ -330,7 +331,7 @@ MoscaSource[]
 		{
 			stopFunc.value;
 			synths.set(nil);
-			scSynth = nil;
+			embeddedSynth = nil;
 
 			"RUNNING STOP".postln;
 		};
@@ -481,10 +482,7 @@ MoscaSource[]
 
 		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
 
-		if (scSynths.value && scSynth.notNil) {
-			//("value = " + value).postln;
-			scSynth.set(param, value) }
-		;   
+		if (scSynths.value && embeddedSynth.notNil) {	embeddedSynth.set(param, value) };   
 	}
 
 	orientation_
