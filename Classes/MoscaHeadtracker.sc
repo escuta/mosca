@@ -107,7 +107,7 @@ HeadTracker
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 
-		moscaCenter.ossiaOrient.v_([-1 * h, p, r]);
+		moscaCenter.ossiaOrient.v_([h.neg, p.neg, r.neg]);
 	}
 
 	matchByte
