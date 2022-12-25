@@ -46,7 +46,6 @@ Mosca : MoscaBase
 
 
 		//~osc = OSCFunc({ |msg| msg.postln }, '/tr', server.addr); // debugging
-
 		// TODO
 		// Server.program.asString.endsWith("supernova");
 		// multyThread = server.options.threads.notNil;
