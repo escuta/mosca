@@ -24,7 +24,7 @@ MoscaRenderer
 	var <bFormNumChan, <numOutputs; // utils
 	var renderFunc, <renderSynth; // synth
 	var <ossiaMasterLevel;
-	var vstBus, decoderCheck;
+	var vstBus, vstCheck = false;
 
 
 	*new { | maxOrder | ^super.new.ctr(maxOrder) }
@@ -319,7 +319,6 @@ MoscaRenderer
 					} {
 
 						if (decoder != "VST") {  
-							decoderCheck = "VST";
 							// assume ADT Decoder
 							format = \N3D;
 							SynthDef("ambiConverter", { | gate = 1 |
@@ -342,6 +341,7 @@ MoscaRenderer
 						} {
 							// Assume IEM BinauralDecoder
 							"VST Stuff Here".postln;
+							vstCheck = true;
 
 							format = \SN3D;
 							SynthDef("ambiConverter", { | gate = 1 |
@@ -455,13 +455,13 @@ MoscaRenderer
 	{ | server, target |
 		var vstDecoder;
 		renderSynth = SynthDef("MoscaRender", renderFunc).play(target: target, addAction: \addToTail);
-		//	if (decoderCheck == "VST") {
+		if (vstCheck) {
 			server.sync;
 			vstDecoder = VSTPluginController(Synth(\vstDecoder, [\inbus,
 				vstBus ], target: renderSynth, addAction: \addAfter));
 			server.sync;
 			vstDecoder.open("BinauralDecoder.vst3");
-		//};
-									
+		};
+		
 	}
 }
