@@ -466,6 +466,82 @@ s.waitForBoot {
 ::
 
 
+subsection::Using IEM ambisonic decoders
+
+note::Testing!::
+
+The "IEM Plugin Suite" of VST3 plugins must be installed to run this example.
+
+code::
+
+// Mosca uses N3D normalisation for higher order ambisonics (up to the 5th order) and it is necessary to create a "preset" file for the IEM plugin used. Run the following to first create a preset and then to experiment with in BinauralDecoder.vst3 plugin with 2nd order ambisonics.
+
+s.boot; // make sure the server is running
+VSTPlugin.clear // run this line in case of accidental blackbanning of plugin.
+VSTPlugin.search; // see the plugin you wish to use
+
+(
+SynthDef(\dummy, { arg bus;
+	VSTPlugin.ar(In.ar(bus, 2));
+}).add;
+~synth = Synth(\dummy);
+~vstDecoder = VSTPluginController.new(~synth).open("BinauralDecoder.vst3");
+~vstDecoder.gui;
+)
+
+// set GUI to 2nd order with N3D normalisation and save as "2ndOrder". Close GUI.
+
+~synth.free;  // free dummy synth
+
+// Now run Mosca with the IEM BinauralDecoder and with 2nd order ambisonic encoding/decoding.
+
+(
+~supercoll = OSSIA_Device("SC");  // Create and name OSSIA_Device to contain all parameters
+~supercoll.exposeOSC;             // Evaluate this line while OSSIA/score is learning incoming OSC
+Server.killAll;                   // Make sure no servers are booted yet
+o = s.options;
+o.numInputBusChannels = 32;       // Allow for many possible inputs
+//o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
+o.numOutputBusChannels = 18;       // 13 non-ambisonic + 9 B-format (2nd order)
+o.numAudioBusChannels = 2048;
+o.numWireBufs = 512;
+s.waitForBoot {
+    // Booting scsynth server before setting up Mosca
+
+    // Create global variables passed as Mosca's arguments
+	~decoder = "BinauralDecoder.vst3";
+    ~order = 2;
+    ~out = 0;     // Use te first available Output
+    ~sub = nil;   // No subwoofers
+    ~setup = nil; // No speaker setup (headphones)
+ 
+    s.sync;
+
+    ~moscaInstance = Mosca(
+        nsources: 6,             // Set the number of sources
+        dur: 360,                 // Set transport duration
+        // rirBank: "/path/to/rirBank/folder",
+        server:s,
+        parentOssiaNode:~supercoll,
+        decoder: ~decoder,
+		vstPreset: "2ndOrder",
+        maxorder:~order,
+        speaker_array:~setup,
+        outbus:~out,
+        suboutbus:~sub,
+    ).gui(size: 700);
+}
+)
+
+
+::
+
+
+
+
+
+
+
 subsection::Effect Insert
 
 note::work in progress (currently retired)::

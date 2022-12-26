@@ -30,15 +30,15 @@ Mosca : MoscaBase
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
-		graphicPath, scaleFactor, fontSize, maxUndo |
+		graphicPath, scaleFactor, fontSize, maxUndo, vstPreset |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo);
+			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset);
 	}
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
-		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo |
+		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo, vstPreset |
 
 		var multyThread;
 
@@ -65,7 +65,7 @@ Mosca : MoscaBase
 			srcGrp.set(ParGroup.tail(server.defaultGroup));
 
 			renderer.setup(server, speaker_array, maxOrder, decoder,
-				outBus, subOutBus, rawOutBus, rawFormat);
+				outBus, subOutBus, rawOutBus, rawFormat, vstPreset);
 
 			// recording blip synth for synchronisation
 			SynthDef(\blip, {
