@@ -24,7 +24,7 @@ MoscaRenderer
 	var <bFormNumChan, <numOutputs; // utils
 	var renderFunc, <renderSynth; // synth
 	var <ossiaMasterLevel;
-	var vstBus, vstCheck = false, vstPlugin, vstpreset;
+	var vstBus, vstCheck = false, vstPlugin, vstpreset, vstouts;
 
 
 	*new { | maxOrder | ^super.new.ctr(maxOrder) }
@@ -43,16 +43,18 @@ MoscaRenderer
 	setAction { ossiaMasterLevel.callback_({ | num | renderSynth.set(\level, num.value.dbamp) }) }
 
 	setup
-	{ | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat, vstPreset |
+	{ | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat, vstPreset, vstOuts |
 
 		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc;
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
 		n3dBus = Bus.audio(server, bFormNumChan); // global b-format ACN-N3D bus
-if(vstPreset.notNil) {vstpreset = vstPreset};
+		if(vstOuts.notNil) {vstouts = vstOuts} {vstouts = 2};
+		("vstOuts = " + vstouts).postln;
+		if(vstPreset.notNil) {vstpreset = vstPreset};
 		if (speaker_array.notNil)
 		{
 			var max_func, min_func, dimention, vbap_setup, adjust;
-
+			
 			numOutputs = speaker_array.size;
 
 			nonAmbiBus = Bus.audio(server, numOutputs);
@@ -285,8 +287,8 @@ if(vstPreset.notNil) {vstpreset = vstPreset};
 								};
 							} {
 								// Assume IEM decoder
-								var nIns = 4, nOuts;
-								if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 4 };
+								var nIns = 4, nOuts = vstouts;
+								//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 4 };
 								"VST Stuff Here".postln;
 								vstCheck = true;
 								vstPlugin = decoder;
@@ -367,8 +369,8 @@ if(vstPreset.notNil) {vstpreset = vstPreset};
 							};
 						} {
 							// Assume IEM decoder
-							var nIns = 9, nOuts;
-							if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 9 };
+							var nIns = 9, nOuts = vstouts;
+							//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 9 };
 							"VST Stuff Here".postln;
 							vstCheck = true;
 							vstPlugin = decoder;
@@ -417,8 +419,8 @@ if(vstPreset.notNil) {vstpreset = vstPreset};
 						};
 					} {
 							// Assume IEM decoder
-							var nIns = 16, nOuts;
-							if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 16 };
+							var nIns = 16, nOuts = vstouts;
+						//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 16 };
 							"VST Stuff Here".postln;
 							vstCheck = true;
 							vstPlugin = decoder;
@@ -469,8 +471,8 @@ if(vstPreset.notNil) {vstpreset = vstPreset};
 						};
 					} {
 							// Assume IEM decoder
-							var nIns = 25, nOuts;
-							if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 25 };
+							var nIns = 25, nOuts = vstouts;
+						//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 25 };
 							"VST Stuff Here".postln;
 							vstCheck = true;
 							vstPlugin = decoder;
@@ -523,8 +525,8 @@ if(vstPreset.notNil) {vstpreset = vstPreset};
 						};
 					} {
 							// Assume IEM decoder
-							var nIns = 36, nOuts;
-							if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 36 };
+							var nIns = 36, nOuts = vstouts;
+						//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 36 };
 							"VST Stuff Here".postln;
 							vstCheck = true;
 							vstPlugin = decoder;

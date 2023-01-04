@@ -9,6 +9,7 @@ MoscaBase // acts as the public interface
 	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window,
 	<>zoomfactor = 1, <>fontsize = 14, <graphicScale = 100, <maxundo;
 	var <>orient; //origin with respect to graphic pixels
+	//var <vstouts;
 
 
 	*printSynthParams

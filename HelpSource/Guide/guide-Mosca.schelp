@@ -468,9 +468,9 @@ s.waitForBoot {
 
 subsection::Using IEM ambisonic decoders
 
-note::Testing!::
+note::Testing! BinauralDecoder.vst3 only at this stage::
 
-The "IEM Plugin Suite" of VST3 plugins must be installed to run this example.
+The "IEM Plugin Suite" of VST3 plugins must be installed to run this example as well as VSTPlugin.
 
 code::
 
@@ -480,16 +480,23 @@ s.boot; // make sure the server is running
 VSTPlugin.clear // run this line in case of accidental blackbanning of plugin.
 VSTPlugin.search; // see the plugin you wish to use
 
-(
+// create and play dummy synth for testing
+
 SynthDef(\dummy, { arg bus;
-	VSTPlugin.ar(In.ar(bus, 2));
+    var sig = VSTPlugin.ar(In.ar(bus, 9));
+	Out(0, sig);
 }).add;
+
 ~synth = Synth(\dummy);
+
+// open BinauralDecoder.vst3 in a GUI
+
+(
 ~vstDecoder = VSTPluginController.new(~synth).open("BinauralDecoder.vst3");
 ~vstDecoder.gui;
 )
 
-// set GUI to 2nd order with N3D normalisation and save as "2ndOrder". Close GUI.
+// With the GUI open set to 2nd order with N3D normalisation and save as "2ndOrder". Close GUI.
 
 ~synth.free;  // free dummy synth
 
