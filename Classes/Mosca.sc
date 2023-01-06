@@ -30,15 +30,16 @@ Mosca : MoscaBase
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
-		graphicPath, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts |
+		graphicPath, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts,
+		spatRecompile = true |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts);
+			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts, spatRecompile);
 	}
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
-		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts |
+		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts, spatRecompile |
 
 		var multyThread;
 
@@ -77,7 +78,7 @@ Mosca : MoscaBase
 
 			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer);
 
-			spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array);
+			spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array, spatRecompile);
 
 			effects.finalize(multyThread, server, maxOrder, irBank);
 
