@@ -63,7 +63,7 @@ s.waitForBoot {
 		[ 157.5, -3, 2.829 ], [ 112.5, -3, 2.829 ], [ 67.5, -3, 2.829 ],
 		[ 22.5, -3, 2.829 ] ];
 
-	MIDIIn.connect();  // must connect to MIDI for MMC synch
+	//MIDIIn.connect();  // must connect to MIDI for MMC synch
 	s.sync;
 
 	~moscaInstance = Mosca(
@@ -195,7 +195,7 @@ list::
 
 section::Initialisation options
 
-subsection:: Binaural or Raw output
+subsection::  Raw or Binaural output
 
 The exemple below offers different rendering and output options. The raw output setup is comented out, to enable it instead of binaural, simply switch the comments between the "o.numOutputBusChannels" the "~decoder", the "~order" and the "setup" variables. "raw format" and "raw output" are ignored if a decoder is provided so thy do not need to be comented to initialize binaural rendering.
 
@@ -206,27 +206,27 @@ code::
 Server.killAll;                   // Make sure no servers are booted yet
 o = s.options;
 o.numInputBusChannels = 32;       // Allow for many possible inputs
-o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
-// o.numOutputBusChannels = 22;       // 13 non-ambisonic + 9 B-format (2nd order)
+//o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
+o.numOutputBusChannels = 22;       // 13 non-ambisonic + 9 B-format (2nd order)
 o.numAudioBusChannels = 2048;
 o.numWireBufs = 512;
 s.waitForBoot {
 	// Booting scsynth server before setting up Mosca
 
 	// Create global variables passed as Mosca's arguments
-	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
-	// ~decoder = nil; // Raw output
+	//~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
+	~decoder = nil; // Raw output
 	~order = 1;
 	// ~order = 2;
-	~out = 0;     // Use te first available Output
+	~out = 0;     // Use te first available Output (not same as rawoutbus below)
 	~sub = nil;   // No subwoofers
-	~setup = nil; // No speaker setup (headphones)
+	~setup = nil; // No speaker setup (headphones or raw)
 	/* ~setup = [ [ -60, 18, 10 ], [ 60, 18, 10 ], [ 0, 18, 10 ], [ -120, 18, 10 ], [ 120, 18, 10 ],
 	[ 180, 18, 10 ], [ 0, 90, 10 ], [ -60, 51, 10 ], [ 60, 51, 10 ], [ 0, 51, 10 ], [ 180, 51, 10 ],
 	[ -120, 51, 10 ], [ 120, 51, 10 ] ]; // 13.1 speaker setup for "Planetario De Pamplona"
 	*/
 
-	MIDIIn.connect();  // must connect to MIDI for MMC synch
+	//MIDIIn.connect();  // must connect to MIDI for MMC synch
 	s.sync;
 
 	~moscaInstance = Mosca(
@@ -234,7 +234,7 @@ s.waitForBoot {
 		nsources: 18,             // Set the number of sources
 		width: 850,               // Set initial GUI size
 		dur: 360,                 // Set transport duration
-	    // rirBank: "/path/to/rirBank/folder",
+	    // irBank: "/path/to/rirBank/folder",
 		server:s,
 		parentOssiaNode:~supercoll,
 		decoder: ~decoder,
@@ -242,10 +242,10 @@ s.waitForBoot {
 		speaker_array:~setup,
 		outbus:~out,
 		suboutbus:~sub,
-		rawformat:'FuMa',
+		rawformat:'FUMA',
 		// Set Ambisonic Format for raw B-format output, use FuMa for using Ambdec external decoder
 		rawoutbus:14
-		// Set raw B-format output bus, spearate from the non-ambisonic signal from "outbus"
+		// Set raw B-format output bus, separate from the non-ambisonic signal from "outbus"
 	).gui();
 }
 )
@@ -370,7 +370,7 @@ s.waitForBoot {
 	// Create global variables passed as Mosca's arguments
 	~decoder = FoaDecoderKernel.newCIPIC(21, s, s.sampleRate.asInteger); // ATK Binaural
 
-	MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
+	//MIDIIn.connect();  // must connect to MIDI for MMC synchronisation
 	s.sync;
 
 	~moscaInstance = Mosca(

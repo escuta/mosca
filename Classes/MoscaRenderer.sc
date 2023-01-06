@@ -49,7 +49,6 @@ MoscaRenderer
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
 		n3dBus = Bus.audio(server, bFormNumChan); // global b-format ACN-N3D bus
 		if(vstOuts.notNil) {vstouts = vstOuts} {vstouts = 2};
-		("vstOuts = " + vstouts).postln;
 		if(vstPreset.notNil) {vstpreset = vstPreset};
 		if (speaker_array.notNil)
 		{
@@ -276,7 +275,9 @@ MoscaRenderer
 								Out.ar(outBus, sig);
 							}).send(server);
 						} {
-							if (decoder.contains(".vst3") == false ) {  
+							//if (decoder.contains(".vst3") == false ) {
+							if (decoder.isString == false) {
+								"Assuming ATK decoder".postln;
 								renderFunc = { | sub = 1, level = 1 |
 									var sig, nonambi;
 									sig = In.ar(fumaBus, 4);
@@ -355,7 +356,7 @@ MoscaRenderer
 							Out.ar(n3dBus, sig);
 						}).send(server);
 							
-						if (decoder.contains(".vst3") == false ) {  
+						if (decoder.isString == false ) {  
 						// assume ADT Decoder
 							renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 								var sig, nonambi;
@@ -405,7 +406,7 @@ MoscaRenderer
 							Out.ar(n3dBus, sig);
 						}).send(server);
 						
-					if (decoder.contains(".vst3") == false ) { 
+					if (decoder.isString == false ) { 
 						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 							var sig, nonambi;
 							sig = In.ar(n3dBus, bFormNumChan);
@@ -455,7 +456,7 @@ MoscaRenderer
 						Out.ar(n3dBus, sig);
 					}).send(server);
 
-					if (decoder.contains(".vst3") == false ) { 
+					if (decoder.isString == false ) { 
 						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 							var sig, nonambi;
 							sig = In.ar(n3dBus, bFormNumChan);
@@ -507,7 +508,7 @@ MoscaRenderer
 						Out.ar(n3dBus, sig);
 					}).send(server);
 
-					if (decoder.contains(".vst3") == false ) { 
+					if (decoder.isString == false ) { 
 						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 							var sig, nonambi;
 							sig = In.ar(n3dBus, bFormNumChan);
