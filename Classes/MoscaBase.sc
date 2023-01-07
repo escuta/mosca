@@ -73,10 +73,11 @@ MoscaBase // acts as the public interface
 	}
 
 	playAutomation
-	{ | loop = false |
+	{ | loop = false, seek = 0 |
 
 		ossiaLoop.v_(loop);
 		control.get.play();
+		control.get.seek(seek);
 	}
 
 	stopAutomation

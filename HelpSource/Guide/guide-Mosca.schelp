@@ -346,7 +346,7 @@ SynthDef("test-out", { | outbus=0, freq=440, radAzimElev = #[0,0,0],
 
 ::
 
-subsection::Runnig Mosca Without a GUI
+subsection::Running Mosca Without a GUI
 
 subsection::Automation
 
@@ -358,6 +358,7 @@ list::
 ::
 
 code::
+(
 Server.killAll;
 o = s.options;
 o.numInputBusChannels = 32;
@@ -375,25 +376,24 @@ s.waitForBoot {
 
 	~moscaInstance = Mosca(
 		//projDir: "/path/to/project/folder",
-		decoder: ~decoder
-	);
+		decoder: ~decoder,
+		 dur: 20,
+		 spatRecompile: false // use only if Mosca was run once after update with this value unset or true 
+	).gui(size: 700); // comment for non-gui
+        // ); //uncomment for non-gui
 
-	~moscaInstance.control.load("/path/to/your/automation/file");
-	~moscaInstance.loadNonAutomationData("/path/to/your/automation/file");
+	    5.wait;
+	
+	~moscaInstance.loadAutomation("/path/to/automation/file").playAutomation(loop: true, seek: 10); // seek: start time in seconds
+
 };
 
 )
 
-~moscaInstance.blindControlPlay    // play Automation
-~moscaInstance.blindControlStop    // stop Automation
-~moscaInstance.control.seek(5.0) // jump to the 5 second mark
+~moscaInstance.stopAutomation    // stop Automation
+//start automation at 10 seconds
+~moscaInstance.loadAutomation("/home/iain/projetos/ambisonics/botanicanova/auto/sputnik").playAutomation(loop: true, seek: 10);
 
-// Use this block to free a no-gui Mosca instance when finished
-(
-~moscaInstance.free;
-~decoder.free;
-MIDIIn.disconnect(inport: 0, device: 0);
-)
 ::
 
 subsection::OSSIA
