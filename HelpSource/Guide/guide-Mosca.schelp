@@ -466,9 +466,8 @@ s.waitForBoot {
 ::
 
 
-subsection::Using IEM ambisonic decoders
+subsection::Using IEM ambisonic "BinauralDecoder.vst3"
 
-note::Testing! BinauralDecoder.vst3 only at this stage::
 
 The "IEM Plugin Suite" of VST3 plugins must be installed to run this example as well as VSTPlugin.
 
@@ -544,7 +543,106 @@ s.waitForBoot {
 ::
 
 
+subsection::Using IEM ambisonic "SimpleDecoder.vst3"
 
+note::Testing! Functionality not yet confirmed with loudspeaker array. Seems to be working. ::
+
+code::
+// The first step is to create an ambisonic decoder with the IEM AllRADecoder.vst3 plugin (https://plugins.iem.at/docs/allradecoder). Once created, the speaker/decoder configuration must be saved as it will be laded by the SimpleDecoder.vst3 plugin. It is also necessary to create a preset file file for SimpleDecoder to designate both the ambisonic order of the input signal and its normalisation scheme. The maximum ambisonic order encoded by Mosca using the "Ambitools" library is the 5th order and the normalisation scheme is N3D.
+
+// Run the following lines of code individually:
+
+Server.killAll;
+o = s.options;
+o.numInputBusChannels = 0;       // no input to SC needed for this demo
+o.numOutputBusChannels = 8;       // We will use an array of 8 speakers 
+s.boot; // make sure the server is running
+VSTPlugin.clear // run this line in case of accidental blackbanning of plugin.
+VSTPlugin.search; // see the plugin you wish to use
+
+// create and play synth for configuring speaker configuration and preset
+
+SynthDef(\dummy, { arg bus;
+    var sig = VSTPlugin.ar(In.ar(bus, 10));
+    Out(0, sig);
+}).add;
+
+~synth = Synth(\dummy);
+
+~vstDecoder = VSTPluginController.new(~synth).open("AllRADecoder.vst3");
+~vstDecoder.editor; // open the AllRADDecoder's native GUI
+
+// In this demo we create an array of 8 loudspeakers in the GUI in
+// the "Loudspeaker Layout section. Once done, the desired decoder order
+// is entered in the Calculate Decoder section and calculated with
+// the button below it. The decoder and speaker layout us then
+// exported with the button to the right with the filename
+// 8ChanRing.fxp
+// We now need to open the SimpleDecoder.vst3 plugin
+~vstDecoder = VSTPluginController.new(~synth).open("SimpleDecoder.vst3");
+~vstDecoder.editor;
+// We then load the 8ChanRing.fxp configuration with the "Load
+// configuration" button and save it with:
+~vstDecoder.writeProgram("/path/to/8ChanRing.fxp"); // the path is important!
+// Close the wondow and open the SC gui of the plugin.
+~vstDecoder.gui
+// Set the ambisonic order to 2 (for this example) and the normalisation
+// to N3D. Now save the preset as "SimpleDecoder2ndOrder"
+
+~synth.free;  // free dummy synth
+
+// The preset and program names will be fed to Mosca as
+// start up parameters below and Mosca will automatically load them in
+// the SimpleDecoder.vst3 plugin.
+//~vstDecoder.readProgram("/home/iain/tmp/8ChanRing.fxp");
+//~vstDecoder.loadPreset("SimpleDecoder2ndOrder");
+
+// now we create an instance of Mosca specifying the required parameters
+
+(
+~supercoll = OSSIA_Device("SC");  // Create and name OSSIA_Device to contain all parameters
+~supercoll.exposeOSC;             // Evaluate this line while OSSIA/score is learning incoming OSC
+Server.killAll;                   // Make sure no servers are booted yet
+o = s.options;
+o.numInputBusChannels = 32;       // Allow for many possible inputs
+o.numOutputBusChannels = 8;       // 8 channel loudspeaker array
+o.numInputBusChannels = 2;       // 2 input channels, just in case
+o.numAudioBusChannels = 2048;
+o.numWireBufs = 512;
+s.waitForBoot {
+    // Booting scsynth server before setting up Mosca
+
+    // Create global variables passed as Mosca's arguments
+    ~decoder = "SimpleDecoder.vst3";
+    ~order = 2;
+    ~out = 0;     // Use te first available Output
+    ~sub = nil;   // No subwoofers. Keep as nil even if you use
+	              // specify subs in the loudpeaker config. Let plugin
+	              // handle this.
+    ~setup = nil; // No internal Mosca speaker setup 
+ 
+    s.sync;
+
+    ~moscaInstance = Mosca(
+        nsources: 6,             // Set the number of sources
+        dur: 360,                 // Set transport duration
+        // rirBank: "/path/to/rirBank/folder",
+        server:s,
+        parentOssiaNode:~supercoll,
+        decoder: ~decoder,
+        vstPreset: "SimpleDecoder2ndOrder",
+       vstProgram: "/home/iain/tmp/8ChanRing.fxp",
+		vstOuts: 8,
+		spatRecompile: false,
+		maxorder:~order,
+        speaker_array:~setup,
+        outbus:~out,
+        suboutbus:~sub,
+    ).gui(size: 700);
+}
+)
+
+::
 
 
 

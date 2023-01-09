@@ -24,7 +24,7 @@ MoscaRenderer
 	var <bFormNumChan, <numOutputs; // utils
 	var renderFunc, <renderSynth; // synth
 	var <ossiaMasterLevel;
-	var vstBus, vstCheck = false, vstPlugin, vstpreset, vstouts;
+	var vstBus, vstCheck = false, vstPlugin, vstpreset, vstprogram, vstouts;
 
 
 	*new { | maxOrder | ^super.new.ctr(maxOrder) }
@@ -43,13 +43,14 @@ MoscaRenderer
 	setAction { ossiaMasterLevel.callback_({ | num | renderSynth.set(\level, num.value.dbamp) }) }
 
 	setup
-	{ | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat, vstPreset, vstOuts |
+	{ | server, speaker_array, maxOrder, decoder, outBus, subOutBus, rawOutBus, rawformat, vstPreset, vstProgram, vstOuts |
 
 		var radiusses, azimuths, elevations, subOutFunc, perfectSphereFunc;
 		fumaBus = Bus.audio(server, MoscaUtils.fourOrNine(maxOrder)); // global b-format FUMA bus
 		n3dBus = Bus.audio(server, bFormNumChan); // global b-format ACN-N3D bus
 		if(vstOuts.notNil) {vstouts = vstOuts} {vstouts = 2};
 		if(vstPreset.notNil) {vstpreset = vstPreset};
+		if(vstProgram.notNil) {vstprogram = vstProgram};
 		if (speaker_array.notNil)
 		{
 			var max_func, min_func, dimention, vbap_setup, adjust;
@@ -565,10 +566,11 @@ MoscaRenderer
 			vstDecoder = VSTPluginController(Synth(\vstDecoder, [\inbus,
 				vstBus ], target: renderSynth, addAction: \addAfter));
 			server.sync;
-			//vstDecoder.open("BinauralDecoder.vst3");
 			vstDecoder.open(vstPlugin);
 			server.sync;
 			if (vstpreset.notNil) { vstDecoder.loadPreset(vstpreset); };
+			server.sync;
+			if (vstprogram.notNil) { vstDecoder.readProgram(vstprogram); };
 			~vstDecoder = vstDecoder;
 		};
 		

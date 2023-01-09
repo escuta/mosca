@@ -30,16 +30,16 @@ Mosca : MoscaBase
 	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
-		graphicPath, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts,
+		graphicPath, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts,
 		spatRecompile = true |
 
 		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts, spatRecompile);
+			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts, spatRecompile);
 	}
 	ctr
 	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
-		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo, vstPreset, vstOuts, spatRecompile |
+		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts, spatRecompile |
 
 		var multyThread;
 
@@ -67,7 +67,7 @@ Mosca : MoscaBase
 
 			renderer.setup(server, speaker_array, maxOrder, decoder,
 				outBus, subOutBus, rawOutBus, rawFormat, vstPreset,
-				vstOuts);
+				vstProgram, vstOuts);
 
 			// recording blip synth for synchronisation
 			SynthDef(\blip, {
