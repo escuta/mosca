@@ -594,8 +594,6 @@ SynthDef(\dummy, { arg bus;
 // The preset and program names will be fed to Mosca as
 // start up parameters below and Mosca will automatically load them in
 // the SimpleDecoder.vst3 plugin.
-//~vstDecoder.readProgram("/home/iain/tmp/8ChanRing.fxp");
-//~vstDecoder.loadPreset("SimpleDecoder2ndOrder");
 
 // now we create an instance of Mosca specifying the required parameters
 
