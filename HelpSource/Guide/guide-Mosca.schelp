@@ -9,7 +9,9 @@ The user can set up a project directory with an "auto" subdirectory. A Folder co
 
 section::Basic Setup
 
-subsection::Binaural
+subsection::1st Order Binaural
+
+note:: For higher orders see the BinauraDecoder.vst section below ::
 
 code::
 (
