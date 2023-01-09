@@ -572,28 +572,25 @@ SynthDef(\dummy, { arg bus;
 ~vstDecoder = VSTPluginController.new(~synth).open("AllRADecoder.vst3");
 ~vstDecoder.editor; // open the AllRADDecoder's native GUI
 
-// In this demo we create an array of 8 loudspeakers in the GUI in
-// the "Loudspeaker Layout section. Once done, the desired decoder order
-// is entered in the Calculate Decoder section and calculated with
-// the button below it. The decoder and speaker layout us then
-// exported with the button to the right with the filename
-// 8ChanRing.fxp
-// We now need to open the SimpleDecoder.vst3 plugin
+// In this demo we create an array of 8 loudspeakers in the GUI in the "Loudspeaker Layout section. Once done, the desired decoder order is entered in the Calculate Decoder section and calculated with the button below it. The decoder and speaker layout us then exported with the button to the right with the filename 8ChanRing.fxp. We now need to open the SimpleDecoder.vst3 plugin
+
 ~vstDecoder = VSTPluginController.new(~synth).open("SimpleDecoder.vst3");
 ~vstDecoder.editor;
-// We then load the 8ChanRing.fxp configuration with the "Load
-// configuration" button and save it with:
+
+// We then load the 8ChanRing.fxp configuration with the "Load configuration" button and save it with:
+
 ~vstDecoder.writeProgram("/path/to/8ChanRing.fxp"); // the path is important!
+
 // Close the wondow and open the SC gui of the plugin.
+
 ~vstDecoder.gui
+
 // Set the ambisonic order to 2 (for this example) and the normalisation
 // to N3D. Now save the preset as "SimpleDecoder2ndOrder"
 
 ~synth.free;  // free dummy synth
 
-// The preset and program names will be fed to Mosca as
-// start up parameters below and Mosca will automatically load them in
-// the SimpleDecoder.vst3 plugin.
+// The preset and program names will be fed to Mosca as start up parameters below and Mosca will automatically load them inmthe SimpleDecoder.vst3 plugin.
 
 // now we create an instance of Mosca specifying the required parameters
 
