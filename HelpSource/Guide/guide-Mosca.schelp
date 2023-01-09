@@ -476,7 +476,7 @@ code::
 // Mosca uses N3D normalisation for higher order ambisonics (up to the 5th order) and it is necessary to create a "preset" file for the IEM plugin used. Run the following to first create a preset and then to experiment with in BinauralDecoder.vst3 plugin with 2nd order ambisonics.
 
 s.boot; // make sure the server is running
-VSTPlugin.clear // run this line in case of accidental blackbanning of plugin.
+VSTPlugin.clear // run this line in case of accidental blacklisting of plugin.
 VSTPlugin.search; // see the plugin you wish to use
 
 // create and play dummy synth for testing
@@ -557,7 +557,7 @@ o = s.options;
 o.numInputBusChannels = 0;       // no input to SC needed for this demo
 o.numOutputBusChannels = 8;       // We will use an array of 8 speakers 
 s.boot; // make sure the server is running
-VSTPlugin.clear // run this line in case of accidental blackbanning of plugin.
+VSTPlugin.clear // run this line in case of accidental blacklisting of plugin.
 VSTPlugin.search; // see the plugin you wish to use
 
 // create and play synth for configuring speaker configuration and preset
@@ -592,7 +592,7 @@ SynthDef(\dummy, { arg bus;
 
 // The preset and program names will be fed to Mosca as start up parameters below and Mosca will automatically load them inmthe SimpleDecoder.vst3 plugin.
 
-// now we create an instance of Mosca specifying the required parameters
+// Now we create an instance of Mosca specifying the required parameters. Make sure to put the correct path for your decoder configuration file (vstProgram)
 
 (
 ~supercoll = OSSIA_Device("SC");  // Create and name OSSIA_Device to contain all parameters
@@ -626,7 +626,7 @@ s.waitForBoot {
         parentOssiaNode:~supercoll,
         decoder: ~decoder,
         vstPreset: "SimpleDecoder2ndOrder",
-       vstProgram: "/home/iain/tmp/8ChanRing.fxp",
+        vstProgram: "/path/to/8ChanRing.fxp",
 		vstOuts: 8,
 		spatRecompile: false,
 		maxorder:~order,
