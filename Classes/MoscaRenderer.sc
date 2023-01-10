@@ -568,10 +568,13 @@ MoscaRenderer
 			server.sync;
 			vstDecoder.open(vstPlugin);
 			server.sync;
-			if (vstpreset.notNil) { vstDecoder.loadPreset(vstpreset); };
-			server.sync;
 			if (vstprogram.notNil) { vstDecoder.readProgram(vstprogram); };
 			~vstDecoder = vstDecoder;
+			server.sync;
+			if (vstpreset.notNil) { vstDecoder.loadPreset(vstpreset);
+			server.sync;
+				//			("vstPreset = " + vstpreset).postln
+			};
 		};
 		
 	}
