@@ -42,7 +42,7 @@ MoscaSpatializer
 		playInFunc = [ // one for File, Stream & Input;
 			// for File-in SynthDefs
 			{ | p, channum, bufnum, tpos = 0, lp = 0 |
-				p.value = PlayBuf.ar(channum, bufnum, BufRateScale.kr(channum),
+				p.value = PlayBuf.ar(channum, bufnum, BufRateScale.kr(bufnum),
 					startPos: tpos, loop: lp, doneAction:2);
 			},
 			// for Stream-in SynthDefs
