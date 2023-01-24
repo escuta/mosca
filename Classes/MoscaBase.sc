@@ -473,6 +473,23 @@ MoscaBase // acts as the public interface
 		}
 	}
 
+	rtkGPS   // will be run in addition to \orient above on different port
+	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \uputronics, extraArgs |
+
+		if (tracker.isNil)
+		{
+			switch (type,
+				\uputronics,
+				{ tracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs)				}
+				/*\orient,
+				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
+				\pozyxOSC,
+					{ tracker = PozyxOSC(center, ossiaTrack, port, extraArgs) }
+				*/
+			);
+		}
+	}
+
 	freeHeadTracker
 	{
 		if (tracker.notNil)

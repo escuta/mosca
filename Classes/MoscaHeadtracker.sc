@@ -289,6 +289,149 @@ HeadTrackerGPS : HeadTracker
 	}
 }
 
+RTKGPS : HeadTrackerGPS
+{
+	//const gpsCoeficient = 0.0000001, latDeg2meters = 111317.099692,
+	//longDeg2meters = 111319.488, areaInMeters = 10;
+	//var center, procGPS;
+	*new
+	{ | center, flag, serialPort, ofsetHeading, setup |
+
+		if (setup.isNil)
+		{
+			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
+		} {
+			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
+			.setCenter(setup);
+		};
+
+	}
+	/*
+	setCenter
+	{ | latLongAlt |
+
+		if (latLongAlt.isArray)
+		{
+			center = [latLongAlt[0], latLongAlt[1]];
+			if (latLongAlt.size == 4) {
+				lagFactor = latLongAlt[2] / latLongAlt[3];
+			};
+			this.prSetFunc();
+		}
+		{ Error.throw("coordinates must be an array") }
+	}
+	*/
+	prSetFunc
+	{
+		procGPS = { | coordinates |
+			var dLat, dLong, yStep, xStep, res;
+			
+			dLat = coordinates[0] - center[0];
+			dLong = coordinates[1] - center[1];
+
+			yStep = (dLat * latDeg2meters);
+			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
+			// lag in xStep
+			if (lagFactor != 0)
+			{
+				if (xStep != lastXStep) {
+					var diff = xStep - curXStep;
+					xStepIncrement = diff / lagFactor;
+					lastXStep = xStep;
+					interpXStep = true;
+					("Latitude: " + coordinates[0]
+						+ "Longitude: " + coordinates[1]).postln;
+				};
+				if (interpXStep == true) {
+					curXStep = curXStep + xStepIncrement;
+					if (xStepIncrement < 0) {
+						if (curXStep < lastXStep) {
+							interpXStep = false;
+						}
+					};
+					if (xStepIncrement > 0) 
+					{
+						if (curXStep > lastXStep) {
+							interpXStep = false;
+					}
+					};
+				};
+				// Lag in yStep
+				if (yStep != lastYStep) {
+					var diff = yStep - curYStep;
+					yStepIncrement = diff / lagFactor;
+					lastYStep = yStep;
+					interpYStep = true;
+				};
+				if (interpYStep == true) {
+					curYStep = curYStep + yStepIncrement;
+					if (yStepIncrement < 0) {
+						if (curYStep < lastYStep) {
+							interpYStep = false;
+						}
+					};
+					if (yStepIncrement > 0)
+					{
+						if (curYStep > lastYStep) {
+							interpYStep = false;
+						}
+					};
+				};
+			} {
+				curXStep = xStep;
+				curYStep = yStep;
+			};
+			
+			moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
+			//postln("x " + xStep + "curX " + curXStep + "xStepIncrement " + xStepIncrement);
+			//postln("y " + yStep + "curY " + curYStep + "yStepIncrement " + yStepIncrement);
+		}
+	}
+
+	setTracker //protocol
+	{
+		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
+
+		procGPS = { | coordinates |
+			postln("latitude " + coordinates[0]);
+			postln("longitude " + coordinates[1]);
+			// postln("altitude " + coordinates[2]);
+		}; // initialize in case no coordinates are set;
+	}
+
+	matchByte
+	{
+		| byte | // match incoming headtracker data
+		if (trackarr[tracki].isNil || (trackarr[tracki] == byte ))
+		{
+			trackarr2[tracki] = byte;
+			tracki= tracki + 1;
+
+			if (tracki >= trackarr.size)
+			{
+				this.procGyro(
+					(trackarr2[5]<<8) + trackarr2[4],
+					(trackarr2[7]<<8) + trackarr2[6],
+					(trackarr2[9]<<8) + trackarr2[8]
+				);
+
+				procGPS.value([(trackarr2[13]<<24) + (trackarr2[12]<<16) +
+					(trackarr2[11]<<8) + trackarr2[10],
+					(trackarr2[17]<<24) + (trackarr2[16]<<16) +
+					(trackarr2[15]<<8) + trackarr2[14]
+					//,(trackarr2[21]<<24) + (trackarr2[20]<<16) +
+					//(trackarr2[19]<<8) + trackarr2[18]
+				] * gpsCoeficient);
+
+				tracki = 0;
+			};
+		} {
+			tracki = 0;
+		};
+	}
+}
+
 PozyxOSC
 {
 	const avreageBy = 10;

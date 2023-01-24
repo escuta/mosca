@@ -1,6 +1,6 @@
 /*
 
-  Reads $GPGGA NMEA messages (or $GNGGA as fallback) in RTK solution on TCP server output of rtkrcv or rtknavi_qt and extracts precision GPS coordinates. Requires prior launch of a virtual TTY pair. This utility writes coords in Mosca's format to one member of the TTY pair so that Mosca can read it by connecting to the other. TTY pair established with:
+  Reads $GPGGA NMEA messages (or $GNGGA as fallback) in RTK solution on TCP server output of rtkrcv or rtknavi_qt and extracts precision GPS coordinates. Requires prior launch of a virtual TTY pair as well as the TCP server being active. This utility writes coords in Mosca's format to one member of the TTY pair so that Mosca can read it by connecting to the other. TTY pair established with:
 
 sudo socat -d -d pty,link=/dev/ttyVA00,echo=0,perm=0777 pty,link=/dev/ttyVB00,echo=0,perm=0777
 
@@ -19,7 +19,6 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
-//#include <NeoSWSerial.h>
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <errno.h> // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
@@ -38,12 +37,15 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 
 // SETTINGS
 
-#define DEBUG    // Print out human readable data
-#define ALTITUDE // if defined include altitude in transmission
+//#define DEBUG    // Print text to terminal only
+//#define ALTITUDE // include altitude in transmission
 #define SERPORT "/dev/ttyVA00"
 #define TCPPORT 1234
-#define NMEA "GPGGA"
-#define NMEAFALLBACK "GNGGA"
+#define BAUDRATE B115200
+#define NMEA "GPGGA" // precision data 
+#define NMEAFALLBACK "GNGGA" // comment out to restrict to NMEA setting above
+// note, if either NMEA headers are changed from GxGGA,
+// will likely need to select correct data fields for serial message below
 
 typedef struct 
 {
@@ -55,8 +57,6 @@ typedef struct
 } message_t;
 
 message_t message;
-
-
 
 
 //To trim a string contains \r\n
@@ -138,11 +138,14 @@ bool parse_gnss_token(char *data_ptr, char *header, int repeat_index, int token_
     return gnss_parsed_result;
 }
 
-void harvest(int sockfd, int serial_port)
+void process(int sockfd, int serial_port)
 {
     char buff[MAX];
     int n; 
     char res[100];
+    char *ptr;
+    uint8_t head[] = { 251, 252, 253, 254 };
+    uint8_t tail[] = { 255 };
     for (;;) {
 	memset(buff, 0, sizeof(buff));
         read(sockfd, buff, sizeof(buff));
@@ -155,48 +158,32 @@ void harvest(int sockfd, int serial_port)
 	  break;
         }
         if (strstr(buff, NMEA) != NULL) {
-	  char *ptr;
-	  uint8_t head[4];
-	  head[0] = 251;
-	  head[1] = 252;
-	  head[2] = 253;
-	  head[3] = 254;
-	  uint8_t tail[1];
-	  tail[0] = 255;
-	  write(serial_port, head, sizeof(head));
-
 	  for(int i=1;i<=6;i++) {
 	    parse_gnss_token(buff, NMEA, 0, i, res);
 	    if(i == 2) {
 	      message.lat = strtod(res, &ptr);
 #ifdef DEBUG
 	      printf("%s lat = %012.7f\n", NMEA, message.lat);
-	      printf("%s lat (string): %s\r\n", NMEA, res);
+	      //printf("%s lat (string): %s\r\n", NMEA, res);
 
 #endif
 	    } else if (i == 4) {
 	      message.lon = strtod(res, &ptr);
 #ifdef DEBUG
 	      printf("%s lon = %012.7f\n", NMEA, message.lon);
-	      printf("%s lon (string): %s\r\n", NMEA, res);
+	      //printf("%s lon (string): %s\r\n", NMEA, res);
 #endif
 	    }
 #ifndef DEBUG
+	    write(serial_port, head, sizeof(head));
 	    write( serial_port, (uint8_t *) &message, sizeof(message) );
 	    write(serial_port, tail, sizeof(tail));
 #endif
 	  }
-        } else  {
+        }
+#ifdef NMEAFALLBACK
+	else  {
 	  if (strstr(buff, NMEAFALLBACK) != NULL) {
-	    char *ptr;
-	    uint8_t head[4];
-	    head[0] = 251;
-	    head[1] = 252;
-	    head[2] = 253;
-	    head[3] = 254;
-	    uint8_t tail[1];
-	    tail[0] = 255;
-	    write(serial_port, head, sizeof(head));
 #ifdef ALTITUDE	    
 	    for(int i=1;i<=9;i++) {
 #else
@@ -207,14 +194,14 @@ void harvest(int sockfd, int serial_port)
 		message.lat = strtod(res, &ptr);
 #ifdef DEBUG
 		printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
-		printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
+		//printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
 		
 #endif
 	      } else if (i == 4) {
 		message.lon = strtod(res, &ptr);
 #ifdef DEBUG
 		printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
-		printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
+		//printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
 #endif
 		
 	      }
@@ -223,12 +210,13 @@ void harvest(int sockfd, int serial_port)
 		message.alt = strtod(res, &ptr);
 #ifdef DEBUG
 		printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
-		printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
+		//printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
 #endif
 	      }
 #endif
 	      
 #ifndef DEBUG
+	      write(serial_port, head, sizeof(head));
 	      write( serial_port, (uint8_t *) &message, sizeof(message) );
 	      write(serial_port, tail, sizeof(tail));
 #endif
@@ -236,6 +224,7 @@ void harvest(int sockfd, int serial_port)
 	  }
         }
 	
+#endif
 	
     }
 }
@@ -277,7 +266,7 @@ int main()
 
     // Set in/out baud rate to be 9600
     //cfsetispeed(&tty, B9600);
-    cfsetospeed(&tty, B115200);
+    cfsetospeed(&tty, BAUDRATE);
 
     // Save tty settings, also checking for error
     if (tcsetattr(serial_port, TCSANOW, &tty) != 0) {
@@ -322,8 +311,8 @@ int main()
 #ifdef DEBUG
         printf("connected to the server..\n");
 #endif 
-    // harvest data
-    harvest(sockfd, serial_port);
+    // process data
+    process(sockfd, serial_port);
  
     // close the socket and serial port
     close(sockfd);
