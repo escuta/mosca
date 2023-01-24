@@ -36,10 +36,10 @@ The results of any particular spatialisation library are often dependant on the 
 ::
 
 subsection::Reverberation
-Reverberation is performed either using a B-format tail room impulse responses (RIRs) or by using reverberators crated with SuperCollider's AllpassC and FreeVerb ugens. With both options, two reverberation level controls are included in the GUI for setting close and distant levels. "Close" reverberation in this case is "global" and is audible by the listener from all directions when the source is close. As it is global, it's type is applied to the entire scene. "Distant" reverb on the other hand is "local" in scope and selected and applied on a per-source basis. It is processed by the individually selected spatialiser along with the dry signal. This effect predominates as the source becomes more distant. For ambisonic signals, the "Close" reverberation may be described as a "2nd order diffuse A-format reverberation". This technique produces reverberation weighted in the direction of sound events and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either:
+Reverberation is performed either using a B-format tail impulse responses (IRs) or by using reverberators crated with SuperCollider's AllpassC and FreeVerb ugens. With both options, two reverberation level controls are included in the GUI for setting close and distant levels. "Close" reverberation in this case is "global" and is audible by the listener from all directions when the source is close. As it is global, it's type is applied to the entire scene. "Distant" reverb on the other hand is "local" in scope and selected and applied on a per-source basis. It is processed by the individually selected spatialiser along with the dry signal. This effect predominates as the source becomes more distant. For ambisonic signals, the "Close" reverberation may be described as a "2nd order diffuse A-format reverberation". This technique produces reverberation weighted in the direction of sound events and involves conversion to and from A-format in order to apply the effect (ANDERSON). The encoded 2nd order ambisonic signal is converted to a 12-channel A-format signal and then either:
 
 list::
-##convolved with a B-format RIR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum
+##convolved with a B-format IR which has been "upsampled" to 2nd order and converted to A-format impulse spectrum
 ##passed through Freeverb or allpass ugens before being converted back to a 2nd order B-format diffuse signal
 ::
 
@@ -108,11 +108,10 @@ France: 2018.
 CLASSMETHODS::
 
 METHOD:: new
-Create Mosca instance, prepare RIR spectrum data and synth internals.
+Create Mosca instance, prepare IR spectrum data and synth internals.
 
-ARGUMENT:: projDir
-Path to project directory. this will guive a deffault path for browsing sound files or
-saving and loading automations.
+ARGUMENT:: autoDir
+Path to automation directory. 
 
 ARGUMENT:: nsources
 The number of sources to be spatialised.
@@ -825,8 +824,8 @@ s.waitForBoot {
 	s.sync;
 
 	~moscaInstance = Mosca(
-		//projDir: "/path/to/project/folder",
-		//rirBank: "/path/to/rirBank/folder",
+		//autoDir: "/path/to/project/folder",
+		//irBank: "/path/to/irBank/folder",
 		nsources: 11, // Set the number of sources
 		decoder: ~decoder,
 		parentOssiaNode:~supercoll;

@@ -27,18 +27,18 @@
 Mosca : MoscaBase
 {
 	*new
-	{ | projDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
+	{ | autoDir, nsources = 10, dur = 180, irBank, server, parentOssiaNode,
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
 		graphicPath, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts,
 		spatRecompile = true |
 
-		^super.newCopyArgs(dur, server).ctr(projDir, nsources, irBank,
+		^super.newCopyArgs(dur, server).ctr(autoDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
 			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts, spatRecompile);
 	}
 	ctr
-	{ | projDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
+	{ | autoDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
 		speaker_array, outBus, subOutBus, rawFormat, rawOutBus, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts, spatRecompile |
 
 		var multyThread;
@@ -155,11 +155,11 @@ Mosca : MoscaBase
 
 		watcher.play;
 
-		if (projDir.isNil)
+		if (autoDir.isNil)
 		{
 			control.get.presetDir = "HOME".getenv ++ "/auto/";
 		} {
-			this.loadAutomation(projDir);
+			this.loadAutomation(autoDir);
 		};
 	}
 

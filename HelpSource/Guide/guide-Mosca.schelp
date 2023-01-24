@@ -5,7 +5,7 @@ related::Classes/Mosca
 
 A link::http://escuta.org/moscavideo##video tutorial:: for Mosca is available online
 
-The user can set up a project directory with an "auto" subdirectory. A Folder containig room impulse resonses (RIRs) must also be provided for reverb convolutions. RIRs should have the first 100 or 120ms silenced to act as "tail" reverberator. For convenience, please download the "moscaproject.zip" file on the link::http://escuta.org/mosca##Mosca page:: which contains the file structure, example RIRs and B-format recordings as well as other information and demos. Note that the RIR example is recorded at 48kHz
+The user can set up a project directory with an "auto" subdirectory. A Folder containig ambisonic impulse resonses (IRs) must also be provided for reverb convolutions. IRs should have the first 100 or 120ms silenced to act as "tail" reverberator. For convenience, please download the "moscaproject.zip" file on the link::http://escuta.org/mosca##Mosca page:: which contains the file structure, example IRs and B-format recordings as well as other information and demos. Note that the IR example is recorded at 48kHz
 
 section::Basic Setup
 
@@ -30,7 +30,7 @@ s.waitForBoot {
 	s.sync;
 
 	~moscaInstance = Mosca(
-		//projDir: "/path/to/project/folder",
+		//autoDir: "/path/to/automation/folder",
 		decoder: ~decoder
 	).gui();
 };
@@ -69,7 +69,7 @@ s.waitForBoot {
 	s.sync;
 
 	~moscaInstance = Mosca(
-		// projDir: "/path/to/project/folder",
+		// autoDir: "/path/to/automation/folder",
 		speaker_array:~setup,
 		maxorder:~order,
 		outbus:~out,
@@ -145,7 +145,7 @@ list::
 
 ##show nodes. Show SuperCollider node tree.
 
-##record audio. Records audio as a wav file to the project directory defined by the "projDir" class method. The number of channels recorded and the starting bus are defined by the "recchans" and "recbus" arguments respectively.
+##record audio. Records audio as a wav file to the project directory defined by the "autoDir" class method. The number of channels recorded and the starting bus are defined by the "recchans" and "recbus" arguments respectively.
 
 ##blips. Check this box to include audible blips at the begining of the recording. This may be useful when post synchronising the recorded audio with footage taken on a video camera.
 ::
@@ -232,11 +232,11 @@ s.waitForBoot {
 	s.sync;
 
 	~moscaInstance = Mosca(
-		// projDir: "/path/to/project/folder",
+		// autoDir: "/path/to/automation/folder",
 		nsources: 18,             // Set the number of sources
 		width: 850,               // Set initial GUI size
 		dur: 360,                 // Set transport duration
-	    // irBank: "/path/to/rirBank/folder",
+	    // irBank: "/path/to/irBank/folder",
 		server:s,
 		parentOssiaNode:~supercoll,
 		decoder: ~decoder,
@@ -377,7 +377,7 @@ s.waitForBoot {
 	s.sync;
 
 	~moscaInstance = Mosca(
-		//projDir: "/path/to/project/folder",
+		//autoDir: "/path/to/automation/folder",
 		decoder: ~decoder,
 		 dur: 20,
 		 spatRecompile: false // use only if Mosca was run once after update with this value unset or true 
@@ -446,7 +446,7 @@ s.waitForBoot {
 
 	s.sync;
 
-	~moscaInstance = Mosca(projDir: "/path/to/your/moscaproject",
+	~moscaInstance = Mosca(autoDir: "/path/to/automation/folder",
 		nsources: 12,
 		width: 865,
 		dur: 60,
@@ -528,7 +528,7 @@ s.waitForBoot {
     ~moscaInstance = Mosca(
         nsources: 6,             // Set the number of sources
         dur: 360,                 // Set transport duration
-        // rirBank: "/path/to/rirBank/folder",
+        // irBank: "/path/to/irBank/folder",
         server:s,
         parentOssiaNode:~supercoll,
         decoder: ~decoder,
@@ -623,7 +623,7 @@ s.waitForBoot {
     ~moscaInstance = Mosca(
         nsources: 6,             // Set the number of sources
         dur: 360,                 // Set transport duration
-        // rirBank: "/path/to/rirBank/folder",
+        // irBank: "/path/to/irBank/folder",
         server:s,
         parentOssiaNode:~supercoll,
         decoder: ~decoder,
