@@ -1,6 +1,6 @@
 /*
 
-  Reads $GNRMC NMEA messages in RTK solution on TCP server output of rtkrcv or rtknavi_qt and extracts precision GPS coordinates. Requires prior launch of a virtual TTY pair. This utility writes coords in Mosca's format to one member of the TTY pair so that Mosca can read it by connecting to the other. TTY pair established with:
+  Reads $GPGGA NMEA messages (or $GNGGA as fallback) in RTK solution on TCP server output of rtkrcv or rtknavi_qt and extracts precision GPS coordinates. Requires prior launch of a virtual TTY pair. This utility writes coords in Mosca's format to one member of the TTY pair so that Mosca can read it by connecting to the other. TTY pair established with:
 
 sudo socat -d -d pty,link=/dev/ttyVA00,echo=0,perm=0777 pty,link=/dev/ttyVB00,echo=0,perm=0777
 
@@ -12,7 +12,6 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 
 */
 
-
 #include <arpa/inet.h> // inet_addr()
 #include <netdb.h>
 #include <stdio.h>
@@ -20,11 +19,11 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h> // read(), write(), close()
-
 //#include <NeoSWSerial.h>
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <errno.h> // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
+
 
 #define MAX 150
 #define SA struct sockaddr
@@ -37,18 +36,26 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 #define FALSE 0
 #define TRUE 1
 
-//#define DEBUG    // Print out human readable data
+// SETTINGS
+
+#define DEBUG    // Print out human readable data
+#define ALTITUDE // if defined include altitude in transmission
 #define SERPORT "/dev/ttyVA00"
 #define TCPPORT 1234
+#define NMEA "GPGGA"
+#define NMEAFALLBACK "GNGGA"
 
 typedef struct 
 {
-  int32_t lat;
-  int32_t lon;
-  int32_t alt;
+  double lat;
+  double lon;
+#ifdef ALTITUDE
+  double alt;
+#endif
 } message_t;
 
 message_t message;
+
 
 
 
@@ -147,7 +154,8 @@ void harvest(int sockfd, int serial_port)
 #endif
 	  break;
         }
-        if (strstr(buff, "GNRMC") != NULL) {
+        if (strstr(buff, NMEA) != NULL) {
+	  char *ptr;
 	  uint8_t head[4];
 	  head[0] = 251;
 	  head[1] = 252;
@@ -156,33 +164,75 @@ void harvest(int sockfd, int serial_port)
 	  uint8_t tail[1];
 	  tail[0] = 255;
 	  write(serial_port, head, sizeof(head));
-	  //write(serial_port, tail, sizeof(tail));
-	  //write(serial_port, 252, 3); 
-	  //write(serial_port, 253, 3); 
-	  //write(serial_port, 254, 3);
-	  
-	  // Test message
-	  //unsigned char msg[] = { 'H', '\n' };
-	  //write(serial_port, msg, sizeof(msg));
 
 	  for(int i=1;i<=6;i++) {
-	    parse_gnss_token(buff, "GNRMC", 0, i, res);
-	    if(i == 3) {
+	    parse_gnss_token(buff, NMEA, 0, i, res);
+	    if(i == 2) {
+	      message.lat = strtod(res, &ptr);
 #ifdef DEBUG
-	      printf("lat: %s\r\n", res);
-#else
-	      message.lat = atoi(res); 
-	      
+	      printf("%s lat = %012.7f\n", NMEA, message.lat);
+	      printf("%s lat (string): %s\r\n", NMEA, res);
+
 #endif
-	    } else if (i == 5) {
+	    } else if (i == 4) {
+	      message.lon = strtod(res, &ptr);
 #ifdef DEBUG
-	      printf("lon: %s\r\n", res);
-#else
-	      message.lon = atoi(res);
+	      printf("%s lon = %012.7f\n", NMEA, message.lon);
+	      printf("%s lon (string): %s\r\n", NMEA, res);
 #endif
 	    }
+#ifndef DEBUG
 	    write( serial_port, (uint8_t *) &message, sizeof(message) );
 	    write(serial_port, tail, sizeof(tail));
+#endif
+	  }
+        } else  {
+	  if (strstr(buff, NMEAFALLBACK) != NULL) {
+	    char *ptr;
+	    uint8_t head[4];
+	    head[0] = 251;
+	    head[1] = 252;
+	    head[2] = 253;
+	    head[3] = 254;
+	    uint8_t tail[1];
+	    tail[0] = 255;
+	    write(serial_port, head, sizeof(head));
+#ifdef ALTITUDE	    
+	    for(int i=1;i<=9;i++) {
+#else
+	      for(int i=1;i<=4;i++) {
+#endif
+	      parse_gnss_token(buff, NMEAFALLBACK, 0, i, res);
+	      if(i == 2) {
+		message.lat = strtod(res, &ptr);
+#ifdef DEBUG
+		printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
+		printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
+		
+#endif
+	      } else if (i == 4) {
+		message.lon = strtod(res, &ptr);
+#ifdef DEBUG
+		printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
+		printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
+#endif
+		
+	      }
+#ifdef ALTITUDE
+	      else if (i == 9) {
+		message.alt = strtod(res, &ptr);
+#ifdef DEBUG
+		printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
+		printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
+#endif
+	      }
+#endif
+	      
+#ifndef DEBUG
+	      write( serial_port, (uint8_t *) &message, sizeof(message) );
+	      write(serial_port, tail, sizeof(tail));
+#endif
+	    }
 	  }
         }
 	
