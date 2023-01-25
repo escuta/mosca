@@ -37,7 +37,7 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 
 // SETTINGS
 
-#define DEBUG    // Print text to terminal only
+#define VERBOSE    // Print text to terminal
 //#define ALTITUDE // include altitude in transmission
 #define SERPORT "/dev/ttyVA00"
 #define TCPPORT 1234
@@ -51,10 +51,10 @@ typedef struct
 {
   //  double lat;
   //  double lon;
-  char  lat[13];
-  char  lon[13];
+  char  lat[11];
+  char  lon[11];
 #ifdef ALTITUDE
-  char  alt[13];
+  char  alt[10];
 #endif
 } message_t;
 
@@ -164,7 +164,7 @@ void process(int sockfd, int serial_port)
         //printf(buff);
 	//printf("\n\n");
         if ((strncmp(buff, "exit", 4)) == 0) {
-#ifdef DEBUG
+#ifdef VERBOSE
 	  printf("Client Exit...\n");
 #endif
 	  break;
@@ -175,7 +175,7 @@ void process(int sockfd, int serial_port)
 	    if(i == 2) {
 	      //message.lat = (int32_t) strtof(res, &ptr);
 	      sprintf(message.lat, "%s", res);
-#ifdef DEBUG
+#ifdef VERBOSE
 	      //printf("%s lat = %012.7f\n", NMEA, message.lat);
 	      printf("%s lat = %s\n", NMEA, message.lat);
 	      //printf("%s lat (string): %s\r\n", NMEA, res);
@@ -185,18 +185,18 @@ void process(int sockfd, int serial_port)
 	      //	      message.lon = (int32_t) strtof(res, &ptr);
 	      sprintf(message.lon, "%s", res);
 
-#ifdef DEBUG
+#ifdef VERBOSE
 	      //printf("%s lon = %012.7f\n", NMEA, message.lon);
 	      printf("%s lon = %s\n", NMEA, message.lon);
 	      //printf("%s lon (string): %s\r\n", NMEA, res);
 #endif
 	    }
 	    // Missing .alt !
-#ifndef DEBUG
+	    //#ifndef VERBOSE
 	    write(serial_port, head, sizeof(head));
 	    write( serial_port, (uint8_t *) &message, sizeof(message) );
 	    write(serial_port, tail, sizeof(tail));
-#endif
+	    //#endif
 	  }
         }
 #ifdef NMEAFALLBACK
@@ -212,34 +212,34 @@ void process(int sockfd, int serial_port)
 		//message.lat = (int32_t) strtof(res, &ptr);
 		double inDegrees = GpsEncodingToDegrees(res);
 		//sprintf(message.lat, "%s", res);
-		sprintf(message.lat, "%f", inDegrees);
-#ifdef DEBUG
+		sprintf(message.lat, "%.10g", inDegrees);
+#ifdef VERBOSE
 		//printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
 		//printf("%s lat = %d\n", NMEAFALLBACK, message.lat);
 		//printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
 		//printf("latitude = %s\n", message.lat);
-		printf("Latitude = %08.8f\n", message.lat);
+		printf("Latitude = %.10g\n", message.lat);
 		
 #endif
 	      } else if (i == 4) {
 		//message.lon = (int32_t) strtof(res, &ptr);
 		//sprintf(message.lon, "%s", res);
 		double inDegrees = GpsEncodingToDegrees(res);
-		sprintf(message.lon, "%f", inDegrees);
+		sprintf(message.lon, "%.10g", inDegrees);
 		
-#ifdef DEBUG
+#ifdef VERBOSE
 		//printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
 		//printf("%s lon = %d\n", NMEAFALLBACK, message.lon);
 		//printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
 		//printf("longitude = %s\n", message.lon);
-		printf("Longitude = %08.8f\n", message.lat);
+		printf("Longitude = %0.10g\n", message.lat);
 #endif
 		
 	      }
 #ifdef ALTITUDE
 	      else if (i == 9) {
 		//message.alt = (int32_t) strtof(res, &ptr);
-#ifdef DEBUG
+#ifdef VERBOSE
 		//printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
 		printf("%s alt = %d\n", NMEAFALLBACK, message.alt);
 		//printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
@@ -249,11 +249,11 @@ void process(int sockfd, int serial_port)
 	      //sprintf(latitude, "%g", message.lon);
 	      //printf("String = %s\n", latitude);
 	      
-#ifndef DEBUG 
+	      //#ifndef VERBOSE 
 	      write(serial_port, head, sizeof(head));
 	      write( serial_port, (uint8_t *) &message, sizeof(message) );
 	      write(serial_port, tail, sizeof(tail));
-#endif
+	      //#endif
 	    }
 	  }
         }
@@ -316,13 +316,13 @@ int main()
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
-#ifdef DEBUG
+#ifdef VERBOSE
         printf("socket creation failed...\n");
 #endif
         exit(0);
     }
     else
-#ifdef DEBUG
+#ifdef VERBOSE
       printf("Socket successfully created..\n");
 #endif
 	memset(&servaddr, 0, sizeof(servaddr));
@@ -336,13 +336,13 @@ int main()
     // connect the client socket to server socket
     if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr))
         != 0) {
-#ifdef DEBUG
+#ifdef VERBOSE
         printf("connection with the server failed...\n");
 #endif
         exit(0);
     }
     else
-#ifdef DEBUG
+#ifdef VERBOSE
         printf("connected to the server..\n");
 #endif 
     // process data

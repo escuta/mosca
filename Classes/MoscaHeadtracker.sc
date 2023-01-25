@@ -390,7 +390,9 @@ RTKGPS : HeadTrackerGPS
 	setTracker //protocol
 	{
 		trackarr = [251, 252, 253, 254,
-			nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+			nil, nil,
 			255];
 
 		procGPS = { | coordinates |
