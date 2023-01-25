@@ -37,7 +37,7 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 
 // SETTINGS
 
-//#define DEBUG    // Print text to terminal only
+#define DEBUG    // Print text to terminal only
 //#define ALTITUDE // include altitude in transmission
 #define SERPORT "/dev/ttyVA00"
 #define TCPPORT 1234
@@ -49,10 +49,12 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 
 typedef struct 
 {
-  double lat;
-  double lon;
+  //  double lat;
+  //  double lon;
+  char  lat[13];
+  char  lon[13];
 #ifdef ALTITUDE
-  double alt;
+  char  alt[13];
 #endif
 } message_t;
 
@@ -138,12 +140,22 @@ bool parse_gnss_token(char *data_ptr, char *header, int repeat_index, int token_
     return gnss_parsed_result;
 }
 
+double GpsEncodingToDegrees( char* gpsencoding )
+{
+    double a = strtod( gpsencoding, 0 ) ;
+    double d = (int)a / 100 ;
+    a -= d * 100 ;
+    return d + (a / 60) ;
+}
+
 void process(int sockfd, int serial_port)
 {
     char buff[MAX];
     int n; 
     char res[100];
     char *ptr;
+    char latitude[20];
+    char longitude[20];
     uint8_t head[] = { 251, 252, 253, 254 };
     uint8_t tail[] = { 255 };
     for (;;) {
@@ -161,19 +173,25 @@ void process(int sockfd, int serial_port)
 	  for(int i=1;i<=6;i++) {
 	    parse_gnss_token(buff, NMEA, 0, i, res);
 	    if(i == 2) {
-	      message.lat = strtod(res, &ptr);
+	      //message.lat = (int32_t) strtof(res, &ptr);
+	      sprintf(message.lat, "%s", res);
 #ifdef DEBUG
-	      printf("%s lat = %012.7f\n", NMEA, message.lat);
+	      //printf("%s lat = %012.7f\n", NMEA, message.lat);
+	      printf("%s lat = %s\n", NMEA, message.lat);
 	      //printf("%s lat (string): %s\r\n", NMEA, res);
 
 #endif
 	    } else if (i == 4) {
-	      message.lon = strtod(res, &ptr);
+	      //	      message.lon = (int32_t) strtof(res, &ptr);
+	      sprintf(message.lon, "%s", res);
+
 #ifdef DEBUG
-	      printf("%s lon = %012.7f\n", NMEA, message.lon);
+	      //printf("%s lon = %012.7f\n", NMEA, message.lon);
+	      printf("%s lon = %s\n", NMEA, message.lon);
 	      //printf("%s lon (string): %s\r\n", NMEA, res);
 #endif
 	    }
+	    // Missing .alt !
 #ifndef DEBUG
 	    write(serial_port, head, sizeof(head));
 	    write( serial_port, (uint8_t *) &message, sizeof(message) );
@@ -191,31 +209,47 @@ void process(int sockfd, int serial_port)
 #endif
 	      parse_gnss_token(buff, NMEAFALLBACK, 0, i, res);
 	      if(i == 2) {
-		message.lat = strtod(res, &ptr);
+		//message.lat = (int32_t) strtof(res, &ptr);
+		double inDegrees = GpsEncodingToDegrees(res);
+		//sprintf(message.lat, "%s", res);
+		sprintf(message.lat, "%f", inDegrees);
 #ifdef DEBUG
-		printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
+		//printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
+		//printf("%s lat = %d\n", NMEAFALLBACK, message.lat);
 		//printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
+		//printf("latitude = %s\n", message.lat);
+		printf("Latitude = %08.8f\n", message.lat);
 		
 #endif
 	      } else if (i == 4) {
-		message.lon = strtod(res, &ptr);
+		//message.lon = (int32_t) strtof(res, &ptr);
+		//sprintf(message.lon, "%s", res);
+		double inDegrees = GpsEncodingToDegrees(res);
+		sprintf(message.lon, "%f", inDegrees);
+		
 #ifdef DEBUG
-		printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
+		//printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
+		//printf("%s lon = %d\n", NMEAFALLBACK, message.lon);
 		//printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
+		//printf("longitude = %s\n", message.lon);
+		printf("Longitude = %08.8f\n", message.lat);
 #endif
 		
 	      }
 #ifdef ALTITUDE
 	      else if (i == 9) {
-		message.alt = strtod(res, &ptr);
+		//message.alt = (int32_t) strtof(res, &ptr);
 #ifdef DEBUG
-		printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
+		//printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
+		printf("%s alt = %d\n", NMEAFALLBACK, message.alt);
 		//printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
 #endif
 	      }
 #endif
+	      //sprintf(latitude, "%g", message.lon);
+	      //printf("String = %s\n", latitude);
 	      
-#ifndef DEBUG
+#ifndef DEBUG 
 	      write(serial_port, head, sizeof(head));
 	      write( serial_port, (uint8_t *) &message, sizeof(message) );
 	      write(serial_port, tail, sizeof(tail));

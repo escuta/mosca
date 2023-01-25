@@ -325,7 +325,6 @@ RTKGPS : HeadTrackerGPS
 	{
 		procGPS = { | coordinates |
 			var dLat, dLong, yStep, xStep, res;
-			
 			dLat = coordinates[0] - center[0];
 			dLong = coordinates[1] - center[1];
 
@@ -390,8 +389,9 @@ RTKGPS : HeadTrackerGPS
 
 	setTracker //protocol
 	{
-		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, 255];
+		trackarr = [251, 252, 253, 254,
+			nil, nil, nil, nil, nil, nil, nil, nil,
+			255];
 
 		procGPS = { | coordinates |
 			postln("latitude " + coordinates[0]);
@@ -403,6 +403,7 @@ RTKGPS : HeadTrackerGPS
 	matchByte
 	{
 		| byte | // match incoming headtracker data
+		byte.postln;
 		if (trackarr[tracki].isNil || (trackarr[tracki] == byte ))
 		{
 			trackarr2[tracki] = byte;
@@ -410,19 +411,23 @@ RTKGPS : HeadTrackerGPS
 
 			if (tracki >= trackarr.size)
 			{
-				this.procGyro(
+				/*	this.procGyro(
 					(trackarr2[5]<<8) + trackarr2[4],
 					(trackarr2[7]<<8) + trackarr2[6],
 					(trackarr2[9]<<8) + trackarr2[8]
-				);
-
-				procGPS.value([(trackarr2[13]<<24) + (trackarr2[12]<<16) +
-					(trackarr2[11]<<8) + trackarr2[10],
-					(trackarr2[17]<<24) + (trackarr2[16]<<16) +
-					(trackarr2[15]<<8) + trackarr2[14]
+					);
+				*/
+trackarr2.postln;
+				procGPS.value([(trackarr2[7]<<24) + (trackarr2[6]<<16) +
+					(trackarr2[5]<<8) + trackarr2[4],
+					(trackarr2[11]<<24) + (trackarr2[10]<<16) +
+					(trackarr2[9]<<8) + trackarr2[8]
 					//,(trackarr2[21]<<24) + (trackarr2[20]<<16) +
 					//(trackarr2[19]<<8) + trackarr2[18]
-				] * gpsCoeficient);
+				]
+					//* gpsCoeficient);
+				);
+			"HEY YOU!!!".postln;
 
 				tracki = 0;
 			};
