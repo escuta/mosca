@@ -2,13 +2,13 @@
 
   Reads $GPGGA NMEA messages (or $GNGGA as fallback) in RTK solution on TCP server output of rtkrcv or rtknavi_qt and extracts precision GPS coordinates. Requires prior launch of a virtual TTY pair as well as the TCP server being active. This utility writes coords in Mosca's format to one member of the TTY pair so that Mosca can read it by connecting to the other. TTY pair established with:
 
-sudo socat -d -d pty,link=/dev/ttyVA00,echo=0,perm=0777 pty,link=/dev/ttyVB00,echo=0,perm=0777
+  sudo socat -d -d pty,link=/dev/ttyVA00,echo=0,perm=0777 pty,link=/dev/ttyVB00,echo=0,perm=0777
 
-C code derived from:
+  C code derived from:
 
-https://stackoverflow.com/questions/19868156/parsing-code-for-gps-nmea-string
+  https://stackoverflow.com/questions/19868156/parsing-code-for-gps-nmea-string
 
-https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
+  https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 
 */
 
@@ -40,6 +40,7 @@ https://www.geeksforgeeks.org/tcp-server-client-implementation-in-c/
 #define VERBOSE    // Print text to terminal
 //#define ALTITUDE // include altitude in transmission
 #define SERPORT "/dev/ttyVA00"
+#define TCPADDRESS "127.0.0.1"
 #define TCPPORT 1234
 #define BAUDRATE B115200
 #define NMEA "GPGGA" // precision data 
@@ -51,8 +52,8 @@ typedef struct
 {
   //  double lat;
   //  double lon;
-  char  lat[11];
-  char  lon[11];
+  char  lat[12];
+  char  lon[12];
 #ifdef ALTITUDE
   char  alt[10];
 #endif
@@ -63,208 +64,218 @@ message_t message;
 
 //To trim a string contains \r\n
 void str_trim(char *str){
-    while(*str){
-        if(*str == '\r' || *str == '\n'){
-            *str = '\0';
-        }
-        str++;
+  while(*str){
+    if(*str == '\r' || *str == '\n'){
+      *str = '\0';
     }
+    str++;
+  }
 }
 
 bool parse_gnss_token(char *data_ptr, char *header, int repeat_index, int token_index, char *result) {
-    bool gnss_parsed_result = FALSE; // To check GNSS data parsing is success
-    bool on_header = FALSE;
-    // For header
-    int header_repeat_counter = 0;
-    int header_char_index = 0; // each char in header index
-    // For counting comma
-    int counted_token_index = 0;
-    //  To hold the result character index
-    bool data_found = FALSE;
-    char *result_start = result;
-    char header_found[10];
-    while (*data_ptr) {
-        // 1. Packet start
-        if (*data_ptr == GNSS_PACKET_START) {
-            on_header = TRUE;
-            header_char_index = 0; // to index each character in header
-            data_found = FALSE; // is data part found
-            data_ptr++;
-        }
-        // 2. For header parsing
-        if (on_header) {
-            if (*data_ptr == GNSS_TOKEN_SEPARATOR || header_char_index >= GNSS_HEADER_LENGTH) {
-                on_header = FALSE;
-            } else {
-                header_found[header_char_index] = *data_ptr;
-                if (header_char_index == GNSS_HEADER_LENGTH - 1) { // Now Header found
-                    header_found[header_char_index + 1] = '\0';
-                    on_header = FALSE;
-                    if (!strcmp(header, header_found)) {
-                        // Some headers may repeat - to identify it set the repeat index
-                        if (header_repeat_counter == repeat_index) {
-                            //printf("Header: %s\r\n", header_found );
-                            data_found = TRUE;
-                        }
-                        header_repeat_counter++;
-                    }
-                }
-                header_char_index++;
-            }
-            
-        }
-        // 3. data found
-        if (data_found) {
-            // To get the index data separated by comma
-            if (counted_token_index == token_index && *data_ptr != GNSS_TOKEN_SEPARATOR) {
-                // the data to parse
-                *result++ = *data_ptr;
-                gnss_parsed_result = TRUE;
-            }
-            if (*data_ptr == GNSS_TOKEN_SEPARATOR) { // if ,
-                counted_token_index++; // The comma counter for index
-            }
-            // Break if the counted_token_index(token_counter) greater than token_index(search_token)
-            if (counted_token_index > token_index) {
-                break;
-            }
-
-        }
-        // Appending \0 to the end
-        *result = '\0';
-        // To trim the data if ends with \r or \n
-        str_trim(result_start);
-        // Input data
-        data_ptr++;
+  bool gnss_parsed_result = FALSE; // To check GNSS data parsing is success
+  bool on_header = FALSE;
+  // For header
+  int header_repeat_counter = 0;
+  int header_char_index = 0; // each char in header index
+  // For counting comma
+  int counted_token_index = 0;
+  //  To hold the result character index
+  bool data_found = FALSE;
+  char *result_start = result;
+  char header_found[10];
+  while (*data_ptr) {
+    // 1. Packet start
+    if (*data_ptr == GNSS_PACKET_START) {
+      on_header = TRUE;
+      header_char_index = 0; // to index each character in header
+      data_found = FALSE; // is data part found
+      data_ptr++;
     }
-    return gnss_parsed_result;
+    // 2. For header parsing
+    if (on_header) {
+      if (*data_ptr == GNSS_TOKEN_SEPARATOR || header_char_index >= GNSS_HEADER_LENGTH) {
+	on_header = FALSE;
+      } else {
+	header_found[header_char_index] = *data_ptr;
+	if (header_char_index == GNSS_HEADER_LENGTH - 1) { // Now Header found
+	  header_found[header_char_index + 1] = '\0';
+	  on_header = FALSE;
+	  if (!strcmp(header, header_found)) {
+	    // Some headers may repeat - to identify it set the repeat index
+	    if (header_repeat_counter == repeat_index) {
+	      //printf("Header: %s\r\n", header_found );
+	      data_found = TRUE;
+	    }
+	    header_repeat_counter++;
+	  }
+	}
+	header_char_index++;
+      }
+            
+    }
+    // 3. data found
+    if (data_found) {
+      // To get the index data separated by comma
+      if (counted_token_index == token_index && *data_ptr != GNSS_TOKEN_SEPARATOR) {
+	// the data to parse
+	*result++ = *data_ptr;
+	gnss_parsed_result = TRUE;
+      }
+      if (*data_ptr == GNSS_TOKEN_SEPARATOR) { // if ,
+	counted_token_index++; // The comma counter for index
+      }
+      // Break if the counted_token_index(token_counter) greater than token_index(search_token)
+      if (counted_token_index > token_index) {
+	break;
+      }
+
+    }
+    // Appending \0 to the end
+    *result = '\0';
+    // To trim the data if ends with \r or \n
+    str_trim(result_start);
+    // Input data
+    data_ptr++;
+  }
+  return gnss_parsed_result;
 }
 
 double GpsEncodingToDegrees( char* gpsencoding )
 {
-    double a = strtod( gpsencoding, 0 ) ;
-    double d = (int)a / 100 ;
-    a -= d * 100 ;
-    return d + (a / 60) ;
+  double a = strtod( gpsencoding, 0 ) ;
+  double d = (int)a / 100 ;
+  a -= d * 100 ;
+  return d + (a / 60) ;
 }
 
 void process(int sockfd, int serial_port)
 {
-    char buff[MAX];
-    int n; 
-    char res[100];
-    char *ptr;
-    char latitude[20];
-    char longitude[20];
-    uint8_t head[] = { 251, 252, 253, 254 };
-    uint8_t tail[] = { 255 };
-    for (;;) {
-	memset(buff, 0, sizeof(buff));
-        read(sockfd, buff, sizeof(buff));
-        //printf(buff);
-	//printf("\n\n");
-        if ((strncmp(buff, "exit", 4)) == 0) {
+  char buff[MAX];
+  int n; 
+  char res[100];
+  char *ptr;
+  char latitude[20];
+  char longitude[20];
+  uint8_t head[] = { 251, 252, 253, 254 };
+  uint8_t tail[] = { 255 };
+  for (;;) {
+    memset(buff, 0, sizeof(buff));
+    read(sockfd, buff, sizeof(buff));
+    //printf(buff);
+    //printf("\n\n");
+    if ((strncmp(buff, "exit", 4)) == 0) {
 #ifdef VERBOSE
-	  printf("Client Exit...\n");
+      printf("Client Exit...\n");
 #endif
-	  break;
-        }
-        if (strstr(buff, NMEA) != NULL) {
-	  for(int i=1;i<=6;i++) {
-	    parse_gnss_token(buff, NMEA, 0, i, res);
+      break;
+    }
+    if (strstr(buff, NMEA) != NULL) {
+      printf("%s is present!");
+      for(int i=1;i<=6;i++) {
+	parse_gnss_token(buff, NMEA, 0, i, res);
+	if(i == 2) {
+	  //message.lat = (int32_t) strtof(res, &ptr);
+	  sprintf(message.lat, "%s", res);
+#ifdef VERBOSE
+	  //printf("%s lat = %012.7f\n", NMEA, message.lat);
+	  printf("%s lat = %s\n", NMEA, message.lat);
+	  //printf("%s lat (string): %s\r\n", NMEA, res);
+
+#endif
+	} else if (i == 4) {
+	  //	      message.lon = (int32_t) strtof(res, &ptr);
+	  sprintf(message.lon, "%s", res);
+
+#ifdef VERBOSE
+	  //printf("%s lon = %012.7f\n", NMEA, message.lon);
+	  printf("%s lon = %s\n", NMEA, message.lon);
+	  //printf("%s lon (string): %s\r\n", NMEA, res);
+#endif
+	}
+	// Missing .alt !
+	//#ifndef VERBOSE
+	printf("Writing here 1\n");
+	write(serial_port, head, sizeof(head));
+	write( serial_port, (uint8_t *) &message, sizeof(message) );
+	write(serial_port, tail, sizeof(tail));
+	//#endif
+      }
+    }
+#ifdef NMEAFALLBACK
+    else  {
+      if (strstr(buff, NMEAFALLBACK) != NULL) {
+#ifdef ALTITUDE	    
+	for(int i=1;i<=9;i++) {
+#else
+	  for(int i=1;i<=4;i++) {
+#endif
+	    parse_gnss_token(buff, NMEAFALLBACK, 0, i, res);
 	    if(i == 2) {
 	      //message.lat = (int32_t) strtof(res, &ptr);
-	      sprintf(message.lat, "%s", res);
+	      double latInDegrees = GpsEncodingToDegrees(res);
+	      //unsigned char *ucLat = (unsigned char*)&inDegrees;		//sprintf(message.lat, "%s", res);
+		
+	      sprintf(message.lat, "%.8f", latInDegrees);
 #ifdef VERBOSE
-	      //printf("%s lat = %012.7f\n", NMEA, message.lat);
-	      printf("%s lat = %s\n", NMEA, message.lat);
-	      //printf("%s lat (string): %s\r\n", NMEA, res);
-
+	      //printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
+	      //printf("%s lat = %d\n", NMEAFALLBACK, message.lat);
+	      //printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
+	      //		printf("latitude = %s\n", message.lat);
+	      //printf("Latitude = %u\n", ucLat);
+		
 #endif
 	    } else if (i == 4) {
-	      //	      message.lon = (int32_t) strtof(res, &ptr);
-	      sprintf(message.lon, "%s", res);
-
+	      //message.lon = (int32_t) strtof(res, &ptr);
+	      //sprintf(message.lon, "%s", res);
+	      double lonInDegrees = GpsEncodingToDegrees(res);
+	      sprintf(message.lon, "%.8f", lonInDegrees);
+		
 #ifdef VERBOSE
-	      //printf("%s lon = %012.7f\n", NMEA, message.lon);
-	      printf("%s lon = %s\n", NMEA, message.lon);
-	      //printf("%s lon (string): %s\r\n", NMEA, res);
+	      //printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
+	      //printf("%s lon = %d\n", NMEAFALLBACK, message.lon);
+	      //printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
+	      //printf("longitude = %s\n", message.lon);
+	      printf("Latitude = %s Longitude = %s\n", message.lat, message.lon);
+#endif
+	          printf("Writing here 2\n");
+    write(serial_port, head, sizeof(head));
+    write( serial_port, (uint8_t *) &message, sizeof(message) );
+    write(serial_port, tail, sizeof(tail));
+
+		
+	    }
+#ifdef ALTITUDE
+	    else if (i == 9) {
+	      //message.alt = (int32_t) strtof(res, &ptr);
+#ifdef VERBOSE
+	      //printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
+	      printf("%s alt = %d\n", NMEAFALLBACK, message.alt);
+	      //printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
 #endif
 	    }
-	    // Missing .alt !
+#endif
+
+	    //sprintf(latitude, "%g", message.lon);
+	    //printf("String = %s\n", latitude);
+	      
 	    //#ifndef VERBOSE
-	    write(serial_port, head, sizeof(head));
-	    write( serial_port, (uint8_t *) &message, sizeof(message) );
-	    write(serial_port, tail, sizeof(tail));
 	    //#endif
 	  }
-        }
-#ifdef NMEAFALLBACK
-	else  {
-	  if (strstr(buff, NMEAFALLBACK) != NULL) {
-#ifdef ALTITUDE	    
-	    for(int i=1;i<=9;i++) {
-#else
-	      for(int i=1;i<=4;i++) {
-#endif
-	      parse_gnss_token(buff, NMEAFALLBACK, 0, i, res);
-	      if(i == 2) {
-		//message.lat = (int32_t) strtof(res, &ptr);
-		double inDegrees = GpsEncodingToDegrees(res);
-		//sprintf(message.lat, "%s", res);
-		sprintf(message.lat, "%.10g", inDegrees);
-#ifdef VERBOSE
-		//printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
-		//printf("%s lat = %d\n", NMEAFALLBACK, message.lat);
-		//printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
-		//printf("latitude = %s\n", message.lat);
-		printf("Latitude = %.10g\n", message.lat);
-		
-#endif
-	      } else if (i == 4) {
-		//message.lon = (int32_t) strtof(res, &ptr);
-		//sprintf(message.lon, "%s", res);
-		double inDegrees = GpsEncodingToDegrees(res);
-		sprintf(message.lon, "%.10g", inDegrees);
-		
-#ifdef VERBOSE
-		//printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
-		//printf("%s lon = %d\n", NMEAFALLBACK, message.lon);
-		//printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
-		//printf("longitude = %s\n", message.lon);
-		printf("Longitude = %0.10g\n", message.lat);
-#endif
-		
-	      }
-#ifdef ALTITUDE
-	      else if (i == 9) {
-		//message.alt = (int32_t) strtof(res, &ptr);
-#ifdef VERBOSE
-		//printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
-		printf("%s alt = %d\n", NMEAFALLBACK, message.alt);
-		//printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
-#endif
-	      }
-#endif
-	      //sprintf(latitude, "%g", message.lon);
-	      //printf("String = %s\n", latitude);
-	      
-	      //#ifndef VERBOSE 
-	      write(serial_port, head, sizeof(head));
-	      write( serial_port, (uint8_t *) &message, sizeof(message) );
-	      write(serial_port, tail, sizeof(tail));
-	      //#endif
-	    }
-	  }
-        }
+	}
+
+
+      }
 	
 #endif
 	
     }
-}
+
+
+  }
  
-int main()
-{
+  int main()
+  {
     int sockfd, connfd;
     struct sockaddr_in servaddr, cli;
     int serial_port = open(SERPORT, O_RDWR);
@@ -281,7 +292,7 @@ int main()
     tty.c_cflag |= CS8; // 8 bits per byte (most common)
     tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
     tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
-
+    
     tty.c_lflag &= ~ICANON;
     tty.c_lflag &= ~ECHO; // Disable echo
     tty.c_lflag &= ~ECHOE; // Disable erasure
@@ -289,15 +300,12 @@ int main()
     tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
     tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
     tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
-
+    
     tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
     tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-    // tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
-    // tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
-
     tty.c_cc[VTIME] = 10;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
     tty.c_cc[VMIN] = 0;
-
+    
     // Set in/out baud rate to be 9600
     //cfsetispeed(&tty, B9600);
     cfsetospeed(&tty, BAUDRATE);
@@ -317,33 +325,33 @@ int main()
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd == -1) {
 #ifdef VERBOSE
-        printf("socket creation failed...\n");
+      printf("socket creation failed...\n");
 #endif
-        exit(0);
+      exit(0);
     }
     else
 #ifdef VERBOSE
       printf("Socket successfully created..\n");
 #endif
-	memset(&servaddr, 0, sizeof(servaddr));
-	//    bzero(&servaddr, sizeof(servaddr));
+    memset(&servaddr, 0, sizeof(servaddr));
+    //    bzero(&servaddr, sizeof(servaddr));
  
     // assign IP, TCPPORT
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_addr.s_addr = inet_addr(TCPADDRESS);
     servaddr.sin_port = htons(TCPPORT);
  
     // connect the client socket to server socket
     if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr))
         != 0) {
 #ifdef VERBOSE
-        printf("connection with the server failed...\n");
+      printf("connection with the server failed...\n");
 #endif
-        exit(0);
+      exit(0);
     }
     else
 #ifdef VERBOSE
-        printf("connected to the server..\n");
+      printf("connected to the server..\n");
 #endif 
     // process data
     process(sockfd, serial_port);
@@ -351,4 +359,4 @@ int main()
     // close the socket and serial port
     close(sockfd);
     close(serial_port);
-}
+  }

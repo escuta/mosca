@@ -83,7 +83,7 @@ HeadTracker
 					}
 				};
 
-				1.wait;
+				100.wait;
 			});
 		});
 
@@ -289,13 +289,15 @@ HeadTrackerGPS : HeadTracker
 	}
 }
 
-RTKGPS : HeadTrackerGPS
+RTKGPS : HeadTracker
 {
-	//const gpsCoeficient = 0.0000001, latDeg2meters = 111317.099692,
-	//longDeg2meters = 111319.488, areaInMeters = 10;
-	//var center, procGPS;
+	const gpsCoeficient = 0.0000001, latDeg2meters = 111317.099692,
+	longDeg2meters = 111319.488, areaInMeters = 10;
+	var center, procGPS2;
+	//	var lastLat, lastLon;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup |
+		("Setup is: " + setup).postln;
 
 		if (setup.isNil)
 		{
@@ -306,7 +308,7 @@ RTKGPS : HeadTrackerGPS
 		};
 
 	}
-	/*
+	
 	setCenter
 	{ | latLongAlt |
 
@@ -320,14 +322,14 @@ RTKGPS : HeadTrackerGPS
 		}
 		{ Error.throw("coordinates must be an array") }
 	}
-	*/
+	
 	prSetFunc
 	{
-		procGPS = { | coordinates |
+		procGPS2 = { | coordinates |
 			var dLat, dLong, yStep, xStep, res;
 			dLat = coordinates[0] - center[0];
 			dLong = coordinates[1] - center[1];
-
+"HIIIIIII".postln;
 			yStep = (dLat * latDeg2meters);
 			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
 			// lag in xStep
@@ -392,20 +394,15 @@ RTKGPS : HeadTrackerGPS
 		trackarr = [251, 252, 253, 254,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil,
+			nil, nil, nil, nil,
 			255];
-
-		procGPS = { | coordinates |
-			postln("latitude " + coordinates[0]);
-			postln("longitude " + coordinates[1]);
-			// postln("altitude " + coordinates[2]);
-		}; // initialize in case no coordinates are set;
 	}
 
 	matchByte
 	{
 		| byte | // match incoming headtracker data
-		byte.postln;
+		//		byte.postln;
+		//	"called here".postln;
 		if (trackarr[tracki].isNil || (trackarr[tracki] == byte ))
 		{
 			trackarr2[tracki] = byte;
@@ -413,25 +410,26 @@ RTKGPS : HeadTrackerGPS
 
 			if (tracki >= trackarr.size)
 			{
-				/*	this.procGyro(
-					(trackarr2[5]<<8) + trackarr2[4],
-					(trackarr2[7]<<8) + trackarr2[6],
-					(trackarr2[9]<<8) + trackarr2[8]
-					);
-				*/
-trackarr2.postln;
-				procGPS.value([(trackarr2[7]<<24) + (trackarr2[6]<<16) +
-					(trackarr2[5]<<8) + trackarr2[4],
-					(trackarr2[11]<<24) + (trackarr2[10]<<16) +
-					(trackarr2[9]<<8) + trackarr2[8]
-					//,(trackarr2[21]<<24) + (trackarr2[20]<<16) +
-					//(trackarr2[19]<<8) + trackarr2[18]
-				]
-					//* gpsCoeficient);
-				);
-			"HEY YOU!!!".postln;
+				var lat, lon, latAr = [0,0,0,0,0,0,0,0,0,0,0,0],
+				lonAr = [0,0,0,0,0,0,0,0,0,0,0,0];
+				//trackarr2.postln;
 
-				tracki = 0;
+				for (0, 11,
+					{ arg i;
+						latAr[i] = trackarr2[i + 4];
+						lonAr[i] = trackarr2[i + 16];
+					});
+				lat = latAr.asAscii.asFloat;	
+				lon = lonAr.asAscii.asFloat;
+				// why is this check needed?
+				//if ((lat != lastLat) || (lon != lastLon)) {
+					("Lat is " + lat + "Lon is "
+						+ lon + "tracki = ").postln;
+					procGPS2.value([lat, lon]);
+				//	lastLat = lat;
+				//	lastLon = lon;
+					//	};
+					tracki = 0;
 			};
 		} {
 			tracki = 0;
