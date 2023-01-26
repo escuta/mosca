@@ -424,7 +424,7 @@ RTKGPS : HeadTracker
 				// why is this check needed?
 				//if ((lat != lastLat) || (lon != lastLon)) {
 					("Lat is " + lat + "Lon is "
-						+ lon + "tracki = ").postln;
+						+ lon).postln;
 					procGPS2.value([lat, lon]);
 				//	lastLat = lat;
 				//	lastLon = lon;

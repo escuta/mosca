@@ -22,7 +22,7 @@
 #include <fcntl.h> // Contains file controls like O_RDWR
 #include <errno.h> // Error integer and strerror() function
 #include <termios.h> // Contains POSIX terminal control definitions
-
+#include <stdbool.h>
 
 #define MAX 150
 #define SA struct sockaddr
@@ -31,7 +31,7 @@
 #define GNSS_PACKET_START '$'
 #define GNSS_TOKEN_SEPARATOR ','
 
-#define bool int
+//#define bool int
 #define FALSE 0
 #define TRUE 1
 
@@ -159,6 +159,10 @@ void process(int sockfd, int serial_port)
   char longitude[20];
   uint8_t head[] = { 251, 252, 253, 254 };
   uint8_t tail[] = { 255 };
+  char nmeaMessage[6];
+  bool latNeg;
+  bool lonNeg;
+  latNeg = false;
   for (;;) {
     memset(buff, 0, sizeof(buff));
     read(sockfd, buff, sizeof(buff));
@@ -170,61 +174,38 @@ void process(int sockfd, int serial_port)
 #endif
       break;
     }
-    if (strstr(buff, NMEA) != NULL) {
-      printf("%s is present!");
-      for(int i=1;i<=6;i++) {
-	parse_gnss_token(buff, NMEA, 0, i, res);
-	if(i == 2) {
-	  //message.lat = (int32_t) strtof(res, &ptr);
-	  sprintf(message.lat, "%s", res);
-#ifdef VERBOSE
-	  //printf("%s lat = %012.7f\n", NMEA, message.lat);
-	  printf("%s lat = %s\n", NMEA, message.lat);
-	  //printf("%s lat (string): %s\r\n", NMEA, res);
-
-#endif
-	} else if (i == 4) {
-	  //	      message.lon = (int32_t) strtof(res, &ptr);
-	  sprintf(message.lon, "%s", res);
-
-#ifdef VERBOSE
-	  //printf("%s lon = %012.7f\n", NMEA, message.lon);
-	  printf("%s lon = %s\n", NMEA, message.lon);
-	  //printf("%s lon (string): %s\r\n", NMEA, res);
-#endif
-	}
-	// Missing .alt !
-	//#ifndef VERBOSE
-	//	printf("Writing here 1\n");
-	write(serial_port, head, sizeof(head));
-	write( serial_port, (uint8_t *) &message, sizeof(message) );
-	write(serial_port, tail, sizeof(tail));
-	//#endif
-      }
-    }
 #ifdef NMEAFALLBACK
-    else  {
-      if (strstr(buff, NMEAFALLBACK) != NULL) {
+    if (strstr(buff, NMEA) != NULL) {
+      strncpy(nmeaMessage, NMEA, 5);
+    } {
+      strncpy(nmeaMessage, NMEAFALLBACK, 5);
+    }
+#else
+    strncpy(nmeaMessage, NMEA, 5);
+#endif
+
+
+
+
+
+#ifdef NMEAFALLBACK
+    if ( (strstr(buff, NMEAFALLBACK) != NULL) ||
+	 (strstr(buff, NMEA) != NULL) ) {
+#else
+    if (strstr(buff, NMEA) != NULL) {
+#endif
 #ifdef ALTITUDE	    
 	for(int i=1;i<=9;i++) {
 #else
 	  for(int i=1;i<=4;i++) {
 #endif
-	    parse_gnss_token(buff, NMEAFALLBACK, 0, i, res);
+	    parse_gnss_token(buff, nmeaMessage, 0, i, res);
 	    if(i == 2) {
 	      //message.lat = (int32_t) strtof(res, &ptr);
 	      double latInDegrees = GpsEncodingToDegrees(res);
 	      //unsigned char *ucLat = (unsigned char*)&inDegrees;		//sprintf(message.lat, "%s", res);
 		
 	      sprintf(message.lat, "%.8f", latInDegrees);
-#ifdef VERBOSE
-	      //printf("%s lat = %012.7f\n", NMEAFALLBACK, message.lat);
-	      //printf("%s lat = %d\n", NMEAFALLBACK, message.lat);
-	      //printf("%s lat (string): %s\r\n", NMEAFALLBACK, res);
-	      //		printf("latitude = %s\n", message.lat);
-	      //printf("Latitude = %u\n", ucLat);
-		
-#endif
 	    } else if (i == 4) {
 	      //message.lon = (int32_t) strtof(res, &ptr);
 	      //sprintf(message.lon, "%s", res);
@@ -236,10 +217,9 @@ void process(int sockfd, int serial_port)
 	      //printf("%s lon = %d\n", NMEAFALLBACK, message.lon);
 	      //printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
 	      //printf("longitude = %s\n", message.lon);
-	      printf("Latitude = %s Longitude = %s\n", message.lat, message.lon);
+	      printf("%s Lat: %s Lon: %s\n", nmeaMessage, message.lat, message.lon);
 #endif
 #ifndef ALTITUDE
-	      printf("Writing here 2\n");
 	      write(serial_port, head, sizeof(head));
 	      write( serial_port, (uint8_t *) &message, sizeof(message) );
 	      write(serial_port, tail, sizeof(tail));
@@ -256,7 +236,7 @@ void process(int sockfd, int serial_port)
 
 #ifdef VERBOSE
 	      //printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
-	      printf("%s alt = %d\n", NMEAFALLBACK, message.alt);
+	      printf("%s alt = %d\n", nmeaMessage, message.alt);
 	      //printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
 #endif
 	    }
@@ -272,12 +252,7 @@ void process(int sockfd, int serial_port)
 
 
       }
-	
-#endif
-	
-    }
-
-
+  
   }
  
   int main()
