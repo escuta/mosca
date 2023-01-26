@@ -188,6 +188,7 @@ HeadTrackerGPS : HeadTracker
 			yStep = (dLat * latDeg2meters);
 			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
 			// lag in xStep
+			//	("lagFactor = " + lagFactor).postln;
 			if (lagFactor != 0)
 			{
 				if (xStep != lastXStep) {
@@ -297,6 +298,7 @@ RTKGPS : HeadTrackerGPS
 		var center, procGPS;
 	*/
 	//	var lastLat, lastLon;
+	var procRTK, rtkroutine, lon, lat;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup |
 		("Setup is: " + setup).postln;
@@ -306,9 +308,106 @@ RTKGPS : HeadTrackerGPS
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
 		} {
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
-			.setCenter(setup);
+			.setCenter(setup).rtkCtr();
 		};
 
+	}
+	//rtkCtr
+	
+	rtkCtr
+	{
+		rtkroutine = Routine.new({
+			"Opa!".postln;
+			inf.do({
+
+				if (switch.v)
+				{
+					//"Doing something".postln;
+					procRTK.value();
+					0.1.wait;
+				}
+				{ 1.wait };
+			});
+		});
+		rtkroutine.play;
+
+		trackPort.doneAction_({
+			"Serial port down".postln;
+			rtkroutine.stop;
+			rtkroutine.reset;
+		});
+
+	}
+
+	
+	prSetFunc
+	{
+		procRTK = { 
+			var dLat, dLong, yStep, xStep, res;
+
+			if ( lat.notNil && lon.notNil ) { 
+
+				dLat = lat - center[0];
+				dLong = lon - center[1];
+
+				yStep = (dLat * latDeg2meters);
+				xStep = (dLong * longDeg2meters) * cos(lat.degrad);
+				// lag in xStep
+				//	("lagFactor = " + lagFactor).postln;
+				if (lagFactor != 0)
+				{
+					if (xStep != lastXStep) {
+						var diff = xStep - curXStep;
+						xStepIncrement = diff / lagFactor;
+						lastXStep = xStep;
+						interpXStep = true;
+						("Latitude: " + lat
+							+ "Longitude: " + lon).postln;
+					};
+					if (interpXStep == true) {
+						curXStep = curXStep + xStepIncrement;
+						if (xStepIncrement < 0) {
+							if (curXStep < lastXStep) {
+								interpXStep = false;
+							}
+						};
+						if (xStepIncrement > 0) 
+						{
+							if (curXStep > lastXStep) {
+								interpXStep = false;
+							}
+						};
+					};
+					// Lag in yStep
+					if (yStep != lastYStep) {
+						var diff = yStep - curYStep;
+						yStepIncrement = diff / lagFactor;
+						lastYStep = yStep;
+						interpYStep = true;
+					};
+					if (interpYStep == true) {
+						curYStep = curYStep + yStepIncrement;
+						if (yStepIncrement < 0) {
+							if (curYStep < lastYStep) {
+								interpYStep = false;
+							}
+						};
+						if (yStepIncrement > 0)
+						{
+							if (curYStep > lastYStep) {
+								interpYStep = false;
+							}
+						};
+					};
+				} {
+					curXStep = xStep;
+					curYStep = yStep;
+				};
+				
+				moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0]
+					/ areaInMeters);
+			}
+		}
 	}
 
 	setTracker //protocol
@@ -324,7 +423,8 @@ RTKGPS : HeadTrackerGPS
 	{
 		| byte | // match incoming headtracker data
 		//	"called here".postln;
-		var dLat, dLong, yStep, xStep, res;
+		//var dLat, dLong, yStep, xStep,
+		var res;
 		//		byte.postln;
 		
 		if (trackarr[tracki].isNil || (trackarr[tracki] == byte ))
@@ -334,8 +434,8 @@ RTKGPS : HeadTrackerGPS
 
 			if (tracki >= trackarr.size)
 			{
-				var lat, lon, latAr = [0,0,0,0,0,0,0,0,0,0,0,0,0],
-				lonAr = [0,0,0,0,0,0,0,0,0,0,0,0,0], coords;
+				var latAr = [0,0,0,0,0,0,0,0,0,0,0,0,0],
+				lonAr = [0,0,0,0,0,0,0,0,0,0,0,0,0];
 				//trackarr2.postln;
 				
 				for (0, 12,
@@ -346,10 +446,10 @@ RTKGPS : HeadTrackerGPS
 				lat = latAr.asAscii.asFloat;	
 				lon = lonAr.asAscii.asFloat;
 				//				coords = [lat, lon];
-				( "Coords are: " + coords ).postln;
-				("Lat is " + lat + "Lon is "
-						+ lon).postln;
-				procGPS.value([lat, lon]);
+				//( "Coords are: " + coords ).postln;
+				//("Lat is " + lat + "Lon is "
+				//		+ lon).postln;
+				//procRTK.value();
 				tracki = 0;
 			};
 		} {
