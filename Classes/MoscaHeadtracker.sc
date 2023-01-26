@@ -289,11 +289,13 @@ HeadTrackerGPS : HeadTracker
 	}
 }
 
-RTKGPS : HeadTracker
+RTKGPS : HeadTrackerGPS
 {
+	/*
 	const gpsCoeficient = 0.0000001, latDeg2meters = 111317.099692,
 	longDeg2meters = 111319.488, areaInMeters = 10;
-	var center, procGPS2;
+		var center, procGPS;
+	*/
 	//	var lastLat, lastLon;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup |
@@ -308,86 +310,6 @@ RTKGPS : HeadTracker
 		};
 
 	}
-	
-	setCenter
-	{ | latLongAlt |
-
-		if (latLongAlt.isArray)
-		{
-			center = [latLongAlt[0], latLongAlt[1]];
-			if (latLongAlt.size == 4) {
-				lagFactor = latLongAlt[2] / latLongAlt[3];
-			};
-			this.prSetFunc();
-		}
-		{ Error.throw("coordinates must be an array") }
-	}
-	
-	prSetFunc
-	{
-		procGPS2 = { | coordinates |
-			var dLat, dLong, yStep, xStep, res;
-			dLat = coordinates[0] - center[0];
-			dLong = coordinates[1] - center[1];
-"HIIIIIII".postln;
-			yStep = (dLat * latDeg2meters);
-			xStep = (dLong * longDeg2meters) * cos(coordinates[0].degrad);
-			// lag in xStep
-			if (lagFactor != 0)
-			{
-				if (xStep != lastXStep) {
-					var diff = xStep - curXStep;
-					xStepIncrement = diff / lagFactor;
-					lastXStep = xStep;
-					interpXStep = true;
-					("Latitude: " + coordinates[0]
-						+ "Longitude: " + coordinates[1]).postln;
-				};
-				if (interpXStep == true) {
-					curXStep = curXStep + xStepIncrement;
-					if (xStepIncrement < 0) {
-						if (curXStep < lastXStep) {
-							interpXStep = false;
-						}
-					};
-					if (xStepIncrement > 0) 
-					{
-						if (curXStep > lastXStep) {
-							interpXStep = false;
-					}
-					};
-				};
-				// Lag in yStep
-				if (yStep != lastYStep) {
-					var diff = yStep - curYStep;
-					yStepIncrement = diff / lagFactor;
-					lastYStep = yStep;
-					interpYStep = true;
-				};
-				if (interpYStep == true) {
-					curYStep = curYStep + yStepIncrement;
-					if (yStepIncrement < 0) {
-						if (curYStep < lastYStep) {
-							interpYStep = false;
-						}
-					};
-					if (yStepIncrement > 0)
-					{
-						if (curYStep > lastYStep) {
-							interpYStep = false;
-						}
-					};
-				};
-			} {
-				curXStep = xStep;
-				curYStep = yStep;
-			};
-			
-			moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
-			//postln("x " + xStep + "curX " + curXStep + "xStepIncrement " + xStepIncrement);
-			//postln("y " + yStep + "curY " + curYStep + "yStepIncrement " + yStepIncrement);
-		}
-	}
 
 	setTracker //protocol
 	{
@@ -401,8 +323,10 @@ RTKGPS : HeadTracker
 	matchByte
 	{
 		| byte | // match incoming headtracker data
-		//		byte.postln;
 		//	"called here".postln;
+		var dLat, dLong, yStep, xStep, res;
+		//		byte.postln;
+		
 		if (trackarr[tracki].isNil || (trackarr[tracki] == byte ))
 		{
 			trackarr2[tracki] = byte;
@@ -411,9 +335,9 @@ RTKGPS : HeadTracker
 			if (tracki >= trackarr.size)
 			{
 				var lat, lon, latAr = [0,0,0,0,0,0,0,0,0,0,0,0,0],
-				lonAr = [0,0,0,0,0,0,0,0,0,0,0,0,0];
+				lonAr = [0,0,0,0,0,0,0,0,0,0,0,0,0], coords;
 				//trackarr2.postln;
-
+				
 				for (0, 12,
 					{ arg i;
 						latAr[i] = trackarr2[i + 4];
@@ -421,15 +345,12 @@ RTKGPS : HeadTracker
 					});
 				lat = latAr.asAscii.asFloat;	
 				lon = lonAr.asAscii.asFloat;
-				// why is this check needed?
-				//if ((lat != lastLat) || (lon != lastLon)) {
-					("Lat is " + lat + "Lon is "
+				//				coords = [lat, lon];
+				( "Coords are: " + coords ).postln;
+				("Lat is " + lat + "Lon is "
 						+ lon).postln;
-					procGPS2.value([lat, lon]);
-				//	lastLat = lat;
-				//	lastLon = lon;
-					//	};
-					tracki = 0;
+				procGPS.value([lat, lon]);
+				tracki = 0;
 			};
 		} {
 			tracki = 0;

@@ -1,6 +1,6 @@
 MoscaBase // acts as the public interface
 {
-	var dur, <server, <ossiaParent, gui, <tracker; // initial rguments
+	var dur, <server, <ossiaParent, gui, <tracker, <auxTracker; // initial rguments
 	var renderer, <spat, <effects, <center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
 	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
@@ -476,11 +476,11 @@ MoscaBase // acts as the public interface
 	rtkGPS   // will be run in addition to \orient above on different port
 	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \uputronics, extraArgs |
 
-		if (tracker.isNil)
+		if (auxTracker.isNil)
 		{
 			switch (type,
 				\uputronics,
-				{ tracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs)				}
+				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs)				}
 				/*\orient,
 				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
 				\pozyxOSC,
@@ -498,6 +498,14 @@ MoscaBase // acts as the public interface
 			tracker = nil;
 		};
 	}
+	freeAuxTracker  // ie. RTK GPS
+	{
+		if (auxTracker.notNil)
+		{
+			auxTracker.free();
+			auxTracker = nil;
+		};
+	}
 
 	track
 	{ | enable = true |
@@ -508,6 +516,7 @@ MoscaBase // acts as the public interface
 	free
 	{
 		this.freeHeadTracker();
+		this.freeAuxHeadTracker();
 		^super.free();
 	}
 }
