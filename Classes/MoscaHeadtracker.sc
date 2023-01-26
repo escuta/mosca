@@ -394,7 +394,7 @@ RTKGPS : HeadTracker
 		trackarr = [251, 252, 253, 254,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-			nil, nil, nil, nil,
+			nil, nil, nil, nil,nil, nil,
 			255];
 	}
 
@@ -410,14 +410,14 @@ RTKGPS : HeadTracker
 
 			if (tracki >= trackarr.size)
 			{
-				var lat, lon, latAr = [0,0,0,0,0,0,0,0,0,0,0,0],
-				lonAr = [0,0,0,0,0,0,0,0,0,0,0,0];
+				var lat, lon, latAr = [0,0,0,0,0,0,0,0,0,0,0,0,0],
+				lonAr = [0,0,0,0,0,0,0,0,0,0,0,0,0];
 				//trackarr2.postln;
 
-				for (0, 11,
+				for (0, 12,
 					{ arg i;
 						latAr[i] = trackarr2[i + 4];
-						lonAr[i] = trackarr2[i + 16];
+						lonAr[i] = trackarr2[i + 17];
 					});
 				lat = latAr.asAscii.asFloat;	
 				lon = lonAr.asAscii.asFloat;

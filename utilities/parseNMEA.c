@@ -51,10 +51,10 @@ typedef struct
 {
   //  double lat;
   //  double lon;
-  char  lat[12];
-  char  lon[12];
+  char  lat[13];
+  char  lon[13];
 #ifdef ALTITUDE
-  char  alt[10];
+  char  alt[13];
 #endif
 } message_t;
 
@@ -160,8 +160,7 @@ void process(int sockfd, int serial_port)
   uint8_t tail[] = { 255 };
   char nmeaMessage[6];
   bool latNeg = false;
-  bool lonNeg;
-  latNeg = false;
+  bool lonNeg = false;
   for (;;) {
     memset(buff, 0, sizeof(buff));
     read(sockfd, buff, sizeof(buff));
@@ -196,37 +195,33 @@ void process(int sockfd, int serial_port)
 #ifdef ALTITUDE	    
 	for(int i=1;i<=9;i++) {
 #else
-	  for(int i=1;i<=4;i++) {
+	  for(int i=1;i<=5;i++) {
 #endif
 	    parse_gnss_token(buff, nmeaMessage, 0, i, res);
 	    if(i == 2) {
-	      //message.lat = (int32_t) strtof(res, &ptr);
 	      double latInDegrees = GpsEncodingToDegrees(res);
-	      //unsigned char *ucLat = (unsigned char*)&inDegrees;		//sprintf(message.lat, "%s", res);
-		
+	      if(latNeg){latInDegrees = latInDegrees * -1; };
 	      sprintf(message.lat, "%.8f", latInDegrees);
-	    } else if (i == 4) {
-	      //message.lon = (int32_t) strtof(res, &ptr);
-	      //sprintf(message.lon, "%s", res);
+	    }
+	    if (i == 3) {
+	      if (strstr(buff, "S") != NULL) { latNeg = true;}
+	    }
+	    if (i == 4) {
 	      double lonInDegrees = GpsEncodingToDegrees(res);
+	      if(latNeg){lonInDegrees = lonInDegrees * -1; };
 	      sprintf(message.lon, "%.8f", lonInDegrees);
 		
 #ifdef VERBOSE
-	      //printf("%s lon = %012.7f\n", NMEAFALLBACK, message.lon);
-	      //printf("%s lon = %d\n", NMEAFALLBACK, message.lon);
-	      //printf("%s lon (string): %s\r\n", NMEAFALLBACK, res);
-	      //printf("longitude = %s\n", message.lon);
 	      printf("%s Lat: %s Lon: %s\n", nmeaMessage, message.lat, message.lon);
-#endif
-#ifndef ALTITUDE
-	      write(serial_port, head, sizeof(head));
-	      write( serial_port, (uint8_t *) &message, sizeof(message) );
-	      write(serial_port, tail, sizeof(tail));
 #endif
 		
 	    }
+	    if (i == 5) {
+	      if (strstr(buff, "W") != NULL) { latNeg = true;}
+	    }
+
 #ifdef ALTITUDE
-	    else if (i == 9) {
+	    if (i == 9) {
 	      sprintf(message.alt, "%s", res);
 	      //message.alt = (int32_t) strtof(res, &ptr);
 	      write(serial_port, head, sizeof(head));
@@ -235,7 +230,7 @@ void process(int sockfd, int serial_port)
 
 #ifdef VERBOSE
 	      //printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
-	      printf("%s alt = %d\n", nmeaMessage, message.alt);
+	      printf("%s alt = %s\n", nmeaMessage, message.alt);
 	      //printf("%s alt (string): %s\r\n", NMEAFALLBACK, res);
 #endif
 	    }
@@ -247,6 +242,11 @@ void process(int sockfd, int serial_port)
 	    //#ifndef VERBOSE
 	    //#endif
 	  }
+	  write(serial_port, head, sizeof(head));
+	  write( serial_port, (uint8_t *) &message, sizeof(message) );
+	  write(serial_port, tail, sizeof(tail));
+	  
+	  //	  printf("test\n");
 	}
 
 
