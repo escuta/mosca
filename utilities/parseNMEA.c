@@ -195,7 +195,7 @@ void process(int sockfd, int serial_port)
 	}
 	// Missing .alt !
 	//#ifndef VERBOSE
-	printf("Writing here 1\n");
+	//	printf("Writing here 1\n");
 	write(serial_port, head, sizeof(head));
 	write( serial_port, (uint8_t *) &message, sizeof(message) );
 	write(serial_port, tail, sizeof(tail));
@@ -238,16 +238,22 @@ void process(int sockfd, int serial_port)
 	      //printf("longitude = %s\n", message.lon);
 	      printf("Latitude = %s Longitude = %s\n", message.lat, message.lon);
 #endif
-	          printf("Writing here 2\n");
-    write(serial_port, head, sizeof(head));
-    write( serial_port, (uint8_t *) &message, sizeof(message) );
-    write(serial_port, tail, sizeof(tail));
-
+#ifndef ALTITUDE
+	      printf("Writing here 2\n");
+	      write(serial_port, head, sizeof(head));
+	      write( serial_port, (uint8_t *) &message, sizeof(message) );
+	      write(serial_port, tail, sizeof(tail));
+#endif
 		
 	    }
 #ifdef ALTITUDE
 	    else if (i == 9) {
+	      sprintf(message.alt, "%s", res);
 	      //message.alt = (int32_t) strtof(res, &ptr);
+	      write(serial_port, head, sizeof(head));
+	      write( serial_port, (uint8_t *) &message, sizeof(message) );
+	      write(serial_port, tail, sizeof(tail));
+
 #ifdef VERBOSE
 	      //printf("%s alt = %08.7f\n", NMEAFALLBACK, message.alt);
 	      printf("%s alt = %d\n", NMEAFALLBACK, message.alt);
