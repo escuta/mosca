@@ -31,7 +31,6 @@
 #define GNSS_PACKET_START '$'
 #define GNSS_TOKEN_SEPARATOR ','
 
-//#define bool int
 #define FALSE 0
 #define TRUE 1
 
@@ -160,7 +159,7 @@ void process(int sockfd, int serial_port)
   uint8_t head[] = { 251, 252, 253, 254 };
   uint8_t tail[] = { 255 };
   char nmeaMessage[6];
-  bool latNeg;
+  bool latNeg = false;
   bool lonNeg;
   latNeg = false;
   for (;;) {
