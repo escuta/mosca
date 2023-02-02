@@ -542,7 +542,89 @@ MoscaGUI
 					//lastRx = lastRy = nil; // first mouse click to set
 					//	}  
 			});
+			////////////////////
 
+
+
+			drawBut = Button(originView, Rect(0, 0, 41, 20))
+			.focusColor_(palette.color('midlight', 'active'))
+			.states_(
+				[
+					[
+						"M1",
+						palette.color('light', 'active'),
+						palette.color('middark', 'active')
+					],
+					[
+						"Stop ",
+						palette.color('middark', 'active'),
+						palette.color('light', 'active')
+					]
+				]
+			).action_({ | butt |
+				
+				if (butt.value == 1)
+				{
+					storeGraphicUndo.value(aMosca.graphicImage);
+					drawing = true;
+					annotate = false;
+					fork { while { drawing == true }
+						{ defer { win.refresh;  }; 1.wait; } };
+				} {
+					drawing = false;
+					annotate = false;
+				}
+			});
+			
+			
+			//		annotate graphic
+			writeBut = Button(originView, Rect(0, 0, 41, 20))
+			.focusColor_(palette.color('midlight', 'active'))
+			.states_(
+				[
+					[
+						"M2",
+						palette.color('light', 'active'),
+						palette.color('middark', 'active')
+					] 
+				]
+			).action_({ | butt |
+				
+				//if (butt.value == 1)
+				//{
+				var bounds, dwin, success = false, path, textField;
+				//drawing = false;
+				drawBut.valueAction = 0;
+				annotate = true;
+				annotateText = nil;
+				bounds = Rect(200,300,430,20);
+				//path = PathName(aMosca.graphicpath);
+				dwin = Window("Annotate: enter text and click on graphic", bounds)
+				.onClose_({ if (success.not) { "Decided not to write!".postln;
+					annotateText = nil; annotate = false;
+				drawing = false} });
+				
+				textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
+				.value_("")
+				.action_({ | tf |
+					("Click on graphic with mouse to place text: ").postln;
+					//aMosca.graphicImage.write(tf.value, quality: -1);
+					success = true;
+					annotate = true;
+					drawing = false;
+					annotateText = tf.value;
+				dwin.close;
+					
+				});
+				
+				dwin.front;
+
+					//drawing = true;
+					//lastRx = lastRy = nil; // first mouse click to set
+					//	}  
+			});
+			
+			/////////////////
 
 		};
 				

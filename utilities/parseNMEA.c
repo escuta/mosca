@@ -175,14 +175,13 @@ void process(int sockfd, int serial_port)
 #ifdef NMEAFALLBACK
     if (strstr(buff, NMEA) != NULL) {
       strncpy(nmeaMessage, NMEA, 5);
-    } {
-      strncpy(nmeaMessage, NMEAFALLBACK, 5);
+
+    } else {
+      strncpy(nmeaMessage, NMEAFALLBACK, 5);  // this should be ok
     }
 #else
     strncpy(nmeaMessage, NMEA, 5);
 #endif
-
-
 
 
 
@@ -192,6 +191,7 @@ void process(int sockfd, int serial_port)
 #else
     if (strstr(buff, NMEA) != NULL) {
 #endif
+      
 #ifdef ALTITUDE	    
 	for(int i=1;i<=9;i++) {
 #else
