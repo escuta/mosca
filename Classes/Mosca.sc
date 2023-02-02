@@ -68,6 +68,8 @@ Mosca : MoscaBase
 			renderer.setup(server, speaker_array, maxOrder, decoder,
 				outBus, subOutBus, rawOutBus, rawFormat, vstPreset,
 				vstProgram, vstOuts);
+			gnssScaleLatAr = [nil, nil, nil, nil];
+			gnssScaleLonAr = [nil, nil, nil, nil];
 
 			// recording blip synth for synchronisation
 			SynthDef(\blip, {
@@ -83,7 +85,6 @@ Mosca : MoscaBase
 			effects.finalize(multyThread, server, maxOrder, irBank);
 
 			renderer.launchRenderer(server, server.defaultGroup);
-
 			postln("Ready !");
 		});
 

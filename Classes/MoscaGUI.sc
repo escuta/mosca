@@ -554,26 +554,23 @@ MoscaGUI
 						"M1",
 						palette.color('light', 'active'),
 						palette.color('middark', 'active')
-					],
-					[
-						"Stop ",
-						palette.color('middark', 'active'),
-						palette.color('light', 'active')
 					]
 				]
 			).action_({ | butt |
-				
-				if (butt.value == 1)
+				"Fooo!".postln;
+				if (butt.value == 0)
 				{
-					storeGraphicUndo.value(aMosca.graphicImage);
-					drawing = true;
-					annotate = false;
-					fork { while { drawing == true }
-						{ defer { win.refresh;  }; 1.wait; } };
-				} {
-					drawing = false;
-					annotate = false;
-				}
+					aMosca.gnssScaleLatAr[0] = aMosca.gnssLat;
+					aMosca.gnssScaleLonAr[0] = aMosca.gnssLon;
+					aMosca.gnssScaleLatAr[1] = aMosca.center.ossiaOrigin.v[1];
+					aMosca.gnssScaleLonAr[1] = aMosca.center.ossiaOrigin.v[0];
+					/*					("Centre.x = " +
+						aMosca.center.ossiaOrigin.v[0] +
+						"Centre.y = " +
+						aMosca.center.ossiaOrigin.v[1] + "\n"
+						+ "gnssLat = " + aMosca.gnssLat
+						).postln; */
+				} 
 			});
 			
 			
@@ -589,39 +586,19 @@ MoscaGUI
 					] 
 				]
 			).action_({ | butt |
-				
-				//if (butt.value == 1)
-				//{
-				var bounds, dwin, success = false, path, textField;
-				//drawing = false;
-				drawBut.valueAction = 0;
-				annotate = true;
-				annotateText = nil;
-				bounds = Rect(200,300,430,20);
-				//path = PathName(aMosca.graphicpath);
-				dwin = Window("Annotate: enter text and click on graphic", bounds)
-				.onClose_({ if (success.not) { "Decided not to write!".postln;
-					annotateText = nil; annotate = false;
-				drawing = false} });
-				
-				textField = TextField(dwin, Rect(0, 0, bounds.width, bounds.height))
-				.value_("")
-				.action_({ | tf |
-					("Click on graphic with mouse to place text: ").postln;
-					//aMosca.graphicImage.write(tf.value, quality: -1);
-					success = true;
-					annotate = true;
-					drawing = false;
-					annotateText = tf.value;
-				dwin.close;
-					
-				});
-				
-				dwin.front;
-
-					//drawing = true;
-					//lastRx = lastRy = nil; // first mouse click to set
-					//	}  
+				if (butt.value == 0)
+				{
+					aMosca.gnssScaleLatAr[2] = aMosca.gnssLat;
+					aMosca.gnssScaleLonAr[2] = aMosca.gnssLon;
+					aMosca.gnssScaleLatAr[3] = aMosca.center.ossiaOrigin.v[1];
+					aMosca.gnssScaleLonAr[3] = aMosca.center.ossiaOrigin.v[0];
+					("Centre.x = " +
+						aMosca.center.ossiaOrigin.v[0] +
+						"Centre.y = " +
+						aMosca.center.ossiaOrigin.v[1]
+					).postln;
+				} 
+				 
 			});
 			
 			/////////////////
@@ -975,7 +952,8 @@ MoscaGUI
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
 			if(aMosca.graphicpath.notNil){
-				originView.bounds_(Rect(width - 94, height - 176, 94, 172));
+				//originView.bounds_(Rect(width - 94, height - 176, 94, 172));
+				originView.bounds_(Rect(width - 94, height - 200, 94, 192));
 			}{
 				originView.bounds_(Rect(width - 94, height - 128, 94, 148));
 			};

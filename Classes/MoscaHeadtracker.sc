@@ -300,30 +300,27 @@ RTKGPS : HeadTrackerGPS
 	//	var lastLat, lastLon;
 	var procRTK, rtkroutine, lon, lat;
 	*new
-	{ | center, flag, serialPort, ofsetHeading, setup |
-		("Setup is: " + setup).postln;
-
+	{ | center, flag, serialPort, ofsetHeading, setup, amosca |
+		("Setup is: " + setup + "aMosca is" + amosca).postln;
 		if (setup.isNil)
 		{
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
 		} {
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
-			.setCenter(setup).rtkCtr();
+			.setCenter(setup, amosca).rtkCtr(amosca);
 		};
 
 	}
 	//rtkCtr
 	
 	rtkCtr
-	{
+	{ | amosca | 
 		rtkroutine = Routine.new({
-			"Opa!".postln;
 			inf.do({
-
 				if (switch.v)
 				{
 					//"Doing something".postln;
-					procRTK.value();
+					procRTK.value(amosca);
 					0.1.wait;
 				}
 				{ 1.wait };
@@ -341,8 +338,8 @@ RTKGPS : HeadTrackerGPS
 
 	
 	prSetFunc
-	{
-		procRTK = { 
+	{ | amosca |
+		procRTK = { | amosca | 
 			var dLat, dLong, yStep, xStep, res;
 
 			if ( lat.notNil && lon.notNil ) { 
@@ -362,7 +359,12 @@ RTKGPS : HeadTrackerGPS
 						lastXStep = xStep;
 						interpXStep = true;
 						("Latitude: " + lat
-							+ "Longitude: " + lon).postln;
+							+ "Longitude: " + lon +
+							"aMosca: " + amosca).postln;
+						
+						amosca.gnssLat = lat;
+						amosca.gnssLon = lon;
+
 					};
 					if (interpXStep == true) {
 						curXStep = curXStep + xStepIncrement;
@@ -403,9 +405,13 @@ RTKGPS : HeadTrackerGPS
 					curXStep = xStep;
 					curYStep = yStep;
 				};
-				
+				if(amosca.gnssScaleLatAr[0].isNil ||
+					amosca.gnssScaleLatAr[2].isNil) {		
 				moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0]
 					/ areaInMeters);
+					} {
+						"Decided on something different".postln;
+					}
 			}
 		}
 	}

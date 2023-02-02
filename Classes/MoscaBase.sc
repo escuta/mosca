@@ -9,7 +9,7 @@ MoscaBase // acts as the public interface
 	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window,
 	<>zoomfactor = 1, <>fontsize = 14, <graphicScale = 100, <maxundo;
 	var <>orient; //origin with respect to graphic pixels
-	//var <vstouts;
+	var <>gnssScaleLatAr, <>gnssScaleLonAr, <>gnssLat, <>gnssLon;
 
 
 	*printSynthParams
@@ -476,11 +476,12 @@ MoscaBase // acts as the public interface
 	rtkGPS   // will be run in addition to \orient above on different port
 	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \uputronics, extraArgs |
 
-		if (auxTracker.isNil)
+		if (auxTracker.isNil)  // "auxTracker" is any USB dev other than
+		                       // the main head tracker
 		{
 			switch (type,
 				\uputronics,
-				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs)				}
+				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs, this)			}
 				/*\orient,
 				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
 				\pozyxOSC,
