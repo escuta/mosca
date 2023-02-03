@@ -392,11 +392,11 @@ RTKGPS : HeadTrackerGPS
 					} {
 						yStep = (amosca.mark1[1]+(((amosca.mark2[1]-amosca.mark1[1])
 							/ (amosca.mark2[2]-amosca.mark1[2]))
-							* (lat-amosca.mark1[2]))) * 10;
+							* (lat-amosca.mark1[2])));
 						
 						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
 							/ (amosca.mark2[3]-amosca.mark1[3]))
-							* (lon-amosca.mark1[3]))) * 10;
+							* (lon-amosca.mark1[3])));
 						("xStep: " + xStep + "yStep: " + yStep + "lat: " + lat + "lon: " + lon).postln;
 					};
 				
@@ -457,20 +457,13 @@ RTKGPS : HeadTrackerGPS
 					curXStep = xStep;
 					curYStep = yStep;
 				};
-//if(amosca.gnssScaleLatAr[0].isNil ||
-//					amosca.gnssScaleLatAr[2].isNil) {		
-				moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0]
-					/ areaInMeters);
-//					} {
-						/*						var	newOX = (aMosca.mark1[0]+(((this.mark2[0]-aMosca.mark2[3])
-							/ (aMosca.mark2[3]-aMosca.mark1[3]))
-							* (this.lat-this.mark1[2])));
-						var newOY = (this.mark1[1]+(((this.mark2[1]-this.mark1[1])
-							/ (this.mark2[3]-this.mark1[3]))
-							* (this.lon-this.mark1[3])));
-						*/
-//		"Decided on something different".postln;
-//					}
+				if(amosca.mark1[0].isNil ||
+					amosca.mark2[0].isNil) {    //no marks, use centre param value		
+						moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0]
+							/ areaInMeters);
+					} {
+						moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0])
+					};
 			}
 		}
 	}
