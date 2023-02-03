@@ -27,6 +27,7 @@ MoscaSource[]
 	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
 	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount, <ox;
+	var <reach;
 	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
 	var <auxiliary, <aux, <check, orientation;
@@ -55,6 +56,9 @@ MoscaSource[]
 		stream.node.description_("Prefer loading smaler files and streaming when they excid 6 minutes");
 
 		loop = OssiaAutomationProxy(input, "Loop", Boolean, critical:true);
+
+		reach = OssiaAutomationProxy(src, "Reach", Float,
+			[0, 1], 1.0, 'clip', critical:allCritical);
 
 		external = OssiaAutomationProxy(input, "External", Boolean, critical: true);
 
@@ -239,6 +243,7 @@ MoscaSource[]
 
 		level.action_({ | val | this.setSynths(\amp, val.value.dbamp) });
 
+		reach.action_({ | val | ("Reach: " + val.value).postln });
 		contraction.action_({ | val | this.setSynths(\contract, val.value) });
 
 		doppler.action_({ | val | this.setSynths(\dopamnt, val.value) });
@@ -292,6 +297,7 @@ MoscaSource[]
 
 		library.dockTo(automation, "libraryProxy_" ++ index);
 		level.dockTo(automation, "levelProxy_" ++ index);
+		reach.dockTo(automation, "reachProxy_" ++ index);
 		doppler.dockTo(automation, "dopamtProxy_" ++ index);
 		globalAmount.dockTo(automation, "globaamtlProxy_" ++ index);
 
@@ -375,6 +381,7 @@ MoscaSource[]
 
 		library.free;
 		level.free;
+		reach.free;
 		doppler.free;
 		globalAmount.free;
 		localEffect.free;
