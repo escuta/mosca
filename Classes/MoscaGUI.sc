@@ -560,16 +560,18 @@ MoscaGUI
 				"Fooo!".postln;
 				if (butt.value == 0)
 				{
-					aMosca.gnssScaleLatAr[0] = aMosca.gnssLat;
-					aMosca.gnssScaleLonAr[0] = aMosca.gnssLon;
-					aMosca.gnssScaleLatAr[1] = aMosca.center.ossiaOrigin.v[1];
-					aMosca.gnssScaleLonAr[1] = aMosca.center.ossiaOrigin.v[0];
+					aMosca.mark1[0] = aMosca.center.ossiaOrigin.v[0]; // x1
+					aMosca.mark1[1] = aMosca.center.ossiaOrigin.v[1]; // y1
+					aMosca.mark1[2] = aMosca.gnssLat;
+					aMosca.mark1[3] = aMosca.gnssLon;
 					/*					("Centre.x = " +
 						aMosca.center.ossiaOrigin.v[0] +
 						"Centre.y = " +
 						aMosca.center.ossiaOrigin.v[1] + "\n"
 						+ "gnssLat = " + aMosca.gnssLat
 						).postln; */
+					("mark1[0,1,2,3]: " + aMosca.mark1[0] + aMosca.mark1[1]
+					+ aMosca.mark1[2] + aMosca.mark1[3]).postln;
 				} 
 			});
 			
@@ -588,10 +590,18 @@ MoscaGUI
 			).action_({ | butt |
 				if (butt.value == 0)
 				{
+					aMosca.mark2[0] = aMosca.center.ossiaOrigin.v[0]; // x1
+					aMosca.mark2[1] = aMosca.center.ossiaOrigin.v[1]; // y1
+					aMosca.mark2[2] = aMosca.gnssLat;
+					aMosca.mark2[3] = aMosca.gnssLon;
+					("mark2[0,1,2,3]: " + aMosca.mark2[0] + aMosca.mark2[1]
+					+ aMosca.mark2[2] + aMosca.mark2[3]).postln;
+						/*
 					aMosca.gnssScaleLatAr[2] = aMosca.gnssLat;
 					aMosca.gnssScaleLonAr[2] = aMosca.gnssLon;
-					aMosca.gnssScaleLatAr[3] = aMosca.center.ossiaOrigin.v[1];
-					aMosca.gnssScaleLonAr[3] = aMosca.center.ossiaOrigin.v[0];
+					aMosca.gnssScaleLatAr[3] = aMosca.center.ossiaOrigin.v[0]; // x2
+						aMosca.gnssScaleLonAr[3] = aMosca.center.ossiaOrigin.v[1]; // y2
+					*/
 					("Centre.x = " +
 						aMosca.center.ossiaOrigin.v[0] +
 						"Centre.y = " +

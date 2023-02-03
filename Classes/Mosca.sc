@@ -31,11 +31,11 @@ Mosca : MoscaBase
 		allCritical = false, decoder, maxorder = 1, speaker_array, outbus = 0,
 		suboutbus, rawformat = \FUMA, rawoutbus = 0,
 		graphicPath, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts,
-		spatRecompile = true |
+		spatRecompile = true, mark1, mark2 |
 
 		^super.newCopyArgs(dur, server).ctr(autoDir, nsources, irBank,
 			parentOssiaNode, allCritical, decoder, maxorder, speaker_array,
-			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts, spatRecompile);
+			outbus, suboutbus, rawformat, rawoutbus, scaleFactor, fontSize, maxUndo, vstPreset, vstProgram, vstOuts, spatRecompile, mark1, mark2);
 	}
 	ctr
 	{ | autoDir, nsources, irBank, parentOssiaNode, allCritical, decoder, maxOrder,
@@ -51,7 +51,8 @@ Mosca : MoscaBase
 		// Server.program.asString.endsWith("supernova");
 		// multyThread = server.options.threads.notNil;
 		multyThread = false;
-
+		mark1 = [nil, nil, nil, nil];
+		mark2 = [nil, nil, nil, nil];
 		renderer = MoscaRenderer(maxOrder);
 
 		effects = MoscaEffects(irBank);
@@ -68,9 +69,8 @@ Mosca : MoscaBase
 			renderer.setup(server, speaker_array, maxOrder, decoder,
 				outBus, subOutBus, rawOutBus, rawFormat, vstPreset,
 				vstProgram, vstOuts);
-			gnssScaleLatAr = [nil, nil, nil, nil];
-			gnssScaleLonAr = [nil, nil, nil, nil];
-
+		
+		
 			// recording blip synth for synchronisation
 			SynthDef(\blip, {
 				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);

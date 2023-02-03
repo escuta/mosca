@@ -168,10 +168,14 @@ HeadTrackerGPS : HeadTracker
 
 		if (latLongAlt.isArray)
 		{
-			center = [latLongAlt[0], latLongAlt[1]];
-			if (latLongAlt.size == 4) {
-				lagFactor = latLongAlt[2] / latLongAlt[3];
-			};
+			//		if(latLongAlt.size < 8) {  // doesn't include GPS scaling params
+				center = [latLongAlt[0], latLongAlt[1]];
+				if (latLongAlt.size == 4) {
+					lagFactor = latLongAlt[2] / latLongAlt[3];
+				};
+			//	} {
+				
+			//};
 			this.prSetFunc();
 		}
 		{ Error.throw("coordinates must be an array") }
@@ -306,12 +310,47 @@ RTKGPS : HeadTrackerGPS
 		{
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
 		} {
+			("setup.size: " + setup.size).postln;
+			
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
 			.setCenter(setup, amosca).rtkCtr(amosca);
 		};
 
 	}
 	//rtkCtr
+	setCenter
+	{ | latLongAlt, amosca |
+
+		if (latLongAlt.isArray)
+		{
+			if(latLongAlt.size < 8) {  // doesn't include GPS scaling params
+				center = [latLongAlt[0], latLongAlt[1]];
+				if (latLongAlt.size == 4) {
+					lagFactor = latLongAlt[2] / latLongAlt[3];
+				};
+			} {
+				("amosca = " + amosca).postln;
+				("amosca.mark1 is an array? " + amosca.mark1.isArray).postln;
+				("latLongAlt: " + latLongAlt).postln;
+				if (amosca.mark1.isArray) {
+					center = [latLongAlt[0], latLongAlt[1]];
+					amosca.mark1[0] = latLongAlt[0];
+					amosca.mark1[1] = latLongAlt[1];
+					amosca.mark1[2] = latLongAlt[2];
+					amosca.mark1[3] = latLongAlt[3];
+					amosca.mark2[0] = latLongAlt[4];
+					amosca.mark2[1] = latLongAlt[5];
+					amosca.mark2[2] = latLongAlt[6];
+					amosca.mark2[3] = latLongAlt[7];
+				};
+				if (latLongAlt.size == 10) {
+					lagFactor = latLongAlt[8] / latLongAlt[9];
+				};
+			};
+			this.prSetFunc();
+		}
+		{ Error.throw("coordinates must be an array") }
+	}
 	
 	rtkCtr
 	{ | amosca | 
@@ -343,19 +382,31 @@ RTKGPS : HeadTrackerGPS
 			var dLat, dLong, yStep, xStep, res;
 
 			if ( lat.notNil && lon.notNil ) { 
-
-				dLat = lat - center[0];
-				dLong = lon - center[1];
-
-				yStep = (dLat * latDeg2meters);
-				xStep = (dLong * longDeg2meters) * cos(lat.degrad);
+				if(amosca.mark1[0].isNil ||
+					amosca.mark2[0].isNil) {    //no marks, use centre param value
+						dLat = lat - center[0];
+						dLong = lon - center[1];
+						("lat: " + lat + "center[0]: " + center[0]).postln;
+						yStep = (dLat * latDeg2meters);
+						xStep = (dLong * longDeg2meters) * cos(lat.degrad);
+					} {
+						yStep = (amosca.mark1[1]+(((amosca.mark2[1]-amosca.mark1[1])
+							/ (amosca.mark2[2]-amosca.mark1[2]))
+							* (lat-amosca.mark1[2]))) * 10;
+						
+						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
+							/ (amosca.mark2[3]-amosca.mark1[3]))
+							* (lon-amosca.mark1[3]))) * 10;
+						("xStep: " + xStep + "yStep: " + yStep + "lat: " + lat + "lon: " + lon).postln;
+					};
+				
 				// lag in xStep
 				//	("lagFactor = " + lagFactor).postln;
 				if (lagFactor != 0)
 				{
 					if (xStep != lastXStep) {
 						var diff = xStep - curXStep;
-						xStepIncrement = diff / lagFactor;
+												xStepIncrement = diff / lagFactor;
 						lastXStep = xStep;
 						interpXStep = true;
 						("Latitude: " + lat
@@ -364,6 +415,7 @@ RTKGPS : HeadTrackerGPS
 						
 						amosca.gnssLat = lat;
 						amosca.gnssLon = lon;
+						("Am I different? amosca.gnssLat = " + amosca.gnssLat).postln;
 
 					};
 					if (interpXStep == true) {
@@ -405,13 +457,20 @@ RTKGPS : HeadTrackerGPS
 					curXStep = xStep;
 					curYStep = yStep;
 				};
-				if(amosca.gnssScaleLatAr[0].isNil ||
-					amosca.gnssScaleLatAr[2].isNil) {		
+//if(amosca.gnssScaleLatAr[0].isNil ||
+//					amosca.gnssScaleLatAr[2].isNil) {		
 				moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0]
 					/ areaInMeters);
-					} {
-						"Decided on something different".postln;
-					}
+//					} {
+						/*						var	newOX = (aMosca.mark1[0]+(((this.mark2[0]-aMosca.mark2[3])
+							/ (aMosca.mark2[3]-aMosca.mark1[3]))
+							* (this.lat-this.mark1[2])));
+						var newOY = (this.mark1[1]+(((this.mark2[1]-this.mark1[1])
+							/ (this.mark2[3]-this.mark1[3]))
+							* (this.lon-this.mark1[3])));
+						*/
+//		"Decided on something different".postln;
+//					}
 			}
 		}
 	}
