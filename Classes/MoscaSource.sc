@@ -243,7 +243,7 @@ MoscaSource[]
 
 		level.action_({ | val | this.setSynths(\amp, val.value.dbamp) });
 
-		reach.action_({ | val | ("Reach: " + val.value).postln });
+		reach.action_({ | val | this.setSynths(\reach, val.value) });
 		contraction.action_({ | val | this.setSynths(\contract, val.value) });
 
 		doppler.action_({ | val | this.setSynths(\dopamnt, val.value) });
@@ -465,7 +465,6 @@ MoscaSource[]
 				.getArgs(src, chanNum);
 
 			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
-
 			spatializer.set(Synth(defName, // launch spatializer synth
 				[
 					\outBus, spatInstances.get.at(library.value.asSymbol).busses,
@@ -478,7 +477,8 @@ MoscaSource[]
 					\contract, contraction.value,
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,
-					\amp, level.value.dbamp
+					\amp, level.value.dbamp,
+					\reach, reach.value
 				] ++ args,
 				srcGrp.get()
 				).onFree({

@@ -100,17 +100,17 @@ MoscaSpatializer
 						{
 							SynthDef(name, {
 								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
-								amp = 1, dopamnt = 0, glev = 0 |
+								amp = 1, dopamnt = 0, glev = 0, reach |
 
 								var rad = Lag.kr(radAzimElev[0]),
-								radRoot = rad.sqrt.clip(minRadRoot, 1),
+								rrad = 1 - ((reach - rad) / reach),  // factor-in reach
+								radRoot = rrad.sqrt.clip(minRadRoot, 1),
 								lrevRef = Ref(0),
 								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
 								elevation = radAzimElev[2],
 								revCut = rad.lincurve(1, plim, 1, 0),
 								channum = channels,
 								p = Ref(0), dRad;
-
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
 								dRad = Lag.kr(rad, 1.0);
 								dopamnt = Lag.kr(dopamnt, 2.0);

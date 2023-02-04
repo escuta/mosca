@@ -44,6 +44,7 @@ ABTDef : N3DDef
 	{ | maxOrder, renderer, server |
 
 		lim = maxRadius / (maxRadius + renderer.longestRadius); // radRoot value at the maxRadius
+		("lim: " + lim).postln;
 		converge = { | radRoot | atenuator.value(radRoot.linlin(lim, 1, 0.5, 1)) };
 	}
 
@@ -56,7 +57,7 @@ ABTDef : N3DDef
 				^{ | lrevRef, p, rad, radRoot, azimuth, elevation, contract |
 					var distance = aten2distance.value(radRoot.min(lim)),
 					sig = (lrevRef.value * distance) // local reverb make up gain
-						+ (p.value * converge.value(radRoot));
+					+ (p.value * converge.value(radRoot));
 					sig = HOAEncoder.ar(maxOrder,
 						sig,
 						CircleRamp.kr(azimuth, 0.1, -pi, pi),

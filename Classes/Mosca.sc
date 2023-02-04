@@ -46,7 +46,7 @@ Mosca : MoscaBase
 		if (server.isNil) { server = Server.local };
 
 
-		//~osc = OSCFunc({ |msg| msg.postln }, '/tr', server.addr); // debugging
+		~osc = OSCFunc({ |msg| msg.postln }, '/tr', server.addr); // debugging
 		// TODO
 		// Server.program.asString.endsWith("supernova");
 		// multyThread = server.options.threads.notNil;
