@@ -621,7 +621,10 @@ MoscaSource[]
 
 		if (bool)
 		{
-			if (spatializer.get.isNil && (coordinates.spheVal.rho < MoscaUtils.plim()))
+			var playlim = MoscaUtils.plim() * reach.value;
+			if (spatializer.get.isNil && (coordinates.spheVal.rho
+				//				< MoscaUtils.plim()))
+				< playlim))
 			{
 				this.launchSynth();
 				firstTime = false;

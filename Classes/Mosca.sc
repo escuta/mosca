@@ -125,8 +125,9 @@ Mosca : MoscaBase
 				0.1.wait;
 
 				sources.get.do({ | item |
-
-					if (item.coordinates.spheVal.rho >= plim)
+					var reach = item.reach.value;
+					var playlim = plim * reach;
+					if (item.coordinates.spheVal.rho >= playlim)
 					{
 						if(item.spatializer.get.notNil)
 						{
