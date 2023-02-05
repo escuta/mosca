@@ -108,22 +108,22 @@ MoscaSpatializer
 								lrevRef = Ref(0),
 								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
 								elevation = radAzimElev[2],
-								revCut = rad.lincurve(1, plim, 1, 0),
+								revCut = rrad.lincurve(1, (plim), 1, 0),
 								channum = channels,
 								p = Ref(0), dRad;
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
-								dRad = Lag.kr(rad, 1.0);
+								dRad = Lag.kr(rrad, 1.0);
 								dopamnt = Lag.kr(dopamnt, 2.0);
 								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
 
 								// local effect
-								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rad ]);
+								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rrad ]);
 
 								lrevRef.value = lrevRef.value * revCut;
 								p.value = p.value * amp;
 
 								SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
-									prependArgs: [ lrevRef, p, rad, radRoot, azimuth, elevation ]);
+									prependArgs: [ lrevRef, p, rrad, radRoot, azimuth, elevation ]);
 
 								spat.fxOutFunc.value(p.value, lrevRef.value,
 									(1 - radRoot) * glev, outBus[0]);
