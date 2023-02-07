@@ -291,12 +291,11 @@ MoscaRenderer
 								// Assume IEM decoder
 								var nIns = 4, nOuts = vstouts;
 								//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 4 };
-								"VST Stuff Here".postln;
 								vstCheck = true;
 								vstPlugin = decoder;
 								format = \N3D;
 								vstBus = Bus.audio(server, nIns);
-								VSTPlugin.search(verbose: false);
+								//VSTPlugin.search(verbose: false); // do this in start up
 								server.sync;
 								SynthDef.new(\vstDecoder, { | inbus |
 									var sig = In.ar(inbus, nIns);
@@ -377,12 +376,12 @@ MoscaRenderer
 							vstCheck = true;
 							vstPlugin = decoder;
 							vstBus = Bus.audio(server, nIns);
-							VSTPlugin.search(verbose: false);
 							server.sync;
 							SynthDef.new(\vstDecoder, { | inbus |
 								var sig = In.ar(inbus, nIns);
 								Out.ar(outBus, VSTPlugin.ar(sig, nOuts));
 							}).add;
+							server.sync;
 							renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
 								var sig, nonambi;
 								sig = In.ar(n3dBus, bFormNumChan);
@@ -427,7 +426,7 @@ MoscaRenderer
 							vstCheck = true;
 							vstPlugin = decoder;
 							vstBus = Bus.audio(server, nIns);
-							VSTPlugin.search(verbose: false);
+						//VSTPlugin.search(verbose: false);
 							server.sync;
 							SynthDef.new(\vstDecoder, { | inbus |
 								var sig = In.ar(inbus, nIns);
@@ -479,7 +478,7 @@ MoscaRenderer
 							vstCheck = true;
 							vstPlugin = decoder;
 							vstBus = Bus.audio(server, nIns);
-							VSTPlugin.search(verbose: false);
+						//VSTPlugin.search(verbose: false);
 							server.sync;
 							SynthDef.new(\vstDecoder, { | inbus |
 								var sig = In.ar(inbus, nIns);
@@ -533,7 +532,7 @@ MoscaRenderer
 							vstCheck = true;
 							vstPlugin = decoder;
 							vstBus = Bus.audio(server, nIns);
-							VSTPlugin.search(verbose: false);
+						//VSTPlugin.search(verbose: false); // do this in start up
 							server.sync;
 							SynthDef.new(\vstDecoder, { | inbus |
 								var sig = In.ar(inbus, nIns);

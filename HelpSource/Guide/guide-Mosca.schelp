@@ -508,16 +508,22 @@ SynthDef(\dummy, { arg bus;
 ~supercoll.exposeOSC;             // Evaluate this line while OSSIA/score is learning incoming OSC
 Server.killAll;                   // Make sure no servers are booted yet
 o = s.options;
-o.numInputBusChannels = 32;       // Allow for many possible inputs
+o.numInputBusChannels = 2;       
 //o.numOutputBusChannels = 2;       // Stereo output for binaural rendering
-o.numOutputBusChannels = 18;       // 13 non-ambisonic + 9 B-format (2nd order)
+o.numOutputBusChannels = 2;       
 o.numAudioBusChannels = 2048;
 o.numWireBufs = 512;
 s.waitForBoot {
     // Booting scsynth server before setting up Mosca
 
     // Create global variables passed as Mosca's arguments
-	~decoder = "BinauralDecoder.vst3";
+    ~decoder = "BinauralDecoder.vst3";
+    VSTPlugin.clear;
+    2.wait;
+    s.sync;
+    VSTPlugin.search;
+    2.wait; // modify as needed (esp. with many plugins)
+    s.sync;
     ~order = 2;
     ~out = 0;     // Use te first available Output
     ~sub = nil;   // No subwoofers
