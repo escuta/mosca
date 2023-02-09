@@ -99,13 +99,14 @@ HeadTracker
 	procGyro
 	{ | heading, roll, pitch |
 
-		var h, r, p;
+		var h, r, p, hmod;
 
-		h = (heading / 100) - pi;
-		h = h - headingOffset;
-
+		h = (heading / 100);
+		h = h + headingOffset;
+		h = h.wrap(0, 2pi);
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
+		("h: " + h).postln;
 
 		moscaCenter.ossiaOrient.v_([h.neg, p.neg, r.neg]);
 	}
