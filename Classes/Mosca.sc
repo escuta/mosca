@@ -161,6 +161,7 @@ Mosca : MoscaBase
 		{
 			control.get.presetDir = "HOME".getenv ++ "/auto/";
 		} {
+			server.sync;
 			this.loadAutomation(autoDir);
 		};
 	}
