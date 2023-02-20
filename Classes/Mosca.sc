@@ -163,6 +163,7 @@ Mosca : MoscaBase
 		} {
 			server.sync;
 			this.loadAutomation(autoDir);
+			server.sync;
 		};
 	}
 

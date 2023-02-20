@@ -100,11 +100,14 @@ MoscaBase // acts as the public interface
 
 		if (directory.notNil && (directory != control.get.presetDir))
 		{ control.get.presetDir = directory };
-
+		server.sync;
 		control.get.load(control.get.presetDir);
+		1.wait;
+		server.sync;
 
 		// seek at curent time to apply the values loaded
 		control.get.seek(control.get.now);
+		server.sync;
 	}
 
 	slaveToMMC

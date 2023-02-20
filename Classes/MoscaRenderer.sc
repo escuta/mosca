@@ -376,6 +376,7 @@ MoscaRenderer
 							vstCheck = true;
 							vstPlugin = decoder;
 							vstBus = Bus.audio(server, nIns);
+							server.sync;
 							VSTPlugin.search(verbose: false);
 							server.sync;
 							SynthDef.new(\vstDecoder, { | inbus |
