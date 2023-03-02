@@ -542,58 +542,7 @@ MoscaGUI
 					//lastRx = lastRy = nil; // first mouse click to set
 					//	}  
 			});
-			////////////////////
 
-
-
-			drawBut = Button(originView, Rect(0, 0, 41, 20))
-			.focusColor_(palette.color('midlight', 'active'))
-			.states_(
-				[
-					[
-						"M1",
-						palette.color('light', 'active'),
-						palette.color('middark', 'active')
-					]
-				]
-			).action_({ | butt |
-				if (butt.value == 0)
-				{
-					aMosca.mark1[0] = aMosca.center.ossiaOrigin.v[0]; // x1
-					aMosca.mark1[1] = aMosca.center.ossiaOrigin.v[1]; // y1
-					aMosca.mark1[2] = aMosca.gnssLat;
-					aMosca.mark1[3] = aMosca.gnssLon;
-					("mark1: " + aMosca.mark1[0] + "," + aMosca.mark1[1] + ","
-					+ aMosca.mark1[2] + "," + aMosca.mark1[3]).postln;
-				} 
-			});
-			
-			
-			//		annotate graphic
-			writeBut = Button(originView, Rect(0, 0, 41, 20))
-			.focusColor_(palette.color('midlight', 'active'))
-			.states_(
-				[
-					[
-						"M2",
-						palette.color('light', 'active'),
-						palette.color('middark', 'active')
-					] 
-				]
-			).action_({ | butt |
-				if (butt.value == 0)
-				{
-					aMosca.mark2[0] = aMosca.center.ossiaOrigin.v[0]; // x1
-					aMosca.mark2[1] = aMosca.center.ossiaOrigin.v[1]; // y1
-					aMosca.mark2[2] = aMosca.gnssLat;
-					aMosca.mark2[3] = aMosca.gnssLon;
-					("mark2: " + aMosca.mark2[0] + "," + aMosca.mark2[1] + ","
-					+ aMosca.mark2[2] + "," + aMosca.mark2[3]).postln;
-				} 
-				 
-			});
-			
-			/////////////////
 
 		};
 				
@@ -944,8 +893,7 @@ MoscaGUI
 			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
 
 			if(aMosca.graphicpath.notNil){
-				//originView.bounds_(Rect(width - 94, height - 176, 94, 172));
-				originView.bounds_(Rect(width - 94, height - 200, 94, 192));
+				originView.bounds_(Rect(width - 94, height - 176, 94, 172));
 			}{
 				originView.bounds_(Rect(width - 94, height - 128, 94, 148));
 			};
@@ -1072,7 +1020,6 @@ MoscaGUI
 
 		aSource.play.addDependant(drawEvent);
 		aSource.coordinates.azElDist.addDependant(drawEvent);
-		aSource.reach.node.addDependant(drawEvent);
 		aSource.contraction.node.addDependant(drawEvent);
 		this.prAddData(aSource);
 
@@ -1169,7 +1116,6 @@ MoscaGUI
 		src.library.node.gui(ctlView);
 		src.play.gui(ctlView);
 		src.level.node.gui(ctlView);
-		src.reach.node.gui(ctlView);
 		src.contraction.node.gui(ctlView);
 		src.doppler.node.gui(ctlView);
 
@@ -1361,13 +1307,12 @@ MoscaGUI
 	{
 		var bounds, strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
 			"Local Fx", "Loc. amt.", "Delay", "Decay", "Library"," X", " Y", " Z",
-			"Azimuth", "Elevation", "Distance", "Play", "Level", "Reach", "Contract.",
+			"Azimuth", "Elevation", "Distance", "Play", "Level", "Contract.",
 			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Gr. Rate",
 			"Win. size", "Rnd. size", "Aux 1", "C1", "Aux 2", "C2", "Aux 3", "C3",
 			"Aux 4", "C4", "Aux 5", "C5" ]; // txt indicators
 
-		//wData = Window("Data", Rect(width, 0, 1962, (sources.get.size * 20) + 60),
-		wData = Window("Data", Rect(width, 0, 1982, (sources.get.size * 20) + 60),
+		wData = Window("Data", Rect(width, 0, 1962, (sources.get.size * 20) + 60),
 			scroll: true).front;
 
 		wData.onClose_({
