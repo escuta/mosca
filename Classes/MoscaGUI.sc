@@ -1366,15 +1366,16 @@ MoscaGUI
 			"Aux 4", "C4", "Aux 5", "C5" ]; // txt indicators
 
 		//wData = Window("Data", Rect(width, 0, 1962, (sources.get.size * 20) + 60),
-			wData = Window("Data", Rect(width, 0, 1900, (sources.get.size * 20) + 80),
-			scroll: true).front;
+			wData = Window("Data", Rect(width + 20, 0, Window.screenBounds.width - 10, (sources.get.size * 20) + 80),
+				scroll: true).front;
+		//		("Width: " + Window.screenBounds.width).postln;
 
 		wData.onClose_({
 			wData = nil;
 			bData.value_(0);
 		}).view.palette_(palette);
 
-		dataView = UserView(wData, Rect(0, 24, 2000, (sources.get.size * 20) + 80));
+		dataView = UserView(wData, Rect(0, 24, 1980, (sources.get.size * 20) + 80));
 		dataView.addFlowLayout;
 
 		sources.get.do( this.prAddData(_) );
