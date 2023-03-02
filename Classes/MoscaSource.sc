@@ -53,12 +53,10 @@ MoscaSource[]
 
 		stream = OssiaAutomationProxy(input, "Stream", Boolean, critical: true);
 
-		stream.node.description_("Prefer loading smaler files and streaming when they excid 6 minutes");
+		stream.node.description_("Prefer loading smaler files and streaming when they exceed 6 minutes");
 
 		loop = OssiaAutomationProxy(input, "Loop", Boolean, critical:true);
 
-		reach = OssiaAutomationProxy(src, "Reach", Float,
-			[0, 1], 1.0, 'clip', critical:allCritical);
 
 		external = OssiaAutomationProxy(input, "External", Boolean, critical: true);
 
@@ -111,6 +109,9 @@ MoscaSource[]
 			0, 'clip', critical:allCritical);
 
 		level.node.unit_(OSSIA_gain.decibel);
+
+		reach = OssiaAutomationProxy(src, "Reach", Float,
+			[0, 1], 1.0, 'clip', critical:allCritical);
 
 		contraction = OssiaAutomationProxy(src, "Contraction", Float,
 			[0, 1], 1.0, 'clip', critical:allCritical);
