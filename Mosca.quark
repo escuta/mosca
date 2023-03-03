@@ -6,7 +6,7 @@
     	\path:    "Mosca",
     	\url:     "http://github.com/escuta/mosca",
     	\since:   "2016",
-    	\version: "0.4", // must be a float,
+    	\version: "0.5.1", // must be a float,
 	\dependencies:	[
 			"MathLib",
 			"Automation",
