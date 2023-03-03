@@ -295,7 +295,7 @@ MoscaRenderer
 								vstPlugin = decoder;
 								format = \N3D;
 								vstBus = Bus.audio(server, nIns);
-								//VSTPlugin.search(verbose: false); // do this in start up
+								VSTPlugin.search(verbose: false); 
 								server.sync;
 								SynthDef.new(\vstDecoder, { | inbus |
 									var sig = In.ar(inbus, nIns);
@@ -376,6 +376,7 @@ MoscaRenderer
 							vstCheck = true;
 							vstPlugin = decoder;
 							vstBus = Bus.audio(server, nIns);
+							VSTPlugin.search(verbose: false);
 							server.sync;
 							SynthDef.new(\vstDecoder, { | inbus |
 								var sig = In.ar(inbus, nIns);
@@ -419,29 +420,29 @@ MoscaRenderer
 							Out.ar(outBus, sig);
 						};
 					} {
-							// Assume IEM decoder
-							var nIns = 16, nOuts = vstouts;
+						// Assume IEM decoder
+						var nIns = 16, nOuts = vstouts;
 						//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 16 };
-							"VST Stuff Here".postln;
-							vstCheck = true;
-							vstPlugin = decoder;
-							vstBus = Bus.audio(server, nIns);
-						//VSTPlugin.search(verbose: false);
-							server.sync;
-							SynthDef.new(\vstDecoder, { | inbus |
-								var sig = In.ar(inbus, nIns);
-								Out.ar(outBus, VSTPlugin.ar(sig, nOuts));
-							}).add;
-							renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
-								var sig, nonambi;
-								sig = In.ar(n3dBus, bFormNumChan);
-								nonambi = perfectSphereFunc.value(nonAmbiBus);
-								sig = (sig + nonambi) * level;
-								subOutFunc.value(sig, sub);
-								Out.ar(vstBus, sig);
-							};
-
-							"End".postln;
+						"VST Stuff Here".postln;
+						vstCheck = true;
+						vstPlugin = decoder;
+						vstBus = Bus.audio(server, nIns);
+						VSTPlugin.search(verbose: false);
+						server.sync;
+						SynthDef.new(\vstDecoder, { | inbus |
+							var sig = In.ar(inbus, nIns);
+							Out.ar(outBus, VSTPlugin.ar(sig, nOuts));
+						}).add;
+						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
+							var sig, nonambi;
+							sig = In.ar(n3dBus, bFormNumChan);
+							nonambi = perfectSphereFunc.value(nonAmbiBus);
+							sig = (sig + nonambi) * level;
+							subOutFunc.value(sig, sub);
+							Out.ar(vstBus, sig);
+						};
+						
+						"End".postln;
 						
 					};
 				},
@@ -471,29 +472,28 @@ MoscaRenderer
 							Out.ar(outBus, sig);
 						};
 					} {
-							// Assume IEM decoder
-							var nIns = 25, nOuts = vstouts;
+						// Assume IEM decoder
+						var nIns = 25, nOuts = vstouts;
 						//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 25 };
-							"VST Stuff Here".postln;
-							vstCheck = true;
-							vstPlugin = decoder;
-							vstBus = Bus.audio(server, nIns);
-						//VSTPlugin.search(verbose: false);
-							server.sync;
-							SynthDef.new(\vstDecoder, { | inbus |
-								var sig = In.ar(inbus, nIns);
-								Out.ar(outBus, VSTPlugin.ar(sig, nOuts));
-							}).add;
-							renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
-								var sig, nonambi;
-								sig = In.ar(n3dBus, bFormNumChan);
-								nonambi = perfectSphereFunc.value(nonAmbiBus);
-								sig = (sig + nonambi) * level;
-								subOutFunc.value(sig, sub);
-								Out.ar(vstBus, sig);
-							};
-
-							"End".postln;
+						vstCheck = true;
+						vstPlugin = decoder;
+						vstBus = Bus.audio(server, nIns);
+						VSTPlugin.search(verbose: false);
+						server.sync;
+						SynthDef.new(\vstDecoder, { | inbus |
+							var sig = In.ar(inbus, nIns);
+							Out.ar(outBus, VSTPlugin.ar(sig, nOuts));
+						}).add;
+						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
+							var sig, nonambi;
+							sig = In.ar(n3dBus, bFormNumChan);
+							nonambi = perfectSphereFunc.value(nonAmbiBus);
+							sig = (sig + nonambi) * level;
+							subOutFunc.value(sig, sub);
+							Out.ar(vstBus, sig);
+						};
+						
+						"End".postln;
 						
 					};
 				},
@@ -525,30 +525,29 @@ MoscaRenderer
 							Out.ar(outBus, sig);
 						};
 					} {
-							// Assume IEM decoder
-							var nIns = 36, nOuts = vstouts;
+						// Assume IEM decoder
+						var nIns = 36, nOuts = vstouts;
 						//if (decoder.contains("Binaural")) { nOuts = 2 } { nOuts = 36 };
-							"VST Stuff Here".postln;
-							vstCheck = true;
-							vstPlugin = decoder;
-							vstBus = Bus.audio(server, nIns);
-						//VSTPlugin.search(verbose: false); // do this in start up
-							server.sync;
-							SynthDef.new(\vstDecoder, { | inbus |
-								var sig = In.ar(inbus, nIns);
-								Out.ar(outBus, VSTPlugin.ar(sig, nOuts));
-							}).add;
-							renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
-								var sig, nonambi;
-								sig = In.ar(n3dBus, bFormNumChan);
-								nonambi = perfectSphereFunc.value(nonAmbiBus);
-								sig = (sig + nonambi) * level;
-								subOutFunc.value(sig, sub);
-								Out.ar(vstBus, sig);
-							};
-
-							"End".postln;
-
+						vstCheck = true;
+						vstPlugin = decoder;
+						vstBus = Bus.audio(server, nIns);
+						VSTPlugin.search(verbose: false); 
+						server.sync;
+						SynthDef.new(\vstDecoder, { | inbus |
+							var sig = In.ar(inbus, nIns);
+							Out.ar(outBus, VSTPlugin.ar(sig, nOuts));
+						}).add;
+						renderFunc = { | lf_hf=0, xover=400, sub = 1, level = 1 |
+							var sig, nonambi;
+							sig = In.ar(n3dBus, bFormNumChan);
+							nonambi = perfectSphereFunc.value(nonAmbiBus);
+							sig = (sig + nonambi) * level;
+							subOutFunc.value(sig, sub);
+							Out.ar(vstBus, sig);
+						};
+						
+						"End".postln;
+						
 					};
 				},
 				{ Error("Ambisonic order must be between 1 and 5").throw }

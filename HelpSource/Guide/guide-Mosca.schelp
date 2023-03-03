@@ -518,12 +518,6 @@ s.waitForBoot {
 
     // Create global variables passed as Mosca's arguments
     ~decoder = "BinauralDecoder.vst3";
-    VSTPlugin.clear;
-    2.wait;
-    s.sync;
-    VSTPlugin.search;
-    2.wait; // modify as needed (esp. with many plugins)
-    s.sync;
     ~order = 2;
     ~out = 0;     // Use te first available Output
     ~sub = nil;   // No subwoofers
