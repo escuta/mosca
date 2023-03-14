@@ -12,7 +12,6 @@ MoscaBase // acts as the public interface
 	var <mark1, <mark2, <>gnssLat, <>gnssLon;
 	
 
-
 	*printSynthParams
 	{
 		("Parameters usable in SynthDefs
@@ -462,7 +461,7 @@ MoscaBase // acts as the public interface
 	}
 
 	headTracker
-	{ | port = "/dev/ttyUSB0", offsetheading = 0, type = \orient, extraArgs |
+	{ | port = "/dev/ttyUSB0", offsetheading = 0, type = \orient, extraArgs, volPot = false |
 
 		if (tracker.isNil)
 		{
@@ -470,7 +469,7 @@ MoscaBase // acts as the public interface
 				\gps,
 				{ tracker = HeadTrackerGPS(center, ossiaTrack, port, offsetheading, extraArgs) },
 				\orient,
-				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
+				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading, volPot, ossiaParent) },
 				\pozyxOSC,
 				{ tracker = PozyxOSC(center, ossiaTrack, port, extraArgs) }
 			);

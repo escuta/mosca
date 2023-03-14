@@ -21,6 +21,7 @@ HeadTracker
 	const baudRate = 115200;
 
 	var moscaCenter, switch, serport, <headingOffset,
+	volpot, ossiaParent, masterLevel,
 	troutine, kroutine,
 	trackarr, trackarr2, tracki, trackPort,
 	lastXStep = 0, xStepIncrement, curXStep = 0, interpXStep = true,
@@ -28,18 +29,22 @@ HeadTracker
 	lagFactor = 0;
 
 	*new
-	{ | center, flag, serialPort, ofsetHeading |
+	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent |
 
-		^super.new.headTrackerCtr(center, flag, serialPort, ofsetHeading);
+		^super.new.headTrackerCtr(center, flag, serialPort, ofsetHeading, volPot, ossiaParent);
 	}
 
 	headTrackerCtr
-	{ | center, flag, serialPort, ofsetHeading |
+	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent |
 
 		moscaCenter = center;
 		switch = flag;
 		serport = serialPort;
 		headingOffset = ofsetHeading;
+		volpot = volPot;
+		masterLevel = ossiaParent.find("Master_level");
+
+		("volPot = " + volpot).postln;
 
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
@@ -93,7 +98,11 @@ HeadTracker
 
 	setTracker // protocol
 	{
-		trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
+		if (volpot) {
+			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, nil, nil, 255];
+		} {
+			trackarr = [251, 252, 253, 254, nil, nil, nil, nil, nil, nil, 255];
+		};
 	}
 
 	procGyro
@@ -110,6 +119,12 @@ HeadTracker
 		moscaCenter.ossiaOrient.v_([h.neg, p.neg, r.neg]);
 	}
 
+	procVol
+	{ | vol |
+		var level = vol / 255;
+		masterLevel.v = level.linexp(0, 1, -96, -0.0001);
+	}
+
 	matchByte
 	{ | byte |  // match incoming headtracker data
 
@@ -120,11 +135,17 @@ HeadTracker
 
 			if (tracki >= trackarr.size)
 			{
+				var teste;
 				this.procGyro(
 					(trackarr2[5]<<8) + trackarr2[4],
 					(trackarr2[7]<<8) + trackarr2[6],
 					(trackarr2[9]<<8) + trackarr2[8]
 				);
+				if(volpot) {
+					this.procVol( (trackarr2[11]<<8) + trackarr2[10] );
+				};
+
+				
 
 				tracki = 0;
 			};
