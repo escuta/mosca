@@ -116,13 +116,12 @@ HeadTracker
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
 
-		moscaCenter.ossiaOrient.v_([h.neg, p.neg, r.neg]);
+		moscaCenter.ossiaOrient.v_([h.neg, p.neg, r]);
 	}
 
-	procVol
-	{ | vol |
-		var level = vol / 255;
-		masterLevel.v = level.linexp(0, 1, -96, -0.0001);
+	procLev
+	{ | lev |
+		masterLevel.v = lev.linexp(0, 255, -96, -0.0001);
 	}
 
 	matchByte
@@ -142,7 +141,7 @@ HeadTracker
 					(trackarr2[9]<<8) + trackarr2[8]
 				);
 				if(volpot) {
-					this.procVol( (trackarr2[11]<<8) + trackarr2[10] );
+					this.procLev( (trackarr2[11]<<8) + trackarr2[10] );
 				};
 
 				
