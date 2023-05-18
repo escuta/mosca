@@ -477,13 +477,13 @@ MoscaBase // acts as the public interface
 	}
 
 	rtkGPS   // will be run in addition to \orient above on different port
-	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \uputronics, extraArgs |
+	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \nmea, extraArgs |
 
 		if (auxTracker.isNil)  // "auxTracker" is any USB dev other than
 		                       // the main head tracker
 		{
 			switch (type,
-				\uputronics,
+				\nmea,
 				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs, this)			}
 				/*\orient,
 				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },

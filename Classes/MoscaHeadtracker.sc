@@ -42,8 +42,11 @@ HeadTracker
 		serport = serialPort;
 		headingOffset = ofsetHeading;
 		volpot = volPot;
-		masterLevel = ossiaParent.find("Master_level");
-
+		if (ossiaParent.notNil) {
+			masterLevel = ossiaParent.find("Master_level");
+		} {
+			masterLevel = 0
+		};
 		("volPot = " + volpot).postln;
 
 		SerialPort.devicePattern = serport;
@@ -220,8 +223,8 @@ HeadTrackerGPS : HeadTracker
 					xStepIncrement = diff / lagFactor;
 					lastXStep = xStep;
 					interpXStep = true;
-					("Latitude: " + coordinates[0]
-						+ "Longitude: " + coordinates[1]).postln;
+					//	("Latitude: " + coordinates[0]
+					//	+ "Longitude: " + coordinates[1]).postln;
 				};
 				if (interpXStep == true) {
 					curXStep = curXStep + xStepIncrement;
@@ -417,7 +420,7 @@ RTKGPS : HeadTrackerGPS
 						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
 							/ (amosca.mark2[3]-amosca.mark1[3]))
 							* (lon-amosca.mark1[3])));
-						("xStep: " + xStep + "yStep: " + yStep + "lat: " + lat + "lon: " + lon).postln;
+						//	("xStep: " + xStep + "yStep: " + yStep + "lat: " + lat + "lon: " + lon).postln;
 					};
 				
 				// lag in xStep
@@ -429,13 +432,13 @@ RTKGPS : HeadTrackerGPS
 												xStepIncrement = diff / lagFactor;
 						lastXStep = xStep;
 						interpXStep = true;
-						("Latitude: " + lat
-							+ "Longitude: " + lon +
-							"aMosca: " + amosca).postln;
+						//("Latitude: " + lat
+						//	+ "Longitude: " + lon +
+						//	"aMosca: " + amosca).postln;
 						
 						amosca.gnssLat = lat;
 						amosca.gnssLon = lon;
-						("Am I different? amosca.gnssLat = " + amosca.gnssLat).postln;
+						//("Am I different? amosca.gnssLat = " + amosca.gnssLat).postln;
 
 					};
 					if (interpXStep == true) {
