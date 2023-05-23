@@ -114,7 +114,8 @@ HeadTracker
 		var h, r, p, hmod;
 
 		h = (heading / 100);
-		h = h - headingOffset;
+		h.postln;
+		h = h + headingOffset;
 		h = h.wrap(0, 2pi) - pi;
 		r = (roll / 100) - pi;
 		p = (pitch / 100) - pi;
