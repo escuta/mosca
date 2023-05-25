@@ -114,7 +114,7 @@ HeadTracker
 		var h, r, p, hmod;
 
 		h = (heading / 100);
-		h.postln;
+		//h.postln;
 		h = h + headingOffset;
 		h = h.wrap(0, 2pi) - pi;
 		r = (roll / 100) - pi;
@@ -326,7 +326,7 @@ RTKGPS : HeadTrackerGPS
 		var center, procGPS;
 	*/
 	//	var lastLat, lastLon;
-	var procRTK, rtkroutine, lon, lat;
+	var procRTK, rtkroutine, lon, lat, latOffset, lonOffset;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup, amosca |
 		("Setup is: " + setup + "aMosca is" + amosca).postln;
@@ -344,7 +344,6 @@ RTKGPS : HeadTrackerGPS
 	//rtkCtr
 	setCenter
 	{ | latLongAlt, amosca |
-
 		if (latLongAlt.isArray)
 		{
 			if(latLongAlt.size < 8) {  // doesn't include GPS scaling params
@@ -353,6 +352,29 @@ RTKGPS : HeadTrackerGPS
 					lagFactor = latLongAlt[2] / latLongAlt[3];
 				};
 			} {
+				var del = 300; // delay time take reference measurement
+				               // default is 5 min (300sec)
+				if (latLongAlt[12].notNil) {
+					del = latLongAlt[12];
+				};
+				
+				SystemClock.sched(del, { ("LAT is: " + lat +
+					"LON is: " + lon ).postln;
+					if (latLongAlt[10].isNil) {
+						"No reference value".postln;
+					} {
+						latOffset = (lat - latLongAlt[10]);
+						lonOffset = (lon - latLongAlt[11]);
+						("latOffset = " + latOffset).postln;
+						("lonOffset = " + lonOffset).postln;
+					};
+					
+					
+				};
+					
+
+				);
+				
 				("amosca = " + amosca).postln;
 				("amosca.mark1 is an array? " + amosca.mark1.isArray).postln;
 				("latLongAlt: " + latLongAlt).postln;
