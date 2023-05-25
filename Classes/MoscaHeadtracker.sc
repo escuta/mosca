@@ -325,7 +325,7 @@ RTKGPS : HeadTrackerGPS
 		var center, procGPS;
 	*/
 	//	var lastLat, lastLon;
-	var procRTK, rtkroutine, lon, lat, latOffset, lonOffset;
+	var procRTK, rtkroutine, lon, lat, latOffset = 0, lonOffset = 0;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup, amosca |
 		("Setup is: " + setup + "aMosca is" + amosca).postln;
@@ -437,11 +437,11 @@ RTKGPS : HeadTrackerGPS
 					} {
 						yStep = (amosca.mark1[1]+(((amosca.mark2[1]-amosca.mark1[1])
 							/ (amosca.mark2[2]-amosca.mark1[2]))
-							* (lat-amosca.mark1[2])));
+							* (lat - latOffset - amosca.mark1[2])));
 						
 						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
 							/ (amosca.mark2[3]-amosca.mark1[3]))
-							* (lon-amosca.mark1[3])));
+							* (lon - lonOffset - amosca.mark1[3])));
 						//	("xStep: " + xStep + "yStep: " + yStep + "lat: " + lat + "lon: " + lon).postln;
 					};
 				
