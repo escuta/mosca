@@ -22,7 +22,7 @@ HeadTracker
 
 	var moscaCenter, switch, serport, <headingOffset,
 	volpot, ossiaParent, masterLevel,
-	troutine, kroutine,
+	troutine, kroutine, rtkroutine,
 	trackarr, trackarr2, tracki, trackPort,
 	lastXStep = 0, xStepIncrement, curXStep = 0, interpXStep = true,
 	lastYStep = 0, yStepIncrement, curYStep = 0, interpYStep = true,
@@ -325,7 +325,8 @@ RTKGPS : HeadTrackerGPS
 		var center, procGPS;
 	*/
 	//	var lastLat, lastLon;
-	var procRTK, rtkroutine, lon, lat, latOffset = 0, lonOffset = 0;
+	var procRTK, rtkroutine;
+	//lon, lat, latOffset = 0, lonOffset = 0;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup, amosca |
 		("Setup is: " + setup + "aMosca is" + amosca).postln;
@@ -357,15 +358,15 @@ RTKGPS : HeadTrackerGPS
 					del = latLongAlt[12];
 				};
 				
-				SystemClock.sched(del, { ("LAT is: " + lat +
-					"LON is: " + lon ).postln;
+				SystemClock.sched(del, { ("LAT is: " + amosca.lat +
+					"LON is: " + amosca.lon ).postln;
 					if (latLongAlt[10].isNil) {
 						"No reference value".postln;
 					} {
-						latOffset = (lat - latLongAlt[10]);
-						lonOffset = (lon - latLongAlt[11]);
-						("latOffset = " + latOffset).postln;
-						("lonOffset = " + lonOffset).postln;
+						amosca.latOffset = (amosca.lat - latLongAlt[10]);
+						amosca.lonOffset = (amosca.lon - latLongAlt[11]);
+						("latOffset = " + amosca.latOffset).postln;
+						("lonOffset = " + amosca.lonOffset).postln;
 					};
 					
 					
@@ -397,6 +398,7 @@ RTKGPS : HeadTrackerGPS
 		{ Error.throw("coordinates must be an array") }
 	}
 	
+
 	rtkCtr
 	{ | amosca | 
 		rtkroutine = Routine.new({
@@ -418,6 +420,16 @@ RTKGPS : HeadTrackerGPS
 			rtkroutine.reset;
 		});
 
+		rtkroutine = Routine.new({
+			inf.do({
+				
+				if (switch.v)
+				{ this.rtkMatchByte(trackPort.read, amosca) }
+				{ 1.wait };
+			});
+		});
+		rtkroutine.play;
+	
 	}
 
 	
@@ -426,22 +438,22 @@ RTKGPS : HeadTrackerGPS
 		procRTK = { | amosca | 
 			var dLat, dLong, yStep, xStep, res;
 
-			if ( lat.notNil && lon.notNil ) { 
+			if ( amosca.lat.notNil && amosca.lon.notNil ) { 
 				if(amosca.mark1[0].isNil ||
 					amosca.mark2[0].isNil) {    //no marks, use centre param value
-						dLat = lat - center[0];
-						dLong = lon - center[1];
-						("lat: " + lat + "center[0]: " + center[0]).postln;
+						dLat = amosca.lat - center[0];
+						dLong = amosca.lon - center[1];
+						("lat: " + amosca.lat + "center[0]: " + center[0]).postln;
 						yStep = (dLat * latDeg2meters);
-						xStep = (dLong * longDeg2meters) * cos(lat.degrad);
+						xStep = (dLong * longDeg2meters) * cos(amosca.lat.degrad);
 					} {
 						yStep = (amosca.mark1[1]+(((amosca.mark2[1]-amosca.mark1[1])
 							/ (amosca.mark2[2]-amosca.mark1[2]))
-							* (lat - latOffset - amosca.mark1[2])));
+							* (amosca.lat - amosca.latOffset - amosca.mark1[2])));
 						
 						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
 							/ (amosca.mark2[3]-amosca.mark1[3]))
-							* (lon - lonOffset - amosca.mark1[3])));
+							* (amosca.lon - amosca.lonOffset - amosca.mark1[3])));
 						//	("xStep: " + xStep + "yStep: " + yStep + "lat: " + lat + "lon: " + lon).postln;
 					};
 				
@@ -458,8 +470,8 @@ RTKGPS : HeadTrackerGPS
 						//	+ "Longitude: " + lon +
 						//	"aMosca: " + amosca).postln;
 						
-						amosca.gnssLat = lat;
-						amosca.gnssLon = lon;
+						amosca.gnssLat = amosca.lat;
+						amosca.gnssLon = amosca.lon;
 						//("Am I different? amosca.gnssLat = " + amosca.gnssLat).postln;
 
 					};
@@ -522,9 +534,9 @@ RTKGPS : HeadTrackerGPS
 			255];
 	}
 
-	matchByte
+	rtkMatchByte
 	{
-		| byte | // match incoming headtracker data
+		| byte, amosca | // match incoming headtracker data
 		//	"called here".postln;
 		//var dLat, dLong, yStep, xStep,
 		var res;
@@ -546,8 +558,8 @@ RTKGPS : HeadTrackerGPS
 						latAr[i] = trackarr2[i + 4];
 						lonAr[i] = trackarr2[i + 17];
 					});
-				lat = latAr.asAscii.asFloat;	
-				lon = lonAr.asAscii.asFloat;
+				amosca.lat = latAr.asAscii.asFloat;	
+				amosca.lon = lonAr.asAscii.asFloat;
 				//				coords = [lat, lon];
 				//( "Coords are: " + coords ).postln;
 				//("Lat is " + lat + "Lon is "

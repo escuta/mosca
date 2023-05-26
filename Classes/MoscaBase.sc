@@ -10,6 +10,7 @@ MoscaBase // acts as the public interface
 	<>zoomfactor = 1, <>fontsize = 14, <graphicScale = 100, <maxundo;
 	var <>orient; //origin with respect to graphic pixels
 	var <mark1, <mark2, <>gnssLat, <>gnssLon;
+	var <>lat = 0, <>lon = 0, <>latOffset = 0, <>lonOffset = 0;
 	
 
 	*printSynthParams
@@ -493,6 +494,12 @@ MoscaBase // acts as the public interface
 			);
 		}
 	}
+
+	rtkCalibrate
+	{
+		().postln;
+	}
+	
 
 	freeHeadTracker
 	{
