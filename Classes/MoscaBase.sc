@@ -11,6 +11,7 @@ MoscaBase // acts as the public interface
 	var <>orient; //origin with respect to graphic pixels
 	var <mark1, <mark2, <>gnssLat, <>gnssLon;
 	var <>lat = 0, <>lon = 0, <>latOffset = 0, <>lonOffset = 0;
+	var <extraArguments;
 	
 
 	*printSynthParams
@@ -480,6 +481,7 @@ MoscaBase // acts as the public interface
 	rtkGPS   // will be run in addition to \orient above on different port
 	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \nmea, extraArgs |
 
+		extraArguments = extraArgs;
 		if (auxTracker.isNil)  // "auxTracker" is any USB dev other than
 		                       // the main head tracker
 		{
@@ -498,7 +500,8 @@ MoscaBase // acts as the public interface
 	rtkCalibrate
 	{
 		(latOffset).postln;
-		lastOffset = lat;
+		latOffset = lat - extraArguments[10];
+		lonOffset = lon - extraArguments[11];
 	}
 	
 
