@@ -326,6 +326,7 @@ RTKGPS : HeadTrackerGPS
 	*/
 	//	var lastLat, lastLon;
 	var procRTK, rtkroutine;
+	var trackRTKPort;
 	//lon, lat, latOffset = 0, lonOffset = 0;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup, amosca |
@@ -337,7 +338,7 @@ RTKGPS : HeadTrackerGPS
 			("setup.size: " + setup.size).postln;
 			
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
-			.setCenter(setup, amosca).rtkCtr(amosca);
+			.setCenter(setup, amosca).rtkCtr(amosca, serialPort);
 		};
 
 	}
@@ -400,7 +401,7 @@ RTKGPS : HeadTrackerGPS
 	
 
 	rtkCtr
-	{ | amosca | 
+	{ | amosca, serialPort | 
 		rtkroutine = Routine.new({
 			inf.do({
 				if (switch.v)
@@ -414,21 +415,24 @@ RTKGPS : HeadTrackerGPS
 		});
 		rtkroutine.play;
 
-		trackPort.doneAction_({
+		trackRTKPort = SerialPort(serialPort, baudRate, crtscts: true);
+		/*
+			trackPort.doneAction_({
 			"Serial port down".postln;
 			rtkroutine.stop;
 			rtkroutine.reset;
-		});
+		}); */
 
-		rtkroutine = Routine.new({
+			rtkroutine = Routine.new({
 			inf.do({
 				
 				if (switch.v)
-				{ this.rtkMatchByte(trackPort.read, amosca) }
+				{ this.rtkMatchByte(trackRTKPort.read, amosca) }
 				{ 1.wait };
 			});
 		});
-		rtkroutine.play;
+			rtkroutine.play;
+		
 	
 	}
 
