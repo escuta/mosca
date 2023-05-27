@@ -499,7 +499,6 @@ MoscaBase // acts as the public interface
 
 	rtkCalibrate
 	{
-		(latOffset).postln;
 		latOffset = lat - extraArguments[10];
 		lonOffset = lon - extraArguments[11];
 	}
