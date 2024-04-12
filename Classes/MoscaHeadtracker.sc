@@ -458,7 +458,7 @@ RTKGPS : HeadTrackerGPS
 						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
 							/ (amosca.mark2[3]-amosca.mark1[3]))
 							* (amosca.lon - amosca.lonOffset - amosca.mark1[3])));
-						//	("xStep: " + xStep + "yStep: " + yStep + "lat: " + lat + "lon: " + lon).postln;
+						//	("xStep: " + xStep + "yStep: " + yStep + "lat: " + amosca.lat + "lon: " + amosca.lon).postln;
 					};
 				
 				// lag in xStep
@@ -566,8 +566,8 @@ RTKGPS : HeadTrackerGPS
 				amosca.lon = lonAr.asAscii.asFloat;
 				//				coords = [lat, lon];
 				//( "Coords are: " + coords ).postln;
-				//("Lat is " + lat + "Lon is "
-				//		+ lon).postln;
+				//	("Lat is " + amosca.lat + "Lon is "
+				//		+ amosca.lon).postln; 
 				//procRTK.value();
 				tracki = 0;
 			};

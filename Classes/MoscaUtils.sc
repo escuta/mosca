@@ -70,6 +70,8 @@ MoscaUtils // virtual class holding constants for Mosca related classes
 
 	*halfPi { ^1.5707963267949 }
 
+	*fullPi     { ^3.1415926535898 }
+
 	*rad2deg { ^57.295779513082 }
 
 	*deg2rad { ^1.7453292519943 }

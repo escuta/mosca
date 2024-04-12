@@ -66,6 +66,10 @@ ATKBaseDef : SpatDef
 					var sig, pushang = 2 - (contract * 2), pushang2, linearsig, linearscale;
 					pushang = rad.linlin(pushang - 1, pushang, 0, MoscaUtils.halfPi);
 					pushang2 = rad * MoscaUtils.halfPi;
+
+					//pushang2 = ((pushang2 + orientation[0]) % MoscaUtils.fullPi) + MoscaUtils.halfPi;
+					//pushang2 = pushang2 + orientation[0] + MoscaUtils.halfPi;
+					
 					linearscale = (12 - (rad * 12));
 					linearscale = Select.kr(linearscale > 0, [0, linearscale]); //negs rolled off at zero
 					linearsig = lrevRef.value + (p.value * linearscale  );
@@ -76,11 +80,16 @@ ATKBaseDef : SpatDef
 					// directivity (rotation fader?)
 
 					// handle contraction fader
+					SendTrig.kr(Impulse.kr(1), 0, orientation[0]); // debug
+					SendTrig.kr(Impulse.kr(1), 1, pushang); // debug
+					SendTrig.kr(Impulse.kr(1), 2, pushang2); // debug
+					SendTrig.kr(Impulse.kr(1), 3, azimuth); // debug
+
 					sig = FoaTransform.ar(sig, 'push', pushang, azimuth, elevation);
 					// allow field to "move"
-					sig = FoaTransform.ar(sig, 'push', pushang2, azimuth, elevation);
+					sig = FoaTransform.ar(sig, 'push', pushang2, azimuth - orientation[0], elevation);
 
-					lrevRef.value = FoaTransform.ar(sig, 'rtt', orientation[0].neg, orientation[1].neg, orientation[2]);
+					lrevRef.value = FoaTransform.ar(sig, 'rtt', orientation[0], orientation[1].neg, orientation[2]);
 				};
 			},
 			{ // assume N3D input
