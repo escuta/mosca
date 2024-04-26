@@ -43,7 +43,7 @@
 #define TCPPORT 1234
 #define BAUDRATE B115200
 #define NMEA "GPGGA" // precision data 
-#define NMEAFALLBACK "GNGGA" // comment out to restrict to NMEA setting above
+//#define NMEAFALLBACK "GNGGA" // comment out to restrict to NMEA setting above
 // note, if either NMEA headers are changed from GxGGA,
 // will likely need to select correct data fields for serial message below
 
@@ -129,7 +129,9 @@ bool parse_gnss_token(char *data_ptr, char *header, int repeat_index, int token_
 	break;
       }
 
+
     }
+
     // Appending \0 to the end
     *result = '\0';
     // To trim the data if ends with \r or \n
@@ -180,7 +182,7 @@ void process(int sockfd, int serial_port)
       strncpy(nmeaMessage, NMEAFALLBACK, 5);  // this should be ok
     }
 #else
-    strncpy(nmeaMessage, NMEA, 5);
+    strncpy(nmeaMessage, NMEA, 6);
 #endif
 
 
