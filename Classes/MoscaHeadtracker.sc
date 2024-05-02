@@ -390,9 +390,10 @@ RTKGPS : HeadTrackerGPS
 					amosca.mark2[2] = latLongAlt[6];
 					amosca.mark2[3] = latLongAlt[7];
 				};
-				if (latLongAlt.size == 10) {
+				if (latLongAlt.size >= 10) {
 					lagFactor = latLongAlt[8] / latLongAlt[9];
 				};
+				//("latLongAlt.size is " + latLongAlt.size).println;
 			};
 			this.prSetFunc();
 		}
@@ -462,7 +463,7 @@ RTKGPS : HeadTrackerGPS
 					};
 				
 				// lag in xStep
-				//	("lagFactor = " + lagFactor).postln;
+				//("lagFactor = " + lagFactor).postln;
 				if (lagFactor != 0)
 				{
 					if (xStep != lastXStep) {
