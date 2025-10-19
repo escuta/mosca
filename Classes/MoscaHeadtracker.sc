@@ -36,7 +36,6 @@ HeadTracker
 
 	headTrackerCtr
 	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent |
-
 		moscaCenter = center;
 		switch = flag;
 		serport = serialPort;
@@ -48,34 +47,28 @@ HeadTracker
 			masterLevel = 0
 		};
 		("volPot = " + volpot).postln;
-
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, baudRate, crtscts: true);
-
 		trackPort.doneAction_({
 			"Serial port down".postln;
 			troutine.stop;
 			troutine.reset;
 		});
-
 		this.setTracker();
-
 		trackarr2 = trackarr.copy;
 		tracki = 0;
-
+		
 		troutine = Routine.new({
 			inf.do({
-
 				if (switch.v)
-				{ this.matchByte(trackPort.read) }
+				{ this.matchByte(trackPort.read) }  // Back to original - no wait
 				{ 1.wait };
 			});
 		});
-
+		
 		kroutine = Routine.new({
 			inf.do({
-
 				if (trackPort.isOpen.not) // if serial port is closed
 				{
 					"Trying to reopen serial port!".postln;
@@ -87,18 +80,17 @@ HeadTracker
 						troutine.reset;
 						trackPort = SerialPort(serport, baudRate,
 							crtscts: true);
-						troutine.play; // start tracker routine again
+						troutine.play;
 					}
 				};
-
 				100.wait;
 			});
 		});
-
+		
 		troutine.play;
 		kroutine.play;
 	}
-
+	
 	setTracker // protocol
 	{
 		if (volpot) {
