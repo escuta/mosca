@@ -47,12 +47,13 @@ MoscaSpatializer
 			},
 			{ | p, channum, bufnum, lp = 0 |
 				// Check if buffer is valid before attempting to stream
-				p.value = if(bufnum > 0, {
-					VDiskIn.ar(channum, bufnum, 1, lp, doneAction: 2);
-				}, {
-					"Warning: Invalid buffer for VDiskIn, outputting silence".postln;
-					Silent.ar(channum);
-				});
+				var soundSource, silentSource;
+				
+				soundSource = VDiskIn.ar(channum, bufnum, 1, lp, doneAction: 2);
+				silentSource = Silent.ar(channum);
+				
+				// Use Select to choose between them at audio rate
+				p.value = Select.ar((bufnum > 0), [silentSource, soundSource]);
 			},
 			// for SCBus-in SynthDefs
 			{ | p, channum, busini |
