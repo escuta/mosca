@@ -635,16 +635,28 @@ var bufferValid = false;
 	{// if the synth is playing, stop and relaunch it
 		if (spatializer.get.notNil && play.v)
 		{
-			spatializer.get.free;
+			var synth = spatializer.get;
+			spatializer.set(nil);  // Clear reference immediately
+			fork {
+				synth.set(\amp, 0);
+				0.1.wait;
+				synth.free;
+			};
 			firstTime = true;
 		};
 		if (embeddedSynthRef.get.notNil && play.v)
 		{
+			var synth = embeddedSynthRef.get;
+			embeddedSynthRef.set(nil);  // Clear reference immediately
 			"Switching off!".postln;
-			embeddedSynthRef.get.free;
+			fork {
+				synth.set(\amp, 0);
+				0.1.wait;
+				synth.free;
+			};
 		};
 	}
-
+	
 	prCheck4Synth
 	{ | bool |
 
@@ -658,13 +670,20 @@ var bufferValid = false;
 				this.launchSynth();
 				firstTime = false;
 			};
+
 		} {
 			if (spatializer.get.notNil)
 			{
-				spatializer.get.free;
-				this.runStop();
-				firstTime = true;
-				("Source " + (index + 1) + " stopping!").postln;
+				var synth = spatializer.get;
+				spatializer.set(nil);  // Clear reference immediately
+				fork {
+					synth.set(\amp, 0);
+					0.1.wait;
+					synth.free;
+					this.runStop();
+					firstTime = true;
+					("Source " + (index + 1) + " stopping!").postln;
+				};
 			};
 		};
 	}
