@@ -78,7 +78,6 @@ MoscaSpatializer
 
 	makeSpatialisers
 	{ | server, maxOrder, effects, renderer, speaker_array, spatRecompile |
-
 		var plim = MoscaUtils.plim, name, metadata;
 
 		spatInstances.get.do({ | def |
@@ -95,8 +94,6 @@ MoscaSpatializer
 
 						name = spat.key ++ play_type ++ channels ++ effect.key;
 
-/*						if (spat.needsReCompile(name, maxOrder, speaker_array))
-							{*/
 						if (spatRecompile)
 						{
 							SynthDef(name, {
@@ -104,7 +101,7 @@ MoscaSpatializer
 								amp = 1, dopamnt = 0, glev = 0, reach |
 
 								var rad = Lag.kr(radAzimElev[0]),
-								rrad = 1 - ((reach - rad) / reach),  // factor-in reach
+								rrad = 1 - ((reach - rad) / reach),
 								radRoot = rrad.sqrt.clip(minRadRoot, 1),
 								lrevRef = Ref(0),
 								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
@@ -112,12 +109,12 @@ MoscaSpatializer
 								revCut = rrad.lincurve(1, (plim), 1, 0),
 								channum = channels,
 								p = Ref(0), dRad;
+								
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
 								dRad = Lag.kr(rrad, 1.0);
 								dopamnt = Lag.kr(dopamnt, 2.0);
-								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
+								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt);
 
-								// local effect
 								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rrad ]);
 
 								lrevRef.value = lrevRef.value * revCut;
@@ -130,6 +127,7 @@ MoscaSpatializer
 									(1 - radRoot) * glev, outBus[0]);
 
 								Out.ar(outBus[1], lrevRef.value);
+								
 							}, metadata: spat.getMetadata(maxOrder, speaker_array)
 							).store(mdPlugin: TextArchiveMDPlugin);
 
