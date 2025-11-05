@@ -346,9 +346,7 @@ MoscaSource[]
 				
 				// Mute before freeing
 				synth.set(\amp, 0, \llev, 0, \glev, 0);
-				SystemClock.sched(0.3, {
-					synth.free;
-				});
+				synth.free;
 			};
 			
 			synths.set(nil);
@@ -647,9 +645,7 @@ var bufferValid = false;
 			var synth = spatializer.get;
 			spatializer.set(nil);
 			synth.set(\llev, 0, \glev, 0, \amp, 0);
-			SystemClock.sched(0.3, {
-				synth.free;
-			});
+			synth.free;
 			firstTime = true;
 		};
 		if (embeddedSynthRef.get.notNil && play.v)
@@ -658,9 +654,7 @@ var bufferValid = false;
 			embeddedSynthRef.set(nil);
 			"Switching off!".postln;
 			synth.set(\amp, 0, \llev, 0, \glev, 0);
-			SystemClock.sched(0.3, {
 				synth.free;
-			});
 		};
 	}
 	prCheck4Synth
@@ -684,12 +678,10 @@ var bufferValid = false;
 					var synth = spatializer.get;
 					spatializer.set(nil);
 					synth.set(\llev, 0, \glev, 0, \amp, 0);
-					SystemClock.sched(0.3, {
-						synth.free;
-						this.runStop();
-						firstTime = true;
-						("Source " + (index + 1) + " stopping!").postln;
-					});
+					synth.free;
+					this.runStop();
+					firstTime = true;
+					("Source " + (index + 1) + " stopping!").postln;
 				};
 			};
 	}

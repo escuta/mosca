@@ -136,9 +136,7 @@ if(item.spatializer.get.notNil)
             synth = item.spatializer.get;
             item.spatializer.set(nil);
             synth.set(\llev, 0, \glev, 0, \amp, 0);
-            SystemClock.sched(0.3, {
-                synth.free;
-            });
+			synth.free;
         };
 						item.firstTime = true;
 					} {
