@@ -78,16 +78,28 @@ Mosca : MoscaBase
 				Out.ar(renderer.fumaBus, blip);
 			}).send(server);
 
-			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer);
+"=== STARTING effects.setup ===".postln;
+effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer);
+"=== FINISHED effects.setup ===".postln;
 
-			spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array, spatRecompile);
+"=== STARTING makeSpatialisers ===".postln;
+spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array, spatRecompile);
+"=== FINISHED makeSpatialisers ===".postln;
 
-			effects.finalize(multyThread, server, maxOrder, irBank);
+"=== BEFORE effects.finalize ===".postln;
+effects.finalize(multyThread, server, maxOrder, irBank);
+"=== AFTER effects.finalize ===".postln;
 
-			renderer.launchRenderer(server, server.defaultGroup);
-			postln("Ready !");
+			fork {
+				effects.finalize(multyThread, server, maxOrder, irBank);
+				server.sync;  // Wait for effects to be truly ready
+				1.wait;       // Extra safety margin
+				renderer.launchRenderer(server, server.defaultGroup);
+				postln("Ready !");
+			};
+			//postln("Ready !");
 		});
-
+		
 		// setup ossia parameter tree
 		if (parentOssiaNode.isNil)
 		{
