@@ -340,13 +340,18 @@ MoscaSource[]
 	{
 		if (triggerFunc.notNil)
 		{
-			//stopFunc.value;
-			synths.set(nil);
-			//embeddedSynth = nil;
-			embeddedSynthRef.get.free;
-			embeddedSynthRef.set(nil);
+			if (embeddedSynthRef.get.notNil) {
+				var synth = embeddedSynthRef.get;
+				embeddedSynthRef.set(nil);  // Clear reference immediately
+				
+				// Mute before freeing
+				synth.set(\amp, 0, \llev, 0, \glev, 0);
+				SystemClock.sched(0.3, {
+					synth.free;
+				});
+			};
 			
-
+			synths.set(nil);
 			"RUNNING STOP".postln;
 		};
 	}
@@ -639,16 +644,25 @@ var bufferValid = false;
 	{// if the synth is playing, stop and relaunch it
 		if (spatializer.get.notNil && play.v)
 		{
-			spatializer.get.free;
+			var synth = spatializer.get;
+			spatializer.set(nil);
+			synth.set(\llev, 0, \glev, 0, \amp, 0);
+			SystemClock.sched(0.3, {
+				synth.free;
+			});
 			firstTime = true;
 		};
 		if (embeddedSynthRef.get.notNil && play.v)
 		{
+			var synth = embeddedSynthRef.get;
+			embeddedSynthRef.set(nil);
 			"Switching off!".postln;
-			embeddedSynthRef.get.free;
+			synth.set(\amp, 0, \llev, 0, \glev, 0);
+			SystemClock.sched(0.3, {
+				synth.free;
+			});
 		};
 	}
-
 	prCheck4Synth
 	{ | bool |
 
@@ -662,20 +676,22 @@ var bufferValid = false;
 				this.launchSynth();
 				firstTime = false;
 			};
-		} {
-			if (spatializer.get.notNil)
-			{
-				var synth = spatializer.get;
-				synth.set(\llev, 0, \glev, 0);  // Mute effects immediately
-				SystemClock.sched(0.2, {
-					synth.free;
-					this.runStop();
-					firstTime = true;
-					("Source " + (index + 1) + " stopping!").postln;
-				});
-				spatializer.set(nil);  // Clear reference so it doesn't get used
+
+
+			} {
+				if (spatializer.get.notNil)
+				{
+					var synth = spatializer.get;
+					spatializer.set(nil);
+					synth.set(\llev, 0, \glev, 0, \amp, 0);
+					SystemClock.sched(0.3, {
+						synth.free;
+						this.runStop();
+						firstTime = true;
+						("Source " + (index + 1) + " stopping!").postln;
+					});
+				};
 			};
-		};
 	}
 	
 	prFreeBuffer // Always free the buffer before changing configuration
