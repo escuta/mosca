@@ -295,7 +295,7 @@ MoscaRenderer
 								vstPlugin = decoder;
 								format = \N3D;
 								vstBus = Bus.audio(server, nIns);
-								VSTPlugin.search(verbose: false); 
+								//VSTPlugin.search(verbose: false); 
 								server.sync;
 								SynthDef.new(\vstDecoder, { | inbus |
 									var sig = In.ar(inbus, nIns);
@@ -377,7 +377,7 @@ MoscaRenderer
 							vstPlugin = decoder;
 							vstBus = Bus.audio(server, nIns);
 							server.sync;
-							VSTPlugin.search(verbose: true);
+							//VSTPlugin.search(verbose: true);
 							server.sync;
 							SynthDef.new(\vstDecoder, { | inbus |
 								var sig = In.ar(inbus, nIns);
@@ -428,7 +428,7 @@ MoscaRenderer
 						vstCheck = true;
 						vstPlugin = decoder;
 						vstBus = Bus.audio(server, nIns);
-						VSTPlugin.search(verbose: false);
+						//VSTPlugin.search(verbose: false);
 						server.sync;
 						SynthDef.new(\vstDecoder, { | inbus |
 							var sig = In.ar(inbus, nIns);
@@ -479,7 +479,7 @@ MoscaRenderer
 						vstCheck = true;
 						vstPlugin = decoder;
 						vstBus = Bus.audio(server, nIns);
-						VSTPlugin.search(verbose: false);
+						//VSTPlugin.search(verbose: false);
 						server.sync;
 						SynthDef.new(\vstDecoder, { | inbus |
 							var sig = In.ar(inbus, nIns);
@@ -532,7 +532,7 @@ MoscaRenderer
 						vstCheck = true;
 						vstPlugin = decoder;
 						vstBus = Bus.audio(server, nIns);
-						VSTPlugin.search(verbose: false); 
+						//VSTPlugin.search(verbose: false); 
 						server.sync;
 						SynthDef.new(\vstDecoder, { | inbus |
 							var sig = In.ar(inbus, nIns);
