@@ -340,13 +340,16 @@ MoscaSource[]
 	{
 		if (triggerFunc.notNil)
 		{
-			//stopFunc.value;
-			synths.set(nil);
-			//embeddedSynth = nil;
-			embeddedSynthRef.get.free;
-			embeddedSynthRef.set(nil);
+			if (embeddedSynthRef.get.notNil) {
+				var synth = embeddedSynthRef.get;
+				embeddedSynthRef.set(nil);  // Clear reference immediately
+				
+				// Mute before freeing
+				synth.set(\amp, 0, \llev, 0, \glev, 0);
+				synth.free;
+			};
 			
-
+			synths.set(nil);
 			"RUNNING STOP".postln;
 		};
 	}
@@ -635,48 +638,50 @@ var bufferValid = false;
 		defName.postln;
 	}
 
-	prReloadIfNeeded
-	{// if the synth is playing, stop and relaunch it
-		if (spatializer.get.notNil && play.v)
+prReloadIfNeeded
+{// if the synth is playing, stop and relaunch it
+	if (spatializer.get.notNil && play.v)
+	{
+		var synth = spatializer.get;
+		spatializer.set(nil);
+		// SMOOTH FADEOUT instead of instant mute
+		synth.set(\gate, 0); // Use gate instead of forcing to 0
+		firstTime = true;
+	};
+	if (embeddedSynthRef.get.notNil && play.v)
+	{
+		var synth = embeddedSynthRef.get;
+		embeddedSynthRef.set(nil);
+		"Switching off!".postln;
+		// SMOOTH FADEOUT
+		synth.set(\gate, 0);
+	};
+}
+	
+prCheck4Synth
+{ | bool |
+
+	if (bool)
+	{
+		var playlim = MoscaUtils.plim() * reach.value;
+		if (spatializer.get.isNil && (coordinates.spheVal.rho < playlim))
 		{
-			spatializer.get.free;
+			this.launchSynth();
+			firstTime = false;
+		};
+	} {
+		if (spatializer.get.notNil)
+		{
+			var synth = spatializer.get;
+			spatializer.set(nil);
+			// SMOOTH FADEOUT instead of instant mute
+			synth.set(\gate, 0); // Let envelope handle the fadeout
+			this.runStop();
 			firstTime = true;
+			("Source " + (index + 1) + " stopping with fadeout!").postln;
 		};
-		if (embeddedSynthRef.get.notNil && play.v)
-		{
-			"Switching off!".postln;
-			embeddedSynthRef.get.free;
-		};
-	}
-
-	prCheck4Synth
-	{ | bool |
-
-		if (bool)
-		{
-			var playlim = MoscaUtils.plim() * reach.value;
-			if (spatializer.get.isNil && (coordinates.spheVal.rho
-				//				< MoscaUtils.plim()))
-				< playlim))
-			{
-				this.launchSynth();
-				firstTime = false;
-			};
-		} {
-			if (spatializer.get.notNil)
-			{
-				var synth = spatializer.get;
-				synth.set(\llev, 0, \glev, 0);  // Mute effects immediately
-				SystemClock.sched(0.2, {
-					synth.free;
-					this.runStop();
-					firstTime = true;
-					("Source " + (index + 1) + " stopping!").postln;
-				});
-				spatializer.set(nil);  // Clear reference so it doesn't get used
-			};
-		};
-	}
+	};
+}
 	
 	prFreeBuffer // Always free the buffer before changing configuration
 	{
