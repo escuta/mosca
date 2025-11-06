@@ -138,9 +138,9 @@ Mosca : MoscaBase
 						{
 							var synth = item.spatializer.get;
 							item.runStop(); // to kill SC input synths
-							item.spatializer.set(nil);
-							// SMOOTH FADEOUT - use gate instead of instant mute
-							synth.set(\gate, 0);
+							item.spatializer.set(nil);  // Clear reference FIRST
+							synth.set(\gate, 0);  // Then trigger fadeout
+							("Watcher: Source moved out of range, fadeout triggered").postln;
 						};
 						item.firstTime = true;
 					} {

@@ -43,14 +43,16 @@ MoscaSpatializer
 			// for File-in SynthDefs
 			{ | p, channum, bufnum, tpos = 0, lp = 0 |
 				p.value = PlayBuf.ar(channum, bufnum, BufRateScale.kr(bufnum),
-					startPos: tpos, loop: lp, doneAction:2);
+					startPos: tpos, loop: lp, doneAction:0);
 			},
-			// for Stream-in SynthDefs
+			// for Stream-in SynthDefs - FIXED: removed FreeSelf
 			{ | p, channum, bufnum, lp = 0 |
 				var trig;
 				p.value = DiskIn.ar(channum, bufnum, lp);
 				trig = Done.kr(p.value);
-				FreeSelf.kr(trig);
+				// Let envelope handle freeing via doneAction: 2
+				// FreeSelf removed to maintain consistency with gate-based system
+				SendTrig.kr(trig, 0, 0);  // Optional: notify that stream ended
 			},
 			// for SCBus-in SynthDefs
 			{ | p, channum, busini |
@@ -98,7 +100,7 @@ MoscaSpatializer
 						{
 							SynthDef(name, {
 								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
-								amp = 1, dopamnt = 0, glev = 0, reach |
+								amp = 1, dopamnt = 0, glev = 0, reach, gate = 1 |
 
 								var rad = Lag.kr(radAzimElev[0]),
 								rrad = 1 - ((reach - rad) / reach),
@@ -108,7 +110,15 @@ MoscaSpatializer
 								elevation = radAzimElev[2],
 								revCut = rrad.lincurve(1, (plim), 1, 0),
 								channum = channels,
-								p = Ref(0), dRad;
+								p = Ref(0), dRad,
+								env;
+								
+								// CRITICAL FIX: Add envelope for proper fadeout
+								env = EnvGen.kr(
+									Env.asr(0.01, 1, 0.5, \sine),  // 10ms attack, sustain, 500ms release
+									gate,
+									doneAction: 2  // Free synth when envelope completes
+								);
 								
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
 								dRad = Lag.kr(rrad, 1.0);
@@ -118,15 +128,15 @@ MoscaSpatializer
 								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rrad ]);
 
 								lrevRef.value = lrevRef.value * revCut;
-								p.value = p.value * amp;
-
+								p.value = p.value * amp * env;  // Apply envelope to main signal
+								
 								SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
 									prependArgs: [ lrevRef, p, rrad, radRoot, azimuth, elevation ]);
 
 								spat.fxOutFunc.value(p.value, lrevRef.value,
 									(1 - radRoot) * glev, outBus[0]);
 
-								Out.ar(outBus[1], lrevRef.value);
+								Out.ar(outBus[1], lrevRef.value * env);  // Apply envelope to reverb send too
 								
 							}, metadata: spat.getMetadata(maxOrder, speaker_array)
 							).store(mdPlugin: TextArchiveMDPlugin);
