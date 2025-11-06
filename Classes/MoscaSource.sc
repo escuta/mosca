@@ -661,7 +661,8 @@ var bufferValid = false;
 		} {
 			if (spatializer.get.notNil)
 			{
-				spatializer.get.free;
+				//spatializer.get.free;
+				spatializer.get.set(\gate, 0);  // Trigger release, will auto-free with doneAction:2
 				this.runStop();
 				firstTime = true;
 				("Source " + (index + 1) + " stopping!").postln;

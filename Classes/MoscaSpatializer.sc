@@ -48,7 +48,9 @@ MoscaSpatializer
 			// for Stream-in SynthDefs
 			{ | p, channum, bufnum, lp = 0 |
 				var trig;
-				p.value = DiskIn.ar(channum, bufnum, lp);
+				//p.value = DiskIn.ar(channum, bufnum, lp);
+				p.value = DiskIn.ar(channum, bufnum, lp)
+				* EnvGen.kr(Env.new([0, 1], [0.02]));
 				trig = Done.kr(p.value);
 				FreeSelf.kr(trig);
 			},
@@ -100,22 +102,27 @@ MoscaSpatializer
 						{
 							SynthDef(name, {
 								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
-								amp = 1, dopamnt = 0, glev = 0, reach |
-
+								amp = 1, dopamnt = 0, glev = 0, reach, gate = 1 |  // ADD gate parameter
+								
 								var rad = Lag.kr(radAzimElev[0]),
-								rrad = 1 - ((reach - rad) / reach),  // factor-in reach
+								rrad = 1 - ((reach - rad) / reach),
 								radRoot = rrad.sqrt.clip(minRadRoot, 1),
 								lrevRef = Ref(0),
 								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
 								elevation = radAzimElev[2],
 								revCut = rrad.lincurve(1, (plim), 1, 0),
 								channum = channels,
-								p = Ref(0), dRad;
+								p = Ref(0), dRad, env;
+								
+								env = EnvGen.kr(Env.asr(0.02, 1, 0.02), gate, doneAction: 2);  // ADD envelope
+								
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
+								p.value = p.value * env;  // Apply envelope early in chain
+								
 								dRad = Lag.kr(rrad, 1.0);
 								dopamnt = Lag.kr(dopamnt, 2.0);
-								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
-
+								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt);
+								
 								// local effect
 								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rrad ]);
 
