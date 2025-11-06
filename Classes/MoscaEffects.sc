@@ -134,18 +134,12 @@ MoscaEffects {
 
 	finalize
 	{ | multyThread, server, maxOrder, irBank |
-		"=== ENTERED finalize method ===".postln;
-		 ("multyThread:" + multyThread).postln;
-		("maxOrder:" + maxOrder).postln;
 
-		
-SynthDef(\b2Fx, {
-    var sig = decodeFunc.value();
-    Out.ar(afmtBus, sig);
-}).add.store;  // Chain both methods
+		SynthDef(\b2Fx, {
+			var sig = decodeFunc.value();
+			Out.ar(afmtBus, sig);
+		}).send(server);
 
-		postln("Compiling b2Fx SynthDef");
-		
 		if (multyThread) {
 
 		} {

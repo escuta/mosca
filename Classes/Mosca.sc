@@ -63,36 +63,31 @@ Mosca : MoscaBase
 
 		// start asynchronious processes
 		server.doWhenBooted({
-			Routine({
-				srcGrp.set(ParGroup.tail(server.defaultGroup));
-				
-				renderer.setup(server, speaker_array, maxOrder, decoder,
-					outBus, subOutBus, rawOutBus, rawFormat, vstPreset,
-					vstProgram, vstOuts);
-				
-				SynthDef(\blip, {
-					var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
-					var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
-					Out.ar(renderer.fumaBus, blip);
-				}).send(server);
-				
-				effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer);
-				spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array, spatRecompile);
-				effects.finalize(multyThread, server, maxOrder, irBank);
-				
-				server.sync;
-				
-				postln("Setup complete - renderer will launch separately");
-			}).play(SystemClock);
-			
-			// Schedule OUTSIDE the Routine - runs after doWhenBooted completes
-			SystemClock.sched(5.0, {
-				fork {
-					"=== Launching renderer after boot ===".postln;
-					renderer.launchRenderer(server, server.defaultGroup);
-				};
-			});
+
+			srcGrp.set(ParGroup.tail(server.defaultGroup));
+
+			renderer.setup(server, speaker_array, maxOrder, decoder,
+				outBus, subOutBus, rawOutBus, rawFormat, vstPreset,
+				vstProgram, vstOuts);
+		
+		
+			// recording blip synth for synchronisation
+			SynthDef(\blip, {
+				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
+				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
+				Out.ar(renderer.fumaBus, blip);
+			}).send(server);
+
+			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer);
+
+			spat.makeSpatialisers(server, maxOrder, effects, renderer, speaker_array, spatRecompile);
+
+			effects.finalize(multyThread, server, maxOrder, irBank);
+
+			renderer.launchRenderer(server, server.defaultGroup);
+			postln("Ready !");
 		});
+
 		// setup ossia parameter tree
 		if (parentOssiaNode.isNil)
 		{
@@ -138,9 +133,9 @@ Mosca : MoscaBase
 						{
 							var synth = item.spatializer.get;
 							item.runStop(); // to kill SC input synths
-							item.spatializer.set(nil);  // Clear reference FIRST
-							synth.set(\gate, 0);  // Then trigger fadeout
-							("Watcher: Source moved out of range, fadeout triggered").postln;
+							item.spatializer.set(nil);
+							// SMOOTH FADEOUT - use gate instead of instant mute
+							synth.set(\gate, 0);
 						};
 						item.firstTime = true;
 					} {

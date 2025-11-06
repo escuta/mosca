@@ -43,16 +43,14 @@ MoscaSpatializer
 			// for File-in SynthDefs
 			{ | p, channum, bufnum, tpos = 0, lp = 0 |
 				p.value = PlayBuf.ar(channum, bufnum, BufRateScale.kr(bufnum),
-					startPos: tpos, loop: lp, doneAction:0);
+					startPos: tpos, loop: lp, doneAction:2);
 			},
-			// for Stream-in SynthDefs - FIXED: removed FreeSelf
+			// for Stream-in SynthDefs
 			{ | p, channum, bufnum, lp = 0 |
 				var trig;
 				p.value = DiskIn.ar(channum, bufnum, lp);
 				trig = Done.kr(p.value);
-				// Let envelope handle freeing via doneAction: 2
-				// FreeSelf removed to maintain consistency with gate-based system
-				SendTrig.kr(trig, 0, 0);  // Optional: notify that stream ended
+				FreeSelf.kr(trig);
 			},
 			// for SCBus-in SynthDefs
 			{ | p, channum, busini |
@@ -80,6 +78,7 @@ MoscaSpatializer
 
 	makeSpatialisers
 	{ | server, maxOrder, effects, renderer, speaker_array, spatRecompile |
+
 		var plim = MoscaUtils.plim, name, metadata;
 
 		spatInstances.get.do({ | def |
@@ -96,48 +95,41 @@ MoscaSpatializer
 
 						name = spat.key ++ play_type ++ channels ++ effect.key;
 
+/*						if (spat.needsReCompile(name, maxOrder, speaker_array))
+							{*/
 						if (spatRecompile)
 						{
 							SynthDef(name, {
 								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
-								amp = 1, dopamnt = 0, glev = 0, reach, gate = 1 |
+								amp = 1, dopamnt = 0, glev = 0, reach |
 
 								var rad = Lag.kr(radAzimElev[0]),
-								rrad = 1 - ((reach - rad) / reach),
+								rrad = 1 - ((reach - rad) / reach),  // factor-in reach
 								radRoot = rrad.sqrt.clip(minRadRoot, 1),
 								lrevRef = Ref(0),
 								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
 								elevation = radAzimElev[2],
 								revCut = rrad.lincurve(1, (plim), 1, 0),
 								channum = channels,
-								p = Ref(0), dRad,
-								env;
-								
-								// CRITICAL FIX: Add envelope for proper fadeout
-								env = EnvGen.kr(
-									Env.asr(0.01, 1, 0.5, \sine),  // 10ms attack, sustain, 500ms release
-									gate,
-									doneAction: 2  // Free synth when envelope completes
-								);
-								
+								p = Ref(0), dRad;
 								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
 								dRad = Lag.kr(rrad, 1.0);
 								dopamnt = Lag.kr(dopamnt, 2.0);
-								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt);
+								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
 
+								// local effect
 								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rrad ]);
 
 								lrevRef.value = lrevRef.value * revCut;
-								p.value = p.value * amp * env;  // Apply envelope to main signal
-								
+								p.value = p.value * amp;
+
 								SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
 									prependArgs: [ lrevRef, p, rrad, radRoot, azimuth, elevation ]);
 
 								spat.fxOutFunc.value(p.value, lrevRef.value,
 									(1 - radRoot) * glev, outBus[0]);
 
-								Out.ar(outBus[1], lrevRef.value * env);  // Apply envelope to reverb send too
-								
+								Out.ar(outBus[1], lrevRef.value);
 							}, metadata: spat.getMetadata(maxOrder, speaker_array)
 							).store(mdPlugin: TextArchiveMDPlugin);
 

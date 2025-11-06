@@ -342,14 +342,11 @@ MoscaSource[]
 		{
 			if (embeddedSynthRef.get.notNil) {
 				var synth = embeddedSynthRef.get;
+				embeddedSynthRef.set(nil);  // Clear reference immediately
 				
-				// If synth has gate, use it for proper fadeout
-				synth.set(\gate, 0);
-				// Otherwise, mute and free immediately (current behavior)
-				// synth.set(\amp, 0, \llev, 0, \glev, 0);
-				// synth.free;
-				
-				// Let onFree callback clear the reference
+				// Mute before freeing
+				synth.set(\amp, 0, \llev, 0, \glev, 0);
+				synth.free;
 			};
 			
 			synths.set(nil);
@@ -416,11 +413,9 @@ MoscaSource[]
 
 	launchSynth
 	{
-		var args, startFrame, bufferValid;
-		
 		if (defName.notNil)
 		{
-			args = []; // prepare synth Arguments
+			var args = []; // prepare synth Arguments
 
 			if (chanNum == 2)
 			{
@@ -433,7 +428,7 @@ MoscaSource[]
 			};
 
 			args = args ++ effectInstances.get.at(localEffect.value.asSymbol)
-			.getArgs(localEffect.node, chanNum);
+				.getArgs(localEffect.node, chanNum);
 
 			if (scSynths.value)
 			{
@@ -447,49 +442,49 @@ MoscaSource[]
 
 			if ((file.value != "") && (scSynths.value || external.value).not)
 			{
-				startFrame = 0;
+				var startFrame = 0;
 
 				this.changed(\tpos); // fetch mosca's time for syncing files
 
 				startFrame = sRate * tpos;
 
-				if (stream.value)
-				{
-					bufferValid = false;
-					this.prFreeBuffer();
-					
-					if(File.exists(file.value), {
-						buffer = Buffer.cueSoundFile(
-							server, file.value, startFrame, chanNum, 131072,
-							{ | buf |
-								if(buf.notNil and: { buf.numFrames > 0 }, {
-									bufferValid = true;
-									"✓ Created streaming buffer for source %".format(index + 1).postln;
-								}, {
-									"ERROR: Failed to create streaming buffer for source %".format(index + 1).postln;
-									bufferValid = false;
-								});
-							}
-						);
-					}, {
-						"ERROR: Cannot stream - file does not exist: %".format(file.value).postln;
-						buffer = nil;
-						bufferValid = false;
-					});
-				};
+
+if (stream.value)
+{
+var bufferValid = false;
+    this.prFreeBuffer();
+    
+    if(File.exists(file.value), {
+        buffer = Buffer.cueSoundFile(
+            server, file.value, startFrame, chanNum, 131072,
+            { | buf |
+                if(buf.notNil and: { buf.numFrames > 0 }, {
+                    bufferValid = true;
+                    "✓ Created streaming buffer for source %".format(index + 1).postln;
+                }, {
+                    "ERROR: Failed to create streaming buffer for source %".format(index + 1).postln;
+                    bufferValid = false;
+                });
+            }
+        );
+    }, {
+        "ERROR: Cannot stream - file does not exist: %".format(file.value).postln;
+        buffer = nil;
+        bufferValid = false;
+    });
+};
 				args = args ++ [
 					\bufnum, buffer.bufnum,
 					\lp, loop.value.asInteger,
 					\tpos, startFrame
 				]
+				// WARNING is evrything syncked ?
 			};
 
 			args = args ++ spatInstances.get.at(library.value.asSymbol)
-			.getArgs(src, chanNum);
+				.getArgs(src, chanNum);
 
 			this.changed(\audio, true, curentSpat); // triggers Mosca's prCheckConversion method
-			
-			// CRITICAL FIX: Add gate parameter when creating synth
 			spatializer.set(Synth(defName, // launch spatializer synth
 				[
 					\outBus, spatInstances.get.at(library.value.asSymbol).busses,
@@ -503,18 +498,17 @@ MoscaSource[]
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,
 					\amp, level.value.dbamp,
-					\reach, reach.value,
-					\gate, 1  // <-- CRITICAL: This was missing!
+					\reach, reach.value
 				] ++ args,
 				srcGrp.get()
-			).onFree({
-				this.changed(\audio, false, curentSpat);
-				spatializer.set(nil);  // NOW clear the reference when synth actually frees
-			});
-				
+				).onFree({
+					this.changed(\audio, false, curentSpat);
+					spatializer.set(nil);
+				});
 			);
 		};
 	}
+
 	setSynths
 	{ | param, value |
 
@@ -644,51 +638,51 @@ MoscaSource[]
 		defName.postln;
 	}
 
-	prReloadIfNeeded
+prReloadIfNeeded
+{// if the synth is playing, stop and relaunch it
+	if (spatializer.get.notNil && play.v)
 	{
-		var synth;
-		
-		// if the synth is playing, stop and relaunch it
-		if (spatializer.get.notNil && play.v)
-		{
-			synth = spatializer.get;
-			synth.set(\gate, 0);  // Trigger fadeout first
-			// Don't clear spatializer here - onFree callback will handle it
-			firstTime = true;
-		};
-		if (embeddedSynthRef.get.notNil && play.v)
-		{
-			synth = embeddedSynthRef.get;
-			synth.set(\gate, 0);  // Trigger fadeout first
-			// Don't clear embeddedSynthRef here - let it be handled properly
-			"Switching off!".postln;
-		};
-	}
+		var synth = spatializer.get;
+		spatializer.set(nil);
+		// SMOOTH FADEOUT instead of instant mute
+		synth.set(\gate, 0); // Use gate instead of forcing to 0
+		firstTime = true;
+	};
+	if (embeddedSynthRef.get.notNil && play.v)
+	{
+		var synth = embeddedSynthRef.get;
+		embeddedSynthRef.set(nil);
+		"Switching off!".postln;
+		// SMOOTH FADEOUT
+		synth.set(\gate, 0);
+	};
+}
 	
-	prCheck4Synth
-	{ | bool |
-		var playlim, synth;
+prCheck4Synth
+{ | bool |
 
-		if (bool)
+	if (bool)
+	{
+		var playlim = MoscaUtils.plim() * reach.value;
+		if (spatializer.get.isNil && (coordinates.spheVal.rho < playlim))
 		{
-			playlim = MoscaUtils.plim() * reach.value;
-			if (spatializer.get.isNil && (coordinates.spheVal.rho < playlim))
-			{
-				this.launchSynth();
-				firstTime = false;
-			};
-		} {
-			if (spatializer.get.notNil)
-			{
-				synth = spatializer.get;
-				synth.set(\gate, 0);   // Trigger fadeout first
-				// Don't clear spatializer here - onFree will handle it when fadeout completes
-				this.runStop();
-				firstTime = true;
-				("Source " + (index + 1) + " stopping with fadeout").postln;
-			};
+			this.launchSynth();
+			firstTime = false;
 		};
-		}
+	} {
+		if (spatializer.get.notNil)
+		{
+			var synth = spatializer.get;
+			spatializer.set(nil);
+			// SMOOTH FADEOUT instead of instant mute
+			synth.set(\gate, 0); // Let envelope handle the fadeout
+			this.runStop();
+			firstTime = true;
+			("Source " + (index + 1) + " stopping with fadeout!").postln;
+		};
+	};
+}
+	
 	prFreeBuffer // Always free the buffer before changing configuration
 	{
 		if (buffer.notNil)
