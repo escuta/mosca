@@ -620,12 +620,16 @@ var bufferValid = false;
 		{
 			defName = nil;
 		} {
-			defName = library.value ++ playType ++ chanNum
-			++ effectInstances.get.at(localEffect.value.asSymbol).key;
-
-			this.prReloadIfNeeded();
+			var effect = effectInstances.get.at(localEffect.value.asSymbol);
+			
+			if (effect.isNil) {
+				("ERROR: Effect not found: " ++ localEffect.value).postln;
+				defName = nil;
+			} {
+				defName = library.value ++ playType ++ chanNum ++ effect.key;
+				this.prReloadIfNeeded();
+			};
 		};
-
 		this.changed(\ctl);
 
 		defName.postln;
@@ -661,14 +665,19 @@ var bufferValid = false;
 		} {
 			if (spatializer.get.notNil)
 			{
-				spatializer.get.free;
-				this.runStop();
-				firstTime = true;
-				("Source " + (index + 1) + " stopping!").postln;
+				var synth = spatializer.get;
+				synth.set(\llev, 0, \glev, 0);  // Mute effects immediately
+				SystemClock.sched(0.05, {
+					synth.free;
+					this.runStop();
+					firstTime = true;
+					("Source " + (index + 1) + " stopping!").postln;
+				});
+				spatializer.set(nil);  // Clear reference so it doesn't get used
 			};
 		};
 	}
-
+	
 	prFreeBuffer // Always free the buffer before changing configuration
 	{
 		if (buffer.notNil)

@@ -45,15 +45,12 @@ MoscaSpatializer
 				p.value = PlayBuf.ar(channum, bufnum, BufRateScale.kr(bufnum),
 					startPos: tpos, loop: lp, doneAction:2);
 			},
+			// for Stream-in SynthDefs
 			{ | p, channum, bufnum, lp = 0 |
-				// Check if buffer is valid before attempting to stream
-				var soundSource, silentSource;
-				
-				soundSource = VDiskIn.ar(channum, bufnum, 1, lp, doneAction: 2);
-				silentSource = Silent.ar(channum);
-				
-				// Use Select to choose between them at audio rate
-				p.value = Select.ar((bufnum > 0), [silentSource, soundSource]);
+				var trig;
+				p.value = DiskIn.ar(channum, bufnum, lp);
+				trig = Done.kr(p.value);
+				FreeSelf.kr(trig);
 			},
 			// for SCBus-in SynthDefs
 			{ | p, channum, busini |
