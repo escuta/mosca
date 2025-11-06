@@ -340,17 +340,12 @@ MoscaSource[]
 	{
 		if (triggerFunc.notNil)
 		{
-			var synth;
 			//stopFunc.value;
 			synths.set(nil);
 			//embeddedSynth = nil;
-			synth = embeddedSynthRef.get;
+			embeddedSynthRef.get.free;
 			embeddedSynthRef.set(nil);
-			fork {
-				synth.set(\amp, 0);
-				0.05.wait;
-				synth.free;
-			};			
+			
 
 			"RUNNING STOP".postln;
 		};
@@ -640,28 +635,16 @@ var bufferValid = false;
 	{// if the synth is playing, stop and relaunch it
 		if (spatializer.get.notNil && play.v)
 		{
-			var synth = spatializer.get;
-			spatializer.set(nil);  // Clear reference immediately
-			fork {
-				synth.set(\amp, 0);
-				0.1.wait;
-				synth.free;
-			};
+			spatializer.get.free;
 			firstTime = true;
 		};
 		if (embeddedSynthRef.get.notNil && play.v)
 		{
-			var synth = embeddedSynthRef.get;
-			embeddedSynthRef.set(nil);  // Clear reference immediately
 			"Switching off!".postln;
-			fork {
-				synth.set(\amp, 0);
-				0.1.wait;
-				synth.free;
-			};
+			embeddedSynthRef.get.free;
 		};
 	}
-	
+
 	prCheck4Synth
 	{ | bool |
 
@@ -675,20 +658,13 @@ var bufferValid = false;
 				this.launchSynth();
 				firstTime = false;
 			};
-
 		} {
 			if (spatializer.get.notNil)
 			{
-				var synth = spatializer.get;
-				spatializer.set(nil);  // Clear reference immediately
-				fork {
-					synth.set(\amp, 0);
-					0.1.wait;
-					synth.free;
-					this.runStop();
-					firstTime = true;
-					("Source " + (index + 1) + " stopping!").postln;
-				};
+				spatializer.get.free;
+				this.runStop();
+				firstTime = true;
+				("Source " + (index + 1) + " stopping!").postln;
 			};
 		};
 	}

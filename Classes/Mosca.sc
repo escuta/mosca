@@ -131,15 +131,8 @@ Mosca : MoscaBase
 					{
 						if(item.spatializer.get.notNil)
 						{
-							var synth;
 							item.runStop(); // to kill SC input synths
-							synth = item.spatializer.get;
-							item.spatializer.set(nil);
-							fork {
-								synth.set(\amp, 0);
-								0.05.wait;
-								synth.free;
-							};
+							item.spatializer.get.free;
 						};
 
 						item.firstTime = true;
