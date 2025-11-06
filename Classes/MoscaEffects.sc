@@ -209,33 +209,41 @@ MoscaEffects {
 
 	setAction
 	{
-		ossiaGlobal.action_({ | num |
-
-			this.changed(\ctl);
-
-			if (globalFx.isPlaying) { globalFx.set(\gate, 0) };
-
-			if (num.value != "Clear")
-			{
-				var instance = effectInstances.get.at(ossiaGlobal.value.asSymbol),
-				args = instance.getGlobalArgs(ossiaGlobal.node);
-
-				// deals with converting and encoding global fx busses
-				if (b2Fx.isNil)
-				{
-					b2Fx = Synth(\b2Fx, target: transformGrp, addAction: \addBefore)
-					.onFree({ b2Fx = nil });
-				};
-
-				globalFx = Synth(\globalFx ++ instance.key,
-					[\gate, 1] ++ args, transformGrp).register.onFree(
-					{
-						if (globalFx.isPlaying.not) { b2Fx.free };
-					}
-				);
-			};
-		});
-
+ossiaGlobal.action_({ | num |
+    this.changed(\ctl);
+    
+    if (globalFx.isPlaying) { 
+        var oldFx = globalFx;
+        globalFx = nil; // Clear reference immediately
+        
+        oldFx.onFree({
+            // Create new synth only after old one is completely freed
+            if (num.value != "Clear")
+            {
+                var instance = effectInstances.get.at(ossiaGlobal.value.asSymbol),
+                args = instance.getGlobalArgs(ossiaGlobal.node);
+                
+                if (b2Fx.isNil)
+                {
+                    b2Fx = Synth(\b2Fx, target: transformGrp, addAction: \addBefore)
+                    .onFree({ b2Fx = nil });
+                };
+                
+                globalFx = Synth(\globalFx ++ instance.key,
+                    [\gate, 1] ++ args, transformGrp).register.onFree(
+                    {
+                        if (globalFx.isPlaying.not) { b2Fx.free };
+                    }
+                );
+            };
+        });
+        
+        oldFx.set(\gate, 0);
+    } {
+        // Original code for when no synth is playing
+        // ...
+    };
+});
 		ossiaDelay.action_({ | num |
 			if (globalFx.isPlaying) { globalFx.set(\room, num.value) };
 		});
