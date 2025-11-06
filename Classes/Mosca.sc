@@ -131,12 +131,15 @@ Mosca : MoscaBase
 					{
 						if(item.spatializer.get.notNil)
 						{
-							var synth = item.spatializer.get;
+							var synth;
 							item.runStop(); // to kill SC input synths
-							item.spatializer.set(nil);
-							// SMOOTH FADEOUT - use gate instead of instant mute
-							synth.set(\gate, 0);
+							synth = item.spatializer.get;
+							synth.set(\llev, 0, \glev, 0, \amp, 0);
+							SystemClock.sched(0.2, {
+								synth.free;
+							});
 						};
+
 						item.firstTime = true;
 					} {
 						if (item.play.value && item.spatializer.get.isNil
