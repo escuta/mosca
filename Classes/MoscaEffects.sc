@@ -153,6 +153,7 @@ MoscaEffects {
 					{
 						SynthDef(name, { | gate = 1 |
 							var sig = In.ar(afmtBus, fxChans);
+							    sig = Lag.ar(sig, 0.03);  // smooths input
 							sig = sig * EnvGen.kr(Env.asr(curve:\hold), gate, doneAction:2);
 							sig = SynthDef.wrap(effect.globalFunc, prependArgs: [ sig ]);
 							encodeFunc.value(sig);
