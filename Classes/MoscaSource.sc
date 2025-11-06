@@ -340,16 +340,13 @@ MoscaSource[]
 	{
 		if (triggerFunc.notNil)
 		{
-			if (embeddedSynthRef.get.notNil) {
-				var synth = embeddedSynthRef.get;
-				embeddedSynthRef.set(nil);  // Clear reference immediately
-				
-				// Mute before freeing
-				synth.set(\amp, 0, \llev, 0, \glev, 0);
-				synth.free;
-			};
-			
+			//stopFunc.value;
 			synths.set(nil);
+			//embeddedSynth = nil;
+			embeddedSynthRef.get.free;
+			embeddedSynthRef.set(nil);
+			
+
 			"RUNNING STOP".postln;
 		};
 	}
@@ -623,16 +620,12 @@ var bufferValid = false;
 		{
 			defName = nil;
 		} {
-			var effect = effectInstances.get.at(localEffect.value.asSymbol);
-			
-			if (effect.isNil) {
-				("ERROR: Effect not found: " ++ localEffect.value).postln;
-				defName = nil;
-			} {
-				defName = library.value ++ playType ++ chanNum ++ effect.key;
-				this.prReloadIfNeeded();
-			};
+			defName = library.value ++ playType ++ chanNum
+			++ effectInstances.get.at(localEffect.value.asSymbol).key;
+
+			this.prReloadIfNeeded();
 		};
+
 		this.changed(\ctl);
 
 		defName.postln;
@@ -642,21 +635,16 @@ var bufferValid = false;
 	{// if the synth is playing, stop and relaunch it
 		if (spatializer.get.notNil && play.v)
 		{
-			var synth = spatializer.get;
-			spatializer.set(nil);
-			synth.set(\llev, 0, \glev, 0, \amp, 0);
-			synth.free;
+			spatializer.get.free;
 			firstTime = true;
 		};
 		if (embeddedSynthRef.get.notNil && play.v)
 		{
-			var synth = embeddedSynthRef.get;
-			embeddedSynthRef.set(nil);
 			"Switching off!".postln;
-			synth.set(\amp, 0, \llev, 0, \glev, 0);
-				synth.free;
+			embeddedSynthRef.get.free;
 		};
 	}
+
 	prCheck4Synth
 	{ | bool |
 
@@ -670,22 +658,17 @@ var bufferValid = false;
 				this.launchSynth();
 				firstTime = false;
 			};
-
-
-			} {
-				if (spatializer.get.notNil)
-				{
-					var synth = spatializer.get;
-					spatializer.set(nil);
-					synth.set(\llev, 0, \glev, 0, \amp, 0);
-					synth.free;
-					this.runStop();
-					firstTime = true;
-					("Source " + (index + 1) + " stopping!").postln;
-				};
+		} {
+			if (spatializer.get.notNil)
+			{
+				spatializer.get.free;
+				this.runStop();
+				firstTime = true;
+				("Source " + (index + 1) + " stopping!").postln;
 			};
+		};
 	}
-	
+
 	prFreeBuffer // Always free the buffer before changing configuration
 	{
 		if (buffer.notNil)

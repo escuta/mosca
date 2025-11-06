@@ -55,8 +55,7 @@ MoscaSpatializer
 			// for SCBus-in SynthDefs
 			{ | p, channum, busini |
 				p.value = In.ar(busini, channum);
-			}
-		]; // Note, all variables are needed
+		}]; // Note, all variables are needed
 	}
 
 	*new { | server | ^super.new.ctr(server); }

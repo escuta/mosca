@@ -129,14 +129,12 @@ Mosca : MoscaBase
 					var playlim = plim * reach;
 					if (item.coordinates.spheVal.rho >= playlim)
 					{
-if(item.spatializer.get.notNil)
-        {
-            var synth = item.spatializer.get;
-			item.runStop(); // to kill SC input synths
-            item.spatializer.set(nil);
-            synth.set(\llev, 0, \glev, 0, \amp, 0);
-			synth.free;
-        };
+						if(item.spatializer.get.notNil)
+						{
+							item.runStop(); // to kill SC input synths
+							item.spatializer.get.free;
+						};
+
 						item.firstTime = true;
 					} {
 						if (item.play.value && item.spatializer.get.isNil
