@@ -46,17 +46,21 @@ MoscaSpatializer
 					startPos: tpos, loop: lp, doneAction:2);
 			},
 			// for Stream-in SynthDefs
+			//{ | p, channum, bufnum, lp = 0 |
+			//	var trig;
+			//	p.value = DiskIn.ar(channum, bufnum, lp);
+			//	trig = Done.kr(p.value);
+			//	FreeSelf.kr(trig);
+			//},
+			// for Stream-in SynthDefs
 			{ | p, channum, bufnum, lp = 0 |
-				var trig;
-				p.value = DiskIn.ar(channum, bufnum, lp);
-				trig = Done.kr(p.value);
-				FreeSelf.kr(trig);
+				p.value = VDiskIn.ar(channum, bufnum, 1, lp, doneAction: 2);
 			},
+
 			// for SCBus-in SynthDefs
 			{ | p, channum, busini |
 				p.value = In.ar(busini, channum);
-			}
-		]; // Note, all variables are needed
+		}]; // Note, all variables are needed
 	}
 
 	*new { | server | ^super.new.ctr(server); }
@@ -99,51 +103,40 @@ MoscaSpatializer
 							{*/
 						if (spatRecompile)
 						{
-SynthDef(name, {
-	| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
-	amp = 1, dopamnt = 0, glev = 0, reach |  // NO gate - keep original args
+							SynthDef(name, {
+								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
+								amp = 1, dopamnt = 0, glev = 0, reach |
 
-	var rad = Lag.kr(radAzimElev[0]),
-	rrad = 1 - ((reach - rad) / reach),  // factor-in reach
-	radRoot = rrad.sqrt.clip(minRadRoot, 1),
-	lrevRef = Ref(0),
-	azimuth = radAzimElev[1] - MoscaUtils.halfPi,
-	elevation = radAzimElev[2],
-	revCut = rrad.lincurve(1, (plim), 1, 0),
-	channum = channels,
-	p = Ref(0), dRad,
-	fadeEnv;  // Simple fade envelope
-	
-	// SIMPLE FADE-IN ONLY - no gate needed
-	// Fades in over 20ms to prevent initial click
-	fadeEnv = EnvGen.kr(Env([0, 1], [0.02], \sin));
-	
-	SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
-	dRad = Lag.kr(rrad, 1.0);
-	dopamnt = Lag.kr(dopamnt, 2.0);
-	p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
+								var rad = Lag.kr(radAzimElev[0]),
+								rrad = 1 - ((reach - rad) / reach),  // factor-in reach
+								radRoot = rrad.sqrt.clip(minRadRoot, 1),
+								lrevRef = Ref(0),
+								azimuth = radAzimElev[1] - MoscaUtils.halfPi,
+								elevation = radAzimElev[2],
+								revCut = rrad.lincurve(1, (plim), 1, 0),
+								channum = channels,
+								p = Ref(0), dRad;
+								SynthDef.wrap(playInFunc[j], prependArgs: [ p, channum ]);
+								dRad = Lag.kr(rrad, 1.0);
+								dopamnt = Lag.kr(dopamnt, 2.0);
+								p.value = DelayC.ar(p.value, 0.2, (dRad * 340)/1640.0 * dopamnt); // Doppler
 
-	// local effect
-	SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rrad ]);
+								// local effect
+								SynthDef.wrap(effect.getFunc(channum), prependArgs: [ lrevRef, p, rrad ]);
 
-	lrevRef.value = lrevRef.value * revCut;
-	
-	// Apply fade AND use Lag.kr on amp for smooth parameter changes
-	p.value = p.value * Lag.kr(amp, 0.05) * fadeEnv;
+								lrevRef.value = lrevRef.value * revCut;
+								p.value = p.value * amp;
 
-	SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
-		prependArgs: [ lrevRef, p, rrad, radRoot, azimuth, elevation ]);
+								SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
+									prependArgs: [ lrevRef, p, rrad, radRoot, azimuth, elevation ]);
 
-	// APPLY fade to spatial output and Lag to global level
-	spat.fxOutFunc.value(p.value, lrevRef.value * fadeEnv,
-		(1 - radRoot) * Lag.kr(glev, 0.05) * fadeEnv, outBus[0]);
+								spat.fxOutFunc.value(p.value, lrevRef.value,
+									(1 - radRoot) * glev, outBus[0]);
 
-	// APPLY fade to local effect send with Lag
-	Out.ar(outBus[1], lrevRef.value * fadeEnv);
-	
-}, metadata: spat.getMetadata(maxOrder, speaker_array)
-).store(mdPlugin: TextArchiveMDPlugin);
-							
+								Out.ar(outBus[1], lrevRef.value);
+							}, metadata: spat.getMetadata(maxOrder, speaker_array)
+							).store(mdPlugin: TextArchiveMDPlugin);
+
 							postln("Compiling" + name + "SynthDef ("++ spat.format ++")");
 						}
 					});
