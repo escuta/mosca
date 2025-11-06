@@ -45,22 +45,20 @@ MoscaSpatializer
 				p.value = PlayBuf.ar(channum, bufnum, BufRateScale.kr(bufnum),
 					startPos: tpos, loop: lp, doneAction:2);
 			},
-			// for Stream-in SynthDefs
-			//{ | p, channum, bufnum, lp = 0 |
-			//	var trig;
-			//	p.value = DiskIn.ar(channum, bufnum, lp);
-			//	trig = Done.kr(p.value);
-			//	FreeSelf.kr(trig);
-			//},
-			// for Stream-in SynthDefs
 			{ | p, channum, bufnum, lp = 0 |
-				p.value = VDiskIn.ar(channum, bufnum, 1, lp, doneAction: 2);
+				// Check if buffer is valid before attempting to stream
+				p.value = if(bufnum > 0, {
+					VDiskIn.ar(channum, bufnum, 1, lp, doneAction: 2);
+				}, {
+					"Warning: Invalid buffer for VDiskIn, outputting silence".postln;
+					Silent.ar(channum);
+				});
 			},
-
 			// for SCBus-in SynthDefs
 			{ | p, channum, busini |
 				p.value = In.ar(busini, channum);
-		}]; // Note, all variables are needed
+			}
+		]; // Note, all variables are needed
 	}
 
 	*new { | server | ^super.new.ctr(server); }

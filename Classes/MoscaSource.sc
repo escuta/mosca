@@ -445,33 +445,31 @@ MoscaSource[]
 
 				startFrame = sRate * tpos;
 
-				if (stream.value)
-				{
-					this.prFreeBuffer();
-					
-					if(File.exists(file.value), {
-						buffer = Buffer.cueSoundFile(
-							server, file.value, startFrame, chanNum, 131072,
-							{ | buf |
-								if(buf.notNil and: { buf.numFrames > 0 }, {
-									"✓ Created streaming buffer for source %".format(index + 1).postln;
-									"File: % (% ch, cue size: % frames)".format(
-										PathName(file.value).fileName,
-										buf.numChannels,
-										buf.numFrames
-									).postln;
-								}, {
-									"ERROR: Failed to create streaming buffer for source %".format(index + 1).postln;
-									"File may be invalid or incompatible: %".format(file.value).postln;
-								});
-							}
-						);
-					}, {
-						"ERROR: Cannot stream - file does not exist: %".format(file.value).postln;
-						"Source % will have no audio.".format(index + 1).postln;
-						buffer = nil;
-					});
-				};
+
+if (stream.value)
+{
+var bufferValid = false;
+    this.prFreeBuffer();
+    
+    if(File.exists(file.value), {
+        buffer = Buffer.cueSoundFile(
+            server, file.value, startFrame, chanNum, 131072,
+            { | buf |
+                if(buf.notNil and: { buf.numFrames > 0 }, {
+                    bufferValid = true;
+                    "✓ Created streaming buffer for source %".format(index + 1).postln;
+                }, {
+                    "ERROR: Failed to create streaming buffer for source %".format(index + 1).postln;
+                    bufferValid = false;
+                });
+            }
+        );
+    }, {
+        "ERROR: Cannot stream - file does not exist: %".format(file.value).postln;
+        buffer = nil;
+        bufferValid = false;
+    });
+};
 				args = args ++ [
 					\bufnum, buffer.bufnum,
 					\lp, loop.value.asInteger,
