@@ -340,12 +340,17 @@ MoscaSource[]
 	{
 		if (triggerFunc.notNil)
 		{
+			var synth;
 			//stopFunc.value;
 			synths.set(nil);
 			//embeddedSynth = nil;
-			embeddedSynthRef.get.free;
+			synth = embeddedSynthRef.get;
 			embeddedSynthRef.set(nil);
-			
+			fork {
+				synth.set(\amp, 0);
+				0.05.wait;
+				synth.free;
+			};			
 
 			"RUNNING STOP".postln;
 		};
