@@ -448,12 +448,30 @@ MoscaSource[]
 				if (stream.value)
 				{
 					this.prFreeBuffer();
-
-					buffer = Buffer.cueSoundFile(
-					server, file.value, startFrame, chanNum, 131072,
-					{("Creating buffer for source " + (index + 1)).postln; });
+					
+					if(File.exists(file.value), {
+						buffer = Buffer.cueSoundFile(
+							server, file.value, startFrame, chanNum, 131072,
+							{ | buf |
+								if(buf.notNil and: { buf.numFrames > 0 }, {
+									"✓ Created streaming buffer for source %".format(index + 1).postln;
+									"File: % (% ch, cue size: % frames)".format(
+										PathName(file.value).fileName,
+										buf.numChannels,
+										buf.numFrames
+									).postln;
+								}, {
+									"ERROR: Failed to create streaming buffer for source %".format(index + 1).postln;
+									"File may be invalid or incompatible: %".format(file.value).postln;
+								});
+							}
+						);
+					}, {
+						"ERROR: Cannot stream - file does not exist: %".format(file.value).postln;
+						"Source % will have no audio.".format(index + 1).postln;
+						buffer = nil;
+					});
 				};
-
 				args = args ++ [
 					\bufnum, buffer.bufnum,
 					\lp, loop.value.asInteger,
@@ -564,14 +582,26 @@ MoscaSource[]
 
 			if (stream.value)
 			{
-				// leave streaming buffer allocation to launher
 				playType = "Stream";
 			} {
-				buffer = Buffer.read(server, file.value, action: { | buf |
-					"Loaded file".postln;
+				if(File.exists(file.value), {
+					buffer = Buffer.read(server, file.value, action: { | buf |
+						if(buf.numFrames == 0, {
+							"ERROR: File loaded but contains no audio data: %".format(file.value).postln;
+						}, {
+							"✓ Loaded: % (% ch, %s)".format(
+								PathName(file.value).fileName,
+								buf.numChannels, 
+								buf.duration.round(0.01)
+							).postln;
+						});
+					});
+					playType = "File";
+				}, {
+					"ERROR: File does not exist: %".format(file.value).postln;
+					buffer = nil;
+					playType = "File";
 				});
-
-				playType = "File";
 			};
 		} {
 			if (external.value)
@@ -579,7 +609,7 @@ MoscaSource[]
 				playType = "EXBus";
 				chanNum = nChan.value;
 			};
-
+			
 			if (scSynths.value)
 			{
 				playType = "SCBus";
