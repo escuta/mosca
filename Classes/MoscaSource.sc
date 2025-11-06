@@ -667,7 +667,7 @@ var bufferValid = false;
 			{
 				var synth = spatializer.get;
 				synth.set(\llev, 0, \glev, 0);  // Mute effects immediately
-				SystemClock.sched(0.05, {
+				SystemClock.sched(0.2, {
 					synth.free;
 					this.runStop();
 					firstTime = true;
