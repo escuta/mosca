@@ -319,20 +319,41 @@ RTKGPS : HeadTrackerGPS
 	//	var lastLat, lastLon;
 	var procRTK, rtkroutine;
 	var trackRTKPort;
+	var maxVelocity, velocityThreshold, lastUpdateTime, gpsInitialized;  // Add velocity limiting variables
 	//lon, lat, latOffset = 0, lonOffset = 0;
 	*new
-	{ | center, flag, serialPort, ofsetHeading, setup, amosca |
+	{ | center, flag, serialPort, ofsetHeading, setup, amosca, maxVelocity = nil, velocityThreshold = nil |
 		("Setup is: " + setup + "aMosca is" + amosca).postln;
 		if (setup.isNil)
 		{
-			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading);
+			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
+			.initGPS();
 		} {
 			("setup.size: " + setup.size).postln;
 			
 			^super.newCopyArgs().headTrackerCtr(center, flag, serialPort, ofsetHeading)
+			.initGPS()
+			.setVelocityLimits(maxVelocity, velocityThreshold)
 			.setCenter(setup, amosca).rtkCtr(amosca, serialPort);
 		};
 
+	}
+	
+	initGPS
+	{
+		gpsInitialized = true;  // Start enabled by default
+		lastUpdateTime = Main.elapsedTime;
+	}
+	
+	setVelocityLimits
+	{ | maxVel, threshold |
+		maxVelocity = maxVel;
+		velocityThreshold = threshold;
+		if (maxVelocity.notNil && velocityThreshold.notNil) {
+			("GPS velocity limiting: threshold=" + velocityThreshold + "m/s, clamp to=" + maxVelocity + "m/s").postln;
+		} {
+			"GPS velocity limiting disabled".postln;
+		};
 	}
 	//rtkCtr
 	setCenter
@@ -434,6 +455,8 @@ RTKGPS : HeadTrackerGPS
 	{ | amosca |
 		procRTK = { | amosca | 
 			var dLat, dLong, yStep, xStep, res;
+			var distance, timeElapsed, velocity, clampedDistance, direction;
+			var currentTime = Main.elapsedTime;
 
 			if ( amosca.lat.notNil && amosca.lon.notNil ) { 
 				if(amosca.mark1[0].isNil ||
@@ -453,6 +476,24 @@ RTKGPS : HeadTrackerGPS
 							* (amosca.lon - amosca.lonOffset - amosca.mark1[3])));
 						//	("xStep: " + xStep + "yStep: " + yStep + "lat: " + amosca.lat + "lon: " + amosca.lon).postln;
 					};
+				
+				// VELOCITY LIMITING - clamp GPS jumps to maxVelocity (if enabled)
+				if (maxVelocity.notNil && velocityThreshold.notNil) {
+					distance = sqrt(pow(xStep - curXStep, 2) + pow(yStep - curYStep, 2));
+					timeElapsed = max(currentTime - lastUpdateTime, 0.001); // Avoid divide by zero
+					velocity = distance / timeElapsed;
+					
+					if (velocity > velocityThreshold) {
+						// Calculate direction to target
+						direction = atan2(yStep - curYStep, xStep - curXStep);
+						// Clamp movement to maxVelocity
+						clampedDistance = maxVelocity * timeElapsed;
+						xStep = curXStep + (cos(direction) * clampedDistance);
+						yStep = curYStep + (sin(direction) * clampedDistance);
+						// postln("GPS velocity limited: " + velocity.round(0.01) + "m/s -> " + maxVelocity + "m/s");
+					};
+				};
+				lastUpdateTime = currentTime;
 				
 				// lag in xStep
 				//("lagFactor = " + lagFactor).postln;
@@ -529,6 +570,13 @@ RTKGPS : HeadTrackerGPS
 			nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 			nil, nil, nil, nil,nil, nil,
 			255];
+	}
+	
+	resetGPS
+	{
+		// Reset for recalibration - just update the timestamp
+		lastUpdateTime = Main.elapsedTime;
+		"GPS reset for recalibration".postln;
 	}
 
 	rtkMatchByte

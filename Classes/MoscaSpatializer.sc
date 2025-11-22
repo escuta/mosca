@@ -49,8 +49,8 @@ MoscaSpatializer
 			{ | p, channum, bufnum, lp = 0 |
 				var trig;
 				//p.value = DiskIn.ar(channum, bufnum, lp);
-				p.value = DiskIn.ar(channum, bufnum, lp)
-				* EnvGen.kr(Env.new([0, 1], [0.02]));
+				// FIXED: Changed fade-in from 0.1 to 1.0 seconds to prevent GPS-triggered clicks
+				p.value = DiskIn.ar(channum, bufnum, lp) * EnvGen.kr(Env.new([0, 1], [1.0]));
 				trig = Done.kr(p.value);
 				FreeSelf.kr(trig);
 			},
