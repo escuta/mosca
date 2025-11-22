@@ -319,7 +319,9 @@ RTKGPS : HeadTrackerGPS
 	//	var lastLat, lastLon;
 	var procRTK, rtkroutine;
 	var trackRTKPort;
-	var maxVelocity, velocityThreshold, lastUpdateTime, gpsInitialized;  // Add velocity limiting variables
+	var maxVelocity, velocityThreshold, lastUpdateTime, gpsInitialized;
+	var lastRawX = 0, lastRawY = 0;  // Track raw GPS in meters for velocity calculation
+	var bypassVelocityLimit = false;  // Flag to bypass limiting after calibration
 	//lon, lat, latOffset = 0, lonOffset = 0;
 	*new
 	{ | center, flag, serialPort, ofsetHeading, setup, amosca, maxVelocity = nil, velocityThreshold = nil |
@@ -459,41 +461,72 @@ RTKGPS : HeadTrackerGPS
 			var currentTime = Main.elapsedTime;
 
 			if ( amosca.lat.notNil && amosca.lon.notNil ) { 
-				if(amosca.mark1[0].isNil ||
-					amosca.mark2[0].isNil) {    //no marks, use centre param value
-						dLat = amosca.lat - center[0];
-						dLong = amosca.lon - center[1];
-						("lat: " + amosca.lat + "center[0]: " + center[0]).postln;
-						yStep = (dLat * latDeg2meters);
-						xStep = (dLong * longDeg2meters) * cos(amosca.lat.degrad);
-					} {
-						yStep = (amosca.mark1[1]+(((amosca.mark2[1]-amosca.mark1[1])
-							/ (amosca.mark2[2]-amosca.mark1[2]))
-							* (amosca.lat - amosca.latOffset - amosca.mark1[2])));
-						
-						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
-							/ (amosca.mark2[3]-amosca.mark1[3]))
-							* (amosca.lon - amosca.lonOffset - amosca.mark1[3])));
-						//	("xStep: " + xStep + "yStep: " + yStep + "lat: " + amosca.lat + "lon: " + amosca.lon).postln;
-					};
+				// STEP 1: Calculate current position in raw GPS meters
+				var rawX, rawY, clampedLat, clampedLon;
+				dLat = amosca.lat - amosca.latOffset;
+				dLong = amosca.lon - amosca.lonOffset;
+				rawX = (dLong * longDeg2meters) * cos(amosca.lat.degrad);
+				rawY = (dLat * latDeg2meters);
 				
-				// VELOCITY LIMITING - clamp GPS jumps to maxVelocity (if enabled)
+				// STEP 2: VELOCITY LIMITING in real-world meters
 				if (maxVelocity.notNil && velocityThreshold.notNil) {
-					distance = sqrt(pow(xStep - curXStep, 2) + pow(yStep - curYStep, 2));
-					timeElapsed = max(currentTime - lastUpdateTime, 0.001); // Avoid divide by zero
-					velocity = distance / timeElapsed;
-					
-					if (velocity > velocityThreshold) {
-						// Calculate direction to target
-						direction = atan2(yStep - curYStep, xStep - curXStep);
-						// Clamp movement to maxVelocity
-						clampedDistance = maxVelocity * timeElapsed;
-						xStep = curXStep + (cos(direction) * clampedDistance);
-						yStep = curYStep + (sin(direction) * clampedDistance);
-						// postln("GPS velocity limited: " + velocity.round(0.01) + "m/s -> " + maxVelocity + "m/s");
+					// Check if we should bypass limiting (after calibration)
+					if (bypassVelocityLimit) {
+						// Allow immediate jump after calibration
+						lastRawX = rawX;
+						lastRawY = rawY;
+						bypassVelocityLimit = false;
+						postln("GPS calibration jump - velocity limiting bypassed");
+					} {
+						// Normal velocity limiting
+						// Initialize on first reading
+						if (lastRawX == 0 && lastRawY == 0) {
+							lastRawX = rawX;
+							lastRawY = rawY;
+							postln("GPS velocity limiting initialized at: " ++ rawX.round(0.1) ++ ", " ++ rawY.round(0.1));
+						};
+						
+						distance = sqrt(pow(rawX - lastRawX, 2) + pow(rawY - lastRawY, 2));
+						timeElapsed = max(currentTime - lastUpdateTime, 0.001);
+						velocity = distance / timeElapsed;
+						
+						postln("GPS DEBUG: velocity=" ++ velocity.round(0.01) ++ "m/s threshold=" ++ velocityThreshold ++ " maxVel=" ++ maxVelocity);
+						
+						if (velocity > velocityThreshold) {
+							direction = atan2(rawY - lastRawY, rawX - lastRawX);
+							clampedDistance = maxVelocity * timeElapsed;
+							rawX = lastRawX + (cos(direction) * clampedDistance);
+							rawY = lastRawY + (sin(direction) * clampedDistance);
+							postln("GPS CLAMPED: " + velocity.round(0.01) + "m/s -> " + maxVelocity + "m/s");
+						};
+						
+						lastRawX = rawX;
+						lastRawY = rawY;
 					};
 				};
 				lastUpdateTime = currentTime;
+				
+				// STEP 3: Convert clamped raw meters back to lat/lon
+				clampedLat = (rawY / latDeg2meters) + amosca.latOffset;
+				clampedLon = (rawX / (longDeg2meters * cos(amosca.lat.degrad))) + amosca.lonOffset;
+				
+				// STEP 4: Transform to map coordinates using markers
+				if(amosca.mark1[0].isNil ||
+					amosca.mark2[0].isNil) {    //no marks, use centre param value
+						dLat = clampedLat - center[0];
+						dLong = clampedLon - center[1];
+						("lat: " + amosca.lat + "center[0]: " + center[0]).postln;
+						yStep = (dLat * latDeg2meters);
+						xStep = (dLong * longDeg2meters) * cos(clampedLat.degrad);
+					} {
+						yStep = (amosca.mark1[1]+(((amosca.mark2[1]-amosca.mark1[1])
+							/ (amosca.mark2[2]-amosca.mark1[2]))
+							* (clampedLat - amosca.latOffset - amosca.mark1[2])));
+						
+						xStep = (amosca.mark1[0]+(((amosca.mark2[0]-amosca.mark1[0])
+							/ (amosca.mark2[3]-amosca.mark1[3]))
+							* (clampedLon - amosca.lonOffset - amosca.mark1[3])));
+					};
 				
 				// lag in xStep
 				//("lagFactor = " + lagFactor).postln;
@@ -574,9 +607,12 @@ RTKGPS : HeadTrackerGPS
 	
 	resetGPS
 	{
-		// Reset for recalibration - just update the timestamp
+		// Reset for recalibration - allow immediate jump on next GPS reading
+		bypassVelocityLimit = true;
+		lastRawX = 0;
+		lastRawY = 0;
 		lastUpdateTime = Main.elapsedTime;
-		"GPS reset for recalibration".postln;
+		"GPS reset for recalibration - next position will jump immediately".postln;
 	}
 
 	rtkMatchByte
