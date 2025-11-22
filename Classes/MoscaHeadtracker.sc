@@ -105,6 +105,21 @@ HeadTracker
 
 		var h, r, p, hmod;
 
+		// Debug: log every 10th reading to see what's happening
+		if (heading % 10 == 0) {
+			postln("procGyro: raw h=" ++ heading ++ " r=" ++ roll ++ " p=" ++ pitch);
+		};
+
+		// Sanity check on RAW values
+		// Valid range is 0-65535 (unsigned 16-bit from sensor)
+		// But values way outside reasonable range (like 12589 for heading when normal is ~331-939) are corrupt
+		// Reject anything over 10000 or negative
+		if ((heading > 10000) || (roll > 10000) || (pitch > 10000) ||
+		    (heading < 0) || (roll < 0) || (pitch < 0)) {
+			postln("REJECTED: h=" ++ heading ++ " r=" ++ roll ++ " p=" ++ pitch);
+			^this;
+		};
+
 		h = (heading / 100);
 		h = h + headingOffset;
 		h = h.wrap(0, 2pi) - pi;
@@ -129,22 +144,36 @@ HeadTracker
 
 			if (tracki >= trackarr.size)
 			{
-				var teste;
-				this.procGyro(
-					(trackarr2[5]<<8) + trackarr2[4],
-					(trackarr2[7]<<8) + trackarr2[6],
-					(trackarr2[9]<<8) + trackarr2[8]
-				);
-				if(volpot) {
-					this.procLev( (trackarr2[11]<<8) + trackarr2[10] );
+				// Validate packet by checking header and footer
+				if ((trackarr2[0] == 251) && (trackarr2[1] == 252) && 
+				    (trackarr2[2] == 253) && (trackarr2[3] == 254) &&
+				    (trackarr2[trackarr.size-1] == 255)) 
+				{
+					// Valid packet - process it
+					this.procGyro(
+						(trackarr2[5]<<8) + trackarr2[4],
+						(trackarr2[7]<<8) + trackarr2[6],
+						(trackarr2[9]<<8) + trackarr2[8]
+					);
+					if(volpot) {
+						this.procLev( (trackarr2[11]<<8) + trackarr2[10] );
+					};
+				} {
+					// Invalid packet - skip it
+					postln("HeadTracker: corrupted packet, discarding");
 				};
-
-				
 
 				tracki = 0;
 			};
 		} {
-			tracki = 0;
+			// Byte mismatch - try to resync by looking for start sequence
+			if (byte == 251) {
+				// Potential start of new packet
+				trackarr2[0] = byte;
+				tracki = 1;
+			} {
+				tracki = 0;
+			};
 		};
 	}
 
@@ -490,14 +519,16 @@ RTKGPS : HeadTrackerGPS
 						timeElapsed = max(currentTime - lastUpdateTime, 0.001);
 						velocity = distance / timeElapsed;
 						
-						postln("GPS DEBUG: velocity=" ++ velocity.round(0.01) ++ "m/s threshold=" ++ velocityThreshold ++ " maxVel=" ++ maxVelocity);
+						// Uncomment for GPS debugging:
+						// postln("GPS DEBUG: dist=" ++ distance.round(0.01) ++ "m time=" ++ timeElapsed.round(0.001) ++ "s vel=" ++ velocity.round(0.01) ++ "m/s threshold=" ++ velocityThreshold ++ " maxVel=" ++ maxVelocity);
 						
 						if (velocity > velocityThreshold) {
 							direction = atan2(rawY - lastRawY, rawX - lastRawX);
 							clampedDistance = maxVelocity * timeElapsed;
 							rawX = lastRawX + (cos(direction) * clampedDistance);
 							rawY = lastRawY + (sin(direction) * clampedDistance);
-							postln("GPS CLAMPED: " + velocity.round(0.01) + "m/s -> " + maxVelocity + "m/s");
+							// Uncomment for GPS debugging:
+							// postln("GPS CLAMPED: " + velocity.round(0.01) + "m/s -> " + maxVelocity + "m/s");
 						};
 						
 						lastRawX = rawX;

@@ -499,6 +499,11 @@ MoscaBase // acts as the public interface
 
 	rtkCalibrate
 	{
+		// Reset GPS velocity limiting BEFORE changing offsets
+		if (auxTracker.notNil && auxTracker.respondsTo(\resetGPS)) {
+			auxTracker.resetGPS;
+		};
+		
 		latOffset = lat - extraArguments[10];
 		lonOffset = lon - extraArguments[11];
 	}
