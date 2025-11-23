@@ -478,16 +478,6 @@ MoscaBase // acts as the public interface
 		}
 	}
 
-	headTrackerOSC
-	{ | oscPort = 57120, offsetheading = 0, volPot = false |
-		// OSC-based head tracker (external Python bridge)
-		if (tracker.isNil)
-		{
-			tracker = MoscaHeadTrackerOSC(center, oscPort, offsetheading, volPot, ossiaParent);
-		}
-	}
-
-
 	rtkGPS   // will be run in addition to \orient above on different port
 	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \nmea, extraArgs, maxVelocity = nil, velocityThreshold = nil |
 
