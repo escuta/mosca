@@ -488,7 +488,7 @@ MoscaBase // acts as the public interface
 	}
 
 	rtkGPS   // will be run in addition to \orient above on different port
-	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \nmea, extraArgs |
+	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \nmea, maxVelocity = nil, velocityThreshold = nil, extraArgs |
 
 		extraArguments = extraArgs;
 		if (auxTracker.isNil)  // "auxTracker" is any USB dev other than
@@ -496,7 +496,7 @@ MoscaBase // acts as the public interface
 		{
 			switch (type,
 				\nmea,
-				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs, this)			}
+				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs, this, maxVelocity, velocityThreshold)			}
 				/*\orient,
 				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
 				\pozyxOSC,
