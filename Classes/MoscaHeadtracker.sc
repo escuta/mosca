@@ -27,28 +27,29 @@ HeadTracker
 	lastXStep = 0, xStepIncrement, curXStep = 0, interpXStep = true,
 	lastYStep = 0, yStepIncrement, curYStep = 0, interpYStep = true,
 	lagFactor = 0,
-	packetCounter = 0, packetSkip = 3;  //  (50Hz -> 10Hz)
-	// 0 = 50Hz 1 = 25Hz 2 = 16.7Hz 3 = 12.5Hz 4 = 10Hz
+	packetCounter = 0, packetSkip;  // Set from parameter (default 3 for 12.5Hz)
 
 	*new
-	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent |
+	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent, skipPackets = 3 |
 
-		^super.new.headTrackerCtr(center, flag, serialPort, ofsetHeading, volPot, ossiaParent);
+		^super.new.headTrackerCtr(center, flag, serialPort, ofsetHeading, volPot, ossiaParent, skipPackets);
 	}
 
 	headTrackerCtr
-	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent |
+	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent, skipPackets |
 		moscaCenter = center;
 		switch = flag;
 		serport = serialPort;
 		headingOffset = ofsetHeading;
 		volpot = volPot;
+		packetSkip = skipPackets ? 3;  // Use 3 as default if nil
 		if (ossiaParent.notNil) {
 			masterLevel = ossiaParent.find("Master_level");
 		} {
 			masterLevel = 0
 		};
 		("volPot = " + volpot).postln;
+		("packetSkip = " + packetSkip + " (" ++ (50 / (packetSkip + 1)) ++ " Hz)").postln;
 		SerialPort.devicePattern = serport;
 		// needed in serKeepItUp routine - see below
 		trackPort = SerialPort(serport, baudRate, crtscts: true);

@@ -463,7 +463,7 @@ MoscaBase // acts as the public interface
 	}
 
 	headTracker
-	{ | port = "/dev/ttyUSB0", offsetheading = 0, type = \orient, extraArgs, volPot = false |
+	{ | port = "/dev/ttyUSB0", offsetheading = 0, type = \orient, extraArgs, volPot = false, skipPackets = 3 |
 
 		if (tracker.isNil)
 		{
@@ -471,15 +471,24 @@ MoscaBase // acts as the public interface
 				\gps,
 				{ tracker = HeadTrackerGPS(center, ossiaTrack, port, offsetheading, extraArgs) },
 				\orient,
-				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading, volPot, ossiaParent) },
+				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading, volPot, ossiaParent, skipPackets) },
 				\pozyxOSC,
 				{ tracker = PozyxOSC(center, ossiaTrack, port, extraArgs) }
 			);
 		}
 	}
 
+	headTrackerOSC
+	{ | oscPort = 57120, offsetheading = 0, volPot = false |
+		if (tracker.isNil)
+		{
+			tracker = MoscaHeadTrackerOSC(center, ossiaTrack, oscPort, offsetheading, volPot, ossiaParent);
+		};
+		^this;  // CRITICAL: Return this to allow method chaining
+	}
+
 	rtkGPS   // will be run in addition to \orient above on different port
-	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \nmea, extraArgs, maxVelocity = nil, velocityThreshold = nil |
+	{ | port = "/dev/ttyVB00", offsetheading = 0, type = \nmea, extraArgs |
 
 		extraArguments = extraArgs;
 		if (auxTracker.isNil)  // "auxTracker" is any USB dev other than
@@ -487,7 +496,7 @@ MoscaBase // acts as the public interface
 		{
 			switch (type,
 				\nmea,
-				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs, this, maxVelocity, velocityThreshold)			}
+				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs, this)			}
 				/*\orient,
 				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
 				\pozyxOSC,
@@ -499,11 +508,6 @@ MoscaBase // acts as the public interface
 
 	rtkCalibrate
 	{
-		// Reset GPS velocity limiting BEFORE changing offsets
-		if (auxTracker.notNil && auxTracker.respondsTo(\resetGPS)) {
-			auxTracker.resetGPS;
-		};
-		
 		latOffset = lat - extraArguments[10];
 		lonOffset = lon - extraArguments[11];
 	}
