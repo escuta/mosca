@@ -510,6 +510,11 @@ MoscaBase // acts as the public interface
 	{
 		latOffset = lat - extraArguments[10];
 		lonOffset = lon - extraArguments[11];
+		
+		// Reset GPS velocity tracking to allow immediate jump to calibration point
+		if (auxTracker.notNil && auxTracker.respondsTo(\resetGPS)) {
+			auxTracker.resetGPS();
+		};
 	}
 	
 
