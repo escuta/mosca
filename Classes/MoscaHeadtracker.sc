@@ -26,7 +26,9 @@ HeadTracker
 	trackarr, trackarr2, tracki, trackPort,
 	lastXStep = 0, xStepIncrement, curXStep = 0, interpXStep = true,
 	lastYStep = 0, yStepIncrement, curYStep = 0, interpYStep = true,
-	lagFactor = 0;
+	lagFactor = 0,
+	packetCounter = 0, packetSkip = 3;  //  (50Hz -> 10Hz)
+	// 0 = 50Hz 1 = 25Hz 2 = 16.7Hz 3 = 12.5Hz 4 = 10Hz
 
 	*new
 	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent |
@@ -149,14 +151,20 @@ HeadTracker
 				    (trackarr2[2] == 253) && (trackarr2[3] == 254) &&
 				    (trackarr2[trackarr.size-1] == 255)) 
 				{
-					// Valid packet - process it
-					this.procGyro(
-						(trackarr2[5]<<8) + trackarr2[4],
-						(trackarr2[7]<<8) + trackarr2[6],
-						(trackarr2[9]<<8) + trackarr2[8]
-					);
-					if(volpot) {
-						this.procLev( (trackarr2[11]<<8) + trackarr2[10] );
+					// Valid packet - check if we should process it
+					packetCounter = packetCounter + 1;
+					if (packetCounter >= packetSkip) {
+						packetCounter = 0;
+						
+						// Process this packet
+						this.procGyro(
+							(trackarr2[5]<<8) + trackarr2[4],
+							(trackarr2[7]<<8) + trackarr2[6],
+							(trackarr2[9]<<8) + trackarr2[8]
+						);
+						if(volpot) {
+							this.procLev( (trackarr2[11]<<8) + trackarr2[10] );
+						};
 					};
 				} {
 					// Invalid packet - skip it
