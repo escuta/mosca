@@ -69,7 +69,7 @@ MoscaHeadTrackerOSC
 	
 	procGyro
 	{ | h, r, p |
-		// Throttle updates - only process every Nth packet
+		// Throttle updates - only process every 5th packet (10Hz)
 		updateCounter = updateCounter + 1;
 		if (updateCounter < updateSkip) {
 			^this;  // Skip this update
@@ -77,11 +77,7 @@ MoscaHeadTrackerOSC
 		updateCounter = 0;  // Reset counter
 		
 		// Safety check - don't update if moscaCenter isn't ready
-		if (moscaCenter.isNil) {
-			^this;
-		};
-		
-		if (moscaCenter.ossiaOrient.isNil) {
+		if (moscaCenter.isNil or: { moscaCenter.ossiaOrient.isNil }) {
 			^this;
 		};
 		
@@ -94,11 +90,11 @@ MoscaHeadTrackerOSC
 		r = r - pi;
 		p = p - pi;
 		
-		// Send to Mosca via ossiaOrient - wrap in try to catch node errors
+		// Send to Mosca via ossiaOrient
 		try {
 			moscaCenter.ossiaOrient.v_([h.neg, p.neg, r]);
 		} { |error|
-			// Silently ignore node errors - they spam the console
+			// Silently ignore errors
 		};
 	}
 	
