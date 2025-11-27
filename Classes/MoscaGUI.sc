@@ -972,20 +972,20 @@ MoscaGUI
 			// set initial furthest source as 10 times the apparent radius
 			furthest = halfHeight * 10;
 			if(aMosca.graphicpath.notNil){
-				var ztop, zheight = (halfHeight * 0.8) - 20;
-				ztop = halfHeight - (zheight * 0.5);
+				var ztop, zheight = (halfHeight * 0.8) - 40; // reduced height to leave more space
+				ztop = halfHeight - (zheight * 0.5) - 20; // raise by 20 pixels
 				zSlider.bounds_(Rect(width - 35, ztop,
 				20, zheight));
 				zNumBox.bounds_(Rect(width - 45, ztop + zheight + 4, 40, 20));
 			}{
 				zSlider.bounds_(Rect(width - 35, (halfHeight * 0.5),
-				20, halfHeight));
+				20, halfHeight - 40)); // reduced height
 				zNumBox.bounds_(Rect(width - 45, (halfHeight * 0.5)
-					+ halfHeight, 40, 20));
+					+ halfHeight - 36, 40, 20)); // raised position
 			};
 
 
-			zAxis.bounds_(Rect(width - 80, halfHeight - 10, 90, 20));
+			zAxis.bounds_(Rect(width - 80, halfHeight - 30, 90, 20)); // raised by 20 pixels
 
 			if(aMosca.graphicpath.notNil){
 				//originView.bounds_(Rect(width - 94, height - 176, 94, 172));
