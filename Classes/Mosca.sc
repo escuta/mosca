@@ -202,6 +202,8 @@ Mosca : MoscaBase
 			critical:true, repetition_filter:true);
 
 		ossiaTrack = OSSIA_Parameter(ossiaParent, "Track_Centre", Boolean, default_value:true);
+		
+		ossiaTrackOrient = OSSIA_Parameter(ossiaParent, "Track_Orientation", Boolean, default_value:true);
 	}
 
 	prSetAction
@@ -324,19 +326,34 @@ Mosca : MoscaBase
 		});
 
 		ossiaTrack.callback_({ | v |
-			var orientation = center.ossiaOrient;
 			var origin = center.ossiaOrigin;
 
 			if (v)
 			{
-				orientation.access_mode_(\bi);
 				origin.access_mode_(\bi);
+				"Track_Centre: origin tracking ENABLED (bi mode)".postln;
 			} {
-				orientation.access_mode_(\set);
 				origin.access_mode_(\set);
-
+				"Track_Centre: origin tracking DISABLED (set mode)".postln;
 			};
 		});
+		
+		ossiaTrackOrient.callback_({ | v |
+			var orientation = center.ossiaOrient;
+
+			if (v)
+			{
+				orientation.access_mode_(\bi);
+				"Track_Orientation: orientation tracking ENABLED (bi mode)".postln;
+			} {
+				orientation.access_mode_(\set);
+				"Track_Orientation: orientation tracking DISABLED (set mode)".postln;
+			};
+		});
+		
+		// Trigger callbacks to initialize access modes
+		ossiaTrack.v_(ossiaTrack.v);
+		ossiaTrackOrient.v_(ossiaTrackOrient.v);
 	}
 
 	prDockTo

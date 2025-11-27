@@ -22,6 +22,7 @@ MoscaGUI
 	var width, halfWidth, height, halfHeight; // size
 	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
 	var autoBut, loadBut, originBut, drawBut, saveBut, writeBut, fxBut;
+	var trackOriginBut, trackOrientBut, trackCentre, trackOrient;
 	var zoomFactor = 1, currentSource = 0, sourceNum;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
@@ -393,7 +394,50 @@ MoscaGUI
 		};
 		originView.addFlowLayout();
 
-		aMosca.ossiaParent.find("Track_Centre").gui(originView);
+		// Track_Centre custom buttons - stacked compact layout
+		trackCentre = aMosca.ossiaParent.find("Track_Centre");
+		trackOrient = aMosca.ossiaParent.find("Track_Orientation");
+		
+		// Origin tracking button
+		trackOriginBut = Button(originView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Origin ✓",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				],
+				[
+					"Origin",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({ | butt |
+			trackCentre.v_(butt.value.asBoolean.not); // inverted: button ON = tracking ON
+		}).value_(trackCentre.v.asBoolean.not); // initialize from current Track_Centre value
+		
+		// Orientation tracking button - now functional!
+		trackOrientBut = Button(originView, Rect(0, 0, 88, 20))
+		.focusColor_(palette.color('midlight', 'active'))
+		.states_(
+			[
+				[
+					"Orient ✓",
+					palette.color('middark', 'active'),
+					palette.color('light', 'active')
+				],
+				[
+					"Orient",
+					palette.color('light', 'active'),
+					palette.color('middark', 'active')
+				]
+			]
+		).action_({ | butt |
+			trackOrient.v_(butt.value.asBoolean.not); // inverted: button ON = tracking ON
+		}).value_(trackOrient.v.asBoolean.not); // initialize from current Track_Orientation value
+		
 		originBut = Button(originView, Rect(0, 0, 88, 20))
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(

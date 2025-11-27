@@ -3,7 +3,7 @@ MoscaBase // acts as the public interface
 	var dur, <server, <ossiaParent, gui, <tracker, <auxTracker; // initial rguments
 	var renderer, <spat, <effects, <center, <sources, srcGrp;
 	var convertor, virtualAmbi, needConvert = 0, needVirtualAmbi = 0;
-	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, dependant;
+	var ossiaMasterPlay, ossiaMasterLib, ossiaTrack, ossiaTrackOrient, dependant;
 	var <control, sysex, <slaved = false, ossiaAutomation, ossiaPlay, // automation control
 	ossiaLoop, ossiaTransport, ossiaSync, ossiaRec, ossiaSeekBack, watcher;
 	var <graphicpath, <>graphicImage, <>graphicOrigin, <>window,
@@ -469,11 +469,11 @@ MoscaBase // acts as the public interface
 		{
 			switch (type,
 				\gps,
-				{ tracker = HeadTrackerGPS(center, ossiaTrack, port, offsetheading, extraArgs) },
+				{ tracker = HeadTrackerGPS(center, ossiaTrackOrient, port, offsetheading, extraArgs) },
 				\orient,
-				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading, volPot, ossiaParent, skipPackets) },
+				{ tracker = HeadTracker(center, ossiaTrackOrient, port, offsetheading, volPot, ossiaParent, skipPackets) },
 				\pozyxOSC,
-				{ tracker = PozyxOSC(center, ossiaTrack, port, extraArgs) }
+				{ tracker = PozyxOSC(center, ossiaTrackOrient, port, extraArgs) }
 			);
 		}
 	}
@@ -482,7 +482,7 @@ MoscaBase // acts as the public interface
 	{ | oscPort = 57120, offsetheading = 0, volPot = false |
 		if (tracker.isNil)
 		{
-			tracker = MoscaHeadTrackerOSC(center, ossiaTrack, oscPort, offsetheading, volPot, ossiaParent);
+			tracker = MoscaHeadTrackerOSC(center, ossiaTrackOrient, oscPort, offsetheading, volPot, ossiaParent);
 		};
 		^this;  // CRITICAL: Return this to allow method chaining
 	}
