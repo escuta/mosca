@@ -15,7 +15,7 @@
 * and code examples. Further information and sample RIRs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
 *
-* v2.0 - Fixed data window layout with name column
+* v3.0 - Removed manual StaticText that was displaying name in data window
 */
 
 MoscaGUI
@@ -1455,7 +1455,7 @@ MoscaGUI
 
 	prDataGui
 	{
-		var bounds, strings = [ "Name", "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
+		var bounds, strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
 			"Local Fx", "Loc. amt.", "Delay", "Decay", "Library"," X", " Y", " Z",
 			"Azimuth", "Elevation", "Distance", "Play", "Level", "Reach", "Contract.",
 			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Gr. Rate",
@@ -1497,10 +1497,6 @@ MoscaGUI
 			StaticText(dataView, 20@20)
 			.font_(Font(Font.defaultSansFace, 9))
 			.string_((source.index + 1).asString);
-
-			StaticText(dataView, 50@20)
-			.font_(Font(Font.defaultSansFace, 9))
-			.string_(source.sourceName.value ? "");
 
 			source.src.gui(dataView, 2, \minimal);
 		};

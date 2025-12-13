@@ -15,7 +15,7 @@
 * and code examples. Further information and sample RIRs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
 *
-* v1.2 - Fixed OSSIA parameter initialization
+* v2.1 - Flat naming structure: /Mosca/Name_Source_N
 */
 
 MoscaSource[]
@@ -47,9 +47,10 @@ MoscaSource[]
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
 
-		sourceName = OssiaAutomationProxy(src, "Name", String, critical: true, repetition_filter: false);
-
-		sourceName.node.description_("Source name label");
+		// sourceName stored flat under ossiaParent to prevent data window display
+		sourceName = OssiaAutomationProxy(ossiaParent, "Name_Source_" ++ (index + 1), 
+			String, critical: true, repetition_filter: false);
+		sourceName.node.description_("Source " ++ (index + 1) ++ " name label");
 
 		input = OSSIA_Node(src, "Input");
 
