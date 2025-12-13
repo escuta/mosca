@@ -14,6 +14,8 @@
 * Run help on the "Mosca" class in SuperCollider for detailed information
 * and code examples. Further information and sample RIRs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
+*
+* v1.8 - Increased name font size to 11pt
 */
 
 MoscaGUI
@@ -23,7 +25,7 @@ MoscaGUI
 	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
 	var autoBut, loadBut, originBut, drawBut, saveBut, writeBut, fxBut;
 	var trackOriginBut, trackOrientBut, trackCentre, trackOrient;
-	var zoomFactor = 1, currentSource = 0, sourceNum;
+	var zoomFactor = 1, currentSource = 0, sourceNum, sourceName, sourceNames;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
 	var origin, orientation, scale;
@@ -70,6 +72,7 @@ MoscaGUI
 		aMosca.orient = orientation; // used in drawing
 		maxUndo = aMosca.maxundo;
 		undoAr = [];
+		sourceNames = Array.fill(sources.get.size, { "" });
 
 		// set initial size values
 		width = size;
@@ -161,6 +164,39 @@ MoscaGUI
 		// source index
 		StaticText(win, Rect(4, 3, 50, 20)).string_("Source");
 		sourceNum = StaticText(win, Rect(50, 3, 30, 20)).string_("1");
+
+		sourceName = TextField(win, Rect(85, 3, 150, 20))
+		.string_("name")
+		.stringColor_(Color.gray(0.5))
+		.background_(palette.color('base', 'active'))
+		.action_({ | field |
+			var text;
+			text = field.string;
+			sourceNames[currentSource] = text;
+			if (text.isEmpty) {
+				field.stringColor_(Color.gray(0.5));
+				field.string_("name");
+			} {
+				field.stringColor_(palette.color('windowText', 'active'));
+			};
+		})
+		.keyDownAction_({ | field, char, modifiers, unicode, keycode |
+			if (unicode == 13) { // Enter/Return key
+				win.refresh;
+			};
+		})
+		.focusGainedAction_({ | field |
+			if (field.string == "name") {
+				field.string_("");
+				field.stringColor_(palette.color('windowText', 'active'));
+			};
+		})
+		.focusLostAction_({ | field |
+			if (field.string.isEmpty) {
+				field.string_("name");
+				field.stringColor_(Color.gray(0.5));
+			};
+		});
 
 		exInCheck = Button(win, Rect(4, 30, 79, 20), "EX-in")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -1056,7 +1092,7 @@ MoscaGUI
 			Pen.stroke;
 
 			sources.get.do({ | item, i |
-				var x, y, numColor;
+				var x, y, numColor, displayText;
 				var topView = item.coordinates.spheVal;
 				var lev = topView.z;
 
@@ -1090,6 +1126,13 @@ MoscaGUI
 
 				(i + 1).asString.drawCenteredIn(Rect(x - 11, y - 10, 23, 20),
 					Font.default, numColor);
+				
+				// Draw name to the right of circle if exists
+				displayText = sourceNames[i];
+				if (displayText.notEmpty && (displayText != "name")) {
+					displayText.drawLeftJustIn(Rect(x + 15, y - 10, 100, 20),
+						Font.default.size_(11), numColor);
+				};
 			});
 
 			Pen.fillColor = palette.color('midlight', 'active');
@@ -1174,7 +1217,7 @@ MoscaGUI
 	prSourceSelect
 	{ | index |
 
-		var source, topview;
+		var source, topview, name;
 
 		source = sources.get[index];
 
@@ -1189,6 +1232,17 @@ MoscaGUI
 		currentSource = index;
 
 		sourceNum.string_(currentSource + 1).asString;
+
+		name = sourceNames[index];
+		{
+			if (name.isEmpty || name.isNil) {
+				sourceName.string_("name");
+				sourceName.stringColor_(Color.gray(0.5));
+			} {
+				sourceName.string_(name);
+				sourceName.stringColor_(palette.color('windowText', 'active'));
+			};
+		}.defer;
 
 		topview = source.coordinates.spheVal * zoomFactor;
 
