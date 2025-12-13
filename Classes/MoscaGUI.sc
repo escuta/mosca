@@ -15,7 +15,7 @@
 * and code examples. Further information and sample RIRs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
 *
-* v1.8 - Increased name font size to 11pt
+* v2.0 - Fixed data window layout with name column
 */
 
 MoscaGUI
@@ -25,7 +25,7 @@ MoscaGUI
 	var <win, wData, dataView, ctlView, localView, auxView, masterView, dialView, originView;
 	var autoBut, loadBut, originBut, drawBut, saveBut, writeBut, fxBut;
 	var trackOriginBut, trackOrientBut, trackCentre, trackOrient;
-	var zoomFactor = 1, currentSource = 0, sourceNum, sourceName, sourceNames;
+	var zoomFactor = 1, currentSource = 0, sourceNum, sourceName;
 	var exInCheck, scInCheck, loopCheck, chanPopUp, busNumBox, bLoad, bStream, bAux;
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
 	var origin, orientation, scale;
@@ -72,7 +72,6 @@ MoscaGUI
 		aMosca.orient = orientation; // used in drawing
 		maxUndo = aMosca.maxundo;
 		undoAr = [];
-		sourceNames = Array.fill(sources.get.size, { "" });
 
 		// set initial size values
 		width = size;
@@ -172,7 +171,7 @@ MoscaGUI
 		.action_({ | field |
 			var text;
 			text = field.string;
-			sourceNames[currentSource] = text;
+			sources.get[currentSource].sourceName.valueAction_(text);
 			if (text.isEmpty) {
 				field.stringColor_(Color.gray(0.5));
 				field.string_("name");
@@ -1128,7 +1127,7 @@ MoscaGUI
 					Font.default, numColor);
 				
 				// Draw name to the right of circle if exists
-				displayText = sourceNames[i];
+				displayText = item.sourceName.value;
 				if (displayText.notEmpty && (displayText != "name")) {
 					displayText.drawLeftJustIn(Rect(x + 15, y - 10, 100, 20),
 						Font.default.size_(11), numColor);
@@ -1233,7 +1232,7 @@ MoscaGUI
 
 		sourceNum.string_(currentSource + 1).asString;
 
-		name = sourceNames[index];
+		name = source.sourceName.value;
 		{
 			if (name.isEmpty || name.isNil) {
 				sourceName.string_("name");
@@ -1456,7 +1455,7 @@ MoscaGUI
 
 	prDataGui
 	{
-		var bounds, strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
+		var bounds, strings = [ "Name", "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
 			"Local Fx", "Loc. amt.", "Delay", "Decay", "Library"," X", " Y", " Z",
 			"Azimuth", "Elevation", "Distance", "Play", "Level", "Reach", "Contract.",
 			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Gr. Rate",
@@ -1498,6 +1497,10 @@ MoscaGUI
 			StaticText(dataView, 20@20)
 			.font_(Font(Font.defaultSansFace, 9))
 			.string_((source.index + 1).asString);
+
+			StaticText(dataView, 50@20)
+			.font_(Font(Font.defaultSansFace, 9))
+			.string_(source.sourceName.value ? "");
 
 			source.src.gui(dataView, 2, \minimal);
 		};

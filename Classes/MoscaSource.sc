@@ -14,6 +14,8 @@
 * Run help on the "Mosca" class in SuperCollider for detailed information
 * and code examples. Further information and sample RIRs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
+*
+* v1.2 - Fixed OSSIA parameter initialization
 */
 
 MoscaSource[]
@@ -25,7 +27,7 @@ MoscaSource[]
 	var <scInBus, <>triggerFunc, <>firstTime; // sc synth specific
 	// common automation and ossia parameters
 	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
-	var <src, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
+	var <src, <sourceName, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
 	var <play, <loop, <level, <contraction ,<doppler, <globalAmount, <ox;
 	var <reach;
 	var <angle, <rotation, <extraParams; // input specific parameters
@@ -44,6 +46,10 @@ MoscaSource[]
 	{ | ossiaParent, allCritical, spatList, effectList |
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
+
+		sourceName = OssiaAutomationProxy(src, "Name", String, critical: true, repetition_filter: false);
+
+		sourceName.node.description_("Source name label");
 
 		input = OSSIA_Node(src, "Input");
 
