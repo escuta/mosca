@@ -15,7 +15,7 @@
 * and code examples. Further information and sample RIRs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
 *
-* v2.1 - Flat naming structure: /Mosca/Name_Source_N
+* v2.5 - Fixed getPath to path for debugging output
 */
 
 MoscaSource[]
@@ -47,10 +47,10 @@ MoscaSource[]
 
 		src = OSSIA_Node(ossiaParent, "Source_" ++ (index + 1));
 
-		// sourceName stored flat under ossiaParent to prevent data window display
-		sourceName = OssiaAutomationProxy(ossiaParent, "Name_Source_" ++ (index + 1), 
-			String, critical: true, repetition_filter: false);
-		sourceName.node.description_("Source " ++ (index + 1) ++ " name label");
+		// sourceName as direct child of src, just like localEffect
+		sourceName = OssiaAutomationProxy(src, "Name", String, critical: true, repetition_filter: false);
+		sourceName.node.description_("Source name label");
+		("Created sourceName at path: " ++ sourceName.node.path).postln;
 
 		input = OSSIA_Node(src, "Input");
 
@@ -166,6 +166,13 @@ MoscaSource[]
 
 	setAction
 	{ | effectList, spatDefs, center |
+
+		// sourceName action - triggers GUI update when changed from OSSIA
+		sourceName.action_({ | param |
+			("Source " ++ (index + 1) ++ " name changed to: " ++ param.value).postln;
+			// Action callback ensures dependants are notified
+			// GUI listener (sourceNameEvent) handles the actual update
+		});
 
 		file.action_({ | path |
 

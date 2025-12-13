@@ -15,7 +15,7 @@
 * and code examples. Further information and sample RIRs and B-format recordings
 * may be downloaded here: http://escuta.org/mosca
 *
-* v3.0 - Removed manual StaticText that was displaying name in data window
+* v3.3 - Added Name header back (now properly positioned as first column)
 */
 
 MoscaGUI
@@ -30,7 +30,7 @@ MoscaGUI
 	var bNodes, bMeters, bData, <recNumBox, bBlip, bRecAudio;
 	var origin, orientation, scale;
 	var zAxis, zSlider, zNumBox;
-	var drawEvent, ctlEvent, loopEvent, lastGui = 0;
+	var drawEvent, ctlEvent, loopEvent, sourceNameEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
 	var graphicWidth, graphicHeight, drawOnImage;
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
@@ -196,6 +196,23 @@ MoscaGUI
 				field.stringColor_(Color.gray(0.5));
 			};
 		});
+
+		sourceNameEvent = { | param |
+			var text = param.value;
+			("GUI received name update: " ++ text).postln;
+			{
+				if (text.isEmpty || text.isNil) {
+					sourceName.string_("name");
+					sourceName.stringColor_(Color.gray(0.5));
+				} {
+					sourceName.string_(text);
+					sourceName.stringColor_(palette.color('windowText', 'active'));
+				};
+				win.refresh; // Update map display
+			}.defer;
+		};
+
+		sources.get[currentSource].sourceName.node.addDependant(sourceNameEvent);
 
 		exInCheck = Button(win, Rect(4, 30, 79, 20), "EX-in")
 		.focusColor_(palette.color('midlight', 'active'))
@@ -1226,6 +1243,9 @@ MoscaGUI
 		sources.get[currentSource].loop.node.removeDependant(loopEvent);
 		source.loop.node.addDependant(loopEvent);
 
+		sources.get[currentSource].sourceName.node.removeDependant(sourceNameEvent);
+		source.sourceName.node.addDependant(sourceNameEvent);
+
 		if (bAux.value == 1) { bAux.valueAction_(0) };
 
 		currentSource = index;
@@ -1455,7 +1475,7 @@ MoscaGUI
 
 	prDataGui
 	{
-		var bounds, strings = [ "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
+		var bounds, strings = [ "Name", "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
 			"Local Fx", "Loc. amt.", "Delay", "Decay", "Library"," X", " Y", " Z",
 			"Azimuth", "Elevation", "Distance", "Play", "Level", "Reach", "Contract.",
 			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Gr. Rate",
