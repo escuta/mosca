@@ -137,7 +137,7 @@ HeadTracker
 
 	procLev
 	{ | lev |
-		masterLevel.v = lev.linexp(0, 255, -96, -0.0001);
+		masterLevel.v = lev.linlin(0, 255, -96, -0.0001);
 	}
 
 	matchByte
