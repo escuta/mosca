@@ -168,6 +168,7 @@ MoscaGUI
 		.string_("name")
 		.stringColor_(Color.gray(0.5))
 		.background_(palette.color('base', 'active'))
+		.focus(false)  // Prevent automatic focus on startup
 		.action_({ | field |
 			var text;
 			text = field.string;
@@ -180,11 +181,17 @@ MoscaGUI
 			};
 		})
 		.keyDownAction_({ | field, char, modifiers, unicode, keycode |
+			// Clear "name" placeholder when user starts typing
+			if ((field.string == "name") && (unicode != 13)) {
+				field.string_("");
+				field.stringColor_(palette.color('windowText', 'active'));
+			};
 			if (unicode == 13) { // Enter/Return key
 				win.refresh;
 			};
 		})
-		.focusGainedAction_({ | field |
+		.mouseDownAction_({ | field |
+			// Only clear "name" placeholder when user clicks in the field
 			if (field.string == "name") {
 				field.string_("");
 				field.stringColor_(palette.color('windowText', 'active'));
@@ -214,6 +221,21 @@ MoscaGUI
 
 		sources.get[currentSource].sourceName.node.addDependant(sourceNameEvent);
 
+		// Initialize name field to show "name" placeholder
+		{
+			var nameVal = sources.get[currentSource].sourceName.value;
+			("Initial sourceName value: " ++ nameVal).postln;
+			if ((nameVal == "") || nameVal.isNil) {
+				"Setting to 'name' placeholder".postln;
+				sourceName.string_("name");
+				sourceName.stringColor_(Color.gray(0.5));
+			} {
+				"Setting to actual name".postln;
+				sourceName.string_(nameVal);
+				sourceName.stringColor_(palette.color('windowText', 'active'));
+			};
+		}.defer;
+
 		exInCheck = Button(win, Rect(4, 30, 79, 20), "EX-in")
 		.focusColor_(palette.color('midlight', 'active'))
 		.states_(
@@ -230,6 +252,9 @@ MoscaGUI
 				]
 			]
 		).action_({ | butt | sources.get[currentSource].external.valueAction_(butt.value.asBoolean) });
+
+		// Give focus to exInCheck to remove cursor from sourceName field
+		{ exInCheck.focus; }.defer;
 
 		scInCheck = Button( win, Rect(83, 30, 79, 20), "SC-in")
 		.focusColor_(palette.color('midlight', 'active'))
