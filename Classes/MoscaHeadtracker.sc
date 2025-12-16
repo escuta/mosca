@@ -64,9 +64,9 @@ HeadTracker
 		
 		troutine = Routine.new({
 			inf.do({
-				if (switch.v)
-				{ this.matchByte(trackPort.read) }  // Back to original - no wait
-				{ 1.wait };
+				// Always read serial data for volume control
+				// Orientation will be gated inside procGyro based on switch.v
+				this.matchByte(trackPort.read);  // No wait - always reading
 			});
 		});
 		
@@ -123,13 +123,16 @@ HeadTracker
 			^this;
 		};
 
-		h = (heading / 100);
-		h = h + headingOffset;
-		h = h.wrap(0, 2pi) - pi;
-		r = (roll / 100) - pi;
-		p = (pitch / 100) - pi;
+		// Only process orientation if Track_Orientation is enabled
+		if (switch.v) {
+			h = (heading / 100);
+			h = h + headingOffset;
+			h = h.wrap(0, 2pi) - pi;
+			r = (roll / 100) - pi;
+			p = (pitch / 100) - pi;
 
-		moscaCenter.ossiaOrient.v_([h.neg, p.neg, r]);
+			moscaCenter.ossiaOrient.v_([h.neg, p.neg, r]);
+		};
 	}
 
 	procLev
@@ -296,7 +299,10 @@ HeadTrackerGPS : HeadTracker
 				curYStep = yStep;
 			};
 			
-			moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
+			// Only update origin if tracking is enabled
+			if (switch.v) {
+				moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0] / areaInMeters);
+			};
 			//postln("x " + xStep + "curX " + curXStep + "xStepIncrement " + xStepIncrement);
 			//postln("y " + yStep + "curY " + curYStep + "yStepIncrement " + yStepIncrement);
 		}
@@ -458,13 +464,10 @@ RTKGPS : HeadTrackerGPS
 	{ | amosca, serialPort | 
 		rtkroutine = Routine.new({
 			inf.do({
-				if (switch.v)
-				{
-					//"Doing something".postln;
-					procRTK.value(amosca);
-					0.1.wait;
-				}
-				{ 1.wait };
+				// Always process GPS data
+				// Gating happens inside procRTK if needed
+				procRTK.value(amosca);
+				0.1.wait;
 			});
 		});
 		rtkroutine.play;
@@ -479,10 +482,8 @@ RTKGPS : HeadTrackerGPS
 
 			rtkroutine = Routine.new({
 			inf.do({
-				
-				if (switch.v)
-				{ this.rtkMatchByte(trackRTKPort.read, amosca) }
-				{ 1.wait };
+				// Always read GPS serial data
+				this.rtkMatchByte(trackRTKPort.read, amosca);
 			});
 		});
 			rtkroutine.play;
@@ -627,10 +628,16 @@ RTKGPS : HeadTrackerGPS
 				};
 				if(amosca.mark1[0].isNil ||
 					amosca.mark2[0].isNil) {    //no marks, use centre param value		
-						moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0]
-							/ areaInMeters);
+						// Only update origin if tracking is enabled
+						if (switch.v) {
+							moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0]
+								/ areaInMeters);
+						};
 					} {
-						moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0])
+						// Only update origin if tracking is enabled
+						if (switch.v) {
+							moscaCenter.ossiaOrigin.v_([curXStep, curYStep, 0])
+						};
 					};
 			}
 		}
