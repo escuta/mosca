@@ -1492,7 +1492,7 @@ MoscaGUI
 			bData.value_(0);
 		}).view.palette_(palette);
 
-		dataView = UserView(wData, Rect(0, 24, 1980, (sources.get.size * 20) + 80));
+		dataView = UserView(wData, Rect(0, 24, 2070, (sources.get.size * 20) + 80));
 		dataView.addFlowLayout;
 
 		sources.get.do( this.prAddData(_) );
