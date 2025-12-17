@@ -1010,14 +1010,14 @@ MoscaGUI
 				// Check if Control key is held (modifier 262144)
 				if ((modifiers & 262144) > 0) {
 					var x, y, deltaX, deltaY, newOriginX, newOriginY, currentZ;
-					var dampingFactor = 0.5; // Adjust this to change drag sensitivity
 					// Control held - move origin relatively
 					x = ((mx - halfWidth) / halfHeight) / zoomFactor;
 					y = ((halfHeight - my) / halfHeight) / zoomFactor;
 					
 					// Calculate how much mouse has moved since drag started
-					deltaX = (x - mouseDragStart.x) * dampingFactor;
-					deltaY = (y - mouseDragStart.y) * dampingFactor;
+					// Divide by scale.value to get 1:1 movement (compensates for Mosca's scaleFactor)
+					deltaX = (x - mouseDragStart.x) / scale.value;
+					deltaY = (y - mouseDragStart.y) / scale.value;
 					
 					// Apply delta to original origin position
 					newOriginX = originDragStart.x + deltaX;
