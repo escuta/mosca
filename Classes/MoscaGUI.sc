@@ -32,6 +32,7 @@ MoscaGUI
 	var zAxis, zSlider, zNumBox;
 	var drawEvent, ctlEvent, loopEvent, sourceNameEvent, lastGui = 0;
 	var mouseButton, furthest, sourceList;
+	var originDragStart, mouseDragStart; // For Control-drag origin movement
 	var graphicWidth, graphicHeight, drawOnImage;
 	var drawing = false, lastRx = nil, lastRy = nil, rx, ry, rotatedGraphicCoords;
 	var rotated, lastRotated, annotateText = nil, annotate = false;
@@ -919,6 +920,7 @@ MoscaGUI
 						var y = ((halfHeight - my) / halfHeight) / zoomFactor;
 						var closest = [0, furthest];
 
+						("Mouse down - Modifiers: " ++ modifiers).postln;  // Debug
 						
 						// save sources index and distance from click
 						// initialize at the furthest point
@@ -935,9 +937,18 @@ MoscaGUI
 						});
 
 						if( (drawing == false) && (annotate == false) ) {
-							if (closest[0] != currentSource)
-							{ this.prSourceSelect(closest[0]) };
-							this.prMoveSource(mx, my);
+							// Check if Control key is held (modifier 262144)
+							if ((modifiers & 262144) > 0) {
+								// Control held - store start positions for relative dragging
+								originDragStart = Point(origin.value[0], origin.value[1]);
+								mouseDragStart = Point(x, y);
+								"Control-drag to move origin".postln;
+							} {
+								// Normal behavior - select and move source
+								if (closest[0] != currentSource)
+								{ this.prSourceSelect(closest[0]) };
+								this.prMoveSource(mx, my);
+							};
 						} {
 							if ( (annotate == true) &&
 								annotateText.notNil)
@@ -995,9 +1006,31 @@ MoscaGUI
 
 			// left button
 			if (mouseButton == 0) {
-				if ((drawing == false) && (annotate == false) ) {
-					this.prMoveSource(mx, my)
+				("Mouse move - Modifiers: " ++ modifiers).postln;  // Debug
+				// Check if Control key is held (modifier 262144)
+				if ((modifiers & 262144) > 0) {
+					var x, y, deltaX, deltaY, newOriginX, newOriginY, currentZ;
+					var dampingFactor = 0.5; // Adjust this to change drag sensitivity
+					// Control held - move origin relatively
+					x = ((mx - halfWidth) / halfHeight) / zoomFactor;
+					y = ((halfHeight - my) / halfHeight) / zoomFactor;
+					
+					// Calculate how much mouse has moved since drag started
+					deltaX = (x - mouseDragStart.x) * dampingFactor;
+					deltaY = (y - mouseDragStart.y) * dampingFactor;
+					
+					// Apply delta to original origin position
+					newOriginX = originDragStart.x + deltaX;
+					newOriginY = originDragStart.y + deltaY;
+					currentZ = origin.value[2]; // Keep z unchanged
+					
+					origin.v_([newOriginX, newOriginY, currentZ]);
+					win.refresh;
 				} {
+					// Normal behavior - move source
+					if ((drawing == false) && (annotate == false) ) {
+						this.prMoveSource(mx, my)
+					} {
 					
 					rotated = rotatedGraphicCoords.value(mx, my );
 					{
@@ -1020,9 +1053,10 @@ MoscaGUI
 					lastRy = rotated.y;
 					
 				};
+			}; // End of Control key check
 
-			};
-		});
+		};
+	});
 
 		win.view.mouseWheelAction_({ | view, mx, my, modifiers, dx, dy |
 
