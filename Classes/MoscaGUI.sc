@@ -1346,6 +1346,7 @@ MoscaGUI
 		src.play.gui(ctlView);
 		src.level.node.gui(ctlView);
 		src.reach.node.gui(ctlView);
+		src.airAbsorption.node.gui(ctlView);
 		src.contraction.node.gui(ctlView);
 		src.doppler.node.gui(ctlView);
 
@@ -1536,7 +1537,7 @@ MoscaGUI
 	{
 		var bounds, strings = [ "Name", "File", "St", "Lp", "Ex", "Sc", "No. Chans", "Bus Index",
 			"Local Fx", "Loc. amt.", "Delay", "Decay", "Library"," X", " Y", " Z",
-			"Azimuth", "Elevation", "Distance", "Play", "Level", "Reach", "Contract.",
+			"Azimuth", "Elevation", "Distance", "Play", "Level", "Reach", "Air Abs.", "Contract.",
 			"Doppler", "Gl. amt.", "St. angle", "B-F. rot.", "Direct.", "Gr. Rate",
 			"Win. size", "Rnd. size", "Aux 1", "C1", "Aux 2", "C2", "Aux 3", "C3",
 			"Aux 4", "C4", "Aux 5", "C5" ]; // txt indicators

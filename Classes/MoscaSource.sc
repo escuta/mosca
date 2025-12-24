@@ -28,7 +28,7 @@ MoscaSource[]
 	// common automation and ossia parameters
 	var input, <file, <stream, <scSynths, <external, <nChan, sRate, <busInd, >tpos = 0; // inputs types
 	var <src, <sourceName, <coordinates, <library, <localEffect, <localAmount, <localDelay, <localDecay;
-	var <play, <loop, <level, <contraction ,<doppler, <globalAmount, <ox;
+	var <play, <loop, <level, <contraction, <airAbsorption, <doppler, <globalAmount, <ox;
 	var <reach;
 	var <angle, <rotation, <extraParams; // input specific parameters
 	var <josh, <rate, <window, <random; // joshGrain specific parameters
@@ -119,6 +119,11 @@ MoscaSource[]
 
 		reach = OssiaAutomationProxy(src, "Reach", Float,
 			[0, 1], 1.0, 'clip', critical:allCritical);
+
+		airAbsorption = OssiaAutomationProxy(src, "Air_absorption", Float,
+			[0, 1], 0, 'clip', critical:allCritical);
+
+		airAbsorption.node.description_("High frequency roll-off with distance");
 
 		contraction = OssiaAutomationProxy(src, "Contraction", Float,
 			[0, 1], 1.0, 'clip', critical:allCritical);
