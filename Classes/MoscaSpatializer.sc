@@ -102,7 +102,7 @@ MoscaSpatializer
 						{
 							SynthDef(name, {
 								| outBus = #[0, 0], radAzimElev = #[10, 0, 0],
-								amp = 1, dopamnt = 0, glev = 0, reach, gate = 1 |  // ADD gate parameter
+								amp = 1, dopamnt = 0, glev = 0, reach, airAbsorption = 0, gate = 1 |  // ADD airAbsorption and gate parameter
 								
 								var rad = Lag.kr(radAzimElev[0]),
 								rrad = 1 - ((reach - rad) / reach),
@@ -112,7 +112,7 @@ MoscaSpatializer
 								elevation = radAzimElev[2],
 								revCut = rrad.lincurve(1, (plim), 1, 0),
 								channum = channels,
-								p = Ref(0), dRad, env;
+								p = Ref(0), dRad, env, airAbs, lpFreq;
 								
 								env = EnvGen.kr(Env.asr(0.02, 1, 0.02), gate, doneAction: 2);  // ADD envelope
 								
@@ -128,6 +128,11 @@ MoscaSpatializer
 
 								lrevRef.value = lrevRef.value * revCut;
 								p.value = p.value * amp;
+								
+								// Air absorption: high-frequency roll-off with distance
+								airAbs = Lag.kr(airAbsorption, 0.1);
+								lpFreq = ((1 - rrad).linexp(0.001, 1, 200, 20000) * airAbs) + (20000 * (1 - airAbs));
+								p.value = BLowPass4.ar(p.value, lpFreq.clip(20, 20000));
 
 								SynthDef.wrap(spat.getFunc(maxOrder, renderer, channum),
 									prependArgs: [ lrevRef, p, rrad, radRoot, azimuth, elevation ]);

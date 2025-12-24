@@ -264,6 +264,7 @@ MoscaSource[]
 		level.action_({ | val | this.setSynths(\amp, val.value.dbamp) });
 
 		reach.action_({ | val | this.setSynths(\reach, val.value) });
+		airAbsorption.action_({ | val | this.setSynths(\airAbsorption, val.value) });
 		contraction.action_({ | val | this.setSynths(\contract, val.value) });
 
 		doppler.action_({ | val | this.setSynths(\dopamnt, val.value) });

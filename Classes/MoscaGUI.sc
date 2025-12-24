@@ -207,7 +207,6 @@ MoscaGUI
 
 		sourceNameEvent = { | param |
 			var text = param.value;
-			("GUI received name update: " ++ text).postln;
 			{
 				if (text.isEmpty || text.isNil) {
 					sourceName.string_("name");
@@ -225,13 +224,10 @@ MoscaGUI
 		// Initialize name field to show "name" placeholder
 		{
 			var nameVal = sources.get[currentSource].sourceName.value;
-			("Initial sourceName value: " ++ nameVal).postln;
 			if ((nameVal == "") || nameVal.isNil) {
-				"Setting to 'name' placeholder".postln;
 				sourceName.string_("name");
 				sourceName.stringColor_(Color.gray(0.5));
 			} {
-				"Setting to actual name".postln;
 				sourceName.string_(nameVal);
 				sourceName.stringColor_(palette.color('windowText', 'active'));
 			};
@@ -920,7 +916,7 @@ MoscaGUI
 						var y = ((halfHeight - my) / halfHeight) / zoomFactor;
 						var closest = [0, furthest];
 
-						("Mouse down - Modifiers: " ++ modifiers).postln;  // Debug
+						// ("Mouse down - Modifiers: " ++ modifiers).postln;  // Debug
 						
 						// save sources index and distance from click
 						// initialize at the furthest point
@@ -993,8 +989,6 @@ MoscaGUI
 					2,
 					{
 						sources.get.do { | item, i |
-							("" ++ i ++ " " ++ item.coordinates.cartVal).postln;
-							("" ++ i ++ " " ++ item.coordinates.spheVal).postln;
 						}
 					}
 				)
@@ -1006,7 +1000,7 @@ MoscaGUI
 
 			// left button
 			if (mouseButton == 0) {
-				("Mouse move - Modifiers: " ++ modifiers).postln;  // Debug
+				// ("Mouse move - Modifiers: " ++ modifiers).postln;  // Debug
 				// Check if Control key is held (modifier 262144)
 				if ((modifiers & 262144) > 0) {
 					var x, y, deltaX, deltaY, newOriginX, newOriginY, currentZ;
@@ -1552,7 +1546,7 @@ MoscaGUI
 			bData.value_(0);
 		}).view.palette_(palette);
 
-		dataView = UserView(wData, Rect(0, 24, 2070, (sources.get.size * 20) + 80));
+		dataView = UserView(wData, Rect(0, 24, 2120, (sources.get.size * 20) + 80));
 		dataView.addFlowLayout;
 
 		sources.get.do( this.prAddData(_) );
