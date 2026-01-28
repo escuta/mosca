@@ -354,16 +354,8 @@ MoscaSource[]
 			);
 				"RUNNING TRIGGER".postln;
 				
-			// Apply current parameter values to newly created synth
-			// This ensures OSSIA Score's values are applied even after synth restart
-			if (embeddedSynthRef.get.notNil) {
-				embeddedSynthRef.get.set(\amp, level.value.dbamp);
-				embeddedSynthRef.get.set(\reach, reach.value);
-				embeddedSynthRef.get.set(\dopamnt, doppler.value);
-				embeddedSynthRef.get.set(\contract, contraction.value);
-				embeddedSynthRef.get.set(\airAbsorption, airAbsorption.value);
-				"Applied current parameter values to embedded synth".postln;
-			};
+			// Sync all current parameter values to the newly created synth
+			this.syncEmbeddedSynthParameters;
 		};
 	}
 
@@ -545,6 +537,32 @@ var bufferValid = false;
 		if (synths.get.notNil) { synths.get.do({ _.set(param, value) }) };
 
 		if (scSynths.value && embeddedSynthRef.get.notNil) { embeddedSynthRef.get.set(param, value)};   
+	}
+
+	syncEmbeddedSynthParameters
+	{
+		// Apply all current parameter values to the embedded synth
+		// Called after creating a new embedded synth to sync with Mosca's state
+		if (embeddedSynthRef.get.notNil) {
+			embeddedSynthRef.get.set(
+				\amp, level.value.dbamp,
+				\reach, reach.value,
+				\dopamnt, doppler.value,
+				\contract, contraction.value,
+				\airAbsorption, airAbsorption.value,
+				\glev, globalAmount.value
+			);
+			
+			// Apply orientation if multi-channel
+			if (chanNum > 2) {
+				embeddedSynthRef.get.set(\orientation, 
+					[ (orientation[0] + rotation.value.degrad),
+						orientation[1], orientation[2] ]
+				);
+			};
+			
+			"Synced all parameters to embedded synth".postln;
+		};
 	}
 
 	orientation_
