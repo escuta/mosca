@@ -353,6 +353,17 @@ MoscaSource[]
 				triggerFunc.value;
 			);
 				"RUNNING TRIGGER".postln;
+				
+			// Apply current parameter values to newly created synth
+			// This ensures OSSIA Score's values are applied even after synth restart
+			if (embeddedSynthRef.get.notNil) {
+				embeddedSynthRef.get.set(\amp, level.value.dbamp);
+				embeddedSynthRef.get.set(\reach, reach.value);
+				embeddedSynthRef.get.set(\dopamnt, doppler.value);
+				embeddedSynthRef.get.set(\contract, contraction.value);
+				embeddedSynthRef.get.set(\airAbsorption, airAbsorption.value);
+				"Applied current parameter values to embedded synth".postln;
+			};
 		};
 	}
 
