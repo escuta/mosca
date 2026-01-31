@@ -518,7 +518,8 @@ var bufferValid = false;
 					\dopamnt, doppler.value,
 					\glev, globalAmount.value,
 					\amp, level.value.dbamp,
-					\reach, reach.value
+					\reach, reach.value,
+					\airAbsorption, airAbsorption.value
 				] ++ args,
 				srcGrp.get()
 				).onFree({
