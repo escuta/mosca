@@ -27,7 +27,8 @@ HeadTracker
 	lastXStep = 0, xStepIncrement, curXStep = 0, interpXStep = true,
 	lastYStep = 0, yStepIncrement, curYStep = 0, interpYStep = true,
 	lagFactor = 0,
-	packetCounter = 0, packetSkip;  // Set from parameter (default 3 for 12.5Hz)
+	packetCounter = 0, packetSkip,  // Set from parameter (default 3 for 12.5Hz)
+	lastLogH, lastLogR, lastLogP;  // For debug logging - only print on change
 
 	*new
 	{ | center, flag, serialPort, ofsetHeading, volPot, ossiaParent, skipPackets = 3 |
@@ -108,9 +109,12 @@ HeadTracker
 
 		var h, r, p, hmod;
 
-		// Debug: log every 10th reading to see what's happening
-		if (heading % 10 == 0) {
+		// Debug: log only when values change
+		if ((heading != lastLogH) || (roll != lastLogR) || (pitch != lastLogP)) {
 			postln("procGyro: raw h=" ++ heading ++ " r=" ++ roll ++ " p=" ++ pitch);
+			lastLogH = heading;
+			lastLogR = roll;
+			lastLogP = pitch;
 		};
 
 		// Sanity check on RAW values
