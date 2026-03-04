@@ -190,7 +190,7 @@ MoscaBase // acts as the public interface
 							playbackSynth = { | bufnum = 0 |
 								var sig = PlayBuf.ar(2, bufnum, doneAction: 2);
 								Out.ar(0, sig);
-							}.play(args: [ufnum, buf.bufnum]);
+							}.play(args: [\bufnum, buf.bufnum]);
 							playbackSynth.onFree({
 								"OSC playback: finished, restoring master level".postln;
 								ossiaParent.find("Master_level").v_(masterLevel);
