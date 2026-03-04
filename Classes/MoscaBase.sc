@@ -1,4 +1,4 @@
-// MoscaBase.sc v1.4 - Recording via jack_rec (captures VST binaural output correctly)
+// MoscaBase.sc v1.6 - Use bash -c for jack_rec pidfile shell syntax
 MoscaBase // acts as the public interface
 {
 	var dur, <server, <ossiaParent, gui, <tracker, <auxTracker; // initial rguments
@@ -16,7 +16,6 @@ MoscaBase // acts as the public interface
 	var recCounter = 0;
 	var oscRecordFunc;
 	var playbackSynth, playbackBuffer;
-	var jackRecPid;
 	
 
 	*printSynthParams
@@ -226,31 +225,31 @@ MoscaBase // acts as the public interface
 
 		// Use jack_rec to capture directly from supernova JACK outputs,
 		// bypassing SC buses entirely - necessary to capture VST binaural output.
-		// PID is stored so stopRecording can kill the process.
-		cmd = "jack_rec -f " ++ path ++ " -b 24 supernova:output_1 supernova:output_2";
+		// PID is written to /tmp/mosca_jackrec.pid so stopRecording can kill it.
+		// bash -c required for & and $! shell syntax
+		cmd = "bash -c 'jack_rec -f " ++ path
+			++ " -b 24 supernova:output_1 supernova:output_2"
+			++ " & echo $! > /tmp/mosca_jackrec.pid'";
 
 		if (blips) {
 			Routine.new({
 				// Start jack_rec first, then play blips into the open recording
-				jackRecPid = cmd.unixCmdGetPID;
+				cmd.unixCmd;
+				0.2.wait; // brief wait for pidfile to be written
 				("Recording started: " ++ path).postln;
 				this.prBlips;   // 4 blips x 1 sec each, captured in recording
 			}).play;
 		} {
-			jackRecPid = cmd.unixCmdGetPID;
+			cmd.unixCmd;
 			("Recording started: " ++ path).postln;
 		};
 	}
 
 	stopRecording
 	{
-		if (jackRecPid.notNil) {
-			("kill " ++ jackRecPid).unixCmd;
-			("Recording stopped, PID " ++ jackRecPid ++ " killed").postln;
-			jackRecPid = nil;
-		} {
-			"stopRecording: no active recording".postln;
-		};
+		// Read PID from file and kill jack_rec
+		"bash -c 'kill $(cat /tmp/mosca_jackrec.pid) 2>/dev/null && rm /tmp/mosca_jackrec.pid'".unixCmd;
+		"Recording stopped".postln;
 	}
 
 	inputFile
