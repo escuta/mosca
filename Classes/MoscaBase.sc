@@ -1,4 +1,4 @@
-// MoscaBase.sc v1.2 - Added OSC remote control for record/stop on port 2345
+// MoscaBase.sc v1.3 - Added OSC playback of most recent recording with master mute
 MoscaBase // acts as the public interface
 {
 	var dur, <server, <ossiaParent, gui, <tracker, <auxTracker; // initial rguments
@@ -15,6 +15,7 @@ MoscaBase // acts as the public interface
 	var <extraArguments;
 	var recCounter = 0;
 	var oscRecordFunc;
+	var playbackSynth, playbackBuffer;
 	
 
 	*printSynthParams
@@ -155,6 +156,62 @@ MoscaBase // acts as the public interface
 			};
 		}, '/mosca/record', nil, 2345);
 		"Mosca record OSC listener active on port 2345 (/mosca/record)".postln;
+	}
+
+	initPlaybackOSC
+	{
+		// OSC remote playback of most recent MoscaOut*.wav recording.
+		// Mutes master level during playback, restores on finish or stop.
+		// Send /mosca/playback 1 to play most recent recording
+		// Send /mosca/playback 0 to stop playback early
+		OSCFunc({ | msg |
+			var cmd = msg[1];
+			if (cmd == 1) {
+				var masterLevel, recDir, files, latest, path;
+
+				// Find most recent MoscaOut*.wav
+				recDir = PathName(control.get.presetDir).parentPath;
+				files = (recDir ++ "MoscaOut*.wav").pathMatch;
+				if (files.isEmpty) {
+					"OSC playback: no recordings found in %".format(recDir).postln;
+				} {
+					// Sort by name; since filenames are MoscaOut1.wav etc, last is highest
+					files.sort;
+					latest = files.last;
+					("OSC playback: playing " ++ latest).postln;
+
+					// Store current master level and mute
+					masterLevel = ossiaParent.find("Master_level").v;
+					ossiaParent.find("Master_level").v_(0);
+
+					// Load and play file, restore master level when done
+					playbackBuffer = Buffer.read(server, latest, action: { | buf |
+						{ // defer to AppClock for Synth creation
+							playbackSynth = { | bufnum = 0 |
+								var sig = PlayBuf.ar(2, bufnum, doneAction: 2);
+								Out.ar(0, sig);
+							}.play(args: [ufnum, buf.bufnum]);
+							playbackSynth.onFree({
+								"OSC playback: finished, restoring master level".postln;
+								ossiaParent.find("Master_level").v_(masterLevel);
+								playbackBuffer.free;
+								playbackBuffer = nil;
+								playbackSynth = nil;
+							});
+						}.defer;
+					});
+				};
+			} {
+				// Stop playback early
+				if (playbackSynth.notNil) {
+					"OSC playback: stopped early".postln;
+					playbackSynth.free; // onFree callback restores master level
+				} {
+					"OSC playback: nothing playing".postln;
+				};
+			};
+		}, '/mosca/playback', nil, 2345);
+		"Mosca playback OSC listener active on port 2345 (/mosca/playback)".postln;
 	}
 
 	recordAudio
