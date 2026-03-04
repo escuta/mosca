@@ -71,11 +71,13 @@ Mosca : MoscaBase
 				vstProgram, vstOuts);
 		
 		
-			// recording blip synth for synchronisation
+			// Recording sync blip - writes directly to hardware output bus 0
+			// so it is always audible regardless of renderer/ambisonic state.
+			// Duplicated to stereo (blip ! 2) for L+R output.
 			SynthDef(\blip, {
 				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
 				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
-				Out.ar(renderer.fumaBus, blip);
+				Out.ar(0, blip ! 2);
 			}).send(server);
 
 			effects.setup(server, srcGrp.get(), multyThread, maxOrder, renderer);
@@ -468,15 +470,12 @@ Mosca : MoscaBase
 
 	prBlips
 	{
-		Routine.new({
-
-			4.do({
-				Synth(\blip);
-				1.wait;
-			});
-
-			yieldAndReset(true);
-
-		}).play;
+		// NOTE: prBlips is called from within a Routine in recordAudio,
+		// so 1.wait calls here are valid. The blip SynthDef writes directly
+		// to hardware output bus 0 (stereo) to ensure it is always audible.
+		4.do({
+			Synth(\blip, target: server.defaultGroup, addAction: \addToTail);
+			1.wait;
+		});
 	}
 }

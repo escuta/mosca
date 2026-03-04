@@ -1,3 +1,4 @@
+// MoscaBase.sc v1.1 - Fixed recordAudio: incremental filenames, blips captured in recording
 MoscaBase // acts as the public interface
 {
 	var dur, <server, <ossiaParent, gui, <tracker, <auxTracker; // initial rguments
@@ -12,6 +13,7 @@ MoscaBase // acts as the public interface
 	var <mark1, <mark2, <>gnssLat, <>gnssLon;
 	var <>lat = 0, <>lon = 0, <>latOffset = 0, <>lonOffset = 0;
 	var <extraArguments;
+	var recCounter = 0;
 	
 
 	*printSynthParams
@@ -139,12 +141,25 @@ MoscaBase // acts as the public interface
 	recordAudio
 	{ | blips = false, channels = 2, bus |
 
-		if (blips) { this.prBlips };
+		var path;
 
 		if (bus.isNil) { bus = renderer.recBus };
 
-		server.record((PathName(control.get.presetDir).parentPath
-			++ "MoscaOut.wav").standardizePath, bus, channels);
+		recCounter = recCounter + 1;
+		path = (PathName(control.get.presetDir).parentPath
+			++ "MoscaOut" ++ recCounter ++ ".wav").standardizePath;
+
+		if (blips) {
+			// Start recording first, then play blips into the open recording
+			server.record(path, bus, channels);
+			"Recording started - playing blips".postln;
+			Routine.new({
+				this.prBlips;   // 4 blips x 1 sec each, captured in recording
+			}).play;
+		} {
+			server.record(path, bus, channels);
+			"Recording started".postln;
+		};
 	}
 
 	stopRecording
@@ -401,10 +416,6 @@ MoscaBase // acts as the public interface
 		src.nChan.valueAction_(numChans);
 		src.scSynths.valueAction_(true);
 		src.triggerFunc = triggerFunc;
-		//src.stopFunc = stopFunc;
-		//src.synthRegistry.clear;
-		//("register = " + register).postln;
-		//		src.synthRegistry.addFirst(register);
 	}
 
 	clearEmbededSynth
@@ -413,8 +424,6 @@ MoscaBase // acts as the public interface
 		var src = this.prGetSource(sourceNum);
 
 		src.triggerFunc = nil;
-		//src.stopFunc = nil;
-		//src.synthRegistry.clear;
 	}
 
 	getSCBus
@@ -497,11 +506,6 @@ MoscaBase // acts as the public interface
 			switch (type,
 				\nmea,
 				{ auxTracker = RTKGPS(center, ossiaTrack, port, offsetheading, extraArgs, this, maxVelocity, velocityThreshold)			}
-				/*\orient,
-				{ tracker = HeadTracker(center, ossiaTrack, port, offsetheading) },
-				\pozyxOSC,
-					{ tracker = PozyxOSC(center, ossiaTrack, port, extraArgs) }
-				*/
 			);
 		}
 	}
