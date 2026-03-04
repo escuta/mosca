@@ -1,4 +1,4 @@
-// MoscaBase.sc v1.6 - Use bash -c for jack_rec pidfile shell syntax
+// MoscaBase.sc v1.8 - mosca_jackrec.sh path derived from Mosca quark directory
 MoscaBase // acts as the public interface
 {
 	var dur, <server, <ossiaParent, gui, <tracker, <auxTracker; // initial rguments
@@ -16,6 +16,7 @@ MoscaBase // acts as the public interface
 	var recCounter = 0;
 	var oscRecordFunc;
 	var playbackSynth, playbackBuffer;
+	var jackRecScript;
 	
 
 	*printSynthParams
@@ -217,7 +218,13 @@ MoscaBase // acts as the public interface
 	recordAudio
 	{ | blips = false, channels = 2, bus |
 
-		var path, cmd;
+		var path;
+
+		// Build path to mosca_jackrec.sh relative to this class file, once only
+		if (jackRecScript.isNil) {
+			jackRecScript = (PathName(PathName(MoscaBase.filenameSymbol.asString).parentPath).parentPath
+				+/+ "utilities/mosca_jackrec.sh").standardizePath;
+		};
 
 		recCounter = recCounter + 1;
 		path = (PathName(control.get.presetDir).parentPath
@@ -226,21 +233,16 @@ MoscaBase // acts as the public interface
 		// Use jack_rec to capture directly from supernova JACK outputs,
 		// bypassing SC buses entirely - necessary to capture VST binaural output.
 		// PID is written to /tmp/mosca_jackrec.pid so stopRecording can kill it.
-		// bash -c required for & and $! shell syntax
-		cmd = "bash -c 'jack_rec -f " ++ path
-			++ " -b 24 supernova:output_1 supernova:output_2"
-			++ " & echo $! > /tmp/mosca_jackrec.pid'";
-
 		if (blips) {
 			Routine.new({
-				// Start jack_rec first, then play blips into the open recording
-				cmd.unixCmd;
-				0.2.wait; // brief wait for pidfile to be written
+				// Start jack_rec via wrapper script, then play blips into the open recording
+				(jackRecScript ++ " start " ++ path).unixCmd;
+				0.2.wait; // brief wait for jack_rec to connect to JACK
 				("Recording started: " ++ path).postln;
 				this.prBlips;   // 4 blips x 1 sec each, captured in recording
 			}).play;
 		} {
-			cmd.unixCmd;
+			(jackRecScript ++ " start " ++ path).unixCmd;
 			("Recording started: " ++ path).postln;
 		};
 	}
@@ -248,7 +250,7 @@ MoscaBase // acts as the public interface
 	stopRecording
 	{
 		// Read PID from file and kill jack_rec
-		"bash -c 'kill $(cat /tmp/mosca_jackrec.pid) 2>/dev/null && rm /tmp/mosca_jackrec.pid'".unixCmd;
+		(jackRecScript ++ " stop").unixCmd;
 		"Recording stopped".postln;
 	}
 
