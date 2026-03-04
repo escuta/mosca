@@ -76,7 +76,7 @@ Mosca : MoscaBase
 			// Duplicated to stereo (blip ! 2) for L+R output.
 			SynthDef(\blip, {
 				var env = Env([0, 0.8, 1, 0], [0, 0.1, 0]);
-				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2);
+				var blip = SinOsc.ar(1000) * EnvGen.kr(env, doneAction: 2) * 0.2;
 				Out.ar(0, blip ! 2);
 			}).send(server);
 
