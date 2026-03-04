@@ -845,12 +845,12 @@ MoscaGUI
 		.states_(
 			[
 				[
-					"Bilps",
+					"Blips",
 					palette.color('light', 'active'),
 					palette.color('middark', 'active')
 				],
 				[
-					"Bilps",
+					"Blips",
 					palette.color('middark', 'active'),
 					palette.color('light', 'active')
 				]

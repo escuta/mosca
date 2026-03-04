@@ -1,4 +1,4 @@
-// MoscaBase.sc v1.1 - Fixed recordAudio: incremental filenames, blips captured in recording
+// MoscaBase.sc v1.2 - Added OSC remote control for record/stop on port 2345
 MoscaBase // acts as the public interface
 {
 	var dur, <server, <ossiaParent, gui, <tracker, <auxTracker; // initial rguments
@@ -14,6 +14,7 @@ MoscaBase // acts as the public interface
 	var <>lat = 0, <>lon = 0, <>latOffset = 0, <>lonOffset = 0;
 	var <extraArguments;
 	var recCounter = 0;
+	var oscRecordFunc;
 	
 
 	*printSynthParams
@@ -137,6 +138,24 @@ MoscaBase // acts as the public interface
 	}
 
 	syncFiles { | boolean = false | ossiaSync.v_(boolean) }
+
+	initRecordOSC
+	{
+		// OSC remote control for recording, port 2345 (consistent with other Botanica OSCFuncs)
+		// Send /mosca/record 1 to start recording with blips
+		// Send /mosca/record 0 to stop recording
+		oscRecordFunc = OSCFunc({ | msg |
+			var cmd = msg[1];
+			if (cmd == 1) {
+				"OSC: starting recording with blips".postln;
+				this.recordAudio(blips: true);
+			} {
+				"OSC: stopping recording".postln;
+				this.stopRecording;
+			};
+		}, '/mosca/record', nil, 2345);
+		"Mosca record OSC listener active on port 2345 (/mosca/record)".postln;
+	}
 
 	recordAudio
 	{ | blips = false, channels = 2, bus |
