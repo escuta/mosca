@@ -589,11 +589,16 @@ MoscaBase // acts as the public interface
 	{
 		latOffset = lat - extraArguments[10];
 		lonOffset = lon - extraArguments[11];
-		
-		// Reset GPS velocity tracking to allow immediate jump to calibration point
-		if (auxTracker.notNil && auxTracker.respondsTo(\resetGPS)) {
-			auxTracker.resetGPS();
+
+		// Reset GPS velocity tracking and lag interpolation for immediate jump to centre
+		if (auxTracker.notNil) {
+			if (auxTracker.respondsTo(\resetGPS)) { auxTracker.resetGPS() };
+			if (auxTracker.respondsTo(\resetLag)) { auxTracker.resetLag() };
 		};
+
+		// Force immediate snap to centre before next GPS tick arrives
+		center.ossiaOrigin.v_([0, 0, 0]);
+		"rtkCalibrate: origin reset to centre".postln;
 	}
 	
 

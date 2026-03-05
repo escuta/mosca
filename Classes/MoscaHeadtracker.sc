@@ -666,6 +666,14 @@ RTKGPS : HeadTrackerGPS
 		"GPS reset for recalibration - next position will jump immediately".postln;
 	}
 
+	resetLag
+	{
+		// Reset lag interpolation variables so position snaps immediately after calibration
+		lastXStep = 0; curXStep = 0; xStepIncrement = 0; interpXStep = false;
+		lastYStep = 0; curYStep = 0; yStepIncrement = 0; interpYStep = false;
+		"GPS lag interpolation reset".postln;
+	}
+
 	rtkMatchByte
 	{
 		| byte, amosca | // match incoming headtracker data
@@ -746,4 +754,3 @@ PozyxOSC
 		^super.free;
 	}
 }
-	
